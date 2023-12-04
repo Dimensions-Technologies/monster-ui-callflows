@@ -81,6 +81,7 @@ define(function(require) {
 							maxSize: '1'
 						}
 					],
+					isTerminating: 'true',
 					isUsable: 'true',
 					weight: 20,
 					caption: function(node, caption_map) {
@@ -584,6 +585,7 @@ define(function(require) {
 							maxSize: '0'
 						}
 					],
+					isTerminating: 'true',
 					isUsable: 'true',
 					weight: 60,
 					caption: function(node) {
@@ -645,6 +647,7 @@ define(function(require) {
 							maxSize: '0'
 						}
 					],
+					isTerminating: 'true',
 					isUsable: 'true',
 					weight: 70,
 					caption: function(node) {
@@ -805,9 +808,16 @@ define(function(require) {
 					rules: [
 						{
 							type: 'quantity',
-							maxSize: '0'
+							maxSize: '1'
+						},
+						{
+							type: 'allowedChildren',
+							action: [
+								'callflow[id=*]'
+							]
 						}
 					],
+					isTerminating: 'true',
 					isUsable: 'true',
 					weight: 80,
 					caption: function(node) {
@@ -880,6 +890,7 @@ define(function(require) {
 							maxSize: '0'
 						}
 					],
+					isTerminating: 'true',
 					isUsable: 'true',
 					weight: 90,
 					caption: function(node) {
@@ -1151,6 +1162,7 @@ define(function(require) {
 							maxSize: '0'
 						}
 					],
+					isTerminating: 'true',
 					isUsable: 'true',
 					weight: 100,
 					caption: function(node) {
