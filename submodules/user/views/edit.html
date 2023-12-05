@@ -92,6 +92,19 @@
 
 				<hr />
 
+				<h3>{{ i18n.callflows.user.do_not_disturb }}</h3>
+				<div class="clearfix">
+					<label for="do_not_disturb">{{ i18n.callflows.user.do_not_disturb_status }}</label>
+					<div class="input">
+						<select id="do_not_disturb.enabled" name="do_not_disturb.enabled" class="medium" rel="popover">
+							<option value="false"{{#compare data.do_not_disturb.enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.do_not_disturb_status_false }}</option>
+							<option value="true"{{#compare data.do_not_disturb.enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.do_not_disturb_status_true }}</option>
+						</select>
+					</div>
+				</div>
+
+				<hr />
+
 				<h3>{{ i18n.callflows.user.in_house_calls }}</h3>
 				<div class="clearfix">
 					<label for="caller_id_name_internal">{{ i18n.callflows.user.caller_id_name }}</label>

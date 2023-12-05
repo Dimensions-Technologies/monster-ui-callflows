@@ -1241,6 +1241,11 @@ define(function(require) {
 				data.password = monster.util.randomString(8, 'safe');
 			}
 
+			// add support for setting dnd on user doc
+			data.do_not_disturb = {
+				enabled: data.do_not_disturb.enabled
+			}
+
 			return data;
 		},
 
