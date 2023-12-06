@@ -1246,6 +1246,11 @@ define(function(require) {
 				enabled: data.do_not_disturb.enabled
 			}
 
+			// add support for setting caller id privacy on user doc
+			if (data.caller_id_options.outbound_privacy === 'default') {
+				delete data.caller_id_options;
+			}
+
 			return data;
 		},
 
