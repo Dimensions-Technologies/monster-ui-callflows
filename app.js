@@ -1077,11 +1077,16 @@ define(function(require) {
 
 			// copy callflow
 			$('.duplicate', buttons).click(function() {
-                delete(self.dataCallflow.id);
-                self.flow.numbers = [];
+
+				delete(self.dataCallflow.id);
+				delete(self.dataCallflow.numbers);
+
 				self.flow.name = self.flow.name + ' (Copy)';
-                self.flow.id = undefined;
+				self.flow.id = undefined;
+				self.flow.numbers = [];
+
                 self.repaintFlow();
+
 				monster.ui.alert(self.i18n.active().oldCallflows.duplicate_callflow_info);
 				$('#pending_change', '#ws_callflow').show();
 				$('.duplicate', '#ws_callflow').addClass('disabled'); // copy callflow
