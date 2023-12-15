@@ -243,14 +243,19 @@ define(function(require) {
 			$('#days_checkboxes', timeofday_html).hide();
 			$('#weekdays', timeofday_html).hide();
 			$('#specific_day', timeofday_html).hide();
+			$('#date_range_end', timeofday_html).show();
 
 			if (data.data.id === undefined) {
 				$('#every', timeofday_html).hide();
 				$('#on', timeofday_html).hide();
 			} else {
-				if (data.data.cycle === 'daily' || data.data.cycle === 'date') {
+				if (data.data.cycle === 'daily') {
 					$('#every', timeofday_html).hide();
 					$('#on', timeofday_html).hide();
+				} else if (data.data.cycle === 'date') {
+					$('#every', timeofday_html).hide();
+					$('#on', timeofday_html).hide();
+					$('#date_range_end', timeofday_html).hide();
 				} else if (data.data.cycle === 'monthly') {
 					$('#monthly_every', timeofday_html).show();
 					$('#ordinal', timeofday_html).show();
@@ -298,6 +303,7 @@ define(function(require) {
 
 			$('#cycle', timeofday_html).change(function() {
 				var $this = $(this);
+					form_data = monster.ui.getFormData('timeofday-form');
 
 				$('#yearly_every', timeofday_html).hide();
 				$('#monthly_every', timeofday_html).hide();
@@ -308,6 +314,7 @@ define(function(require) {
 				$('#specific_day', timeofday_html).hide();
 				$('#every', timeofday_html).show();
 				$('#on', timeofday_html).show();
+				$('#date_range_end', timeofday_html).show();
 
 				if ($this.val() === 'yearly') {
 					$('#yearly_every', timeofday_html).show();
@@ -332,9 +339,15 @@ define(function(require) {
 				} else if ($this.val() === 'weekly') {
 					$('#weekly_every', timeofday_html).show();
 					$('#days_checkboxes', timeofday_html).show();
-				} else if ($this.val() === 'daily' || $this.val() === 'date') {
+				} else if ($this.val() === 'daily') {
 					$('#every', timeofday_html).hide();
 					$('#on', timeofday_html).hide();
+				} else if ($this.val() === 'date') {
+					$('#every', timeofday_html).hide();
+					$('#on', timeofday_html).hide();
+					$('#date_range_end', timeofday_html).hide();
+					$('#end_date', timeofday_html).val(null);
+					delete(form_data.end_date);					
 				}
 			});
 
