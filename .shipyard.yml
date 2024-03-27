@@ -1,18 +1,18 @@
 ---
-name: monster-ui-application-callflows-plus
+name: monster-ui-application-dt-callflows
 base_branch: origin/master
 exposure: private
 metapackage:
   - name: meta-monster-ui
     branch: master
-    package: monster-ui-application-callflows-plus
+    package: monster-ui-application-dt-callflows
     type: required
 base_core: monster-ui
 template: monster-ui-application.spec.tmpl
 package:
   centos7:
-    name: monster-ui-application-callflows-plus
-    app_name: callflows-plus
+    name: monster-ui-application-dt-callflows
+    app_name: dt-callflows
     license: "MPL 2.0"
     group: Productivity/Telephony
     url: http://www.2600hz.org/
