@@ -1,7 +1,8 @@
 define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
-		monster = require('monster');
+		monster = require('monster'),
+		uk999Enabled = false;
 
 	var appSubmodules = [
 		'blacklist',
@@ -83,9 +84,56 @@ define(function(require) {
 			var self = this,
 				parent = _.isEmpty(container) ? $('#monster_content') : container;
 
-			monster.pub('callflows.fetchActions', { actions: self.actions });
+			monster.pub('callflows.fetchActions', { actions: self.actions });		
+
+			// get account doc on app load
+			self.callApi({
+				resource: 'account.get',
+				data: {
+					accountId: self.accountId
+				},
+				success: function(data) {
+
+					// check if 'uk_999_enabled' exists and is true on account doc
+					if (data.data.hasOwnProperty('dimension')) {
+						uk999Enabled = (data.data.dimension.hasOwnProperty('uk_999_enabled') && data.data.dimension.uk_999_enabled == true) ? true : false;	
+					} 
+					
+					else {
+						uk999Enabled = false;
+					}
+
+					// check if emergency caller id has been set on the account
+					if (data.data.hasOwnProperty('caller_id') && data.data.caller_id.hasOwnProperty('emergency') && data.data.caller_id.emergency.hasOwnProperty('number')) {
+						// if account is uk 999 enabled check that the address has been set 
+						if (uk999Enabled == true) {
+							self.callApi({
+								resource: 'numbers.get',
+								data: {
+									accountId: self.accountId,
+									phoneNumber: data.data.caller_id.emergency.number
+								},
+								success: function(data) {
+									if (data.data.hasOwnProperty('dimension') && data.data.dimension.hasOwnProperty('uk_999')) {
+									
+									}
+
+									else {
+										monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdAddressNotSet);
+									}
+								}
+							});
+						}
+					}
+
+					else {
+						monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdNotSet);
+					}
+				}
+			});
 
 			self.renderEntityManager(parent);
+
 		},
 
 		renderCallflows: function(container) {
@@ -2491,7 +2539,8 @@ define(function(require) {
 					_.unset(obj, key);
 				}
 			});
-		}
+		}	
+
 	};
 
 	return app;
