@@ -1,8 +1,8 @@
 {
-	"name": "callflows-plus",
+	"name": "dt-callflows",
 	"i18n": {
 		"de-DE": {
-			"label": "Callflows Plus",
+			"label": "Callflows",
 			"description": "Mithilfe der Callflows-App können Sie Callflows und verschiedene VoIP-Aspekte verwalten.",
 			"extended_description": "Die Callflows-App verfügt über eine Drag-and-Drop-fähige Benutzeroberfläche, in der Benutzer zwischen 50 Elementen in einer „Werkzeugkiste für die Verarbeitung von Anrufen“ wählen und diese miteinander verketten können. Diese Ketten werden auch als Callflows bezeichnet und ermöglichen es, den Verlauf zu beeinflussen, über den ein Anruf erfolgt. Das können zum Beispiel bestimmte Funktionen sein, über die ein Anruf geleitet werden soll, oder bestimmte Menüs, die einem Anrufer zugänglich sein sollen, oder bestimmte Entscheidungen, die das System bezüglich der Weiterleitung von Anrufen treffen soll. Verwenden Sie den Callflows-App-Editor, um die einzelnen Schritte zu konfigurieren, die bei Anrufen von Haupt- oder Nebenstellennummern erfolgen sollen. Leiten Sie Anrufe an Menüs, Rufgruppen, Voicemails, Konferenzbrücken, Warteschleifen, Anrufbeantworter und vieles mehr weiter.",
 			"features": [
@@ -13,7 +13,7 @@
 			]
 		},
 		"en-US": {
-			"label": "Callflows Plus",
+			"label": "Callflows",
 			"description": "Callflows has a user-friendly, drag and drop interface for configuring every step an incoming call will take.",
 			"extended_description": "Drawing from the over 50 actions in our call handling toolbox, you can easily design complex callflows to arrange the path a call takes as it traverses the various features, menus, and call routing settings in the system.",
 			"features": [
@@ -28,7 +28,7 @@
 	"tags": [
 		"admin"
 	],
-	"icon": "Callflows-Plus_app.png",
+	"icon": "DT-Callflows_app.png",
 	"api_url": "https://apps001-lhr.uk.xarios.dev:8443/v2",
 	"author": "2600Hz",
 	"version": "1.0",
