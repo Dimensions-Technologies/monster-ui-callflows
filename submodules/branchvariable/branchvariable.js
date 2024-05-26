@@ -10,14 +10,21 @@ define(function(require) {
 
 		branchvariableDefineAction: function(args) {
 			var self = this,
-				nodes = args.actions;
+				callflow_nodes = args.actions;
+				hideCallflowAction = args.hideCallflowAction;
 
-			$.extend(nodes, {
+			// function to determine if an action should be listed
+			var determineIsListed = function(key) {
+				return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
+			};
+
+			var actions = {
 				'branch_variable[]': _.merge({
 					icon: 'arrow_sign',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'branch_variable',
 					isUsable: 'true',
+					isListed: determineIsListed('branch_variable[]'),
 					caption: function(node) {
 						return node.getMetadata('variable', '');
 					},
@@ -34,7 +41,10 @@ define(function(require) {
 					'name',
 					'tip'
 				]))
-			});
+			}
+
+			$.extend(callflow_nodes, actions);
+		
 		},
 
 		branchvariableCallflowEdit: function(node, callback) {
