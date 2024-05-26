@@ -1,7 +1,11 @@
 define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
-		monster = require('monster');
+		monster = require('monster'),
+		hideAdd = false,
+		hideClassifiers = {},
+		miscSettings = {},
+		dimensionDeviceType = {};
 
 	var app = {
 		requests: {
@@ -85,7 +89,9 @@ define(function(require) {
 							emergency: {}
 						},
 						ringtones: {},
-						call_restriction: { closed_groups: 'inherit' },
+						call_restriction: {
+							closed_groups: { action: 'inherit' }
+						},
 						media: {
 							secure_rtp: 'none',
 							audio: {
@@ -199,6 +205,8 @@ define(function(require) {
 									}
 								},
 								success: function(_data_classifiers) {
+									
+									/*
 									if ('data' in _data_classifiers) {
 										$.each(_data_classifiers.data, function(k, v) {
 											defaults.field_data.call_restriction[k] = {
@@ -208,7 +216,32 @@ define(function(require) {
 											defaults.data.call_restriction[k] = { action: 'inherit' };
 										});
 									}
+									*/
+
+									if ('data' in _data_classifiers && typeof hideClassifiers === 'object') {
+										$.each(_data_classifiers.data, function(k, v) {
+											
+											// check if k exists in hideClassifiers and its value is true
+											if (hideClassifiers.hasOwnProperty(k) && hideClassifiers[k] === true) {
+												// if k is in hideClassifiers and its value is true, skip processing
+												return; 
+											}
+									
+											// if k is not in hideClassifiers or its value is not true, perform actions
+											defaults.field_data.call_restriction[k] = {
+												friendly_name: v.friendly_name
+											};
+									
+											defaults.data.call_restriction[k] = { action: 'inherit' };
+										});
+									} 
+									
+									else {
+										
+									}
+		
 									callback(null, _data_classifiers);
+									
 								}
 							});
 						},
@@ -522,7 +555,20 @@ define(function(require) {
 					'emergency',
 					'asserted'
 				],
-				device_html;
+				device_html,
+				allowAddingExternalCallerId;
+
+			if (miscSettings.preventAddingExternalCallerId == true || false) {
+				allowAddingExternalCallerId = false
+			}
+			else {
+				allowAddingExternalCallerId = true
+			}
+
+			if (data.data.hasOwnProperty('dimension') && data.data.dimension.hasOwnProperty('type')) {
+				dimensionDeviceType[data.data.dimension.type] = true;
+				dimensionDeviceType['preventDelete'] = true;
+			}
 
 			if ('media' in data.data && 'fax_option' in data.data.media) {
 				data.data.media.fax_option = (data.data.media.fax_option === 'auto' || data.data.media.fax_option === true);
@@ -532,6 +578,9 @@ define(function(require) {
 				device_html = $(self.getTemplate({
 					name: 'device-' + data.data.device_type,
 					data: _.merge({
+						hideAdd: hideAdd,
+						miscSettings: miscSettings,
+						dimensionDeviceType: dimensionDeviceType,
 						hasExternalCallerId: hasExternalCallerId,
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity
 					}, _.pick(data.extra, [
@@ -556,12 +605,37 @@ define(function(require) {
 							return;
 						}
 						monster.ui.cidNumberSelector($target, _.merge({
+							allowAdd: allowAddingExternalCallerId,
 							selectName: 'caller_id.' + selector + '.number',
 							selected: _.get(data.data, ['caller_id', selector, 'number'])
 						}, _.pick(data.extra, [
 							'cidNumbers',
 							'phoneNumbers'
 						])));
+					});
+				}
+
+				if (miscSettings.readOnlyCallerIdName == true || false) {
+					device_html.find('.caller-id-external-number').on('change', function(event) {
+						phoneNumber = $('.caller-id-external-number select[name="caller_id.external.number"]').val();
+						formattedNumber = phoneNumber.replace(/^\+44/, '0');
+						$('#caller_id_name_external', device_html).val(formattedNumber);	
+					});
+				}
+	
+				if (miscSettings.readOnlyCallerIdName == true || false) {
+					device_html.find('.caller-id-emergency-number').on('change', function(event) {
+						phoneNumber = $('.caller-id-emergency-number select[name="caller_id.emergency.number"]').val();
+						formattedNumber = phoneNumber.replace(/^\+44/, '0');
+						$('#caller_id_name_emergency', device_html).val(formattedNumber);	
+					});
+				}
+	
+				if (miscSettings.readOnlyCallerIdName == true || false) {
+					device_html.find('.caller-id-asserted-number').on('change', function(event) {
+						phoneNumber = $('.caller-id-asserted-number select[name="caller_id.asserted.number"]').val();
+						formattedNumber = phoneNumber.replace(/^\+44/, '0');
+						$('#advanced_caller_id_name_asserted', device_html).val(formattedNumber);	
 					});
 				}
 
@@ -595,6 +669,7 @@ define(function(require) {
 				device_html = $(self.getTemplate({
 					name: 'general_edit',
 					data: {
+						hideDeviceTypes: hideDeviceTypes,
 						showTeammateDevice: _
 							.chain(monster.config)
 							.get('allowedExtraDeviceTypes', [])
@@ -606,6 +681,13 @@ define(function(require) {
 
 				$('.media_pane', device_html).hide();
 			}
+
+			// find the first enabled device to show the edit page for that
+			device_html = $('<div>').append(device_html);
+			buttons = device_html.find('.buttons');
+			firstButton = buttons.first();
+			firstEnabledDevice = firstButton.attr('device_type');
+			defaultDeviceSelector = `.media_tabs .buttons[device_type="${firstEnabledDevice}"]`;
 
 			$('*[rel=popover]:not([type="text"])', device_html).popover({
 				trigger: 'hover'
@@ -631,7 +713,12 @@ define(function(require) {
 				.empty()
 				.append(device_html);
 
-			$('.media_tabs .buttons[device_type="sip_device"]', device_html).trigger('click');
+		
+			//$('.media_tabs .buttons[device_type="sip_device"]', device_html).trigger('click');
+			
+			// show the edit page for the first device that was found
+			$(defaultDeviceSelector, device_html).trigger('click');
+
 		},
 
 		/**
@@ -1077,6 +1164,20 @@ define(function(require) {
 				delete data.presence_id;
 			}
 
+			// add support for setting dnd doc for phone only devices
+			if (dimensionDeviceType == 'phoneOnly') {
+				data.do_not_disturb = {
+					enabled: data.do_not_disturb.enabled
+				}
+			}
+
+			// add support for setting caller id privacy on doc for sip device and softphone
+			if (data.device_type == 'softphone' || data.device_type == 'sip_device') {
+				if (data.caller_id_options.outbound_privacy === 'default') {
+					delete data.caller_id_options;
+				}
+			}
+
 			return data;
 		},
 
@@ -1095,6 +1196,7 @@ define(function(require) {
 				}
 			}
 
+			/*
 			if (form_data.caller_id) {
 				form_data.caller_id.internal.number = form_data.caller_id.internal.number.replace(/\s|\(|\)|-|\./g, '');
 				form_data.caller_id.external.number = form_data.caller_id.external.number.replace(/\s|\(|\)|-|\./g, '');
@@ -1104,6 +1206,27 @@ define(function(require) {
 					form_data.caller_id.asserted.number = monster.util.getFormatPhoneNumber(form_data.caller_id.asserted.number).e164Number;
 				}
 			}
+			*/
+			
+			if (form_data.caller_id) {
+				
+				if (!_.chain(form_data.caller_id).get('internal.number', '').isEmpty().value()) {
+					form_data.caller_id.internal.number = form_data.caller_id.internal.number.replace(/\s|\(|\)|-|\./g, '');
+				}
+			
+				if (!_.chain(form_data.caller_id).get('external.number', '').isEmpty().value()) {
+					form_data.caller_id.external.number = form_data.caller_id.external.number.replace(/\s|\(|\)|-|\./g, '');
+				}
+			
+				form_data.caller_id.emergency.number = form_data.caller_id.emergency.number.replace(/\s|\(|\)|-|\./g, '');
+			
+				if (!_.chain(form_data.caller_id).get('asserted.number', '').isEmpty().value()) {
+					form_data.caller_id.asserted.number = monster.util.getFormatPhoneNumber(form_data.caller_id.asserted.number).e164Number;
+				}
+
+			}
+
+
 
 			if ('media' in form_data && 'audio' in form_data.media) {
 				form_data.media.audio.codecs = $.map(form_data.media.audio.codecs, function(val) { return (val) ? val : null; });
@@ -1124,8 +1247,19 @@ define(function(require) {
 				form_data.suppress_unregister_notifications = true;
 			}
 
+			/*
 			if ('extra' in form_data && 'closed_groups' in form_data.extra) {
 				form_data.call_restriction.closed_groups = { action: form_data.extra.closed_groups ? 'deny' : 'inherit' };
+			}
+			*/
+
+			if (!miscSettings.hideClosedGroups) {
+				if ('extra' in form_data && 'closed_groups' in form_data.extra) {
+					var selectedOptionValue = $('select[name="call_restriction.closed_groups.action"]').val();
+					form_data.call_restriction.closed_groups = {
+						action: selectedOptionValue === 'deny' ? 'deny' : 'inherit'
+					}
+				}
 			}
 
 			if ($.inArray(form_data.device_type, ['sip_device', 'mobile', 'softphone']) > -1) {
@@ -1300,6 +1434,12 @@ define(function(require) {
 			var self = this,
 				callflow_nodes = args.actions;
 
+			// set variables for use elsewhere
+			hideAdd = args.hideAdd;
+			hideClassifiers = args.hideClassifiers,
+			miscSettings = args.miscSettings,
+			hideDeviceTypes = args.hideDeviceTypes;
+
 			$.extend(callflow_nodes, {
 				'device[id=*]': {
 					name: self.i18n.active().callflows.device.device,
@@ -1317,6 +1457,7 @@ define(function(require) {
 						}
 					],
 					isUsable: 'true',
+					isListed: true,
 					weight: 10,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
@@ -1337,6 +1478,8 @@ define(function(require) {
 							popup_html = $(self.getTemplate({
 								name: 'callflowEdit',
 								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
 									can_call_self: node.getMetadata('can_call_self') || false,
 									parameter: {
 										name: 'timeout (s)',

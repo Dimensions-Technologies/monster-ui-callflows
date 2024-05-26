@@ -2,7 +2,10 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
-		timezone = require('monster-timezone');
+		timezone = require('monster-timezone'),
+		hideAdd = false,
+		hideClassifiers = {},
+		miscSettings = {};
 
 	var app = {
 		requests: {},
@@ -17,9 +20,20 @@ define(function(require) {
 
 		userDefineActions: function(args) {
 			var self = this,
-				callflow_nodes = args.actions;
+				callflow_nodes = args.actions,
+				hideCallflowAction = args.hideCallflowAction;
 
-			$.extend(callflow_nodes, {
+			// set variables for use elsewhere
+			hideAdd = args.hideAdd;
+			hideClassifiers = args.hideClassifiers,
+			miscSettings = args.miscSettings;
+
+			// function to determine if an action should be listed
+			var determineIsListed = function(key) {
+				return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
+			}
+
+			var actions = {
 				'user[id=*]': {
 					name: self.i18n.active().callflows.user.user,
 					icon: 'user',
@@ -36,6 +50,7 @@ define(function(require) {
 						}
 					],
 					isUsable: 'true',
+					isListed: true,
 					weight: 40,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
@@ -58,6 +73,8 @@ define(function(require) {
 							popup_html = $(self.getTemplate({
 								name: 'callflowEdit',
 								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
 									can_call_self: node.getMetadata('can_call_self') || false,
 									parameter: {
 										name: 'timeout (s)',
@@ -146,6 +163,7 @@ define(function(require) {
 						}
 					],
 					isUsable: 'true',
+					isListed: determineIsListed('hotdesk[action=login]'),
 					weight: 10,
 					caption: function(node) {
 						return '';
@@ -172,6 +190,7 @@ define(function(require) {
 						}
 					],
 					isUsable: 'true',
+					isListed: determineIsListed('hotdesk[action=logout]'),
 					weight: 20,
 					caption: function(node) {
 						return '';
@@ -198,6 +217,7 @@ define(function(require) {
 						}
 					],
 					isUsable: 'true',
+					isListed: determineIsListed('hotdesk[action=toggle]'),
 					weight: 30,
 					caption: function(node) {
 						return '';
@@ -208,7 +228,10 @@ define(function(require) {
 						}
 					}
 				}
-			});
+			}
+
+			$.extend(callflow_nodes, actions);
+
 		},
 
 		userPopupEdit: function(args) {
@@ -358,16 +381,45 @@ define(function(require) {
 							}
 						},
 						success: function(_data_classifiers, status) {
+							
+							/*
 							if ('data' in _data_classifiers) {
 								$.each(_data_classifiers.data, function(k, v) {
 									defaults.field_data.call_restriction[k] = {
 										friendly_name: v.friendly_name
 									};
 
+									console.log('classifier: '+ [k]);
+
 									defaults.data.call_restriction[k] = { action: 'inherit' };
 								});
 							}
+							*/
+
+							if ('data' in _data_classifiers && typeof hideClassifiers === 'object') {
+								$.each(_data_classifiers.data, function(k, v) {
+									
+									// check if k exists in hideClassifiers and its value is true
+									if (hideClassifiers.hasOwnProperty(k) && hideClassifiers[k] === true) {
+										// if k is in hideClassifiers and its value is true, skip processing
+										return; 
+									}
+							
+									// if k is not in hideClassifiers or its value is not true, perform actions
+									defaults.field_data.call_restriction[k] = {
+										friendly_name: v.friendly_name
+									};
+							
+									defaults.data.call_restriction[k] = { action: 'inherit' };
+								});
+							} 
+							
+							else {
+								
+							}
+
 							callback(null, _data_classifiers);
+
 						}
 					});
 				},
@@ -520,9 +572,21 @@ define(function(require) {
 				tabsWithCidSelectors = _.keys(cidSelectorsPerTab),
 				selectorsWithReflectedValue = _.spread(_.intersection)(_.map(cidSelectorsPerTab)),
 				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled,
+				allowAddingExternalCallerId;
+
+				if (miscSettings.preventAddingExternalCallerId == true || false) {
+					allowAddingExternalCallerId = false
+				}
+				else {
+					allowAddingExternalCallerId = true
+				}
+				
 				user_html = $(self.getTemplate({
 					name: 'edit',
 					data: _.merge({
+						hideAdd: hideAdd,
+						hideClassifiers: hideClassifiers,
+						miscSettings: miscSettings,
 						hasExternalCallerId: hasExternalCallerId,
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
 						data: {
@@ -537,12 +601,38 @@ define(function(require) {
 				hotdesk_pin = $('.hotdesk_pin', user_html),
 				hotdesk_pin_require = $('#hotdesk_require_pin', user_html);
 
+			if (miscSettings.readOnlyCallerIdName == true || false) {
+				user_html.find('.caller-id-external-number').on('change', function(event) {
+					phoneNumber = $('.caller-id-external-number select[name="caller_id.external.number"]').val();
+					formattedNumber = phoneNumber.replace(/^\+44/, '0');
+					$('#advanced_caller_id_name_external', user_html).val(formattedNumber);	
+				});
+			}
+
+			if (miscSettings.readOnlyCallerIdName == true || false) {
+				user_html.find('.caller-id-emergency-number').on('change', function(event) {
+					phoneNumber = $('.caller-id-emergency-number select[name="caller_id.emergency.number"]').val();
+					formattedNumber = phoneNumber.replace(/^\+44/, '0');
+					$('#advanced_caller_id_name_emergency', user_html).val(formattedNumber);	
+				});
+			}
+
+			if (miscSettings.readOnlyCallerIdName == true || false) {
+				user_html.find('.caller-id-asserted-number').on('change', function(event) {
+					phoneNumber = $('.caller-id-asserted-number select[name="caller_id.asserted.number"]').val();
+					formattedNumber = phoneNumber.replace(/^\+44/, '0');
+					$('#advanced_caller_id_name_asserted', user_html).val(formattedNumber);	
+				});
+			}
+
 			if (hasExternalCallerId) {
 				_.forEach(tabsWithCidSelectors, function(tab) {
 					_.forEach(cidSelectorsPerTab[tab], function(selector) {
 						var $target = user_html.find('#' + tab + ' .caller-id-' + selector + '-target');
 
 						monster.ui.cidNumberSelector($target, _.merge({
+
+							
 							onAdded: function(numberMetadata) {
 								user_html.find('select[name^="caller_id."]').each(function() {
 									var $select = $(this),
@@ -571,7 +661,8 @@ define(function(require) {
 									.trigger('chosen:updated');
 							},
 							selectName: 'caller_id.' + selector + '.number',
-							selected: _.get(data.data, ['caller_id', selector, 'number'])
+							selected: _.get(data.data, ['caller_id', selector, 'number']),
+							allowAdd: allowAddingExternalCallerId
 						}, _.pick(data.extra, [
 							'cidNumbers',
 							'phoneNumbers'
@@ -579,6 +670,7 @@ define(function(require) {
 					});
 				});
 
+				
 				_.forEach(selectorsWithReflectedValue, function(type) {
 					user_html.find('#basic .caller-id-' + type + '-target select').on('change', function(event) {
 						event.preventDefault();
@@ -597,6 +689,7 @@ define(function(require) {
 							.trigger('chosen:updated');
 					});
 				});
+				
 			}
 
 			self.userRenderDeviceList(data, user_html);
@@ -1026,7 +1119,10 @@ define(function(require) {
 							$('.rows', parent)
 								.append($(self.getTemplate({
 									name: 'deviceRow',
-									data: v,
+									data: {
+										...v,
+										miscSettings: miscSettings
+									},
 									submodule: 'user'
 								})));
 							if (self.isDeviceCallable(v)) {
@@ -1127,7 +1223,14 @@ define(function(require) {
 			form_data.caller_id.external.number = form_data.caller_id.external.number.replace(/\s|\(|\)|-|\./g, '');
 			form_data.caller_id.emergency.number = form_data.caller_id.emergency.number.replace(/\s|\(|\)|-|\./g, '');
 
-			form_data.call_restriction.closed_groups = { action: form_data.extra.closed_groups ? 'deny' : 'inherit' };
+			//form_data.call_restriction.closed_groups = { action: form_data.extra.closed_groups ? 'deny' : 'inherit' };
+			
+			if (!miscSettings.hideClosedGroups) {
+				var selectedOptionValue = $('select[name="call_restriction.closed_groups.action"]').val();
+				form_data.call_restriction.closed_groups = {
+					action: selectedOptionValue === 'deny' ? 'deny' : 'inherit'
+				};
+			}
 
 			if (!_.chain(form_data.caller_id).get('asserted.number', '').isEmpty().value()) {
 				form_data.caller_id.asserted.number = monster.util.getFormatPhoneNumber(form_data.caller_id.asserted.number).e164Number;

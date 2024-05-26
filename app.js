@@ -2,7 +2,15 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
-		uk999Enabled = false;
+		uk999Enabled = false,
+		hideFromMenu = {},
+		hideAdd = {},
+		hideCallflowAction = {},
+		hideFromCallflowAction = {},
+		hideClassifiers = {},
+		miscSettings = {},
+		hideDeviceTypes = {},
+		ttsLanguages = {};
 
 	var appSubmodules = [
 		'blacklist',
@@ -84,55 +92,170 @@ define(function(require) {
 			var self = this,
 				parent = _.isEmpty(container) ? $('#monster_content') : container;
 
-			monster.pub('callflows.fetchActions', { actions: self.actions });		
+			// check whitelable doc for dimension configuration for app
+			if (monster.config.whitelabel.hasOwnProperty('dimension')) {
 
-			// get account doc on app load
-			self.callApi({
-				resource: 'account.get',
-				data: {
-					accountId: self.accountId
-				},
-				success: function(data) {
+				var data;
+				data = monster.config.whitelabel;
+				
+				if (data.dimension.hasOwnProperty('dt_callflows')) {
 
-					// check if 'uk_999_enabled' exists and is true on account doc
-					if (data.data.hasOwnProperty('dimension')) {
-						uk999Enabled = (data.data.dimension.hasOwnProperty('uk_999_enabled') && data.data.dimension.uk_999_enabled == true) ? true : false;	
-					} 
-					
-					else {
-						uk999Enabled = false;
+					if (data.dimension.dt_callflows.hasOwnProperty('hideFromMenu')) {
+																						
+						data.dimension.dt_callflows.hideFromMenu.forEach(function(action) {
+							hideFromMenu[action] = true;
+						});							
+
 					}
 
-					// check if emergency caller id has been set on the account
-					if (data.data.hasOwnProperty('caller_id') && data.data.caller_id.hasOwnProperty('emergency') && data.data.caller_id.emergency.hasOwnProperty('number')) {
-						// if account is uk 999 enabled check that the address has been set 
-						if (uk999Enabled == true) {
-							self.callApi({
-								resource: 'numbers.get',
-								data: {
-									accountId: self.accountId,
-									phoneNumber: data.data.caller_id.emergency.number
-								},
-								success: function(data) {
-									if (data.data.hasOwnProperty('dimension') && data.data.dimension.hasOwnProperty('uk_999')) {
-									
-									}
+					if (data.dimension.dt_callflows.hasOwnProperty('hideAdd')) {
+																						
+						data.dimension.dt_callflows.hideAdd.forEach(function(action) {
+							hideAdd[action] = true;
+						});							
 
-									else {
-										monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdAddressNotSet);
-									}
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('hideCallflowAction')) {
+																						
+						data.dimension.dt_callflows.hideCallflowAction.forEach(function(action) {
+							hideCallflowAction[action] = true;
+						});							
+
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('hideFromCallflowAction')) {
+						Object.keys(data.dimension.dt_callflows.hideFromCallflowAction).forEach(function(key) {
+							data.dimension.dt_callflows.hideFromCallflowAction[key].forEach(function(action) {
+								if (!hideFromCallflowAction.hasOwnProperty(key)) {
+									hideFromCallflowAction[key] = {};
 								}
+								hideFromCallflowAction[key][action] = true;
 							});
+						});
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('hideClassifiers')) {
+																						
+						data.dimension.dt_callflows.hideClassifiers.forEach(function(action) {
+							hideClassifiers[action] = true;
+						});							
+
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {
+																						
+						data.dimension.dt_callflows.miscSettings.forEach(function(action) {
+							miscSettings[action] = true;
+						});							
+
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {
+																						
+						data.dimension.dt_callflows.hideDeviceTypes.forEach(function(action) {
+							hideDeviceTypes[action] = true;
+						});							
+
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('ttsLanguages')) {
+										
+						ttsLanguages = data.dimension.dt_callflows.ttsLanguages
+
+					}
+
+					// log to console if enabled
+					if (miscSettings.enableConsoleLogging == true || false) {
+						console.log('"hideFromMenu":', JSON.stringify(hideFromMenu));
+						console.log('"hideAdd":', JSON.stringify(hideAdd));
+						console.log('"hideCallflowAction":', JSON.stringify(hideCallflowAction));
+						console.log('"hideFromCallflowAction":', JSON.stringify(hideFromCallflowAction));
+						console.log('"hideClassifiers":', JSON.stringify(hideClassifiers));
+						console.log('"miscSettings":', JSON.stringify(miscSettings));
+						console.log('"hideDeviceTypes":', JSON.stringify(hideDeviceTypes));
+						console.log('"ttsLanguages":', JSON.stringify(ttsLanguages));
+					}
+
+				}
+
+			}
+
+			monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages });
+			self.renderEntityManager(parent);
+
+			// show warning message if emergency caller id has not been set on the account
+			if (miscSettings.checkEmergencyNumber == true || false) {
+
+				self.callApi({
+					resource: 'account.get',
+					data: {
+						accountId: self.accountId
+					},
+					success: function(data) {
+
+
+						// check if 'uk_999_enabled' exists and is true on account doc
+						if (data.data.hasOwnProperty('dimension')) {
+							uk999Enabled = (data.data.dimension.hasOwnProperty('uk_999_enabled') && data.data.dimension.uk_999_enabled == true) ? true : false;	
+						} 
+						
+						else {
+							uk999Enabled = false;
+						}
+
+						// check if emergency caller id has been set on the account
+						if (data.data.hasOwnProperty('caller_id') && data.data.caller_id.hasOwnProperty('emergency') && data.data.caller_id.emergency.hasOwnProperty('number')) {
+							
+							
+							if (miscSettings.checkEmergencyAddress999 == true || false) {
+
+								if (uk999Enabled == true) {
+									self.callApi({
+										resource: 'numbers.get',
+										data: {
+											accountId: self.accountId,
+											phoneNumber: data.data.caller_id.emergency.number
+										},
+										success: function(data) {
+											if (!data.data.hasOwnProperty('dimension') || !data.data.dimension.hasOwnProperty('uk_999')) {
+												monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdAddressNotSet);												
+											}
+										}
+									});
+								}
+
+							}
+
+							if (miscSettings.checkEmergencyAddress911 == true || false) {
+
+								self.callApi({
+									resource: 'numbers.get',
+									data: {
+										accountId: self.accountId,
+										phoneNumber: data.data.caller_id.emergency.number
+									},
+									success: function(data) {
+										if (!data.data.hasOwnProperty('e911')) {
+											monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdAddressNotSet);
+										}
+									}
+								});
+
+							}
+
+						}
+
+						else {
+
+							// emergency caller id has not been set on the account
+							monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdNotSet);
+						
 						}
 					}
+				});
 
-					else {
-						monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdNotSet);
-					}
-				}
-			});
-
-			self.renderEntityManager(parent);
+			}
 
 		},
 
@@ -142,6 +265,7 @@ define(function(require) {
 				callflowsTemplate = $(self.getTemplate({
 					name: 'callflow-manager',
 					data: {
+						miscSettings: miscSettings,
 						canToggleCallflows: (monster.config.hasOwnProperty('developerFlags') && monster.config.developerFlags.showAllCallflows) || monster.apps.auth.originalAccount.superduper_admin,
 						hasAllCallflows: self.appFlags.showAllCallflows
 					}
@@ -282,6 +406,18 @@ define(function(require) {
 		},
 
 		renderEntityManager: function(container) {
+
+			var hideFromMenuAccountSettings = false,
+				hideFromMenuFeatureCodes = false;
+			
+			if (hideFromMenu.hasOwnProperty('account_settings') && hideFromMenu.account_settings === true) {
+				hideFromMenuAccountSettings = true;
+			}
+
+			if (hideFromMenu.hasOwnProperty('feature_codes') && hideFromMenu.feature_codes === true) {
+				hideFromMenuFeatureCodes = true;
+			}
+			
 			var self = this,
 				entityActions = _
 					.chain(self.actions)
@@ -293,9 +429,15 @@ define(function(require) {
 					data: {
 						actions: _
 							.chain(entityActions)
-							.map()
+							.map(function(action) {
+								// add the hideFromMenu property conditionally
+								action.hideFromMenu = self.shouldHideAction(action.module);
+								return action;
+							})
 							.sortBy('name')
-							.value()
+							.value(),
+							hideFromMenuAccountSettings: hideFromMenuAccountSettings,
+							hideFromMenuFeatureCodes: hideFromMenuFeatureCodes
 					}
 				}));
 
@@ -309,6 +451,14 @@ define(function(require) {
 				.empty()
 				.append(template);
 		},
+
+		// method to determine if an menu item should be hidden
+		shouldHideAction: function(module) {
+			if (hideFromMenu.hasOwnProperty(module) && hideFromMenu[module] === true) {
+				return true;
+			}
+			return false;
+		},		
 
 		bindEntityManagerEvents: function(args) {
 			var self = this,
@@ -365,12 +515,31 @@ define(function(require) {
 					template.find('.callflow-edition').show();
 				} else {
 					var entityType = $this.data('type');
-					template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
-					self.refreshEntityList({
-						template: template,
-						actions: actions,
-						entityType: entityType
-					});
+					 
+					if (hideAdd.hasOwnProperty(entityType) && hideAdd[entityType] === true) {	
+
+						template.find('.list-add').hide();
+						template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						self.refreshEntityList({
+							template: template,
+							actions: actions,
+							entityType: entityType
+						});
+
+					}
+
+					else {
+
+						template.find('.list-add').show();
+						template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						self.refreshEntityList({
+							template: template,
+							actions: actions,
+							entityType: entityType
+						});
+
+					}
+					
 				}
 			});
 
@@ -503,9 +672,20 @@ define(function(require) {
 				var formattedData = self.formatAccountSettingsData(accountSettingsData),
 					template = $(self.getTemplate({
 						name: 'accountSettings',
-						data: formattedData
+						data: {
+							...formattedData,
+							miscSettings: miscSettings
+						}
 					})),
-					widgetBlacklist = self.renderBlacklists(template, accountSettingsData);
+					widgetBlacklist = self.renderBlacklists(template, accountSettingsData),
+					allowAddingExternalCallerId;
+
+				if (miscSettings.preventAddingExternalCallerId == true || false) {
+					allowAddingExternalCallerId = false
+				}
+				else {
+					allowAddingExternalCallerId = true
+				}
 
 				_.forEach(monster.util.getCapability('caller_id.external_numbers').isEnabled ? [
 					'external',
@@ -518,6 +698,7 @@ define(function(require) {
 						return;
 					}
 					monster.ui.cidNumberSelector($target, {
+						allowAdd: allowAddingExternalCallerId,
 						noneLabel: self.i18n.active().callflows.accountSettings.callerId.defaultNumber,
 						selectName: 'caller_id.' + type + '.number',
 						selected: _.get(formattedData.account, ['caller_id', type, 'number']),
@@ -587,10 +768,11 @@ define(function(require) {
 						_.partial(_.get, _, 'friendlyName'),
 						_.toLower
 					))
-					.value();
+					.value(),
+				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled;
 
 			return _.merge({
-				hasExternalCallerId: monster.util.getCapability('caller_id.external_numbers').isEnabled,
+				hasExternalCallerId: hasExternalCallerId,
 				numberList: _.keys(data.numberList),
 				extra: {
 					isShoutcast: isShoutcast,
@@ -661,6 +843,30 @@ define(function(require) {
 			template.find('.media-dropdown').on('change', function() {
 				template.find('.shoutcast-div').toggleClass('active', $(this).val() === 'shoutcast').find('input').val('');
 			});
+
+			if (miscSettings.readOnlyCallerIdName == true || false) {
+				template.find('.caller-id-external-number').on('change', function() {
+					phoneNumber = $('.caller-id-external-number select[name="caller_id.external.number"]').val();
+					formattedNumber = phoneNumber.replace(/^\+44/, '0');
+					$('#caller_id_external_name', template).val(formattedNumber);				
+				});
+			}
+
+			if (miscSettings.readOnlyCallerIdName == true || false) {
+				template.find('.caller-id-emergency-number').on('change', function() {
+					phoneNumber = $('.caller-id-emergency-number select[name="caller_id.emergency.number"]').val();
+					formattedNumber = phoneNumber.replace(/^\+44/, '0');
+					$('#caller_id_emergency_name', template).val(formattedNumber);
+				});
+			}
+
+			if (miscSettings.readOnlyCallerIdName == true || false) {
+				template.find('.caller-id-asserted-number').on('change', function() {
+					phoneNumber = $('.caller-id-asserted-number select[name="caller_id.asserted.number"]').val();
+					formattedNumber = phoneNumber.replace(/^\+44/, '0');
+					$('#caller_id_asserted_name', template).val(formattedNumber);
+				});
+			}
 
 			template.find('.upload-input').fileUpload({
 				inputOnly: true,
@@ -765,16 +971,20 @@ define(function(require) {
 					delete newData.caller_id;
 				}
 
-				if (formData.preflow.always === '_disabled') {
-					delete newData.preflow.always;
+				if (!miscSettings.hidePreflow) {
+					if (formData.preflow.always === '_disabled') {
+						delete newData.preflow.always;
+					}
 				}
 
-				if (newData.hasOwnProperty('outbound_flags')) {
-					newData.outbound_flags.dynamic = newData.outbound_flags.dynamic ? newData.outbound_flags.dynamic.split(',') : [];
-					newData.outbound_flags.static = newData.outbound_flags.static ? newData.outbound_flags.static.split(',') : [];
-					_.isEmpty(newData.outbound_flags.dynamic) && delete newData.outbound_flags.dynamic;
-					_.isEmpty(newData.outbound_flags.static) && delete newData.outbound_flags.static;
-					_.isEmpty(newData.outbound_flags) && delete newData.outbound_flags;
+				if (!miscSettings.hideOutboundFlags) {
+					if (newData.hasOwnProperty('outbound_flags')) {
+						newData.outbound_flags.dynamic = newData.outbound_flags.dynamic ? newData.outbound_flags.dynamic.split(',') : [];
+						newData.outbound_flags.static = newData.outbound_flags.static ? newData.outbound_flags.static.split(',') : [];
+						_.isEmpty(newData.outbound_flags.dynamic) && delete newData.outbound_flags.dynamic;
+						_.isEmpty(newData.outbound_flags.static) && delete newData.outbound_flags.static;
+						_.isEmpty(newData.outbound_flags) && delete newData.outbound_flags;
+					}
 				}
 
 				newData.blacklists = widgetBlacklist.getSelectedItems();
@@ -942,7 +1152,7 @@ define(function(require) {
 					}
 				}, !self.appFlags.showAllCallflows && {
 					filters: {
-						paginate: false,
+						paginate: miscSettings.paginate || false,
 						filter_not_numbers: 'no_match',
 						'filter_not_ui_metadata.origin': [
 							'voip',
@@ -1612,6 +1822,7 @@ define(function(require) {
 						var dialogTemplate = $(self.getTemplate({
 								name: 'editName',
 								data: {
+									miscSettings: miscSettings,
 									name: self.flow.name,
 									exclude: self.flow.contact_list.exclude,
 									ui_is_main_number_cf: self.dataCallflow.hasOwnProperty('ui_is_main_number_cf') ? self.dataCallflow.ui_is_main_number_cf : false
@@ -2539,7 +2750,7 @@ define(function(require) {
 					_.unset(obj, key);
 				}
 			});
-		}	
+		}
 
 	};
 
