@@ -949,6 +949,11 @@
 				"shoutcastURLHelp": "You can type any URL including :// (http, https, shout...)",
 				"shoutcastURLWarning": "WARNING: If the stream selected here attempts to be played, and is unavailable, the call may fail completely. Please make sure the stream you use is available 24/7."
 			},
+			"callRestrictions": {
+				"title": "Account's Call Restrictions",
+				"deny": "Deny",
+				"inherit": "Allow"
+			},
 			"blacklist": {
 				"title": "Blocklists"
 			},
