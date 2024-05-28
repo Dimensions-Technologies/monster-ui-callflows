@@ -7,15 +7,14 @@
 		<form id="account_settings_form" class="form-horizontal">
 			<div class="tab-bar">
 				<ul class="nav nav-tabs account-settings-tabs">
-					<li class="tab-overview active"><a href="#account_settings_caller_id">Caller-ID</a></li>
+					<li class="tab-overview active"><a href="#account_settings_caller_id">Caller ID</a></li>
 					{{#unless miscSettings.hideBlacklist}}
 						<li class="tab-overview"><a href="#account_settings_blacklist">Blocklist</a></li>
 					{{/unless}}
 					<li class="tab-overview"><a href="#account_settings_misc">Misc</a></li>
-					<!-- placeholder for call restrictions 
-					-->
+					<!-- placeholder for call restrictions -->
 					{{#unless miscSettings.hideCallRestictions}}
-						<li class="tab-overview"><a href="#account_settings_misc">Call Restictions</a></li>
+						<li class="tab-overview"><a href="#account_settings_call_restrictions">Call Restrictions</a></li>
 					{{/unless}}
 				</ul>
 			</div>
@@ -296,7 +295,30 @@
 					</div>
 					{{/unless}}
 				</div>
-			</div>
+
+				<div class="tab-pane" id="account_settings_call_restrictions">
+					<div class="settings-section account_settings_call_restrictions">
+						<div class="section-title">{{ i18n.callflows.accountSettings.callRestrictions.title }}</div>
+						<div class="section-content">
+							<div class="control-group">
+								{{#each classifiers}}
+									<label class="control-label" for="{{this.id}}">{{this.name}}</label>
+									<div class="controls">
+										<select id="{{this.id}}" name="call_restriction.{{this.id}}.action" class="medium classifier-dropdown" rel="popover">
+											{{#compare this.action '===' 'deny'}}
+											<option value="deny" selected>{{ @root.i18n.callflows.accountSettings.callRestrictions.deny }}</option>
+											<option value="inherit">{{ @root.i18n.callflows.accountSettings.callRestrictions.inherit }}</option>
+											{{else}}
+											<option value="deny">{{ @root.i18n.callflows.accountSettings.callRestrictions.deny }}</option>
+											<option value="inherit" selected>{{ @root.i18n.callflows.accountSettings.callRestrictions.inherit }}</option>
+											{{/compare}}
+										</select>
+									</div>
+								{{/each}}
+							</div>
+						</div>
+					</div>
+				</div>
 
 			<div class="action-bar clearfix">
 				<button type="button" class="monster-button-success account-settings-update pull-right">{{i18n.update}}</button>
