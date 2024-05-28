@@ -307,7 +307,7 @@
 						{{/unless}}
 						{{#if miscSettings.deviceReadOnlyFields}}
 							<div class="input">
-								<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.device.presence_id_placeholder }}" value="{{data.presence_id}}""/>
+								<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" />
 							</div>
 						{{/if}}
 					</div>
@@ -336,7 +336,7 @@
 						{{/unless}}
 						{{#if miscSettings.deviceReadOnlyFields}}
 							<div class="input">
-								<input disabled class="span4 input-readonly" id="caller_id_number_internal" name="caller_id.internal.number" type="text" placeholder="+15555555555" value="{{data.caller_id.internal.number}}" />
+								<input disabled class="span4 input-readonly" id="caller_id_number_internal" name="caller_id.internal.number" type="text" />
 							</div>
 						{{/if}}
 					</div>
@@ -709,19 +709,33 @@
 						</div>
 					{{/unless}}
 
-					<div class="clearfix">
-						<label for="ringtones_internal">{{ i18n.callflows.device.internal_ringtones }}</label>
-						<div class="input">
-							<input class="span4" id="ringtones_internal" name="ringtones.internal" type="text" placeholder="" value="{{ data.ringtones.internal }}" rel="popover" data-content="{{ i18n.callflows.device.internal_ringtones_data_content }}"/>
+					{{#unless miscSettings.deviceDistinctiveRingtones}}
+						<div class="clearfix">
+							<label for="ringtones_internal">{{ i18n.callflows.device.internal_ringtones }}</label>
+							<div class="input">
+								<input class="span4" id="ringtones_internal" name="ringtones.internal" type="text" placeholder="" value="{{ data.ringtones.internal }}" rel="popover" data-content="{{ i18n.callflows.device.internal_ringtones_data_content }}"/>
+							</div>
 						</div>
-					</div>
 
-					<div class="clearfix">
-						<label for="ringtones_external">{{ i18n.callflows.device.external_ringtones }}</label>
-						<div class="input">
-							<input class="span4" id="ringtones_external" name="ringtones.external" type="text" placeholder="" value="{{ data.ringtones.external }}" rel="popover" data-content="{{ i18n.callflows.device.external_ringtones_data_content }}"/>
+						<div class="clearfix">
+							<label for="ringtones_external">{{ i18n.callflows.device.external_ringtones }}</label>
+							<div class="input">
+								<input class="span4" id="ringtones_external" name="ringtones.external" type="text" placeholder="" value="{{ data.ringtones.external }}" rel="popover" data-content="{{ i18n.callflows.device.external_ringtones_data_content }}"/>
+							</div>
 						</div>
-					</div>
+					{{/unless}}
+
+					{{#if miscSettings.deviceDistinctiveRingtones}}
+						<div class="clearfix">
+							<label for="ringtones_distinctive">{{ i18n.callflows.device.distinctive_ringtones }}</label>
+							<div class="input">
+								<select class="medium" id="ringtones_distinctive" name="ringtones.distinctive" rel="popover" data-content="{{ i18n.callflows.device.distinctive_ringtones_data_content }}">
+									<option value="enabled" {{#compare data.ringtones.distinctive '===' 'enabled' }} selected {{/compare}} >{{ i18n.callflows.device.distinctive_ringtones_enabled }}</option>
+									<option value="disabled" {{#compare data.ringtones.distinctive '===' 'disabled' }} selected {{/compare}} >{{ i18n.callflows.device.distinctive_ringtones_disabled }}</option>
+								</select>
+							</div>
+						</div>
+					{{/if}}
 
 					{{#unless dimensionDeviceType.hotdesk}}
 					{{#unless dimensionDeviceType.sip_device}}
