@@ -170,33 +170,33 @@ define(function(require) {
 
 					}
 
-					// set miscSettings.hideCallRestictions based on account type if not explicitly set
-					if (miscSettings.hideCallRestictions == undefined) {
-
-						if (isReseller == true) {
-							miscSettings.hideCallRestictions = false
-						} 
-
-						else {
-							miscSettings.hideCallRestictions = true
-						}
-					
-					}
-
-					// log to console if enabled
-					if (miscSettings.enableConsoleLogging == true || false) {
-						console.log('"hideFromMenu":', JSON.stringify(hideFromMenu));
-						console.log('"hideAdd":', JSON.stringify(hideAdd));
-						console.log('"hideCallflowAction":', JSON.stringify(hideCallflowAction));
-						console.log('"hideFromCallflowAction":', JSON.stringify(hideFromCallflowAction));
-						console.log('"hideClassifiers":', JSON.stringify(hideClassifiers));
-						console.log('"miscSettings":', JSON.stringify(miscSettings));
-						console.log('"hideDeviceTypes":', JSON.stringify(hideDeviceTypes));
-						console.log('"ttsLanguages":', JSON.stringify(ttsLanguages));
-					}
-
 				}
 
+			}
+
+			// set miscSettings.hideCallRestictions based on account type if not explicitly set
+			if (miscSettings.hideCallRestictions == undefined) {
+
+				if (isReseller == true) {
+					miscSettings.hideCallRestictions = false
+				} 
+
+				else {
+					miscSettings.hideCallRestictions = true
+				}
+			
+			}
+
+			// log to console if enabled
+			if (miscSettings.enableConsoleLogging == true || false) {
+				console.log('"hideFromMenu":', JSON.stringify(hideFromMenu));
+				console.log('"hideAdd":', JSON.stringify(hideAdd));
+				console.log('"hideCallflowAction":', JSON.stringify(hideCallflowAction));
+				console.log('"hideFromCallflowAction":', JSON.stringify(hideFromCallflowAction));
+				console.log('"hideClassifiers":', JSON.stringify(hideClassifiers));
+				console.log('"miscSettings":', JSON.stringify(miscSettings));
+				console.log('"hideDeviceTypes":', JSON.stringify(hideDeviceTypes));
+				console.log('"ttsLanguages":', JSON.stringify(ttsLanguages));
 			}
 
 			monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages });
