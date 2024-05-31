@@ -17,6 +17,11 @@
 		<ul class="tabs" data-tabs="tabs">
 			<li class="active"><a href="#basic">{{ i18n.callflows.device.basic }}</a></li>
 			<li><a href="#caller_id">{{ i18n.callflows.device.caller_id }}</a></li>
+			{{#if miscSettings.deviceShowCommunalPhoneNumbers}}
+			{{#if dimensionDeviceType.communal}}
+				<li><a href="#phone_numbers">{{ i18n.callflows.device.phone_numbers }}</a></li>
+			{{/if}}
+			{{/if}}
 			{{#unless miscSettings.hideDeviceSipSettings}}
 				<li><a href="#sip_settings">{{ i18n.callflows.device.sip }}</a></li>
 			{{/unless}}
@@ -307,7 +312,7 @@
 						{{/unless}}
 						{{#if miscSettings.deviceReadOnlyFields}}
 							<div class="input">
-								<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" />
+								<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" value="{{data.presence_id}}" />
 							</div>
 						{{/if}}
 					</div>
@@ -336,7 +341,7 @@
 						{{/unless}}
 						{{#if miscSettings.deviceReadOnlyFields}}
 							<div class="input">
-								<input disabled class="span4 input-readonly" id="caller_id_number_internal" name="caller_id.internal.number" type="text" />
+								<input disabled class="span4 input-readonly" id="caller_id_number_internal" name="caller_id.internal.number" type="text" value="{{data.caller_id.internal.number}}" />
 							</div>
 						{{/if}}
 					</div>
@@ -464,6 +469,21 @@
 				{{/if}}
 
 
+				</div>
+				
+
+				<div id="phone_numbers">
+					<h3>{{ i18n.callflows.user.phone_numbers_options }}</h3>
+				
+					<div id="phone_numbers_container">
+						<!-- placeholder for numberRow.html -->
+						<div class="numberRows">
+						</div>
+					</div>
+				
+					<div class="number-addition">
+						<button class="monster-button add-phone-number">{{ i18n.callflows.user.phone_numbers_add }}</button>
+					</div>
 				</div>
 				
 
