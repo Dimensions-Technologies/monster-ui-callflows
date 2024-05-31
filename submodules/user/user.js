@@ -341,6 +341,10 @@ define(function(require) {
 							softphone: self.i18n.active().callflows.user.softphone_type,
 							sip_uri: self.i18n.active().callflows.user.sip_uri_type
 						},
+						user_callflow: null,
+						phone_numbers: [],
+						extension_numbers: [],
+						callflow_numbers: [],
 						call_restriction: {},
 						canImpersonate: monster.util.canImpersonate(self.accountId)
 					}
@@ -348,7 +352,74 @@ define(function(require) {
 
 			self.random_id = false;
 
+			var userId = data.id
+
 			monster.parallel(_.merge({
+				
+				get_callflow: function(callback) {
+					self.callApi({
+						resource: 'callflow.list',
+						data: {
+							accountId: self.accountId,
+							filters: {
+								"filter_owner_id": userId
+							}
+						},
+						success: function(callflow) {
+
+							if (callflow.data.length > 0 && callflow.data[0].numbers.length > 0) {
+
+								// set callflow id for the user
+								defaults.field_data.user_callflow = callflow.data[0].id;
+						
+								// filter numbers to get phone numbers
+								var phoneNumbers = callflow.data[0].numbers.filter(function(number) {
+									if (miscSettings.fixedExtensionLength) {
+										return number.length > 7;
+									}
+									else {
+										return number.startsWith('+');
+									}
+								});
+
+								var formattedPhoneNumbers = phoneNumbers.map(function(number) {
+									return number;
+								});
+
+								// filter numbers to get extension numbers
+								var extensionNumbers = callflow.data[0].numbers.filter(function(number) {
+									if (miscSettings.fixedExtensionLength) {
+										return number.length <= 7;
+									}
+									else {
+										return !number.startsWith('+');
+									}
+								});
+					
+								var formattedExtensionNumbers = extensionNumbers.map(function(number) {
+									return number
+								});
+					
+								if (miscSettings.enableConsoleLogging) {
+									console.log('Callflow ID', callflow.data[0].id)
+									console.log('Phone Numbers', formattedPhoneNumbers)
+									console.log('Extension Numbers', formattedExtensionNumbers)
+								}
+							
+								defaults.field_data.callflow_numbers = callflow.data[0].numbers
+								defaults.field_data.phone_numbers = formattedPhoneNumbers;
+								defaults.field_data.extension_numbers = formattedExtensionNumbers;
+								
+							}
+
+							callback(null, callflow);
+
+						}
+
+					});
+				
+				},
+				
 				phoneNumbers: function(next) {
 					self.callApi({
 						resource: 'numbers.listAll',
@@ -558,6 +629,11 @@ define(function(require) {
 		},
 
 		userRender: function(data, target, callbacks) {
+
+			if (miscSettings.enableConsoleLogging) {
+				console.log('User Data', data)
+			}
+
 			var self = this,
 				cidSelectorsPerTab = {
 					basic: [
@@ -693,6 +769,7 @@ define(function(require) {
 			}
 
 			self.userRenderDeviceList(data, user_html);
+			self.userRenderNumberList(data, user_html);
 
 			monster.ui.validate(user_form, {
 				rules: {
@@ -786,6 +863,88 @@ define(function(require) {
 				trigger: 'focus'
 			});
 
+			$('.add-phone-number', user_html).click(function(ev) {
+
+				ev.preventDefault();
+
+				var field_data = data.field_data;
+
+				self.listNumbers(function(phoneNumbers) {
+					var parsedNumbers = [];
+
+					// filter out numbers already added to the form but not yet saved
+					_.each(phoneNumbers, function(number) {
+						if ($.inArray(number.phoneNumber, field_data.phone_numbers) < 0) {	
+							parsedNumbers.push(number);
+						}
+					});
+
+					var popup_html = $(self.getTemplate({
+							name: 'addPhoneNumber',
+							data: {
+								phoneNumbers: parsedNumbers,
+								hideBuyNumbers: _.get(monster, 'config.whitelabel.hideBuyNumbers', false)
+							},
+							submodule: 'user'
+						})),
+						popup = monster.ui.dialog(popup_html, {
+							title: self.i18n.active().oldCallflows.add_number
+						});
+
+					monster.ui.chosen(popup_html.find('#list_numbers'), {
+						width: '160px'
+					});
+
+					// Have to do that so that the chosen dropdown isn't hidden.
+					popup_html.parent().css('overflow', 'visible');
+
+					if (parsedNumbers.length === 0) {
+						$('#list_numbers', popup_html).attr('disabled', 'disabled');
+						$('<option value="select_none">' + self.i18n.active().oldCallflows.no_phone_numbers + '</option>').appendTo($('#list_numbers', popup_html));
+					}
+
+					popup.find('.buy-link').on('click', function(e) {
+						e.preventDefault();
+						monster.pub('common.buyNumbers', {
+							searchType: $(this).data('type'),
+							callbacks: {
+								success: function(numbers) {
+									var lastNumber;
+
+									_.each(numbers, function(number, k) {
+										popup.find('#list_numbers').append($('<option value="' + k + '">' + monster.util.formatPhoneNumber(k) + '</option>'));
+										lastNumber = k;
+									});
+
+									popup.find('#list_numbers').val(lastNumber).trigger('chosen:updated');
+								}
+							}
+						});
+					});
+
+					$('.add_number', popup).click(function(event) {
+						
+						event.preventDefault();
+					
+						var number = $('input[name="number_type"]:checked', popup).val() === 'your_numbers' ? $('#list_numbers option:selected', popup).val() : $('#add_number_text', popup).val();
+					
+						// push number into field_data.numbers
+						field_data.phone_numbers.push(number);
+
+						if (miscSettings.enableConsoleLogging) {
+							console.log('Number Being Added:', number)
+						}
+
+						self.userRenderNumberList(data, user_html)
+					
+						popup.dialog('close');
+
+					});
+
+				});
+			});
+			
+
 			self.winkstartTabs(user_html);
 			self.winkstartLinkForm(user_html);
 
@@ -853,7 +1012,27 @@ define(function(require) {
 					$this.addClass('disabled');
 
 					if (monster.ui.valid(user_form)) {
-						var form_data = monster.ui.getFormData('user-form');
+						var form_data = monster.ui.getFormData('user-form'),
+							callflowNumbers = data.field_data.callflow_numbers,
+							formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
+							userCallflow = data.field_data.user_callflow;
+
+						if (miscSettings.enableConsoleLogging) {
+							console.log('Numbers on User Callflow', callflowNumbers);
+							console.log('Numbers on User Form', formNumbers);
+						}
+
+						if ('callflow_numbers' in form_data) {
+							delete form_data.callflow_numbers;
+						}
+
+						if ('phone_numbers' in form_data) {
+							delete form_data.phone_numbers;
+						}
+
+						if ('extension_numbers' in form_data) {
+							delete form_data.extension_numbers;
+						}
 
 						if (form_data.enable_pin === false) {
 							delete data.data.queue_pin;
@@ -870,6 +1049,25 @@ define(function(require) {
 							delete data.field_data;
 						}
 
+						// patch users callflow if there is a change to the qty of numbers
+						if (formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
+							self.callApi({
+								resource: 'callflow.patch',
+								data: {
+									accountId: self.accountId,
+									callflowId: userCallflow,
+									data: {
+										numbers: formNumbers
+									}
+								},
+								success: function(_callflow_update) {
+									if (miscSettings.enableConsoleLogging) {
+										console.log('User Callflow Updated', _callflow_update)
+									}
+								}
+							})
+						}
+						
 						self.callApi({
 							resource: 'account.get',
 							data: {
@@ -1095,6 +1293,63 @@ define(function(require) {
 
 				callback && callback();
 			});
+		},
+
+		userRenderNumberList: function(data, parent) {
+			var self = this,
+				parent = $('#phone_numbers_container', parent);
+
+				if (miscSettings.enableConsoleLogging) {
+					console.log('User Data', data)
+				}
+
+				var phone_numbers = data.field_data.phone_numbers
+
+				$('.numberRows', parent).empty();
+
+				var numberRow_html = $(self.getTemplate({
+					name: 'numberRow',
+					data: {
+						phone_numbers
+					},
+					submodule: 'user'
+				}));
+
+				$('.numberRows', parent).append(numberRow_html);
+
+				$('.unassign-phone-number', numberRow_html).click(function(ev) {
+
+					ev.preventDefault();
+	
+					// find the hidden input field within the same .number-container
+					var phoneNumberValue = $(this).closest('.number-container').find('input[type="hidden"]').val(),
+						field_data = data.field_data;
+					
+					// remove the phone number from the field data array
+					field_data.phone_numbers = field_data.phone_numbers.filter(function(number) {
+						return number !== phoneNumberValue;
+					});
+	
+					var row = $(this).closest('.item-row'),
+						hr = row.next('hr');
+	
+					// slide up and remove the item row and the <hr> element
+					row.add(hr).slideUp(function() {
+						row.add(hr).remove();
+	
+						if (!user_html.find('.number-container .item-row').is(':visible')) {
+							user_html.find('.number-container .empty-row').slideDown();
+						}
+	
+					});
+	
+					if (miscSettings.enableConsoleLogging) {
+						console.log('Phone Number Being Removed:', phoneNumberValue);
+						console.log('Field Data', field_data);
+					}
+					
+				})
+				
 		},
 
 		userRenderDeviceList: function(data, parent) {
