@@ -1555,7 +1555,7 @@ define(function(require) {
 					delete form_data.extension_numbers;
 				}
 
-				// patch users callflow if there is a change to the qty of numbers
+				// patch users callflow if there is a change to the qty of numbers 
 				if (formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
 					self.callApi({
 						resource: 'callflow.patch',
@@ -1563,8 +1563,12 @@ define(function(require) {
 							accountId: self.accountId,
 							callflowId: deviceCallflow,
 							data: {
-								numbers: formNumbers
-							}
+								numbers: formNumbers,
+								ui_metadata: {
+									origin: 'voip'
+								}
+							},
+							removeMetadataAPI: true
 						},
 						success: function(_callflow_update) {
 							if (miscSettings.enableConsoleLogging) {
