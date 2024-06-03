@@ -225,7 +225,7 @@ define(function(require) {
 									data: {
 										accountId: self.accountId,
 										filters: {
-											"filter_owner_id": deviceData.id
+											"filter_dimension.deviceOwnerId": deviceData.id
 										}
 									},
 									success: function(callflow) {
