@@ -1057,8 +1057,12 @@ define(function(require) {
 									accountId: self.accountId,
 									callflowId: userCallflow,
 									data: {
-										numbers: formNumbers
-									}
+										numbers: formNumbers,
+										ui_metadata: {
+											origin: 'voip'
+										}
+									},
+									removeMetadataAPI: true
 								},
 								success: function(_callflow_update) {
 									if (miscSettings.enableConsoleLogging) {
