@@ -25,11 +25,15 @@
 			{{/if}}
 			{{/if}}
 			{{#unless miscSettings.hideDeviceSipSettings}}
-				<li><a href="#sip_settings">{{ i18n.callflows.device.sip }}</a></li>
+				<li><a href="#sip_settings">{{ i18n.callflows.device.sip_settings }}</a></li>
 			{{/unless}}
-			{{#if dimensionDeviceType.legacypbx}}
-				<li><a href="#legacypbx_sip_settings">{{ i18n.callflows.device.sip_settings }}</a></li>
+
+			{{#if miscSettings.showDeviceSimplifiedSipSettings}}
+			{{#if dimensionDeviceType.showDeviceSimplifiedSipSettings}}
+				<li><a href="#simplified_sip_settings">{{ i18n.callflows.device.sip_settings }}</a></li>
 			{{/if}}
+			{{/if}}
+
 			{{#unless miscSettings.hideDeviceAudioCodecs}}
 				<li><a href="#audio_settings">{{ i18n.callflows.device.audio }}</a></li>
 			{{/unless}}
@@ -642,7 +646,7 @@
 					{{/unless}}
 				</div>
 
-				<div id="legacypbx_sip_settings">
+				<div id="simplified_sip_settings">
 					<div class="clearfix">
 						<label for="sip_invite_format">{{ i18n.callflows.device.invite_format }}</label>
 						<div class="input">
