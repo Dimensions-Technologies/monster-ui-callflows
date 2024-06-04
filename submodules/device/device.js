@@ -206,6 +206,15 @@ define(function(require) {
 					if (deviceData.hasOwnProperty('dimension') && deviceData.dimension.hasOwnProperty('type')) {
 						dimensionDeviceType[deviceData.dimension.type] = true;
 						dimensionDeviceType['preventDelete'] = true;
+						dimensionDeviceType['showDeviceSimplifiedSipSettings'] = false;
+
+						console.log(deviceData.dimension)
+
+						if (deviceData.dimension.model == 'UCS' || deviceData.dimension.type == 'legacypbx') {
+							console.log('condition matched')
+							dimensionDeviceType['showDeviceSimplifiedSipSettings'] = true;
+						}
+
 					}
 
 					if (miscSettings.enableConsoleLogging) {
@@ -1389,8 +1398,8 @@ define(function(require) {
 				}
 			}
 
-			// add support for setting caller id privacy on doc for sip device and softphone
-			if ((data.device_type == 'softphone' && dimensionDeviceType.hotdesk != true || false ) || (data.device_type == 'sip_device' && dimensionDeviceType.hotdesk != true || false )) {
+			// add support for setting caller id privacy on doc
+			if ((data.device_type == 'softphone' && dimensionDeviceType.hotdesk != true || false ) || (data.device_type == 'sip_device' && dimensionDeviceType.hotdesk != true || false ) || data.device_type == 'fax' || data.device_type == 'ata') {
 				if (data.caller_id_options.outbound_privacy === 'default') {
 					delete data.caller_id_options;
 				}
