@@ -16,7 +16,9 @@
 	<div>
 		<ul class="tabs" data-tabs="tabs">
 			<li class="active"><a href="#basic">{{ i18n.callflows.device.basic }}</a></li>
-			<li><a href="#caller_id">{{ i18n.callflows.device.caller_id }}</a></li>
+			{{#unless dimensionDeviceType.legacypbx}}
+				<li><a href="#caller_id">{{ i18n.callflows.device.caller_id }}</a></li>
+			{{/unless}}
 			{{#if miscSettings.deviceShowCommunalPhoneNumbers}}
 			{{#if dimensionDeviceType.communal}}
 				<li><a href="#phone_numbers">{{ i18n.callflows.device.phone_numbers }}</a></li>
@@ -25,15 +27,22 @@
 			{{#unless miscSettings.hideDeviceSipSettings}}
 				<li><a href="#sip_settings">{{ i18n.callflows.device.sip }}</a></li>
 			{{/unless}}
+			{{#if dimensionDeviceType.legacypbx}}
+				<li><a href="#legacypbx_sip_settings">{{ i18n.callflows.device.sip_settings }}</a></li>
+			{{/if}}
 			{{#unless miscSettings.hideDeviceAudioCodecs}}
 				<li><a href="#audio_settings">{{ i18n.callflows.device.audio }}</a></li>
 			{{/unless}}
 			{{#unless miscSettings.hideDeviceVideoCodecs}}
 				<li><a href="#video_settings">{{ i18n.callflows.device.video }}</a></li>
 			{{/unless}}
-			<li><a href="#options">{{ i18n.callflows.device.options }}</a></li>
+			{{#unless dimensionDeviceType.legacypbx}}
+				<li><a href="#options">{{ i18n.callflows.device.options }}</a></li>
+			{{/unless}}
+			{{#unless dimensionDeviceType.legacypbx}}
 			{{#unless dimensionDeviceType.hotdesk}}
-			<li><a href="#restrictions">{{ i18n.callflows.device.restrictions }}</a></li>
+				<li><a href="#restrictions">{{ i18n.callflows.device.restrictions }}</a></li>
+			{{/unless}}
 			{{/unless}}
 		</ul>
 		<form id="device-form" action="" method="post">
@@ -57,6 +66,7 @@
 						</div>
 					{{/if}}
 					
+					{{#unless dimensionDeviceType.legacypbx}}
 					{{#unless dimensionDeviceType.hotdesk}}
 					{{#unless dimensionDeviceType.communal}}
 					{{#unless miscSettings.devicePreventUserAssignment}}
@@ -85,7 +95,9 @@
 					{{/unless}}
 					{{/unless}}
 					{{/unless}}
+					{{/unless}}
 					
+					{{#unless dimensionDeviceType.legacypbx}}
 					{{#unless dimensionDeviceType.hotdesk}}
 					{{#unless dimensionDeviceType.communal}}
 					{{#if miscSettings.devicePreventUserAssignment}}
@@ -112,12 +124,15 @@
 					{{/if}}
 					{{/unless}}
 					{{/unless}}
+					{{/unless}}
 
+					{{#unless dimensionDeviceType.legacypbx}}
 					{{#unless miscSettings.deviceReadOnlyFields}}
 						<div class="clearfix">
 							<label for="mac_address">{{ i18n.callflows.device.device_mac_address }}</label>
 							<div class="input">
 								<input class="span4" id="mac_address" name="mac_address" type="text" placeholder="01:23:45:67:89:AB" value="{{ data.mac_address }}" rel="popover" data-mask="macAddress" />
+								{{#unless miscSettings.hideAdvancedProvisioner}}
 								<span class="provisioner">
 									{{#if field_data.provisioner.isEnabled}}
 									<div>
@@ -147,6 +162,7 @@
 									</div>
 									{{/if}}
 								</span>
+								{{/unless}}
 							</div>
 						</div>
 					{{/unless}}
@@ -158,6 +174,7 @@
 							</div>
 						</div>
 					{{/if}}
+					{{/unless}}
 
 					<div class="clearfix">
 						<div class="input">
@@ -615,6 +632,29 @@
 						</div>
 					{{/if}}
 					
+					{{#unless miscSettings.hideDeviceOutboundFlags}}
+						<div class="clearfix">
+							<label for="outbound_flags">{{ i18n.callflows.device.outbound_flags }}</label>
+							<div class="input">
+								<input class="span4" id="outbound_flags" name="outbound_flags" type="text" placeholder="{{ i18n.callflows.device.outbound_flags }}" value="{{ data.outbound_flags }}" rel="popover" data-content="{{ i18n.callflows.device.outbound_flags_data_content }}"/>
+							</div>
+						</div>
+					{{/unless}}
+				</div>
+
+				<div id="legacypbx_sip_settings">
+					<div class="clearfix">
+						<label for="sip_invite_format">{{ i18n.callflows.device.invite_format }}</label>
+						<div class="input">
+							<select name="sip.invite_format" id="sip_invite_format" class="medium" rel="popover" data-content="{{ i18n.callflows.device.invite_format_data_content }}">
+							{{#select data.sip.invite_format}}
+								{{#each field_data.sip.invite_formats}}
+									<option value="{{ @key }}">{{ this }}</option>
+								{{/each}}
+							{{/select}}
+							</select>
+						</div>
+					</div>
 					{{#unless miscSettings.hideDeviceOutboundFlags}}
 						<div class="clearfix">
 							<label for="outbound_flags">{{ i18n.callflows.device.outbound_flags }}</label>
