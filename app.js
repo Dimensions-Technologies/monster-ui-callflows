@@ -2628,7 +2628,16 @@ define(function(require) {
 		},
 		
 		save: function() {
-			var self = this;
+			var self = this,
+				metadata = self.dataCallflow.hasOwnProperty('ui_metadata') ? self.dataCallflow.ui_metadata : false,
+				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin),
+				showAllCallflows = (monster.config.hasOwnProperty('developerFlags') && monster.config.developerFlags.showAllCallflows) || monster.apps.auth.originalAccount.superduper_admin;
+
+			if (miscSettings.enableConsoleLogging == true || false) {
+				console.log('Callflow Metadata', metadata)
+				console.log('Hidden Callflow', isHiddenCallflow)
+				console.log('Show All Callflows', showAllCallflows)
+			}
 
 			if (self.flow.numbers && self.flow.numbers.length > 0) {
 				var data_request = {
@@ -2654,18 +2663,43 @@ define(function(require) {
 				delete data_request.metadata;
 
 				if (self.flow.id) {
-					self.callApi({
-						resource: 'callflow.update',
-						data: {
-							accountId: self.accountId,
-							callflowId: self.flow.id,
-							data: data_request
-						},
-						success: function(json) {
-							self.repaintList();
-							self.editCallflow({ id: json.data.id });
-						}
-					});
+					// if show all callflows is enabled and this is a hidden callflow then retain existing ui_metadata 
+					if (showAllCallflows == true && isHiddenCallflow == true) {
+						self.callApi({
+							resource: 'callflow.update',
+							data: {
+								accountId: self.accountId,
+								callflowId: self.flow.id,
+								data: {
+									...data_request,
+									ui_metadata: {
+										...metadata
+									}
+								},
+								removeMetadataAPI: true
+							},
+							success: function(json) {
+								self.repaintList();
+								self.editCallflow({ id: json.data.id });
+							}
+						});
+					}
+
+					else {
+						self.callApi({
+							resource: 'callflow.update',
+							data: {
+								accountId: self.accountId,
+								callflowId: self.flow.id,
+								data: data_request
+							},
+							success: function(json) {
+								self.repaintList();
+								self.editCallflow({ id: json.data.id });
+							}
+						});
+					}
+
 				} else {
 					self.callApi({
 						resource: 'callflow.create',
