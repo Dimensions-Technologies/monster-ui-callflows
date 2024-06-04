@@ -1390,7 +1390,7 @@ define(function(require) {
 			}
 
 			// add support for setting caller id privacy on doc for sip device and softphone
-			if (data.device_type == 'softphone' || data.device_type == 'sip_device') {
+			if ((data.device_type == 'softphone' && dimensionDeviceType.hotdesk != true || false ) || (data.device_type == 'sip_device' && dimensionDeviceType.hotdesk != true || false )) {
 				if (data.caller_id_options.outbound_privacy === 'default') {
 					delete data.caller_id_options;
 				}
