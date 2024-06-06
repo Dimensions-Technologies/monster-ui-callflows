@@ -207,23 +207,20 @@ define(function(require) {
 						dimensionDeviceType[deviceData.dimension.type] = true;
 						dimensionDeviceType['preventDelete'] = true;
 						dimensionDeviceType['showDeviceSimplifiedSipSettings'] = false;
-
-						console.log(deviceData.dimension)
-
+					
 						if (deviceData.dimension.model == 'UCS' || deviceData.dimension.type == 'legacypbx') {
-							console.log('condition matched')
 							dimensionDeviceType['showDeviceSimplifiedSipSettings'] = true;
+						}
+
+						if (miscSettings.enableConsoleLogging) {
+							console.log('Device Details', dimensionDeviceType);
+							console.log('Device Doc Details', deviceData.dimension);
 						}
 
 					}
 
-					if (miscSettings.enableConsoleLogging) {
-						console.log(dimensionDeviceType)
-					}
-
 					monster.parallel(_.merge({
 
-						
 						get_callflow: function(callback) {
 
 							// if the device is classed as a communal get associated callflow

@@ -896,7 +896,7 @@ define(function(require) {
 							if (requestTimeout < 5 || requestTimeout > 20) {
 								$('#pivot_timeout_input', popup_html).val(5);
 								monster.ui.alert('warning', self.i18n.active().oldCallflows.pivot_timeout_invalid);
-								console.log('invalid timeout')
+								console.log('Invalid Timeout')
 							}
 						
 						});
