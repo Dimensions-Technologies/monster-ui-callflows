@@ -396,15 +396,52 @@
 				<h3>{{ i18n.callflows.user.voicemail_options }}</h3>
 
 				<div class="clearfix">
-					<label for="vm_to_email_enabled">{{ i18n.callflows.user.email_notifications }}</label>
-					<div class="input">
-					  <select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
-						<option value="false"{{#compare data.vm_to_email_enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_disabled }}</option>
-						<option value="true"{{#compare data.vm_to_email_enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
-					  </select>
+					<label for="user_voicemail">{{ i18n.callflows.user.voicemail }}</label>
+					<div class="input user-voicemail">
+						<select id="user_voicemail" name="user_voicemail" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+							<option value="disabled">{{ i18n.callflows.user.voicemail_disabled }}</option>
+							<option value="enabled"{{#ifInArray 'voicemail' field_data.callflow_features}}selected {{/ifInArray}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
+						</select>
+					  	<div class="edit_create">
+							<a id="edit_link_vmbox" class="inline_action_vmbox" data-action="edit" href="#">{{ i18n.callflows.user.voicemail_edit }}</a>
+						</div>
 					</div>
 				</div>
 
+				{{#unless data.smartpbx.find_me_follow_me.enabled}}
+					<div class="clearfix">
+						<label for="ring_timeout">{{ i18n.callflows.user.ringing_timeout }}</label>
+						<div class="input ring-timeout">
+							<input class="span4" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_callflow.flow.data.timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_help }}"/>
+						</div>
+					</div>
+				{{/unless}}
+
+				{{#if data.smartpbx.find_me_follow_me.enabled}}
+					<div class="clearfix">
+						<label for="ring_timeout">{{ i18n.callflows.user.ringing_timeout }}</label>
+						<div class="input ring-timeout">
+							<input disabled class="span4 input-readonly" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_callflow.flow.data.timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_fmfm_help }}"/>
+							{{#unless miscSettings.userRingTimeoutPresenceProfileHelp}}
+							<div>{{ i18n.callflows.user.ringing_timeout_disabled_help1 }}</div>
+							{{/unless}}
+							{{#if miscSettings.userRingTimeoutPresenceProfileHelp}}
+							<div>{{ i18n.callflows.user.ringing_timeout_disabled_help2 }}</div>
+							{{/if}}
+						</div>
+					</div>
+				{{/if}}
+				
+				<div class="clearfix">
+					<label for="vm_to_email_enabled">{{ i18n.callflows.user.email_notifications }}</label>
+					<div class="input">
+					<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+						<option value="false"{{#compare data.vm_to_email_enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_disabled }}</option>
+						<option value="true"{{#compare data.vm_to_email_enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
+					</select>
+					</div>
+				</div>
+				
 			</div>
 
 			<div id="options">
