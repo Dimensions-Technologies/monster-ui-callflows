@@ -673,13 +673,20 @@ define(function(require) {
 				},
 				isMediaSource = function(entity) {
 					return entityType === 'play' && entity.media_source;
-				};
+				},
+				isUser = function(entity) {
+					if (miscSettings.userListShowExtension) {
+						return entityType === 'user' && entity.presence_id;
+					}
+				};;
 
 			return _.map(entities, function(entity) {
 				return _.merge({
 					displayName: getDisplayName(entity)
 				}, isMediaSource(entity) && {
 					additionalInfo: self.i18n.active().callflows.media.mediaSources[entity.media_source]
+				}, isUser(entity) && {
+					additionalInfo: entity.presence_id
 				}, entity);
 			});
 		},
