@@ -2,7 +2,11 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
-		timezone = require('monster-timezone');
+		timezone = require('monster-timezone'),
+		miscSettings = {},
+		existingRule = false,
+		featureCodeIdReadOnly = false,
+		featureCodeState = null;
 
 	var app = {
 		requests: {},
@@ -15,7 +19,7 @@ define(function(require) {
 		timeofdaySave: function(form_data, data, success, error) {
 			var self = this,
 				normalized_data = self.timeofdayNormalizeData($.extend(true, {}, data.data, form_data));
-
+	
 			if (typeof data.data === 'object' && data.data.id) {
 				self.temporalRuleUpdate(normalized_data, function(_data, status) {
 					success && success(_data, status, 'update');
@@ -199,10 +203,21 @@ define(function(require) {
 		},
 
 		timeofdayRender: function(data, target, callbacks) {
+			if (miscSettings.enableManualNightMode == true || false) {
+				featureCodeIdReadOnly = false
+				if (data.data.hasOwnProperty('dimension') && data.data.dimension.hasOwnProperty('feature_code_id') && data.data.dimension.feature_code_id != null) {
+					featureCodeIdReadOnly = true
+				}
+			}
+			
 			var self = this,
 				timeofday_html = $(self.getTemplate({
 					name: 'callflowEdit',
-					data: data,
+					data: {
+						...data,
+						miscSettings: miscSettings,
+						'featureCodeIdReadOnly': featureCodeIdReadOnly
+					},
 					submodule: 'timeofday'
 				})),
 				selectedWdays = data.data.wdays.length,
@@ -244,6 +259,44 @@ define(function(require) {
 			$('#weekdays', timeofday_html).hide();
 			$('#specific_day', timeofday_html).hide();
 			$('#date_range_end', timeofday_html).show();
+
+			if (miscSettings.enableManualNightMode == true || false) {
+
+				existingRule = false;
+
+				if (data.data.id != undefined) {
+					existingRule = true;
+					if (data.data.hasOwnProperty('dimension')) {
+						featureCodeId = data.data.dimension.feature_code_id;
+					}
+				}
+
+				ruleType = $('#rule_type', timeofday_html).val();
+
+				if (ruleType == 'manual') {
+					$('.time-based-rule', timeofday_html).hide();
+					$('.manual-rule', timeofday_html).show();
+					featureCodeState = data.data.enabled;
+
+				} else {
+					$('.time-based-rule', timeofday_html).show();
+					$('.manual-rule', timeofday_html).hide();
+					featureCodeState = null;
+				}
+
+				// alert for invalid request timeout value
+				$('.feature-code-id', timeofday_html).change(function() {
+					
+					var enteredValue = $('.feature-code-id', timeofday_html).val();
+
+					if (enteredValue < 1 || enteredValue > 9999) {
+						$('.feature-code-id', timeofday_html).val(null);
+						monster.ui.alert('warning', self.i18n.active().callflows.timeofday.manual_tts_id_invalid);
+					}
+				
+				});
+
+			}
 
 			if (data.data.id === undefined) {
 				$('#every', timeofday_html).hide();
@@ -357,35 +410,52 @@ define(function(require) {
 				var $this = $(this);
 
 				if (!$this.hasClass('disabled')) {
-					if ($('#cycle', timeofday_html).val() === 'weekly' && selectedWdays === 0) {
-						monster.ui.toast({
-							type: 'warning',
-							message: self.i18n.active().callflows.timeofday.toastr.warning.missingDay
-						});
-					} else if (monster.ui.valid(timeofdayForm)) {
+
+					if ((miscSettings.enableManualNightMode == true || false) && $('#rule_type', timeofday_html).val() === 'manual' ) {
+
 						var form_data = monster.ui.getFormData('timeofday-form');
 
-						form_data.wdays = [];
-						data.data.wdays = [];
+						if (monster.ui.valid(timeofdayForm)) {
+							self.manualTimeofdayFeatureCode(form_data, function(cleanedFormData) {
+								self.timeofdaySave(cleanedFormData, data, callbacks.save_success);
+							});	
+						} else {
+							monster.ui.alert('error', self.i18n.active().callflows.timeofday.there_were_errors_on_the_form);
+						}
 
-						$('.fake_checkbox.checked', timeofday_html).each(function() {
-							form_data.wdays.push($(this).data('value'));
-						});
-
-						form_data.interval = $('#cycle', timeofday_html).val() === 'monthly' ? $('#interval_month', timeofday_html).val() : $('#interval_week', timeofday_html).val();
-						form_data.start_date = timeofday_html.find('#start_date').datepicker('getDate');
-
-						$(form_data.end_date !== '', timeofday_html).each(function() {
-							form_data.end_date = timeofday_html.find('#end_date').datepicker('getDate');
-						});
-
-						form_data = self.timeofdayCleanFormData(form_data);
-
-						self.timeofdaySave(form_data, data, callbacks.save_success);
 
 					} else {
-						$this.removeClass('disabled');
-						monster.ui.alert('error', self.i18n.active().callflows.timeofday.there_were_errors_on_the_form);
+
+						if ($('#cycle', timeofday_html).val() === 'weekly' && selectedWdays === 0) {
+							monster.ui.toast({
+								type: 'warning',
+								message: self.i18n.active().callflows.timeofday.toastr.warning.missingDay
+							});
+						} else if (monster.ui.valid(timeofdayForm)) {
+							var form_data = monster.ui.getFormData('timeofday-form');
+
+							form_data.wdays = [];
+							data.data.wdays = [];
+
+							$('.fake_checkbox.checked', timeofday_html).each(function() {
+								form_data.wdays.push($(this).data('value'));
+							});
+
+							form_data.interval = $('#cycle', timeofday_html).val() === 'monthly' ? $('#interval_month', timeofday_html).val() : $('#interval_week', timeofday_html).val();
+							form_data.start_date = timeofday_html.find('#start_date').datepicker('getDate');
+
+							$(form_data.end_date !== '', timeofday_html).each(function() {
+								form_data.end_date = timeofday_html.find('#end_date').datepicker('getDate');
+							});
+
+							form_data = self.timeofdayCleanFormData(form_data);
+
+							self.timeofdaySave(form_data, data, callbacks.save_success);
+
+						} else {
+							$this.removeClass('disabled');
+							monster.ui.alert('error', self.i18n.active().callflows.timeofday.there_were_errors_on_the_form);
+						}
 					}
 				}
 			});
@@ -421,6 +491,22 @@ define(function(require) {
 				if (endDate <= startDate) {
 					$('#end_date', timeofday_html).val('');
 					monster.ui.alert('warning', self.i18n.active().callflows.timeofday.end_date_less_than_start_date);
+				}
+
+			});
+
+			// update form based on rule type
+			$('#rule_type', timeofday_html).change(function() {
+			
+				ruleType = $('#rule_type', timeofday_html).val();
+
+				if (ruleType == 'manual') {
+					$('.time-based-rule', timeofday_html).hide();
+					$('.manual-rule', timeofday_html).show();	
+
+				} else {
+					$('.time-based-rule', timeofday_html).show();
+					$('.manual-rule', timeofday_html).hide();
 				}
 
 			});
@@ -485,7 +571,110 @@ define(function(require) {
 			return form_data;
 		},
 
+		manualTimeofdayCleanFormData: function(form_data, callback) {
+
+			if (form_data.dimension.tts_on == '') {
+				form_data.dimension.tts_on = 'Night mode is now enabled.'
+			}
+
+			if (form_data.dimension.tts_off == '') {
+				form_data.dimension.tts_off = 'Night mode is now disabled.'
+			}
+
+			form_data.cycle = 'daily';
+			form_data.enabled = form_data.rule_state;
+			form_data.start_date = monster.util.dateToBeginningOfGregorianDay(form_data.start_date, monster.util.getCurrentTimeZone());
+			form_data.dimension.rule_type = 'manual';
+
+			delete form_data.extra;
+
+			var formFeatureCodeState = form_data.enabled;
+
+			if (miscSettings.enableManualNightModePresenceUpdate == true || false) {
+				if (String(featureCodeState) != String(formFeatureCodeState)) {
+
+					var self = this,
+						presenceState,
+						featureCode;
+
+					if (String(formFeatureCodeState) == 'true') {
+						presenceState = 'confirmed'
+					}
+
+					if (String(formFeatureCodeState) == 'false') {
+						presenceState = 'terminated'
+					}
+
+					self.callApi({
+						resource: 'callflow.list',
+						data: {
+							accountId: self.accountId,
+							filters: {
+								filter_name: 'DimensionsFeatureCode_TimeServiceToggle'
+							}
+						},
+						success: function(callflow) {
+							if (callflow.data.length > 0) {
+
+								featureCode = callflow.data[0].featurecode.number;
+								var args = {
+									presenceState: presenceState,
+									presenceId: String('*' + featureCode + '*' + form_data.dimension.feature_code_id)
+								}
+								self.updateFeatureCodeState(args);
+
+							} else {
+
+								if (miscSettings.enableConsoleLogging == true || false) {
+									console.log('DimensionsFeatureCode_TimeServiceToggle Callflow Not Found');
+								}
+
+							}
+						}
+					});
+				}
+			}
+
+			callback(form_data);
+
+		},
+
+		manualTimeofdayFeatureCode: function(form_data, callback) {
+			
+			var self = this,
+				formFeatureCodeId = form_data.dimension.feature_code_id;
+		
+			if (existingRule == true) {
+
+				self.manualTimeofdayCleanFormData(form_data, function() {
+					callback(form_data);
+				});
+
+			} else {
+				
+				self.checkFeatureCode(formFeatureCodeId, function(checkResult) {
+
+					if (miscSettings.enableConsoleLogging == true || false) {
+						console.log('Time of Day Feature Code Check', checkResult);
+					}
+		
+					// feature code id already in use
+					if (checkResult != null) {
+						var featureCodeName = checkResult.name;
+						monster.ui.alert('warning', self.i18n.active().callflows.timeofday.manual_tts_id_exists + featureCodeName);
+					} else {
+						self.manualTimeofdayCleanFormData(form_data, function() {
+							callback(form_data);
+						});
+					}
+
+				});
+
+			}
+		},		
+
 		timeofdayNormalizeData: function(form_data) {
+
 			if (form_data.cycle === 'weekly') {
 				delete form_data.ordinal;
 				delete form_data.days;
@@ -495,6 +684,7 @@ define(function(require) {
 				delete form_data.days;
 				delete form_data.month;
 				delete form_data.interval;
+				delete form_data.wdays;
 			} else {
 				form_data.cycle === 'yearly' ? delete form_data.interval : delete form_data.month;
 				form_data.ordinal !== 'every' ? delete form_data.days : delete form_data.wdays;
@@ -513,6 +703,22 @@ define(function(require) {
 				form_data.enabled = false;
 			} else {
 				delete form_data.enabled;
+			}
+
+			if (miscSettings.enableManualNightMode == true || false) {
+				if (form_data.rule_type == 'manual') {
+					delete form_data.rule_type;
+					delete form_data.rule_state;
+					delete form_data.end_date;
+					delete form_data.time_window_start;
+					delete form_data.time_window_stop;
+					delete form_data.weekday;
+					delete form_data.wdays;
+				} else {
+					delete form_data.rule_type;
+					delete form_data.rule_state;
+					delete form_data.dimension;
+				}
 			}
 
 			delete form_data.extra;
@@ -572,6 +778,9 @@ define(function(require) {
 			var self = this,
 				callflow_nodes = args.actions,
 				hideCallflowAction = args.hideCallflowAction;
+
+			// set variables for use elsewhere
+			miscSettings = args.miscSettings;
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
@@ -1122,7 +1331,49 @@ define(function(require) {
 					callback && callback(data.data);
 				}
 			});
+		},
+
+		checkFeatureCode: function(formFeatureCodeId, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'temporalRule.list',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						'filter_dimension.feature_code_id': formFeatureCodeId
+					}
+				},
+				success: function(response_data) {
+					if (response_data.data.length > 0) {
+						callback(response_data.data[0]);
+					} else {
+						callback(null);
+					}
+				}
+			});
+		},
+
+		updateFeatureCodeState: function(args) {
+			var self = this;
+				presenceState = args.presenceState,
+				presenceId = args.presenceId;
+
+			monster.request({
+				resource: 'presence.update',
+				data: {
+					accountId: self.accountId,
+					presenceId: presenceId,
+					data: {
+						'action': 'set',
+						'state': presenceState
+					},
+					removeMetadataAPI: true
+				}
+			});
+		
 		}
+
 	};
 
 	return app;

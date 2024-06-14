@@ -26,119 +26,318 @@
 						</div>
 					</div>
 
-				{{#unless field_data.hideCycle}}
-					<div class="clearfix" id="repeats">
-						<label for="cycle">{{ i18n.callflows.timeofday.repeats }}</label>
-						<div class="input">
-							<select name="cycle" id="cycle" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.repeats_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
-								{{#select data.cycle}}
-									{{#each field_data.cycle}}
-										<option id="{{ id }}" value="{{ id }}">{{ value }}</option>
-									{{/each}}
-								{{/select}}
-							</select>
-						</div>
-					</div>
-				{{/unless}}
+					{{#unless miscSettings.enableManualNightMode}}
+						{{#unless field_data.hideCycle}}
+							<div class="clearfix" id="repeats">
+								<label for="cycle">{{ i18n.callflows.timeofday.repeats }}</label>
+								<div class="input">
+									<select name="cycle" id="cycle" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.repeats_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
+										{{#select data.cycle}}
+											{{#each field_data.cycle}}
+												<option id="{{ id }}" value="{{ id }}">{{ value }}</option>
+											{{/each}}
+										{{/select}}
+									</select>
+								</div>
+							</div>
+						{{/unless}}
 
-					<div class="clearfix" id="every">
-						<label>{{ i18n.callflows.timeofday.every }}</label>
-						<div class="input" >
-							<div id="yearly_every">
-								<select name="month" id="month" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.every_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
-									{{#select data.month}}
-										{{#each field_data.months}}
+						<div class="clearfix" id="every">
+							<label>{{ i18n.callflows.timeofday.every }}</label>
+							<div class="input" >
+								<div id="yearly_every">
+									<select name="month" id="month" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.every_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
+										{{#select data.month}}
+											{{#each field_data.months}}
+												<option value="{{ id }}">{{ value }}</option>
+											{{/each}}
+										{{/select}}
+									</select>
+								</div>
+
+								<span id="monthly_every">
+									<input class="span1" id="interval_month" name="interval" type="text" placeholder="1" value="{{ data.interval }}" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}} />&nbsp;{{ i18n.callflows.timeofday.months }}
+								</span>
+								<span id="weekly_every">
+									<input class="span1" id="interval_week" name="interval" type="text" placeholder="1" value="{{ data.interval }}" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}} />&nbsp;{{ i18n.callflows.timeofday.weeks }}
+								</span>
+							</div>
+						</div>
+
+						<div class="clearfix" id="on">
+							<label>{{ i18n.callflows.timeofday.on }}</label>
+							<div class="input">
+								<select name="ordinal" id="ordinal" class="input-medium" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}}>
+									{{#select data.ordinal}}
+										{{#each field_data.ordinals}}
 											<option value="{{ id }}">{{ value }}</option>
 										{{/each}}
 									{{/select}}
 								</select>
-							</div>
 
-							<span id="monthly_every">
-								<input class="span1" id="interval_month" name="interval" type="text" placeholder="1" value="{{ data.interval }}" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}} />&nbsp;{{ i18n.callflows.timeofday.months }}
-							</span>
-							<span id="weekly_every">
-								<input class="span1" id="interval_week" name="interval" type="text" placeholder="1" value="{{ data.interval }}" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}} />&nbsp;{{ i18n.callflows.timeofday.weeks }}
-							</span>
-						</div>
-					</div>
+								<span id="weekdays">
+									<select id="wday" name="weekday" class="medium"{{#unless data.showSave}} disabled{{/unless}}>
+										{{#select data.wdays.[0]}}
+											{{#each field_data.wdays}}
+												<option value="{{ @key }}">{{ this.friendlyName }}</option>
+											{{/each}}
+										{{/select}}
+									</select>
+								</span>
 
-					<div class="clearfix" id="on">
-						<label>{{ i18n.callflows.timeofday.on }}</label>
-						<div class="input">
-							<select name="ordinal" id="ordinal" class="input-medium" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}}>
-								{{#select data.ordinal}}
-									{{#each field_data.ordinals}}
-										<option value="{{ id }}">{{ value }}</option>
+								<span id="days_checkboxes" rel="popover" data-content="{{ i18n.callflows.timeofday.select_which_days }}">
+									{{#each field_data.wdays}}
+										<div class="fake_checkbox{{#ifInArray @key ../data.wdays}} checked{{/ifInArray}}" data-value="{{ @key }}">{{ this.shortName }}</div>
 									{{/each}}
-								{{/select}}
-							</select>
+								</span>
 
-							<span id="weekdays">
-								<select id="wday" name="weekday" class="medium"{{#unless data.showSave}} disabled{{/unless}}>
-									{{#select data.wdays.[0]}}
-										{{#each field_data.wdays}}
-											<option value="{{ @key }}">{{ this.friendlyName }}</option>
+								<select id="specific_day" name="days[0]" class="input-medium"{{#unless data.showSave}} disabled{{/unless}}>
+									{{#select data.days.[0]}}
+										{{#each field_data.day}}
+											{{ this }}
+											<option value="{{ this }}">{{ this }}</option>
 										{{/each}}
 									{{/select}}
 								</select>
-							</span>
+							</div>
+						</div>
 
-							<span id="days_checkboxes" rel="popover" data-content="{{ i18n.callflows.timeofday.select_which_days }}">
-								{{#each field_data.wdays}}
-									<div class="fake_checkbox{{#ifInArray @key ../data.wdays}} checked{{/ifInArray}}" data-value="{{ @key }}">{{ this.shortName }}</div>
-								{{/each}}
-							</span>
+						<div class="clearfix">
+							<label for="day">{{ i18n.callflows.timeofday.start_date }}</label>
+							<div class="input">
+								<input class="span4" id="start_date" name="start_date" type="text" placeholder="" value="{{ toFriendlyDate data.start_date "date"}}" rel="popover" data-content="{{ i18n.callflows.timeofday.start_date_data_content }}"{{#unless data.showSave}} disabled{{/unless}} />
+							</div>
+						</div>
 
-							<select id="specific_day" name="days[0]" class="input-medium"{{#unless data.showSave}} disabled{{/unless}}>
-								{{#select data.days.[0]}}
-									{{#each field_data.day}}
-										{{ this }}
-										<option value="{{ this }}">{{ this }}</option>
-									{{/each}}
-								{{/select}}
-							</select>
+						<div class="clearfix" id="date_range_end">
+							{{#unless miscSettings.temporalRuleEndDateExclusive}}
+								<label for="day">{{ i18n.callflows.timeofday.end_date }}</label>
+							{{/unless}}
+							{{#if miscSettings.temporalRuleEndDateExclusive}}
+								<label for="day">{{ i18n.callflows.timeofday.end_date_exclusive }}</label>
+							{{/if}}
+							<div class="input">
+								<input class="span4" id="end_date" name="end_date" type="text" placeholder="" value="{{ toFriendlyDate data.end_date "date"}}" rel="popover" {{#unless miscSettings.temporalRuleEndDateExclusive}} data-content="{{ i18n.callflows.timeofday.end_date_data_content }}" {{/unless}} {{#if miscSettings.temporalRuleEndDateExclusive}} data-content="{{ i18n.callflows.timeofday.end_date_exclusive_data_content }}" {{/if}} {{#unless data.showSave}} disabled{{/unless}} />
+							</div>
 						</div>
-					</div>
+						
+						<div class="clearfix time-wrapper-field">
+							<label for="time">{{ i18n.callflows.timeofday.time }}</label>
+							<div class="input time-wrapper{{#if field_data.isAllDay}} hidden{{/if}}">
+								<input class="from-hour timepicker" type="text" name="extra.timeofday.from" value="{{ extra.timeStart }}"{{#unless data.showSave}} disabled{{/unless}} />
+								{{ i18n.callflows.timeofday.to }}
+								<input class="to-hour timepicker" type="text" name="extra.timeofday.to" value="{{ extra.timeStop  }}"{{#unless data.showSave}} disabled{{/unless}} />
+							</div>
+							<div class="checkbox-container">
+								{{#monsterCheckbox i18n.callflows.timeofday.allDay }}
+									<input id="all_day_checkbox" type="checkbox" name="extra.allDay"{{#if field_data.isAllDay}} checked{{/if}}{{#unless data.showSave}} disabled{{/unless}} />
+								{{/monsterCheckbox}}
+							</div>
+						</div>
 
-					<div class="clearfix">
-						<label for="day">{{ i18n.callflows.timeofday.start_date }}</label>
-						<div class="input">
-							<input class="span4" id="start_date" name="start_date" type="text" placeholder="" value="{{ toFriendlyDate data.start_date "date"}}" rel="popover" data-content="{{ i18n.callflows.timeofday.start_date_data_content }}"{{#unless data.showSave}} disabled{{/unless}} />
+						<div class="clearfix">
+							<label for="day">{{ i18n.callflows.timeofday.enabled }}</label>
+							<div class="input">
+								<select name="enabled" id="enabled" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.enabled_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
+									<option value="">{{ i18n.callflows.timeofday.enabled_based_on_time }}</option>
+									<option value="true"{{#if data.enabled}} selected{{/if}}>{{ i18n.callflows.timeofday.enabled_forced_on }}</option>
+									<option value="false"{{#compare data.enabled "===" false}} selected{{/compare}}>{{ i18n.callflows.timeofday.enabled_forced_off }}</option>
+								</select>
+							</div>
 						</div>
-					</div>
+					{{/unless}}
 
-					<div class="clearfix" id="date_range_end">
-						<label for="day">{{ i18n.callflows.timeofday.end_date }}</label>
-						<div class="input">
-							<input class="span4" id="end_date" name="end_date" type="text" placeholder="" value="{{ toFriendlyDate data.end_date "date"}}" rel="popover" data-content="{{ i18n.callflows.timeofday.end_date_data_content }}"{{#unless data.showSave}} disabled{{/unless}} />
+					{{#if miscSettings.enableManualNightMode}}
+						<div class="clearfix">
+							<label for="rule_type">{{ i18n.callflows.timeofday.rule_type }}</label>
+							<div class="input">
+								<select name="rule_type" id="rule_type" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.rule_type_help }}">
+									<option value="automatic">{{ i18n.callflows.timeofday.automatic_rule }}</option>
+									<option value="manual"{{#if data.dimension.rule_type}} selected{{/if}}>{{ i18n.callflows.timeofday.manual_rule }}</option>
+								</select>
+							</div>
 						</div>
-					</div>
-					
-					<div class="clearfix time-wrapper-field">
-						<label for="time">{{ i18n.callflows.timeofday.time }}</label>
-						<div class="input time-wrapper{{#if field_data.isAllDay}} hidden{{/if}}">
-							<input class="from-hour timepicker" type="text" name="extra.timeofday.from" value="{{ extra.timeStart }}"{{#unless data.showSave}} disabled{{/unless}} />
-							{{ i18n.callflows.timeofday.to }}
-							<input class="to-hour timepicker" type="text" name="extra.timeofday.to" value="{{ extra.timeStop  }}"{{#unless data.showSave}} disabled{{/unless}} />
-						</div>
-						<div class="checkbox-container">
-							{{#monsterCheckbox i18n.callflows.timeofday.allDay }}
-								<input id="all_day_checkbox" type="checkbox" name="extra.allDay"{{#if field_data.isAllDay}} checked{{/if}}{{#unless data.showSave}} disabled{{/unless}} />
-							{{/monsterCheckbox}}
-						</div>
-					</div>
 
-					<div class="clearfix">
-						<label for="day">{{ i18n.callflows.timeofday.enabled }}</label>
-						<div class="input">
-							<select name="enabled" id="enabled" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.enabled_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
-								<option value="">{{ i18n.callflows.timeofday.enabled_based_on_time }}</option>
-								<option value="true"{{#if data.enabled}} selected{{/if}}>{{ i18n.callflows.timeofday.enabled_forced_on }}</option>
-								<option value="false"{{#compare data.enabled "===" false}} selected{{/compare}}>{{ i18n.callflows.timeofday.enabled_forced_off }}</option>
-							</select>
+						<div class="time-based-rule">
+
+							{{#unless field_data.hideCycle}}
+								<div class="clearfix" id="repeats">
+									<label for="cycle">{{ i18n.callflows.timeofday.repeats }}</label>
+									<div class="input">
+										<select name="cycle" id="cycle" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.repeats_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
+											{{#select data.cycle}}
+												{{#each field_data.cycle}}
+													<option id="{{ id }}" value="{{ id }}">{{ value }}</option>
+												{{/each}}
+											{{/select}}
+										</select>
+									</div>
+								</div>
+							{{/unless}}
+
+							<div class="clearfix" id="every">
+								<label>{{ i18n.callflows.timeofday.every }}</label>
+								<div class="input" >
+									<div id="yearly_every">
+										<select name="month" id="month" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.every_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
+											{{#select data.month}}
+												{{#each field_data.months}}
+													<option value="{{ id }}">{{ value }}</option>
+												{{/each}}
+											{{/select}}
+										</select>
+									</div>
+
+									<span id="monthly_every">
+										<input class="span1" id="interval_month" name="interval" type="text" placeholder="1" value="{{ data.interval }}" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}} />&nbsp;{{ i18n.callflows.timeofday.months }}
+									</span>
+									<span id="weekly_every">
+										<input class="span1" id="interval_week" name="interval" type="text" placeholder="1" value="{{ data.interval }}" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}} />&nbsp;{{ i18n.callflows.timeofday.weeks }}
+									</span>
+								</div>
+							</div>
+
+							<div class="clearfix" id="on">
+								<label>{{ i18n.callflows.timeofday.on }}</label>
+								<div class="input">
+									<select name="ordinal" id="ordinal" class="input-medium" rel="popover" data-content=""{{#unless data.showSave}} disabled{{/unless}}>
+										{{#select data.ordinal}}
+											{{#each field_data.ordinals}}
+												<option value="{{ id }}">{{ value }}</option>
+											{{/each}}
+										{{/select}}
+									</select>
+
+									<span id="weekdays">
+										<select id="wday" name="weekday" class="medium"{{#unless data.showSave}} disabled{{/unless}}>
+											{{#select data.wdays.[0]}}
+												{{#each field_data.wdays}}
+													<option value="{{ @key }}">{{ this.friendlyName }}</option>
+												{{/each}}
+											{{/select}}
+										</select>
+									</span>
+
+									<span id="days_checkboxes" rel="popover" data-content="{{ i18n.callflows.timeofday.select_which_days }}">
+										{{#each field_data.wdays}}
+											<div class="fake_checkbox{{#ifInArray @key ../data.wdays}} checked{{/ifInArray}}" data-value="{{ @key }}">{{ this.shortName }}</div>
+										{{/each}}
+									</span>
+
+									<select id="specific_day" name="days[0]" class="input-medium"{{#unless data.showSave}} disabled{{/unless}}>
+										{{#select data.days.[0]}}
+											{{#each field_data.day}}
+												{{ this }}
+												<option value="{{ this }}">{{ this }}</option>
+											{{/each}}
+										{{/select}}
+									</select>
+								</div>
+							</div>
+
+							<div class="clearfix">
+								<label for="day">{{ i18n.callflows.timeofday.start_date }}</label>
+								<div class="input">
+									<input class="span4" id="start_date" name="start_date" type="text" placeholder="" value="{{ toFriendlyDate data.start_date "date"}}" rel="popover" data-content="{{ i18n.callflows.timeofday.start_date_data_content }}"{{#unless data.showSave}} disabled{{/unless}} />
+								</div>
+							</div>
+
+							<div class="clearfix" id="date_range_end">
+								{{#unless miscSettings.temporalRuleEndDateExclusive}}
+									<label for="day">{{ i18n.callflows.timeofday.end_date }}</label>
+								{{/unless}}
+								{{#if miscSettings.temporalRuleEndDateExclusive}}
+									<label for="day">{{ i18n.callflows.timeofday.end_date_exclusive }}</label>
+								{{/if}}
+								<div class="input">
+									<input class="span4" id="end_date" name="end_date" type="text" placeholder="" value="{{ toFriendlyDate data.end_date "date"}}" rel="popover" {{#unless miscSettings.temporalRuleEndDateExclusive}} data-content="{{ i18n.callflows.timeofday.end_date_data_content }}" {{/unless}} {{#if miscSettings.temporalRuleEndDateExclusive}} data-content="{{ i18n.callflows.timeofday.end_date_exclusive_data_content }}" {{/if}} {{#unless data.showSave}} disabled{{/unless}} />
+								</div>
+							</div>
+							
+							<div class="clearfix time-wrapper-field">
+								<label for="time">{{ i18n.callflows.timeofday.time }}</label>
+								<div class="input time-wrapper{{#if field_data.isAllDay}} hidden{{/if}}">
+									<input class="from-hour timepicker" type="text" name="extra.timeofday.from" value="{{ extra.timeStart }}"{{#unless data.showSave}} disabled{{/unless}} />
+									{{ i18n.callflows.timeofday.to }}
+									<input class="to-hour timepicker" type="text" name="extra.timeofday.to" value="{{ extra.timeStop  }}"{{#unless data.showSave}} disabled{{/unless}} />
+								</div>
+								<div class="checkbox-container">
+									{{#monsterCheckbox i18n.callflows.timeofday.allDay }}
+										<input id="all_day_checkbox" type="checkbox" name="extra.allDay"{{#if field_data.isAllDay}} checked{{/if}}{{#unless data.showSave}} disabled{{/unless}} />
+									{{/monsterCheckbox}}
+								</div>
+							</div>
+
+							{{#unless miscSettings.hideTemporalRuleEnabled}}
+								<div class="clearfix">
+									<label for="enabled">{{ i18n.callflows.timeofday.enabled }}</label>
+									<div class="input">
+										<select name="enabled" id="enabled" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.enabled_data_content }}"{{#unless data.showSave}} disabled{{/unless}}>
+											<option value="">{{ i18n.callflows.timeofday.enabled_based_on_time }}</option>
+											<option value="true"{{#if data.enabled}} selected{{/if}}>{{ i18n.callflows.timeofday.enabled_forced_on }}</option>
+											<option value="false"{{#compare data.enabled "===" false}} selected{{/compare}}>{{ i18n.callflows.timeofday.enabled_forced_off }}</option>
+										</select>
+									</div>
+								</div>
+							{{/unless}}
+
 						</div>
-					</div>
+						
+						<div class="manual-rule">
+
+							<div class="clearfix">
+								<label for="rule_state">{{ i18n.callflows.timeofday.manual_state }}</label>
+								<div class="input">
+									<select name="rule_state" id="rule_state" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.manual_state_help }}">
+										<option value="false"{{#compare data.enabled "===" false}} selected{{/compare}}>{{ i18n.callflows.timeofday.manual_state_off }}</option>
+										<option value="true"{{#if data.enabled}} selected{{/if}}>{{ i18n.callflows.timeofday.manual_state_on }}</option>
+									</select>
+								</div>
+							</div>
+							
+
+							<div class="clearfix">
+								<label for="dimension.tts_on">{{ i18n.callflows.timeofday.manual_tts_on }}</label>
+								<div class="input">
+									<textarea class="span6" id="dimension.tts_on" name="dimension.tts_on" type="text" placeholder="{{ i18n.callflows.timeofday.manual_tts_on_text }}" rel="popover" data-content="{{ i18n.callflows.timeofday.manual_tts_on_help }}" >
+										{{ data.dimension.tts_on }}
+									</textarea>
+								
+								</div>
+							</div>
+
+							<div class="clearfix">
+								<label for="dimension.tts_off">{{ i18n.callflows.timeofday.manual_tts_off }}</label>
+								<div class="input">
+									<textarea class="span6" id="dimension.tts_off" name="dimension.tts_off" type="text" placeholder="{{ i18n.callflows.timeofday.manual_tts_off_text }}" rel="popover" data-content="{{ i18n.callflows.timeofday.manual_tts_off_help }}" >
+									{{ data.dimension.tts_off }}
+									</textarea>
+								</div>
+							</div>
+
+							{{#unless featureCodeIdReadOnly}}
+								<div class="clearfix">
+									<label for="dimension.feature_code_id">{{ i18n.callflows.timeofday.manual_tts_id }}</label>
+									<div class="input">
+										<input class="span4 feature-code-id" id="dimension.feature_code_id" name="dimension.feature_code_id" type="number" min="1" step="1" max="9999" value="{{ data.dimension.feature_code_id }}" rel="popover" data-content="{{ i18n.callflows.timeofday.manual_tts_id_help }}" required />
+									</div>
+								</div>
+							{{/unless}}
+
+							{{#if featureCodeIdReadOnly}}
+								<div class="clearfix">
+									<label for="dimension.feature_code_id">{{ i18n.callflows.timeofday.manual_tts_id }}</label>
+									<div class="input">
+										<input disabled class="span4 input-readonly" id="dimension.feature_code_id" name="dimension.feature_code_id" type="number" min="1" step="1" max="9999" value="{{ data.dimension.feature_code_id }}" rel="popover" data-content="{{ i18n.callflows.timeofday.manual_tts_id_help }}"/>
+									</div>
+								</div>
+							{{/if}}
+
+						</div>
+					{{/if}}
+
+
+
 				</div>
 			</div>
 		</form>
