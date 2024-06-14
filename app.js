@@ -11,7 +11,8 @@ define(function(require) {
 		hideClassifiers = {},
 		miscSettings = {},
 		hideDeviceTypes = {},
-		ttsLanguages = {};
+		ttsLanguages = {},
+		selectedItemId = null;
 
 	var appSubmodules = [
 		'blacklist',
@@ -333,6 +334,10 @@ define(function(require) {
 				template.find('.callflow-content')
 					.removeClass('listing-mode')
 					.addClass('edition-mode');
+				
+				if (miscSettings.enableSelectedElementColor) {
+					$('.list-element').removeClass('selected-element');
+				}
 
 				self.editCallflow();
 			});
@@ -345,6 +350,7 @@ define(function(require) {
 				if (miscSettings.enableSelectedElementColor) {
 					$('.list-element').removeClass('selected-element');
 					$this.addClass('selected-element');
+					selectedItemId = callflowId;
 				}
 
 				template.find('.callflow-content')
@@ -507,7 +513,8 @@ define(function(require) {
 								self.refreshEntityList({
 									template: template,
 									actions: actions,
-									entityType: type
+									entityType: type,
+									data: data
 								});
 								editEntity(type, data.id);
 							},
@@ -585,6 +592,9 @@ define(function(require) {
 			template.find('.entity-edition .list-add').on('click', function() {
 				var type = template.find('.entity-edition .list-container .list').data('type');
 				editEntity(type);
+				if (miscSettings.enableSelectedElementColor) {
+					$('.list-element').removeClass('selected-element');
+				}
 			});
 
 			template.find('.entity-edition .list-container .list').on('click', '.list-element', function() {
@@ -627,6 +637,7 @@ define(function(require) {
 				actions = args.actions,
 				entityType = args.entityType,
 				callback = args.callbacks,
+				data = args.data,
 				formatEntityData = _.bind(self.formatEntityData, self, _, entityType);
 
 			actions[entityType].listEntities(function(entities) {
@@ -653,6 +664,10 @@ define(function(require) {
 				template.find('.search-query').focus();
 
 				$(window).trigger('resize');
+
+				if (miscSettings.enableSelectedElementColor) {
+					$('.list-element[data-id="' + data.id + '"]').addClass('selected-element');
+				}
 
 				callback && callback();
 			});
@@ -1196,6 +1211,10 @@ define(function(require) {
 						.empty()
 						.append(listCallflows)
 						.data('next-key', callflowData.next_start_key || null);
+	
+					if (selectedItemId) {
+						$('.list-element[data-id="' + selectedItemId + '"]').addClass('selected-element');
+					}
 
 					callback && callback(callflowData.data);
 				},
@@ -1400,6 +1419,10 @@ define(function(require) {
 
 			// copy callflow
 			$('.duplicate', buttons).click(function() {
+
+				if (miscSettings.enableSelectedElementColor) {
+					$('.list-element').removeClass('selected-element');
+				}
 
 				delete(self.dataCallflow.id);
 				delete(self.dataCallflow.numbers);
