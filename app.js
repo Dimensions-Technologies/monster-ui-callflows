@@ -48,7 +48,12 @@ define(function(require) {
 		},
 
 		// Defines API requests not included in the SDK
-		requests: {},
+		requests: {
+			'presence.update': {
+				url: 'accounts/{accountId}/presence/{presenceId}',
+				verb: 'POST'
+			}
+		},
 
 		// Define the events available for other apps
 		subscribe: {},

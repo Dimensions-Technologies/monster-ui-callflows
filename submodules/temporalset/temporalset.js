@@ -285,7 +285,8 @@ define(function(require) {
 				data: {
 					accountId: self.accountId,
 					filters: {
-						paginate: false
+						paginate: false,
+						key_missing: 'dimension.feature_code_id'
 					}
 				},
 				success: function(data) {
