@@ -342,6 +342,11 @@ define(function(require) {
 				var $this = $(this),
 					callflowId = $this.data('id');
 
+				if (miscSettings.enableSelectedElementColor) {
+					$('.list-element').removeClass('selected-element');
+					$this.addClass('selected-element');
+				}
+
 				template.find('.callflow-content')
 					.removeClass('listing-mode')
 					.addClass('edition-mode');
@@ -587,6 +592,11 @@ define(function(require) {
 					id = $this.data('id'),
 					type = $this.parents('.list').data('type');
 
+				if (miscSettings.enableSelectedElementColor) {
+					$('.list-element').removeClass('selected-element');
+					$this.addClass('selected-element');
+				}
+				
 				editEntity(type, id);
 			});
 
