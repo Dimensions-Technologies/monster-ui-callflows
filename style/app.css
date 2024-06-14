@@ -861,6 +861,12 @@
 	/*color: #22a5ff;*/
 }
 
+/* highlight selected callflow item in menu */
+#callflow_container .left-bar-container .list-element.selected-element > div {
+	background: #22A5FF;
+	color: #ffffff;
+}
+
 #callflow_container .left-bar-container .search-link {
 	border-bottom: solid 1px #ccc;
 	text-align: center;
@@ -1726,7 +1732,6 @@
 .media-edit-callflow-popup #edit_link.active {
 	display: block;
 }
-
 
 .monster-button-duplicate {
 	margin-left: 10px !important;
