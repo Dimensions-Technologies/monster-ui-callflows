@@ -234,6 +234,7 @@
 					{{/if}}
 					-->
 				{{#unless dimensionDeviceType.hotdesk}}
+				{{#unless dimensionDeviceType.softphone}}
 					<div class="clearfix">
 						<label for="name">{{ i18n.callflows.device.presence_id }}</label>
 						{{#unless miscSettings.deviceReadOnlyFields}}
@@ -276,8 +277,12 @@
 							</div>
 						{{/if}}
 					</div>
-					<hr />
 
+					<hr />
+					{{/unless}}
+					{{/unless}}
+
+					{{#unless dimensionDeviceType.hotdesk}}
 					<h3>{{ i18n.callflows.device.caller_id_privacy }}</h3>
 					<div class="clearfix">
 						<label for="caller_id_privacy">{{ i18n.callflows.device.caller_id_privacy }}</label>
