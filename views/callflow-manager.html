@@ -16,8 +16,10 @@
 	<div class="callflow-content listing-mode">
 		<div class="entity-header">
 			<div class="entity-title">{{ i18n.entityManager.callflowsTitle }}</div>
-			
 			<button type="button" class="back-button monster-button-secondary">{{ i18n.entityManager.backButton }}</button>
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				<div class="buttons"></div>
+			{{/if}}
 			{{#if canToggleCallflows}}
 				<div class="superadmin-mode">
 					<span class="switch-title">
@@ -51,7 +53,9 @@
 						<div class="callflow">
 							<div>
 								<span class="flow">
-									<div class="buttons"></div>
+									{{#unless miscSettings.callflowButtonsWithinHeader}}
+										<div class="buttons"></div>
+									{{/unless}}
 									<div id="ws_cf_flow"></div>
 								</span>
 							</div>

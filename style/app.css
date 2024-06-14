@@ -1783,6 +1783,11 @@
     vertical-align: middle;
 }
 
+#callflow_container .entity-header .buttons {
+	float: right;
+	padding-right: 20px;
+}
+
 /* increase size of dropdown input fields */
 /*
 .input .medium,
@@ -1793,4 +1798,3 @@
     width: 323px !important;
 }
 */
-
