@@ -1370,6 +1370,15 @@ define(function(require) {
 
 			self.renderButtons();
 			self.renderTools();
+
+			if (!data) {
+				if (miscSettings.callflowButtonsWithinHeader == true || false) {
+					$('.duplicate', '.entity-header').addClass('disabled');
+				} else {
+					$('.duplicate', '#ws_callflow').addClass('disabled');
+				}
+			}
+
 		},
 
 		renderButtons: function() {
@@ -1434,9 +1443,15 @@ define(function(require) {
                 self.repaintFlow();
 
 				monster.ui.alert(self.i18n.active().oldCallflows.duplicate_callflow_info);
+				
 				$('#pending_change', '#ws_callflow').show();
-				$('.duplicate', '#ws_callflow').addClass('disabled'); // copy callflow
-				$('.save', '#ws_callflow').addClass('pulse-box');
+				if (miscSettings.callflowButtonsWithinHeader == true || false) {
+					$('.duplicate', '.entity-header').addClass('disabled');
+					$('.save', '.entity-header').addClass('pulse-box');
+				} else {
+					$('.duplicate', '#ws_callflow').addClass('disabled');
+					$('.save', '#ws_callflow').addClass('pulse-box');
+				}
                 
             });
 
@@ -1730,11 +1745,16 @@ define(function(require) {
 			var self = this;
 			if (pending_change) {
 				$('#pending_change', '#ws_callflow').show();
-				$('.duplicate', '#ws_callflow').addClass('disabled'); // copy callflow
+				$('.duplicate', '#ws_callflow').addClass('disabled');
 				$('.save', '#ws_callflow').addClass('pulse-box');
+				if (miscSettings.callflowButtonsWithinHeader == true || false) {
+					$('.save', '.entity-header').addClass('pulse-box');
+				} else {
+					$('.save', '#ws_callflow').addClass('pulse-box');
+				}
 			} else {
 				$('#pending_change', '#ws_callflow').hide();
-				$('.duplicate', '#ws_callflow').removeClass('disabled'); // copy callflow
+				$('.duplicate', '#ws_callflow').removeClass('disabled');
 				$('.save', '#ws_callflow').removeClass('pulse-box');
 			}
 		},
