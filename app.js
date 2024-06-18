@@ -335,7 +335,7 @@ define(function(require) {
 					.removeClass('listing-mode')
 					.addClass('edition-mode');
 				
-				if (miscSettings.enableSelectedElementColor) {
+				if (miscSettings.enableSelectedElementColor == true || false) {
 					$('.list-element').removeClass('selected-element');
 				}
 
@@ -347,10 +347,9 @@ define(function(require) {
 				var $this = $(this),
 					callflowId = $this.data('id');
 
-				if (miscSettings.enableSelectedElementColor) {
+				if (miscSettings.enableSelectedElementColor == true || false) {
 					$('.list-element').removeClass('selected-element');
 					$this.addClass('selected-element');
-					selectedItemId = callflowId;
 				}
 
 				template.find('.callflow-content')
@@ -592,7 +591,7 @@ define(function(require) {
 			template.find('.entity-edition .list-add').on('click', function() {
 				var type = template.find('.entity-edition .list-container .list').data('type');
 				editEntity(type);
-				if (miscSettings.enableSelectedElementColor) {
+				if (miscSettings.enableSelectedElementColor == true || false) {
 					$('.list-element').removeClass('selected-element');
 				}
 			});
@@ -602,7 +601,7 @@ define(function(require) {
 					id = $this.data('id'),
 					type = $this.parents('.list').data('type');
 
-				if (miscSettings.enableSelectedElementColor) {
+				if (miscSettings.enableSelectedElementColor == true || false) {
 					$('.list-element').removeClass('selected-element');
 					$this.addClass('selected-element');
 				}
@@ -665,7 +664,7 @@ define(function(require) {
 
 				$(window).trigger('resize');
 
-				if (miscSettings.enableSelectedElementColor) {
+				if (miscSettings.enableSelectedElementColor == true || false) {
 					$('.list-element[data-id="' + data.id + '"]').addClass('selected-element');
 				}
 
@@ -1212,7 +1211,7 @@ define(function(require) {
 						.append(listCallflows)
 						.data('next-key', callflowData.next_start_key || null);
 	
-					if (selectedItemId) {
+					if (miscSettings.enableSelectedElementColor == true || false) {
 						$('.list-element[data-id="' + selectedItemId + '"]').addClass('selected-element');
 					}
 
@@ -1373,8 +1372,10 @@ define(function(require) {
 
 			if (!data) {
 				if (miscSettings.callflowButtonsWithinHeader == true || false) {
+					$('.delete', '.entity-header').addClass('disabled');
 					$('.duplicate', '.entity-header').addClass('disabled');
 				} else {
+					$('.delete', '#ws_callflow').addClass('disabled');
 					$('.duplicate', '#ws_callflow').addClass('disabled');
 				}
 			}
@@ -1429,7 +1430,7 @@ define(function(require) {
 			// copy callflow
 			$('.duplicate', buttons).click(function() {
 
-				if (miscSettings.enableSelectedElementColor) {
+				if (miscSettings.enableSelectedElementColor == true || false) {
 					$('.list-element').removeClass('selected-element');
 				}
 
@@ -1446,9 +1447,11 @@ define(function(require) {
 				
 				$('#pending_change', '#ws_callflow').show();
 				if (miscSettings.callflowButtonsWithinHeader == true || false) {
+					$('.delete', '.entity-header').addClass('disabled');
 					$('.duplicate', '.entity-header').addClass('disabled');
 					$('.save', '.entity-header').addClass('pulse-box');
 				} else {
+					$('.delete', '#ws_callflow').addClass('disabled');
 					$('.duplicate', '#ws_callflow').addClass('disabled');
 					$('.save', '#ws_callflow').addClass('pulse-box');
 				}
@@ -2744,6 +2747,7 @@ define(function(require) {
 								removeMetadataAPI: true
 							},
 							success: function(json) {
+								selectedItemId = json.data.id
 								self.repaintList();
 								self.editCallflow({ id: json.data.id });
 							}
@@ -2759,6 +2763,7 @@ define(function(require) {
 								data: data_request
 							},
 							success: function(json) {
+								selectedItemId = json.data.id
 								self.repaintList();
 								self.editCallflow({ id: json.data.id });
 							}
@@ -2773,6 +2778,7 @@ define(function(require) {
 							data: data_request
 						},
 						success: function(json) {
+							selectedItemId = json.data.id
 							self.repaintList();
 							self.editCallflow({ id: json.data.id });
 						}
