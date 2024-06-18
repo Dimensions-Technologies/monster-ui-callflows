@@ -2797,7 +2797,7 @@ define(function(require) {
 				buttons.find('.btn').removeClass('activate');
 				buttons.find('.advanced').addClass('activate');
 			} else {
-				if (monster.config.advancedView) {
+				if (monster.config.advancedView || miscSettings.hideBasicAdvancedButton) {
 					buttons.find('.btn').removeClass('activate');
 					buttons.find('.advanced').addClass('activate');
 				} else {
