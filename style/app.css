@@ -1785,7 +1785,17 @@
 
 #callflow_container .entity-header .buttons {
 	float: right;
-	padding-right: 20px;
+	padding-right: 20px
+}
+
+@media (max-width: 1200px) {
+    #callflow_container .entity-header .buttons {
+        float: none;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        
+    }
 }
 
 /* increase size of dropdown input fields */
