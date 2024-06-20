@@ -1,7 +1,8 @@
 define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
-		monster = require('monster');
+		monster = require('monster'),
+		miscSettings = {};
 
 	var app = {
 		requests: {},
@@ -10,15 +11,21 @@ define(function(require) {
 			'callflows.featurecode.render': 'featureCodeRender'
 		},
 
-		featureCodeRender: function(pContainer) {
+		featureCodeRender: function(args) {
 			var self = this,
-				container = pContainer || $('.callflow-edition');
+				container = args.target || $('.callflow-edition');
+
+			// set variables for use elsewhere
+			miscSettings = args.data.miscSettings;
 
 			self.featureCodeGetData(function(featureCodes) {
 				var formattedData = self.featureCodeFormatData(featureCodes),
 					template = $(self.getTemplate({
 						name: 'view',
-						data: formattedData,
+						data: {
+							...formattedData,
+							miscSettings: miscSettings
+						},						
 						submodule: 'featurecodes'
 					}));
 

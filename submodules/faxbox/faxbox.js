@@ -11,7 +11,8 @@ define(function(require) {
 
 		subscribe: {
 			'callflows.fetchActions': 'faxboxDefineActions',
-			'callflows.faxbox.edit': '_faxboxEdit'
+			'callflows.faxbox.edit': '_faxboxEdit',
+			'callflows.faxbox.submoduleButtons': 'faxboxSubmoduleButtons'
 		},
 
 		faxboxDefineActions: function(args) {
@@ -188,6 +189,10 @@ define(function(require) {
 					delete_error: _callbacks.delete_error,
 					after_render: _callbacks.after_render
 				};
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.faxboxSubmoduleButtons(data);
+			};
 
 			monster.parallel({
 				faxbox: function(callback) {
@@ -410,6 +415,14 @@ define(function(require) {
 			});
 
 			$('.faxbox-save', faxbox_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var form_html = $('#faxbox_form', faxbox_html),
@@ -461,15 +474,24 @@ define(function(require) {
 						$this.removeClass('disabled');
 					}
 				}
-			});
+			};
 
 			$('.faxbox-delete', faxbox_html).click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.faxbox.are_you_sure_you_want_to_delete, function() {
 					self.faxboxDelete(data.faxbox, callbacks.delete_success, callbacks.delete_error);
 				});
-			});
+
+			};
 
 			target
 				.empty()
@@ -735,6 +757,31 @@ define(function(require) {
 					callbackError && callbackError();
 				}
 			});
+		},
+
+		faxboxSubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.faxbox
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
 	};
 

@@ -12,7 +12,8 @@ define(function(require) {
 		subscribe: {
 			'callflows.fetchActions': 'vmboxDefineActions',
 			'callflows.vmbox.edit': '_vmboxEdit',
-			'callflows.vmbox.editPopup': 'vmboxPopupEdit'
+			'callflows.vmbox.editPopup': 'vmboxPopupEdit',
+			'callflows.voicemail.submoduleButtons': 'vmboxSubmoduleButtons'
 		},
 
 		vmboxPopupEdit: function(args) {
@@ -130,12 +131,18 @@ define(function(require) {
 					render_data = $.extend(true, defaults, { data: results.get_vmbox });
 				}
 
+				if (miscSettings.callflowButtonsWithinHeader) {
+					self.vmboxSubmoduleButtons(data);
+				};
+
 				self.vmboxRender(render_data, target, callbacks);
 
 				if (typeof callbacks.after_render === 'function') {
 					callbacks.after_render();
 				}
+
 			});
+
 		},
 
 		vmboxFormatData: function(data) {
@@ -373,6 +380,14 @@ define(function(require) {
 				};
 
 			$('.vmbox-save', vmbox_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var $this = $(this);
@@ -402,15 +417,24 @@ define(function(require) {
 						$this.removeClass('disabled');
 					}
 				}
+			}
+			
+			$('.vmbox-delete', vmbox_html).click(function(ev) {
+				deleteButtonEvents(ev);
 			});
 
-			$('.vmbox-delete', vmbox_html).click(function(ev) {
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.vmbox.are_you_sure_you_want_to_delete, function() {
 					self.vmboxDelete(data.data.id, callbacks.delete_success);
 				});
-			});
+
+			};
 
 			(target)
 				.empty()
@@ -745,6 +769,37 @@ define(function(require) {
 					callback && callback(data.data);
 				}
 			});
+		},
+
+		vmboxSubmoduleButtons: function(data) {
+			var existingItem = true,
+				hideDelete = false;
+
+			if (!data.id) {
+				existingItem = false;
+			}
+
+			if (hideAdd.voicemail || miscSettings.vmboxPreventDelete) {
+				hideDelete = true;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideDelete
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
+
 		}
 
 	};

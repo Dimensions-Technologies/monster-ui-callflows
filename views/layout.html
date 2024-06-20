@@ -31,22 +31,53 @@
 
 	<div class="entity-edition callflow-app-section">
 		<div class="left-bar-container">
-			<div class="search-box">
-				<i class="fa fa-search"></i>
-				<input type="text" class="search-query" placeholder="{{ i18n.search }}">
-			</div>
-			<div class="list-add">
-				<i class="fa fa-plus-circle fa-lg"></i>
-				<span>{{ i18n.add }}</span>
-			</div>
+			{{#unless miscSettings.embeddedListView}}
+				<div class="search-box">
+					<i class="fa fa-search"></i>
+					<input type="text" class="search-query" placeholder="{{ i18n.search }}">
+				</div>
+				<div class="list-add">
+					<i class="fa fa-plus-circle fa-lg"></i>
+					<span>{{ i18n.add }}</span>
+				</div>
+			{{/unless}}
+			{{#if miscSettings.embeddedListView}}
+				<div class="embedded-list-title">	
+					<div class="entity-title">
+						<span class="entity-name-placeholder"></span>
+					</div>
+				</div>
+			{{/if}}
+			
 			<div class="list-container clearfix">
 				<ul class="list"></ul>
 			</div>
 		</div>
 		<div class="callflow-content callflows-port">
 			<div class="entity-header">
-				<div class="entity-title"></div>
-				<button type="button" class="back-button monster-button-secondary">{{ i18n.entityManager.backButton }}</button>
+				{{#unless miscSettings.embeddedListView}}
+					<div class="entity-title"></div>
+					<button type="button" class="back-button monster-button-secondary">{{ i18n.entityManager.backButton_1 }}</button>
+				{{/unless}}
+				{{#if miscSettings.embeddedListView}}
+					<div class="search-box">
+						<i class="fa fa-search"></i>
+						<input type="text" class="search-query" placeholder="{{ i18n.search }}">
+					</div>
+				{{/if}}
+				{{#if miscSettings.embeddedListView}}
+					<div class="embedded-buttons">
+						<button type="button" class="monster-button monster-button-secondary non-fixed list-add">
+							<span class="material-symbols-outlined">add</span>
+							<span class="button-label" style="margin-right: 2px;">{{ i18n.oldCallflows.add }}</span>
+							<span class="entity-name-placeholder"></span>
+						</button>
+						<button type="button" class="monster-button monster-button-secondary non-fixed back-button">{{ i18n.entityManager.backButton_2 }}</button>
+					</div>
+				{{/if}}
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					<div class="entity-header-buttons"></div>
+				{{/if}}
 			</div>
 			<div class="entity-content"></div>
 		</div>

@@ -2,6 +2,7 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
+		hideAdd = false,
 		miscSettings = {},
 		ttsLanguages = {};
 
@@ -11,7 +12,8 @@ define(function(require) {
 		subscribe: {
 			'callflows.fetchActions': 'mediaDefineActions',
 			'callflows.media.editPopup': 'mediaPopupEdit',
-			'callflows.media.edit': '_mediaEdit'
+			'callflows.media.edit': '_mediaEdit',
+			'callflows.play.submoduleButtons': 'mediaSubmoduleButtons'
 		},
 
 		mediaRender: function(data, target, callbacks) {
@@ -19,6 +21,7 @@ define(function(require) {
 				media_html = $(self.getTemplate({
 					name: 'edit',
 					data: _.merge({
+						hideAdd: hideAdd,
 						miscSettings: miscSettings,
 						ttsLanguages: ttsLanguages,
 						showMediaUploadDisclosure: monster.config.whitelabel.showMediaUploadDisclosure
@@ -185,6 +188,14 @@ define(function(require) {
 			}
 
 			$('.media-save', media_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
 				ev.preventDefault();
 				var $this = $(this);
 
@@ -242,15 +253,23 @@ define(function(require) {
 						monster.ui.alert(self.i18n.active().callflows.media.there_were_errors_on_the_form);
 					}
 				}
-			});
+			};
 
 			$('.media-delete', media_html).click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.media.are_you_sure_you_want_to_delete, function() {
 					self.mediaDelete(data.data.id, callbacks.delete_success, callbacks.delete_error);
 				});
-			});
+			};
 
 			(target)
 				.empty()
@@ -307,6 +326,10 @@ define(function(require) {
 						streamable: true
 					}, data_defaults || {})
 				};
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.mediaSubmoduleButtons(data);
+			};
 
 			if (typeof data === 'object' && data.id) {
 				self.mediaGet(data.id, function(mediaData) {
@@ -414,6 +437,7 @@ define(function(require) {
 				callflow_nodes = args.actions;
 
 			// set variables for use elsewhere
+			hideAdd = args.hideAdd;
 			miscSettings = args.miscSettings,
 			ttsLanguages = args.ttsLanguages;
 
@@ -650,6 +674,31 @@ define(function(require) {
 					callback && callback(data, status);
 				}
 			});
+		},
+
+		mediaSubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.play
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
 	};
 

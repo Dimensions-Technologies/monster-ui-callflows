@@ -342,12 +342,29 @@
 			</div>
 		</form>
 		<div class="buttons-right">
-			{{#if data.showDelete}}
-				<button class="monster-button monster-button-danger timeofday-delete">{{ i18n.callflows.timeofday.delete }}</button>
-			{{/if}}
-
-			{{#if data.showSave}}
-			<button class="monster-button monster-button-success timeofday-save">{{ i18n.callflows.timeofday.save }}</button>
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.showDelete}}
+					<button class="monster-button monster-button-danger timeofday-delete">{{ i18n.callflows.timeofday.delete }}</button>
+				{{/if}}
+				{{#if data.showSave}}
+					<button class="monster-button monster-button-success timeofday-save">{{ i18n.callflows.timeofday.save }}</button>
+				{{/if}}
+			{{/unless}}
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.temporal_route}}
+							{{#if data.showDelete}}
+								<button class="monster-button monster-button-danger timeofday-delete">{{ i18n.callflows.timeofday.delete }}</button>
+							{{/if}}
+						{{/unless}}
+					{{/if}}
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+					{{#if data.showSave}}
+						<button class="monster-button monster-button-success timeofday-save">{{ i18n.callflows.timeofday.save }}</button>
+					{{/if}}
+				{{/if}}
 			{{/if}}
 		</div>
 	</div>

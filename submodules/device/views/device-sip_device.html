@@ -34,10 +34,10 @@
 			{{/if}}
 			{{/if}}
 
-			{{#unless miscSettings.hideDeviceAudioCodecs}}
+			{{#unless miscSettings.hideDeviceAudioCodecsSipDevice}}
 				<li><a href="#audio_settings">{{ i18n.callflows.device.audio }}</a></li>
 			{{/unless}}
-			{{#unless miscSettings.hideDeviceVideoCodecs}}
+			{{#unless miscSettings.hideDeviceVideoCodecsSipDevice}}
 				<li><a href="#video_settings">{{ i18n.callflows.device.video }}</a></li>
 			{{/unless}}
 			{{#unless dimensionDeviceType.legacypbx}}
@@ -901,12 +901,29 @@
 				</div>
 			</div>
 			<div class="buttons-right">
-				{{#if data.id}}
-				{{#unless dimensionDeviceType.preventDelete}}
-					<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+				{{#unless miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+					{{#unless dimensionDeviceType.preventDelete}}
+						<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+					{{/unless}}
+					{{/if}}
+					<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
 				{{/unless}}
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+					{{#unless dimensionDeviceType.preventDelete}}
+						{{#if miscSettings.popupEdit}}
+							{{#unless hideAdd.device}}
+								<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+							{{/unless}}
+						{{/if}}
+					{{/unless}}
+					{{/if}}
+					{{#if miscSettings.popupEdit}}
+						<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+					{{/if}}
 				{{/if}}
-				<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+			</div>
 			</div>
 		</form>
 

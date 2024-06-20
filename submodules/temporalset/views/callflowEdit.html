@@ -26,16 +26,30 @@
 			</div>
 		</form>
 		<div class="buttons-right">
-			{{#unless data.extra.showSave}}
-				<div class="warning-no-save">{{ i18n.callflows.temporalset.noSave }}</div>
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#unless data.extra.showSave}}
+					<div class="warning-no-save">{{ i18n.callflows.temporalset.noSave }}</div>
+				{{/unless}}
+				{{#if data.extra.showDelete}}
+					<button class="monster-button monster-button-danger temporalset-delete">{{ i18n.delete }}</button>
+				{{/if}}	
+				{{#if data.extra.showSave}}
+					<button class="monster-button monster-button-success temporalset-save">{{ i18n.save }}</button>
+				{{/if}}
 			{{/unless}}
-
-			{{#if data.extra.showDelete}}
-				<button class="monster-button monster-button-danger temporalset-delete">{{ i18n.delete }}</button>
-			{{/if}}
-
-			{{#if data.extra.showSave}}
-				<button class="monster-button monster-button-success temporalset-save">{{ i18n.save }}</button>
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#if miscSettings.popupEdit}}
+					{{#unless hideAdd.temporal_set}}
+						{{#if data.extra.showDelete}}
+							<button class="monster-button monster-button-danger temporalset-delete">{{ i18n.delete }}</button>
+						{{/if}}
+					{{/unless}}
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+					{{#if data.extra.showSave}}
+						<button class="monster-button monster-button-success temporalset-save">{{ i18n.save }}</button>
+					{{/if}}
+				{{/if}}
 			{{/if}}
 		</div>
 	</div>

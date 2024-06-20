@@ -83,9 +83,18 @@
 				</div>
 			</div>
 			<div class="buttons-right">
-				<button type="submit" class="monster-button monster-button-danger device-delete">
-					{{i18n.callflows.device.delete}}
-				</button>
+				{{#unless miscSettings.callflowButtonsWithinHeader}}
+					{{#unless dimensionDeviceType.preventDelete}}
+						<button type="submit" class="monster-button monster-button-danger device-delete">{{i18n.callflows.device.delete}}</button>
+					{{/unless}}
+				{{/unless}}
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.device}}
+							<button type="submit" class="monster-button monster-button-danger device-delete">{{i18n.callflows.device.delete}}</button>
+						{{/unless}}
+					{{/if}}
+				{{/if}}
 			</div>
 		</form>
 	</div>

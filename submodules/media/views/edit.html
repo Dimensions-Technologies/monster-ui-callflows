@@ -187,10 +187,24 @@
 			</div>
 		 </form>
 		 <div class="buttons-right">
-			{{#if data.id}}
-				<button class="monster-button monster-button-danger media-delete">{{ i18n.callflows.media.delete }}</button>
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					<button class="monster-button monster-button-danger media-delete">{{ i18n.callflows.media.delete }}</button>	
+				{{/if}}
+				<button class="monster-button monster-button-success media-save">{{ i18n.callflows.media.save }}</button>
+			{{/unless}}
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.play}}
+							<button class="monster-button monster-button-danger media-delete">{{ i18n.callflows.media.delete }}</button>
+						{{/unless}}
+					{{/if}}
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+					<button class="monster-button monster-button-success media-save">{{ i18n.callflows.media.save }}</button>
+				{{/if}}
 			{{/if}}
-			<button class="monster-button monster-button-success media-save">{{ i18n.callflows.media.save }}</button>
 		</div>
 	</div>
 </div>

@@ -3,6 +3,7 @@ define(function(require) {
 		_ = require('lodash'),
 		monster = require('monster'),
 		timezone = require('monster-timezone'),
+		hideAdd = false,
 		miscSettings = {},
 		existingRule = false,
 		featureCodeIdReadOnly = false,
@@ -13,7 +14,8 @@ define(function(require) {
 
 		subscribe: {
 			'callflows.fetchActions': 'timeofdayDefineActions',
-			'callflows.timeofday.edit': '_timeofdayEdit'
+			'callflows.timeofday.edit': '_timeofdayEdit',
+			'callflows.temporal_set.submoduleButtons': 'timeofdaySubmoduleButtons'
 		},
 
 		timeofdaySave: function(form_data, data, success, error) {
@@ -167,6 +169,10 @@ define(function(require) {
 					}
 				};
 
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.timeofdaySubmoduleButtons(data);
+			};
+	
 			if (_.isPlainObject(data) && data.id) {
 				self.temporalRuleGet(data.id, function(_data) {
 					var oldFormatData = { data: _data },
@@ -215,6 +221,7 @@ define(function(require) {
 					name: 'callflowEdit',
 					data: {
 						...data,
+						hideAdd: hideAdd,
 						miscSettings: miscSettings,
 						'featureCodeIdReadOnly': featureCodeIdReadOnly
 					},
@@ -405,6 +412,14 @@ define(function(require) {
 			});
 
 			$('.timeofday-save', timeofday_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var $this = $(this);
@@ -458,15 +473,23 @@ define(function(require) {
 						}
 					}
 				}
-			});
+			};
 
 			$('.timeofday-delete', timeofday_html).click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.timeofday.are_you_sure_you_want_to_delete, function() {
 					self.temporalRuleDelete(data.data.id, callbacks.delete_success);
 				});
-			});
+			};
 
 			$('#all_day_checkbox', timeofday_html).on('click', function() {
 				var $this = $(this);
@@ -780,6 +803,7 @@ define(function(require) {
 				hideCallflowAction = args.hideCallflowAction;
 
 			// set variables for use elsewhere
+			hideAdd = args.hideAdd;
 			miscSettings = args.miscSettings;
 
 			// function to determine if an action should be listed
@@ -1372,6 +1396,31 @@ define(function(require) {
 				}
 			});
 		
+		},
+
+		timeofdaySubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.temporal_route
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
 
 	};

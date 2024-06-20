@@ -11,7 +11,8 @@ define(function(require) {
 		subscribe: {
 			'callflows.conference.popupEdit': 'conferencePopupEdit',
 			'callflows.fetchActions': 'conferenceDefineActions',
-			'callflows.conference.edit': '_conferenceEdit'
+			'callflows.conference.edit': '_conferenceEdit',
+			'callflows.conference.submoduleButtons': 'conferenceSubmoduleButtons'
 		},
 
 		conferenceDefineActions: function(args) {
@@ -20,7 +21,7 @@ define(function(require) {
 				hideCallflowAction = args.hideCallflowAction;
 
 			// set hideAdd variable for use elsewhere
-			hideAdd = args.hideAdd
+			hideAdd = args.hideAdd;
 			miscSettings = args.miscSettings;
 
 			// function to determine if an action should be listed
@@ -225,6 +226,10 @@ define(function(require) {
 					}
 				};
 
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.conferenceSubmoduleButtons(data);
+			};
+
 			monster.parallel({
 				user_list: function(callback) {
 					self.callApi({
@@ -354,6 +359,15 @@ define(function(require) {
 			});
 
 			$('.conference-save', conference_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
+
 				ev.preventDefault();
 				var $this = $(this);
 
@@ -379,15 +393,25 @@ define(function(require) {
 						monster.ui.alert(self.i18n.active().callflows.conference.there_were_errors_on_the_form);
 					};
 				}
-			});
+
+			};
 
 			$('.conference-delete', conference_html).click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.conference.are_you_sure_you_want_to_delete, function() {
 					self.conferenceDelete(data.data.id, callbacks.delete_success, callbacks.delete_error);
 				});
-			});
+
+			};
 
 			(target)
 				.empty()
@@ -677,6 +701,31 @@ define(function(require) {
 					callback && callback(data.data);
 				}
 			});
+		},
+
+		conferenceSubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.conference
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
 	};
 

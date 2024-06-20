@@ -146,12 +146,24 @@
 		</form>
 
 		<div class="buttons-right">
-			{{#if data.id}}
-				{{#unless hideAdd.conference}}
-					<button class="monster-button monster-button-danger conference-delete">{{ i18n.callflows.conference.delete }}</button>
-				{{/unless}}
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					<button class="monster-button monster-button-danger conference-delete">{{ i18n.callflows.conference.delete }}</button>	
+				{{/if}}
+				<button class="monster-button monster-button-success conference-save">{{ i18n.callflows.conference.save }}</button>
+			{{/unless}}
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.conference}}
+							<button class="monster-button monster-button-danger conference-delete">{{ i18n.callflows.conference.delete }}</button>
+						{{/unless}}
+					{{/if}}
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+					<button class="monster-button monster-button-success conference-save">{{ i18n.callflows.conference.save }}</button>
+				{{/if}}
 			{{/if}}
-			<button class="monster-button monster-button-success conference-save">{{ i18n.callflows.conference.save }}</button>
 		</div>
 	</div>
 </div>
