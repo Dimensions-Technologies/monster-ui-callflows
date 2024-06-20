@@ -161,6 +161,10 @@ define(function(require) {
 				popup_html = $('<div class="inline_popup callflows-port"><div class="inline_content main_content"/></div>'),
 				popup;
 
+			if (miscSettings.callflowButtonsWithinHeader) {
+				miscSettings.popupEdit = true;
+			}
+
 			self.conferenceEdit(data, popup_html, $('.inline_content', popup_html), {
 				save_success: function(_data) {
 					popup.dialog('close');
@@ -278,6 +282,11 @@ define(function(require) {
 				if (typeof callbacks.after_render === 'function') {
 					callbacks.after_render();
 				}
+
+				if (miscSettings.callflowButtonsWithinHeader) {
+					miscSettings.popupEdit = false;
+				}
+				
 			});
 		},
 
