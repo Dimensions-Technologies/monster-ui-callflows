@@ -401,11 +401,16 @@ define(function(require) {
 							$elem.hide();
 						}
 					});
-					callflowList.prepend(searchLink);
+					if (!miscSettings.paginateListCallflows) {
+						callflowList.prepend(searchLink);
+					}
 				} else {
 					template.find('.list-element').show();
-					searchLink.remove();
+					if (!miscSettings.paginateListCallflows) {
+						searchLink.remove();
+					}
 				}
+				
 			});
 
 			callflowList.on('click', '.search-link', function() {
@@ -471,7 +476,9 @@ define(function(require) {
 							.sortBy('name')
 							.value(),
 							hideFromMenuAccountSettings: hideFromMenuAccountSettings,
-							hideFromMenuFeatureCodes: hideFromMenuFeatureCodes
+							hideFromMenuFeatureCodes: hideFromMenuFeatureCodes,
+							miscSettings: miscSettings,
+							entityName: 'User'
 					}
 				}));
 
@@ -544,17 +551,37 @@ define(function(require) {
 					template.find('.callflow-app-section').hide();
 					template.find('.callflow-edition').show();
 				} else if ($this.hasClass('feature-code-element')) {
-					monster.pub('callflows.featurecode.render', template.find('.callflow-edition'));
-
+					monster.pub('callflows.featurecode.render', {
+						target: template.find('.callflow-edition'),
+						data: {
+							miscSettings: miscSettings
+						}
+					});
+					
 					template.find('.callflow-app-section').hide();
 					template.find('.callflow-edition').show();
 				} else {
 					var entityType = $this.data('type');
-					 
+						
 					if (hideAdd.hasOwnProperty(entityType) && hideAdd[entityType] === true) {	
 
 						template.find('.list-add').hide();
-						template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						
+						if (miscSettings.embeddedListView) {
+							
+							var entityName = actions[entityType].name;
+							function removePluralSuffix(name) {
+								// Check if name ends with 's' or 'es' and remove them
+								return name.replace(/(s|es)$/i, '');
+							}
+							entityName = removePluralSuffix(entityName);
+							//$('.monster-button.list-add .entity-name-placeholder').text(entityName);
+							$('.entity-name-placeholder').text(entityName);
+
+						} else {
+							template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						}
+
 						self.refreshEntityList({
 							template: template,
 							actions: actions,
@@ -566,7 +593,23 @@ define(function(require) {
 					else {
 
 						template.find('.list-add').show();
-						template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						
+						if (miscSettings.embeddedListView) {
+							
+							var entityName = actions[entityType].name;
+							function removePluralSuffix(name) {
+								// Check if name ends with 's' or 'es' and remove them
+								return name.replace(/(s|es)$/i, '');
+							}
+							entityName = removePluralSuffix(entityName);
+							//$('.monster-button.list-add .entity-name-placeholder').text(entityName);
+							$('.entity-name-placeholder').text(entityName);
+							
+
+						} else {
+							template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						}
+
 						self.refreshEntityList({
 							template: template,
 							actions: actions,
@@ -591,9 +634,18 @@ define(function(require) {
 			template.find('.entity-edition .list-add').on('click', function() {
 				var type = template.find('.entity-edition .list-container .list').data('type');
 				editEntity(type);
+
 				if (miscSettings.enableSelectedElementColor == true || false) {
 					$('.list-element').removeClass('selected-element');
-				}
+				};
+
+				/*
+				if (miscSettings.callflowButtonsWithinHeader) {
+					console.log('callflows.'+type+'.submoduleButtons')
+					monster.pub('callflows.' + type + '.submoduleButtons')
+				};
+				*/
+
 			});
 
 			template.find('.entity-edition .list-container .list').on('click', '.list-element', function() {
@@ -605,7 +657,7 @@ define(function(require) {
 					$('.list-element').removeClass('selected-element');
 					$this.addClass('selected-element');
 				}
-				
+
 				editEntity(type, id);
 			});
 
@@ -663,8 +715,12 @@ define(function(require) {
 				template.find('.search-query').focus();
 
 				$(window).trigger('resize');
+				
+				if (miscSettings.callflowButtonsWithinHeader && data == null) {
+					$('.entity-header-buttons').empty();
+				}
 
-				if (miscSettings.enableSelectedElementColor == true || false) {
+				if (miscSettings.enableSelectedElementColor && data != null) {
 					$('.list-element[data-id="' + data.id + '"]').addClass('selected-element');
 				}
 
@@ -1078,6 +1134,19 @@ define(function(require) {
 					},
 					success: function(data, status) {
 						self.render();
+
+						/* added toaster for future use
+						monster.ui.toast({
+							type: 'success',
+							message: self.i18n.active().entityManager.changesSaved,
+							options: {
+								positionClass: 'toast-bottom-right',
+								timeOut: 3000,
+								extendedTimeOut: 1000,
+							}
+						});
+						*/
+
 					}
 				});
 			});
@@ -1235,7 +1304,7 @@ define(function(require) {
 					}
 				}, !self.appFlags.showAllCallflows && {
 					filters: {
-						paginate: miscSettings.paginate || false,
+						paginate: miscSettings.paginateListCallflows || false,
 						filter_not_numbers: 'no_match',
 						'filter_not_ui_metadata.origin': [
 							'voip',
@@ -1326,7 +1395,8 @@ define(function(require) {
 		},
 
 		editCallflow: function(data) {
-			var self = this;
+			var self = this,
+				existingCallflow = false;
 
 			delete self.original_flow; // clear original_flow
 
@@ -1335,6 +1405,7 @@ define(function(require) {
 			self.resetFlow();
 
 			if (data && data.id) {
+				existingCallflow = true;
 				self.callApi({
 					resource: 'callflow.get',
 					data: {
@@ -1367,11 +1438,11 @@ define(function(require) {
 				self.repaintFlow();
 			}
 
-			self.renderButtons();
+			self.renderButtons(existingCallflow);
 			self.renderTools();
 
 			if (!data) {
-				if (miscSettings.callflowButtonsWithinHeader == true || false) {
+				if (miscSettings.callflowButtonsWithinHeader) {
 					$('.delete', '.entity-header').addClass('disabled');
 					$('.duplicate', '.entity-header').addClass('disabled');
 				} else {
@@ -1382,10 +1453,14 @@ define(function(require) {
 
 		},
 
-		renderButtons: function() {
+		renderButtons: function(existingCallflow) {
 			var self = this,
 				buttons = $(self.getTemplate({
-					name: 'buttons'
+					name: 'buttons',
+					data: {
+						miscSettings: miscSettings,
+						existingCallflow: existingCallflow
+					}
 				}));
 
 			$('.buttons').empty();
@@ -1441,19 +1516,27 @@ define(function(require) {
 				self.flow.id = undefined;
 				self.flow.numbers = [];
 
+				// repaint buttons 
+				var existingCallflow = false;
+				self.renderButtons(existingCallflow);
+
                 self.repaintFlow();
 
 				monster.ui.alert(self.i18n.active().oldCallflows.duplicate_callflow_info);
 				
 				$('#pending_change', '#ws_callflow').show();
-				if (miscSettings.callflowButtonsWithinHeader == true || false) {
+				if (miscSettings.callflowButtonsWithinHeader) {
 					$('.delete', '.entity-header').addClass('disabled');
 					$('.duplicate', '.entity-header').addClass('disabled');
-					$('.save', '.entity-header').addClass('pulse-box');
+					if (!miscSettings.disableButtonAnimation) {
+						$('.save', '.entity-header').addClass('pulse-box');
+					}
 				} else {
 					$('.delete', '#ws_callflow').addClass('disabled');
 					$('.duplicate', '#ws_callflow').addClass('disabled');
-					$('.save', '#ws_callflow').addClass('pulse-box');
+					if (!miscSettings.disableButtonAnimation) {
+						$('.save', '#ws_callflow').addClass('pulse-box');
+					}
 				}
                 
             });
@@ -1749,16 +1832,21 @@ define(function(require) {
 			if (pending_change) {
 				$('#pending_change', '#ws_callflow').show();
 				$('.duplicate', '#ws_callflow').addClass('disabled');
-				$('.save', '#ws_callflow').addClass('pulse-box');
-				if (miscSettings.callflowButtonsWithinHeader == true || false) {
-					$('.save', '.entity-header').addClass('pulse-box');
+				if (miscSettings.callflowButtonsWithinHeader) {
+					if (!miscSettings.disableButtonAnimation) {
+						$('.save', '.entity-header').addClass('pulse-box');
+					}
 				} else {
-					$('.save', '#ws_callflow').addClass('pulse-box');
+					if (!miscSettings.disableButtonAnimation) {
+						$('.save', '#ws_callflow').addClass('pulse-box');
+					}
 				}
 			} else {
 				$('#pending_change', '#ws_callflow').hide();
 				$('.duplicate', '#ws_callflow').removeClass('disabled');
-				$('.save', '#ws_callflow').removeClass('pulse-box');
+				if (!miscSettings.disableButtonAnimation) {
+					$('.save', '#ws_callflow').removeClass('pulse-box');
+				}
 			}
 		},
 

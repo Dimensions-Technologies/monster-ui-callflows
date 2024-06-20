@@ -52,10 +52,24 @@
 			</form>
 
 			<div class="buttons-right">
-				{{#if data.id}}
-					<button class="monster-button monster-button-danger blacklist-delete">{{ i18n.delete }}</button>
+				{{#unless miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+						<button class="monster-button monster-button-danger blacklist-delete">{{ i18n.delete }}</button>
+					{{/if}}
+					<button class="monster-button monster-button-success blacklist-save">{{ i18n.save }}</button>
+				{{/unless}}
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+						{{#if miscSettings.popupEdit}}
+							{{#unless hideAdd.blacklist}}
+								<button class="monster-button monster-button-danger blacklist-delete">{{ i18n.delete }}</button>
+							{{/unless}}
+						{{/if}}
+					{{/if}}
+					{{#if miscSettings.popupEdit}}
+						<button class="monster-button monster-button-success blacklist-save">{{ i18n.save }}</button>
+					{{/if}}
 				{{/if}}
-				<button class="monster-button monster-button-success blacklist-save">{{ i18n.save }}</button>
 			</div>
 		</div>
 	</div>

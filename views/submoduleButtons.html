@@ -1,0 +1,21 @@
+<span class="wrapper_callflow_buttons">
+	<div id="submodule-buttons-container">
+		{{#unless miscSettings.embeddedListView}}
+			<div class="monster-button monster-button-danger non-fixed delete">{{ i18n.oldCallflows.delete_callflow_1 }}</div>
+			<div class="monster-button monster-button-success non-fixed save">{{ i18n.oldCallflows.save_changes_1 }}</div>
+		{{/unless}}
+		{{#if miscSettings.embeddedListView}}
+			<div class="embedded-buttons">
+				{{#unless existingItem}}
+					<div class="monster-button monster-button-success non-fixed save">{{ i18n.oldCallflows.create }}</div>
+				{{/unless}}
+				{{#if existingItem}}
+					<div class="monster-button monster-button-success non-fixed save">{{ i18n.oldCallflows.save_changes_2 }}</div>
+				{{/if}}
+				{{#unless hideDelete}}
+					<div class="monster-button monster-button-danger non-fixed delete">{{ i18n.oldCallflows.delete_callflow_2 }}</div>
+				{{/unless}}
+			</div>
+		{{/if}}
+	</div>
+</span>

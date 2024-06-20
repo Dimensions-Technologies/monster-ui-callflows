@@ -1322,8 +1322,11 @@
 		"advanced_cat": "Advanced",
 		"call_recording_cat": "Call Recording",
 		"caller_id_cat": "Caller-ID",
-		"delete_callflow": "Delete callflow",
-		"save_changes": "Save changes",
+		"delete_callflow_1": "Delete callflow",
+		"delete_callflow_2": "Delete",
+		"save_changes_1": "Save changes",
+		"save_changes_2": "Save",
+		"create": "Create",
 		"invalid_number": "Invalid number!",
 		"basic": "'Basic'",
 		"advanced": "'Advanced'",
@@ -1474,8 +1477,9 @@
 				"original": "Original"
 			}
 		},
-		"duplicate_callflow": "Copy callflow",
-		"duplicate_callflow_info": "The Callflow has been copied but not saved. Please assign a new number to the Callflow and update the name before saving.",
+		"duplicate_callflow_1": "Clone callflow",
+		"duplicate_callflow_2": "Clone",
+		"duplicate_callflow_info": "The Callflow has been duplicated but not saved. Please assign a new number and update the name before clicking 'Create' to save the Callflow.",
 		"delete_callflow_action_confirm": "Are you sure you want to delete this callflow action?",
 		"delete_callflow_action_note_1": "This callflow action supports multiple child branches,<br> therefor all child items will be deleted.",
 		"delete_callflow_action_note_2": "Any child items will be moved up into the place of the deleted callflow action."
@@ -1486,9 +1490,11 @@
 	"entityManager": {
 		"header": "Click on what you would like to configure:",
 		"callflowsTitle": "Callflows",
-		"backButton": "Return to Callflows Home",
+		"backButton_1": "Return to Callflows Home",
+		"backButton_2": "Back",
 		"accountTitle": "Account Settings",
 		"featureCodeTitle": "Feature Codes",
+		"changesSaved": "Changes Saved",
 		"__comment": "UI-2612: add toggle to hide/view system callflows",
 		"__version": "v4.1",
 		"showSystemCallflows": {

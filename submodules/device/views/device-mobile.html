@@ -355,7 +355,14 @@
 				</div>
 			</div>
 			<div class="buttons-right">
-				<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+				{{#unless miscSettings.callflowButtonsWithinHeader}}
+					<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+				{{/unless}}
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					{{#if miscSettings.popupEdit}}
+						<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+					{{/if}}
+				{{/if}}
 			</div>
 		</form>
 	</div>

@@ -1,5 +1,17 @@
 <span class="wrapper_callflow_buttons">
-	<div class="monster-button monster-button-danger non-fixed delete">{{ i18n.oldCallflows.delete_callflow }}</div>
-	<div class="monster-button monster-button-success non-fixed save">{{ i18n.oldCallflows.save_changes }}</div>
-	<div class="monster-button monster-button-duplicate non-fixed duplicate">{{ i18n.oldCallflows.duplicate_callflow }}</div>
+	{{#unless miscSettings.embeddedListView}}
+		<div class="monster-button monster-button-danger non-fixed delete">{{ i18n.oldCallflows.delete_callflow_1 }}</div>
+		<div class="monster-button monster-button-success non-fixed save">{{ i18n.oldCallflows.save_changes_1 }}</div>
+		<div class="monster-button monster-button-duplicate non-fixed duplicate">{{ i18n.oldCallflows.duplicate_callflow_1 }}</div>
+	{{/unless}}
+	{{#if miscSettings.embeddedListView}}
+		{{#unless existingCallflow}}
+			<div class="monster-button monster-button-success non-fixed save">{{ i18n.oldCallflows.create }}</div>
+		{{/unless}}
+		{{#if existingCallflow}}
+			<div class="monster-button monster-button-success non-fixed save">{{ i18n.oldCallflows.save_changes_2 }}</div>
+		{{/if}}
+		<div class="monster-button monster-button-danger non-fixed delete">{{ i18n.oldCallflows.delete_callflow_2 }}</div>
+		<div class="monster-button monster-button-duplicate non-fixed duplicate">{{ i18n.oldCallflows.duplicate_callflow_2 }}</div>
+	{{/if}}
 </span>
