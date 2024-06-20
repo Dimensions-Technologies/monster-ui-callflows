@@ -958,6 +958,10 @@ define(function(require) {
 							title: self.i18n.active().oldCallflows.add_number
 						});
 
+					if (parsedNumbers.length == 0) {
+						popup_html.find('.add_number').addClass('disabled').attr('disabled', 'disabled');
+					}
+
 					monster.ui.chosen(popup_html.find('#list_numbers'), {
 						width: '160px'
 					});
@@ -1536,11 +1540,6 @@ define(function(require) {
 					// slide up and remove the item row and the <hr> element
 					row.add(hr).slideUp(function() {
 						row.add(hr).remove();
-	
-						if (!user_html.find('.number-container .item-row').is(':visible')) {
-							user_html.find('.number-container .empty-row').slideDown();
-						}
-	
 					});
 	
 					if (miscSettings.enableConsoleLogging) {
