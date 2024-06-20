@@ -12,7 +12,9 @@ define(function(require) {
 		miscSettings = {},
 		hideDeviceTypes = {},
 		ttsLanguages = {},
-		selectedItemId = null;
+		selectedItemId = null,
+		deviceAudioCodecs = {},
+		deviceVideoCodecs = {};
 
 	var appSubmodules = [
 		'blacklist',
@@ -177,6 +179,18 @@ define(function(require) {
 
 					}
 
+					if (data.dimension.dt_callflows.hasOwnProperty('deviceAudioCodecs')) {
+										
+						deviceAudioCodecs = data.dimension.dt_callflows.deviceAudioCodecs
+
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('deviceVideoCodecs')) {
+										
+						deviceVideoCodecs = data.dimension.dt_callflows.deviceVideoCodecs
+
+					}
+
 				}
 
 			}
@@ -196,17 +210,19 @@ define(function(require) {
 
 			// log to console if enabled
 			if (miscSettings.enableConsoleLogging == true || false) {
-				console.log('"hideFromMenu":', JSON.stringify(hideFromMenu));
-				console.log('"hideAdd":', JSON.stringify(hideAdd));
-				console.log('"hideCallflowAction":', JSON.stringify(hideCallflowAction));
-				console.log('"hideFromCallflowAction":', JSON.stringify(hideFromCallflowAction));
-				console.log('"hideClassifiers":', JSON.stringify(hideClassifiers));
-				console.log('"miscSettings":', JSON.stringify(miscSettings));
-				console.log('"hideDeviceTypes":', JSON.stringify(hideDeviceTypes));
-				console.log('"ttsLanguages":', JSON.stringify(ttsLanguages));
+				console.log('hideFromMenu:', hideFromMenu);
+				console.log('hideAdd:', hideAdd);
+				console.log('hideCallflowAction:', hideCallflowAction);
+				console.log('hideFromCallflowAction:', hideFromCallflowAction);
+				console.log('hideClassifiers:', hideClassifiers);
+				console.log('miscSettings:', miscSettings);
+				console.log('hideDeviceTypes:', hideDeviceTypes);
+				console.log('ttsLanguages:', ttsLanguages);
+				console.log('deviceAudioCodecs:', deviceAudioCodecs);
+				console.log('deviceVideoCodecs:', deviceVideoCodecs);
 			}
 
-			monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages });
+			monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs });
 			self.renderEntityManager(parent);
 
 			// show warning message if emergency caller id has not been set on the account
