@@ -2020,7 +2020,16 @@ define(function(require) {
 				data: {
 					accountId: self.accountId,
 					callflowId: callflow.id,
-					data: callflow
+					data: {
+						...callflow,
+						ui_metadata: {
+							origin: 'voip',
+							ui: callflow.ui_metadata.ui,
+							version: callflow.ui_metadata.version
+						}
+					},
+					removeMetadataAPI: true
+
 				},
 				success: function(_callflow_update) {
 					if (miscSettings.enableConsoleLogging) {
