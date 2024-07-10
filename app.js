@@ -417,12 +417,12 @@ define(function(require) {
 							$elem.hide();
 						}
 					});
-					if (!miscSettings.paginateListCallflows) {
+					if (miscSettings.paginateListCallflows) {
 						callflowList.prepend(searchLink);
 					}
 				} else {
 					template.find('.list-element').show();
-					if (!miscSettings.paginateListCallflows) {
+					if (miscSettings.paginateListCallflows) {
 						searchLink.remove();
 					}
 				}
