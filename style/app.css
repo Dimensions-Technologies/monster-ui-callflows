@@ -1597,13 +1597,20 @@
 	width: calc(100%-241px);
 }
 
-
-#callflow_container .entity-header{
+#callflow_container .entity-header {
 	padding: 18px 40px;
 	height: 71px;
 	box-sizing: border-box;
 	border-bottom: solid 1px #999;
 }
+
+/* add support for making the browser window small so that header height increases */
+@media (max-width: 1000px) {
+    #callflow_container .entity-header {
+		height: 110px;
+    }
+}
+
 #callflow_container .entity-header .entity-title {
 	color: #22a5ff;
 	font-size: 30px;
@@ -1791,10 +1798,11 @@
 	/*padding-right: 20px*/
 }
 
+/* add support for making the browser window small */
 @media (max-width: 1200px) {
     #callflow_container .entity-header .buttons,
 	#callflow_container .entity-header .entity-header-buttons {
-        float: none;
+        float: right;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
