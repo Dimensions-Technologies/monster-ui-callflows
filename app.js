@@ -17,6 +17,7 @@ define(function(require) {
 		deviceVideoCodecs = {};
 
 	var appSubmodules = [
+		'afterbridge',
 		'blacklist',
 		'branchvariable',
 		'conference',

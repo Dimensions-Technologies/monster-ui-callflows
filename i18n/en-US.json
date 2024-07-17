@@ -30,6 +30,29 @@
 			"qubicle_tip": "Route to a queue",
 			"which_queue": "Which queue?"
 		},
+		"after_bridge": {
+			"category": "After Bridge",
+			"park": {
+				"nodeName": "After Bridge: Park",
+				"tooltip": "Allow park on the caller after the bridge is terminated.",
+				"action": "Park"
+			},
+			"transfer": {
+				"nodeName": "After Bridge: Transfer",
+				"tooltip": "Allow transfer on the caller after the bridge is terminated.",
+				"dialog_title": "After Bridge: Transfer",
+				"number": "Number"
+			},
+			"hangup": {
+				"nodeName": "After Bridge: Hangup",
+				"tooltip": "Allow hangup on the caller after the bridge is terminated."
+			},
+			"warning_dialog": {
+				"title": "After Bridge",
+				"message": "Place this item <b>in front</b> of the action item"
+			},
+			"warning": "Warning!"
+		},
 		"branchvariable": {
 			"name": "Branch Variable",
 			"tip": "Enables you to branch based on value of some field inside one of the a call CCVs, user, device or account's document",
@@ -1365,11 +1388,11 @@
 		"disa_tip": "DISA allows external callers to make outbound calls as though they originated from the system",
 		"response": "Response",
 		"response_tip": "Return a custom SIP error code",
-		"enable_call_forwarding": "Enable call forwarding",
+		"enable_call_forwarding": "Enable Call Forwarding",
 		"enable_call_forwarding_tip": "Enable call forwarding (using the last forwaded number)",
-		"disable_call_forwarding": "Disable call forwarding",
+		"disable_call_forwarding": "Disable Call Forwarding",
 		"disable_call_forwarding_tip": "Disable call forwarding",
-		"update_call_forwarding": "Update call forwarding",
+		"update_call_forwarding": "Update Call Forwarding",
 		"update_call_forwarding_tip": "Update the call forwarding number",
 		"dynamic_cid": "Dynamic cid",
 		"dynamic_cid_tip": "Set your CallerId by entering it on the phone",
