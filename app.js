@@ -1308,6 +1308,16 @@ define(function(require) {
 		},
 
 		listData: function(args) {
+			var hideModule = ['qubicle'];
+			
+			if (miscSettings.showQubicleCallflows) {
+				hideModule = [];
+			}
+
+			if (miscSettings.hideAcdcCallflows) {
+				hideModule.push('acdc_member');
+			}
+
 			var self = this,
 				nextStartKey = args.nextStartKey,
 				searchValue = args.searchValue,
@@ -1329,10 +1339,7 @@ define(function(require) {
 							'callqueues-pro',
 							'csv-onboarding'
 						],
-						'filter_not_flow.module': [
-							'qubicle',
-							'acdc_member'
-						]
+						'filter_not_flow.module': hideModule						
 					}
 				}, searchValue && {
 					value: searchValue 
@@ -1842,9 +1849,19 @@ define(function(require) {
 				self.show_pending_change(self.original_flow !== current_flow);
 			}
 
+			var hideModule = ['qubicle'];
+			
+			if (miscSettings.showQubicleCallflows) {
+				hideModule = [];
+			}
+
+			if (miscSettings.hideAcdcCallflows) {
+				hideModule.push('acdc_member');
+			}
+
 			var metadata = self.dataCallflow.hasOwnProperty('ui_metadata') ? self.dataCallflow.ui_metadata : false,
 				module = self.dataCallflow.flow.hasOwnProperty('module') ? self.dataCallflow.flow.module : false,
-				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && ["qubicle", "acdc_member"].includes(module);
+				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && hideModule.includes(module);
 
 			isHiddenCallflow ? $('#hidden_callflow_warning').show() : $('#hidden_callflow_warning').hide();
 		},
@@ -2806,10 +2823,21 @@ define(function(require) {
 		},
 
 		save: function() {
+
+			var hideModule = ['qubicle'];
+			
+			if (miscSettings.showQubicleCallflows) {
+				hideModule = [];
+			}
+
+			if (miscSettings.hideAcdcCallflows) {
+				hideModule.push('acdc_member');
+			}
+
 			var self = this,
 				metadata = self.dataCallflow.hasOwnProperty('ui_metadata') ? self.dataCallflow.ui_metadata : false,
 				module = self.dataCallflow.flow.hasOwnProperty('module') ? self.dataCallflow.flow.module : false,
-				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && ["qubicle", "acdc_member"].includes(module),
+				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && hideModule.includes(module),
 				showAllCallflows = (monster.config.hasOwnProperty('developerFlags') && monster.config.developerFlags.showAllCallflows) || monster.apps.auth.originalAccount.superduper_admin;
 
 			if (miscSettings.enableConsoleLogging == true || false) {
