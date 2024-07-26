@@ -69,7 +69,7 @@ define(function(require) {
 					// additional custom actions should be listed here
 					if (key === 'userCallflow[id=*]' || key === 'phoneOnlyCallflow[id=*]') {
 						return hideCallflowAction[key] === true;
-					} 	
+					}
 				}
 				return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
 			};
@@ -125,12 +125,13 @@ define(function(require) {
 							filter_not_numbers: 'no_match'
 						};
 
-						if (miscSettings.hideSmartPbxCallflows) {
-							callflowFilters['filter_not_type'] = 'mainUserCallflow';
-						}
-
-						if (miscSettings.hidePhoneOnlyCallflows) {
-							callflowFilters['filter_not_flags'] = 'dimensionDeviceType[communal]';
+						if (miscSettings.enableCustomCallflowActions) {
+							if (miscSettings.hideSmartPbxCallflows) {
+								callflowFilters['filter_not_type'] = 'mainUserCallflow';
+							}
+							if (miscSettings.hidePhoneOnlyCallflows) {
+								callflowFilters['filter_not_dimension.type'] = 'communal';
+							}
 						}
 
 						self.callApi({
