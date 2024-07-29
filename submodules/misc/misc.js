@@ -126,13 +126,13 @@ define(function(require) {
 						};
 
 						if (miscSettings.enableCustomCallflowActions) {
-							if (miscSettings.callflowsActionHideSmartPbxCallflows) {
+							if (miscSettings.callflowActionHideSmartPbxCallflows) {
 								callflowFilters['filter_not_type'] = 'mainUserCallflow';
 							}
-							if (miscSettings.callflowsActionHidePhoneOnlyCallflows) {
+							if (miscSettings.callflowActionHidePhoneOnlyCallflows) {
 								callflowFilters['filter_not_dimension.type'] = 'communal';
 							}
-							if (miscSettings.callflowsActionHideQubicleCallflows) {
+							if (miscSettings.callflowActionHideQubicleCallflows) {
 								callflowFilters['filter_not_flow.module'] = 'qubicle';
 							}
 						}
