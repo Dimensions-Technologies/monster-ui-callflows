@@ -965,6 +965,15 @@
 	padding-top: 5px;
 }
 
+.dialog_popup .form_content label-wide {
+	font-weight: bold;
+	width: auto;
+	margin-right: 10px;
+	color: #333;
+	float: left;
+	padding-top: 5px;
+}
+
 .dialog_popup .form_content select {
 	width: 100%;
 	max-width: 200px;
@@ -1308,6 +1317,26 @@
 }
 
 .callflows-port form label.monster-switch {
+	padding-top: 0;
+	width: auto;
+}
+
+/* Hack for callflow quick edit popup */
+.dialog_popup.callflows-port form label-wide:not(.monster-invalid) {
+	color: #333;
+}
+
+.callflows-port form label-wide:not(.monster-invalid) {
+	float: left;
+	font-size: 13px;
+	line-height: 18px;
+	padding-top: 6px;
+	text-align: right;
+	width: 150px;
+	color:#e6e6e6;
+}
+
+.callflows-port form label-wide.monster-switch {
 	padding-top: 0;
 	width: auto;
 }
@@ -1895,6 +1924,12 @@
 .callflow-preview .entity-header .wrapper_callflow_buttons .monster-button:last-child {
 	margin-right: 10px;
 }
+
+/*
+.callflows-port form label-wide {
+	width: 150px;
+}
+*/
 
 
 /* increase size of dropdown input fields */

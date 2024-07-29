@@ -103,7 +103,7 @@ define(function(require) {
 					isTerminating: 'true',
 					isUsable: 'true',
 					isListed: true,
-					weight: 20,
+					weight: 80,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
 							return_value = '';
@@ -131,6 +131,9 @@ define(function(require) {
 							}
 							if (miscSettings.callflowsActionHidePhoneOnlyCallflows) {
 								callflowFilters['filter_not_dimension.type'] = 'communal';
+							}
+							if (miscSettings.callflowsActionHideQubicleCallflows) {
+								callflowFilters['filter_not_flow.module'] = 'qubicle';
 							}
 						}
 
@@ -203,7 +206,7 @@ define(function(require) {
 					isTerminating: 'true',
 					isUsable: 'true',
 					isListed: determineIsListed('userCallflow[id=*]'),
-					weight: 20,
+					weight: 81,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
 							return_value = '';
@@ -282,7 +285,7 @@ define(function(require) {
 					icon: 'phone',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
-					tip: self.i18n.active().callflows.userCallflow.phoneOnlyCallflow_tip,
+					tip: self.i18n.active().callflows.phoneOnlyCallflow.phoneOnlyCallflow_tip,
 					data: {
 						id: 'null'
 					},
@@ -295,7 +298,7 @@ define(function(require) {
 					isTerminating: 'true',
 					isUsable: 'true',
 					isListed: determineIsListed('phoneOnlyCallflow[id=*]'),
-					weight: 20,
+					weight: 83,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
 							return_value = '';
@@ -354,6 +357,98 @@ define(function(require) {
 
 								popup = monster.ui.dialog(popup_html, {
 									title: self.i18n.active().callflows.phoneOnlyCallflow.title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
+						});
+					}
+				},
+				'qubicleCallflow[id=*]': {
+					name: self.i18n.active().callflows.qubicleCallflow.qubicle,
+					icon: 'support',
+					category: self.i18n.active().oldCallflows.basic_cat,
+					module: 'callflow',
+					tip: self.i18n.active().callflows.qubicleCallflow.qubicleCallflow_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isTerminating: 'true',
+					isUsable: 'true',
+					isListed: determineIsListed('qubicleCallflow[id=*]'),
+					weight: 82,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							return_value = '';
+
+						if (id in caption_map) {
+							if (caption_map[id].hasOwnProperty('name')) {
+								return_value = caption_map[id].name;
+							} else if (caption_map[id].hasOwnProperty('numbers')) {
+								return_value = caption_map[id].numbers.toString();
+							}
+						}
+
+						return return_value;
+					},
+					edit: function(node, callback) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match',
+									'filter_flow.module': 'qubicle'
+								}
+							},
+							success: function(data, status) {
+								var popup, popup_html, _data = [];
+
+								$.each(data.data, function() {
+									if (!this.featurecode && this.id !== self.flow.id) {
+										// remove 'Qubicle Callflow' from this.name if it exists
+										if (this.name) {
+											this.name = this.name.replace("Qubicle Callflow", '');
+										} else {
+											this.name = this.numbers ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers;
+										}
+								
+										_data.push(this);
+									}
+								});
+
+								popup_html = $(self.getTemplate({
+									name: 'qubicleCallflow-edit_dialog',
+									data: {
+										objects: {
+											type: 'callflow',
+											items: _.sortBy(_data, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
+									},
+									submodule: 'misc'
+								}));
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#object-selector', popup_html).val());
+
+									node.caption = $('#object-selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.qubicleCallflow.title,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
