@@ -2619,6 +2619,17 @@ define(function(require) {
 					}	
 				}
 
+				// support for qubicle callflow action
+				if (branch.actionName === 'qubicleCallflow[id=*]') {
+					var branchId = branch.data.data.id,
+						branchFlag = 'qubicleCallflow[id=' + branchId + ']';
+					
+					// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
+					if (!callflowFlags.includes(branchFlag) && branchFlag != 'qubicleCallflow[id=null]') {
+						callflowFlags.push(branchFlag);
+					}	
+				}
+
 				// re-render callflow action
 				if (branch.actionName === 'callflow[id=*]') {
 					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
@@ -2641,6 +2652,14 @@ define(function(require) {
 							if (flagParts[1] == 'phoneOnlyCallflow' && flagParts[2] === branch.data.data.id) {
 								branch.actionName = 'phoneOnlyCallflow[id=*]';
 								branchFlag = 'phoneOnlyCallflow[id=' + branchId + ']';
+							}
+
+							// re-render as qubicle callflow action
+							if (flagParts[1] == 'qubicleCallflow' && flagParts[2] === branch.data.data.id) {
+								branch.actionName = 'qubicleCallflow[id=*]';
+								branchFlag = 'qubicleCallflow[id=' + branchId + ']';
+								// remove 'Qubicle Callflow' from action label
+								branch.caption = branch.caption.replace("Qubicle Callflow", '');
 							}
 
 							if (miscSettings.enableConsoleLogging) {
