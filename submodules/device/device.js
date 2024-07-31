@@ -1673,21 +1673,108 @@ define(function(require) {
 
 		},
 
-		deviceList: function(callback) {
+		deviceList: function(callback, deviceType) {
 			var self = this;
+
+			var deviceFilters = {
+				paginate: false
+			};
+
+			// are custom callflow actions are enabled
+			if (miscSettings.enableCustomCallflowActions) {
+				
+				// filter returned devices on default device action
+				if (deviceType === 'default') {
+					var hideDeviceType = [];
+					var hideDimensionDeviceType = [];
+				
+					var deviceType = [
+						{ 
+							setting: miscSettings.deviceActionHideCellphoneDevices, 
+							type: 'cellphone' 
+						},
+						{ 
+							setting: miscSettings.deviceActionHideSmartphoneDevices, 
+							type: 'smartphone' 
+						},
+						{ 
+							setting: miscSettings.deviceActionHideLandlineDevices, 
+							type: 'landline' 
+						},
+						{ 
+							setting: miscSettings.deviceActionHideSoftphoneDevices, 
+							type: 'softphone' 
+						},
+						{ 
+							setting: miscSettings.deviceActionHideFaxDevices, 
+							type: 'fax' 
+						},
+						{ 
+							setting: miscSettings.deviceActionHideAtaDevices, 
+							type: 'ata'
+						},
+						{ 
+							setting: miscSettings.deviceActionHideSipUriDevices, 
+							type: 'sip_uri' 
+						}
+					];
+				
+					var dimensionDeviceType = [
+						{ 
+							setting: miscSettings.deviceActionHideHotdeskBaseDevices, 
+							type: 'hotdesk' 
+						},
+						{ 
+							setting: miscSettings.deviceActionHideCommunalDevices, 
+							type: 'communal' 
+						},
+						{ 
+							setting: miscSettings.deviceActionHideLegacyPbxDevices, 
+							type: 'legacypbx' 
+						}
+					];
+				
+					deviceType.forEach(device => {
+						if (device.setting) {
+							hideDeviceType.push(device.type);
+						}
+					});
+				
+					dimensionDeviceType.forEach(device => {
+						if (device.setting) {
+							hideDimensionDeviceType.push(device.type);
+						}
+					});
+				
+					if (hideDeviceType.length > 0) {
+						deviceFilters['filter_not_device_type'] = hideDeviceType;
+					}
+				
+					if (hideDimensionDeviceType.length > 0) {
+						deviceFilters['filter_not_dimension.type'] = hideDimensionDeviceType;
+					}
+				}
+				
+				// filter returned devices when using custom device action
+				let validDeviceTypes = ['cellphone', 'smartphone', 'landline', 'softphone', 'fax', 'ata', 'sip_uri'];
+
+				if (validDeviceTypes.includes(deviceType)) {
+					deviceFilters['filter_device_type'] = deviceType;
+				}
+
+			}
 
 			self.callApi({
 				resource: 'device.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: deviceFilters
 				},
 				success: function(data) {
 					callback && callback(data.data);
 				}
 			});
+
 		},
 
 		deviceGet: function(deviceId, callback) {
@@ -1787,11 +1874,44 @@ define(function(require) {
 			deviceAudioCodecs = args.deviceAudioCodecs,
 			deviceVideoCodecs = args.deviceVideoCodecs;
 
+			// function to determine if an action should be listed
+			var determineIsListed = function(key) {
+				// custom callflow actions
+				var customActions = [
+					'cellphoneDevice[id=*]',
+					'smartphoneDevice[id=*]',
+					'landlineDevice[id=*]',
+					'softphoneDevice[id=*]',
+					'faxDevice[id=*]',
+					'ataDevice[id=*]',
+					'sipUriDevice[id=*]'
+				];
+
+				// if custom callflow actions are disabled
+				if (!miscSettings.enableCustomCallflowActions) {
+					if (customActions.includes(key)) {
+						return false;
+					} else {
+						return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
+					}
+				} else {
+					return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
+				}
+			};
+			
+			var deviceCategory;
+
+			if (miscSettings.enableCallflowDeviceCategory) {
+				deviceCategory = self.i18n.active().oldCallflows.device_cat;
+			} else {
+				deviceCategory = self.i18n.active().oldCallflows.advanced_cat;
+			}
+
 			$.extend(callflow_nodes, {
 				'device[id=*]': {
 					name: self.i18n.active().callflows.device.device,
 					icon: 'phone',
-					category: self.i18n.active().oldCallflows.advanced_cat,
+					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.device.device_tip,
 					data: {
@@ -1804,7 +1924,7 @@ define(function(require) {
 						}
 					],
 					isUsable: 'true',
-					isListed: true,
+					isListed: determineIsListed('device[id=*]'),
 					weight: 10,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
@@ -1817,7 +1937,8 @@ define(function(require) {
 						return returned_value;
 					},
 					edit: function(node, callback) {
-						var _this = this;
+						var _this = this
+							deviceType = 'default';
 
 						self.deviceList(function(devices) {
 							var popup, popup_html;
@@ -1839,6 +1960,23 @@ define(function(require) {
 								},
 								submodule: 'device'
 							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
 
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
@@ -1881,7 +2019,7 @@ define(function(require) {
 									}
 								}
 							});
-						});
+						}, deviceType);
 					},
 					listEntities: function(callback) {
 						var getDeviceWithTemplate = function(device) {
@@ -1944,6 +2082,816 @@ define(function(require) {
 						});
 					},
 					editEntity: 'callflows.device.edit'
+				},
+				'cellphoneDevice[id=*]': {
+					name: self.i18n.active().callflows.cellphoneDevice.device,
+					icon: 'active_phone',
+					category: deviceCategory,
+					module: 'device',
+					tip: self.i18n.active().callflows.cellphoneDevice.device_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('cellphoneDevice[id=*]'),
+					weight: 10,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							deviceType = 'cellphone';
+
+						self.deviceList(function(devices) {
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowCellphoneEdit',
+								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
+									can_call_self: node.getMetadata('can_call_self') || false,
+									parameter: {
+										name: 'timeout (s)',
+										value: node.getMetadata('timeout') || '20'
+									},
+									objects: {
+										items: _.sortBy(devices, 'name'),
+										selected: node.getMetadata('id') || ''
+									}
+								},
+								submodule: 'device'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if ($('#device_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.devicePopupEdit({
+									data: _data,
+									callback: function(device) {
+										node.setMetadata('id', device.id || 'null');
+										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+										node.caption = device.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							$('#add', popup_html).click(function() {
+								node.setMetadata('id', $('#device_selector', popup_html).val());
+								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+								node.caption = $('#device_selector option:selected', popup_html).text();
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.cellphoneDevice.device_title,
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, deviceType);
+					},
+					editEntity: 'callflows.device.edit'
+				},
+				'smartphoneDevice[id=*]': {
+					name: self.i18n.active().callflows.smartphoneDevice.device,
+					icon: 'active_phone',
+					category: deviceCategory,
+					module: 'device',
+					tip: self.i18n.active().callflows.smartphoneDevice.device_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('smartphoneDevice[id=*]'),
+					weight: 10,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							deviceType = 'smartphone';
+
+						self.deviceList(function(devices) {
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowSmartphoneEdit',
+								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
+									can_call_self: node.getMetadata('can_call_self') || false,
+									parameter: {
+										name: 'timeout (s)',
+										value: node.getMetadata('timeout') || '20'
+									},
+									objects: {
+										items: _.sortBy(devices, 'name'),
+										selected: node.getMetadata('id') || ''
+									}
+								},
+								submodule: 'device'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							// disable the dropdown if there is only the "No Data Found" option
+							if (devices.length === 1 && devices[0].name === 'No Data Found') {
+								$('#device_selector', popup_html).prop('disabled', true);
+							}
+
+							if ($('#device_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.devicePopupEdit({
+									data: _data,
+									callback: function(device) {
+										node.setMetadata('id', device.id || 'null');
+										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+										node.caption = device.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							$('#add', popup_html).click(function() {
+								node.setMetadata('id', $('#device_selector', popup_html).val());
+								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+								node.caption = $('#device_selector option:selected', popup_html).text();
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.smartphoneDevice.device_title,
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, deviceType);
+					},
+					editEntity: 'callflows.device.edit'
+				},
+				'landlineDevice[id=*]': {
+					name: self.i18n.active().callflows.landlineDevice.device,
+					icon: 'active_phone',
+					category: deviceCategory,
+					module: 'device',
+					tip: self.i18n.active().callflows.landlineDevice.device_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('landlineDevice[id=*]'),
+					weight: 10,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							deviceType = 'landline';
+
+						self.deviceList(function(devices) {
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowLandlineEdit',
+								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
+									can_call_self: node.getMetadata('can_call_self') || false,
+									parameter: {
+										name: 'timeout (s)',
+										value: node.getMetadata('timeout') || '20'
+									},
+									objects: {
+										items: _.sortBy(devices, 'name'),
+										selected: node.getMetadata('id') || ''
+									}
+								},
+								submodule: 'device'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if ($('#device_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.devicePopupEdit({
+									data: _data,
+									callback: function(device) {
+										node.setMetadata('id', device.id || 'null');
+										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+										node.caption = device.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							$('#add', popup_html).click(function() {
+								node.setMetadata('id', $('#device_selector', popup_html).val());
+								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+								node.caption = $('#device_selector option:selected', popup_html).text();
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.landlineDevice.device_title,
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, deviceType);
+					},
+					editEntity: 'callflows.device.edit'
+				},
+				'softphoneDevice[id=*]': {
+					name: self.i18n.active().callflows.softphoneDevice.device,
+					icon: 'phone',
+					category: deviceCategory,
+					module: 'device',
+					tip: self.i18n.active().callflows.softphoneDevice.device_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('softphoneDevice[id=*]'),
+					weight: 10,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							deviceType = 'softphone';
+
+						self.deviceList(function(devices) {
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowSoftphoneEdit',
+								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
+									can_call_self: node.getMetadata('can_call_self') || false,
+									parameter: {
+										name: 'timeout (s)',
+										value: node.getMetadata('timeout') || '20'
+									},
+									objects: {
+										items: _.sortBy(devices, 'name'),
+										selected: node.getMetadata('id') || ''
+									}
+								},
+								submodule: 'device'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if ($('#device_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.devicePopupEdit({
+									data: _data,
+									callback: function(device) {
+										node.setMetadata('id', device.id || 'null');
+										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+										node.caption = device.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							$('#add', popup_html).click(function() {
+								node.setMetadata('id', $('#device_selector', popup_html).val());
+								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+								node.caption = $('#device_selector option:selected', popup_html).text();
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.softphoneDevice.device_title,
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, deviceType);
+					},
+					editEntity: 'callflows.device.edit'
+				},
+				'faxDevice[id=*]': {
+					name: self.i18n.active().callflows.faxDevice.device,
+					icon: 'phone',
+					category: deviceCategory,
+					module: 'device',
+					tip: self.i18n.active().callflows.faxDevice.device_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('faxDevice[id=*]'),
+					weight: 10,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							deviceType = 'fax';
+
+						self.deviceList(function(devices) {
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowFaxEdit',
+								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
+									can_call_self: node.getMetadata('can_call_self') || false,
+									parameter: {
+										name: 'timeout (s)',
+										value: node.getMetadata('timeout') || '20'
+									},
+									objects: {
+										items: _.sortBy(devices, 'name'),
+										selected: node.getMetadata('id') || ''
+									}
+								},
+								submodule: 'device'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if ($('#device_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.devicePopupEdit({
+									data: _data,
+									callback: function(device) {
+										node.setMetadata('id', device.id || 'null');
+										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+										node.caption = device.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							$('#add', popup_html).click(function() {
+								node.setMetadata('id', $('#device_selector', popup_html).val());
+								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+								node.caption = $('#device_selector option:selected', popup_html).text();
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.faxDevice.device_title,
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, deviceType);
+					},
+					editEntity: 'callflows.device.edit'
+				},
+				'ataDevice[id=*]': {
+					name: self.i18n.active().callflows.ataDevice.device,
+					icon: 'phone',
+					category: deviceCategory,
+					module: 'device',
+					tip: self.i18n.active().callflows.ataDevice.device_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('ataDevice[id=*]'),
+					weight: 10,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							deviceType = 'ata';
+
+						self.deviceList(function(devices) {
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowAtaEdit',
+								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
+									can_call_self: node.getMetadata('can_call_self') || false,
+									parameter: {
+										name: 'timeout (s)',
+										value: node.getMetadata('timeout') || '20'
+									},
+									objects: {
+										items: _.sortBy(devices, 'name'),
+										selected: node.getMetadata('id') || ''
+									}
+								},
+								submodule: 'device'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if ($('#device_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.devicePopupEdit({
+									data: _data,
+									callback: function(device) {
+										node.setMetadata('id', device.id || 'null');
+										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+										node.caption = device.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							$('#add', popup_html).click(function() {
+								node.setMetadata('id', $('#device_selector', popup_html).val());
+								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+								node.caption = $('#device_selector option:selected', popup_html).text();
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.ataDevice.device_title,
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, deviceType);
+					},
+					editEntity: 'callflows.device.edit'
+				},
+				'sipUriDevice[id=*]': {
+					name: self.i18n.active().callflows.sipUriDevice.device,
+					icon: 'phone',
+					category: deviceCategory,
+					module: 'device',
+					tip: self.i18n.active().callflows.sipUriDevice.device_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('sipUriDevice[id=*]'),
+					weight: 10,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							deviceType = 'sip_uri';
+
+						self.deviceList(function(devices) {
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowSipUriEdit',
+								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
+									hideAdd: args.hideAdd,
+									can_call_self: node.getMetadata('can_call_self') || false,
+									parameter: {
+										name: 'timeout (s)',
+										value: node.getMetadata('timeout') || '20'
+									},
+									objects: {
+										items: _.sortBy(devices, 'name'),
+										selected: node.getMetadata('id') || ''
+									}
+								},
+								submodule: 'device'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#device_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if ($('#device_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.devicePopupEdit({
+									data: _data,
+									callback: function(device) {
+										node.setMetadata('id', device.id || 'null');
+										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+										node.caption = device.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							$('#add', popup_html).click(function() {
+								node.setMetadata('id', $('#device_selector', popup_html).val());
+								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+								node.caption = $('#device_selector option:selected', popup_html).text();
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.sipUriDevice.device_title,
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, deviceType);
+					},
+					editEntity: 'callflows.device.edit'
 				}
 			});
 		},
@@ -1951,9 +2899,7 @@ define(function(require) {
 		deviceRenderNumberList: function(data, parent) {
 			var self = this,
 				parent = $('#phone_numbers_container', parent);
-
-				//console.log('device_html', device_html)
-
+				
 				if (miscSettings.enableConsoleLogging) {
 					console.log('Device Data', data)
 				}

@@ -1,11 +1,12 @@
-<div class="dialog_popup callflows-port">
-	<h1>{{ i18n.callflows.userCallflow.connect_caller_to_user }}</h1>
+<div class="dialog_popup callflows-port callflow-action">
+	<!--<h1>{{ i18n.callflows.qubicleCallflow.connect_caller }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label-wide for="object-selector">{{ i18n.callflows.userCallflow.which_user }}</label-wide>
+				<!--<label for="object-selector">{{ i18n.callflows.qubicleCallflow.which_callflow }}</label>-->
 				<div class="select_wrapper">
 					<select id="object-selector">
+						<option value="null" hidden>Select a queue</option>
 						{{#select objects.selected}}
 							{{#each objects.items}}
 									<option value="{{ id }}">{{ name }}</option>

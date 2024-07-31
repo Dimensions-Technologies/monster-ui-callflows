@@ -120,7 +120,8 @@
 		},
 		"device": {
 			"device": "Device",
-			"device_tip": "Ring a VoIP or cell phone or other device",
+			"sip_device": "SIP Device",
+			"device_tip": "Direct a caller to a device",
 			"connect_caller_to_device": "Connect a caller to a device...",
 			"which_device": "Which Device?",
 			"edit_phone_options": "Edit phone options",
@@ -308,6 +309,62 @@
 			"phone_numbers_add": "Add Phone Number",
 			"phone_numbers_none": "This device currently has no assigned phone numbers"
 		},
+		"landlineDevice": {
+			"device": "Landline",
+			"device_tip": "Direct a caller to an external destination",
+			"connect_caller_to_device": "Connect a caller to an external destination...",
+			"which_device": "Which Landline Number?",
+			"device_title": "Landline",
+			"edit_phone_options": "Edit landline options"
+		},
+		"sipUriDevice": {
+			"device": "SIP URI",
+			"device_tip": "Direct a caller to a SIP URI device",
+			"connect_caller_to_device": "Connect a caller to a SIP URI device...",
+			"which_device": "Which SIP URI Device?",
+			"device_title": "SIP URI",
+			"edit_phone_options": "Edit SIP URI options"
+		},
+		"ataDevice": {
+			"device": "ATA",
+			"device_tip": "Direct a caller to an ATA device",
+			"connect_caller_to_device": "Connect a caller to an ATA device...",
+			"which_device": "Which ATA Device?",
+			"device_title": "ATA",
+			"edit_phone_options": "Edit ATA options"
+		},
+		"cellphoneDevice": {
+			"device": "Cellphone",
+			"device_tip": "Direct a caller to a cellphone device",
+			"connect_caller_to_device": "Connect a caller to a cellphone device...",
+			"which_device": "Which Cellphone Device?",
+			"device_title": "Cellphone",
+			"edit_phone_options": "Edit cellphone options"
+		},
+		"faxDevice": {
+			"device": "Fax",
+			"device_tip": "Direct a caller to a fax device",
+			"connect_caller_to_device": "Connect a caller to a fax device...",
+			"which_device": "Which Fax Device?",
+			"device_title": "Fax",
+			"edit_phone_options": "Edit fax options"
+		},
+		"smartphoneDevice": {
+			"device": "Smartphone",
+			"device_tip": "Direct a caller to a smartphone device",
+			"connect_caller_to_device": "Connect a caller to a smartphone device...",
+			"which_device": "Which Smartphone Device?",
+			"device_title": "Smartphone",
+			"edit_phone_options": "Edit smartphone options"
+		},
+		"softphoneDevice": {
+			"device": "Softphone",
+			"device_tip": "Direct a caller to a softphone device",
+			"connect_caller_to_device": "Connect a caller to a softphone device...",
+			"which_device": "Which Softphone Device?",
+			"device_title": "Softphone",
+			"edit_phone_options": "Edit softphone options"
+		},
 		"disa": {
 			"title": "DISA",
 			"default": "Default",
@@ -339,7 +396,7 @@
 		},
 		"directory": {
 			"directory": "Directory",
-			"directory_tip": "Ask the caller to input the first letters of the name of the person that he wants to reach.",
+			"directory_tip": "Ask the caller to input the first letters of the name of the person that he wants to reach",
 			"connect_caller_to_directory": "Connect caller to directory...",
 			"edit_directory_options": "Edit directory options",
 			"create": "Create",
@@ -1339,27 +1396,35 @@
 		},
 
 		"userCallflow": {
-			"user": "User Callflow",
-			"connect_caller_to_user": "Connect a caller to a user...",
+			"callflow": "User Callflow",
+			"connect_caller": "Connect a caller to a user...",
 			"title": "User",
-			"which_user": "Which User?",
-			"userCallflow_tip": "Direct a caller to a specific user"
+			"which_callflow": "Which User?",
+			"callflow_tip": "Direct a caller to a specific user"
 		},
 
 		"phoneOnlyCallflow": {
-			"phone_only": "Phone Only Device",
-			"connect_caller_to_phone_only": "Connect a caller to a phone only device..",
+			"callflow": "Phone Only Device",
+			"connect_caller": "Connect a caller to a phone only device..",
 			"title": "Phone Only Device",
-			"which_phone_only": "Which Phone Only Device?",
-			"phoneOnlyCallflow_tip": "Direct a caller to a specific phone only device"
+			"which_callflow": "Which Phone Only Device?",
+			"callflow_tip": "Direct a caller to a specific phone only device"
 		},
 
 		"qubicleCallflow": {
-			"qubicle": "Call Center Queue",
-			"connect_caller_to_qubicle_queue": "Connect a caller to a call center queue..",
+			"callflow": "Call Center Queue",
+			"connect_caller": "Connect a caller to a call center queue..",
 			"title": "Call Center Queue",
-			"which_qubicle_queue": "Which Call Center Queue?",
-			"qubicleCallflow_tip": "Direct a caller to a call center queue"
+			"which_callflow": "Which Call Center Queue?",
+			"callflow_tip": "Direct a caller to a call center queue"
+		},
+
+		"legacyPbxCallflow": {
+			"callflow": "Legacy PBX",
+			"connect_caller": "Connect a caller to a legacy pbx..",
+			"title": "Legacy PBX",
+			"which_callflow": "Which Legacy PBX?",
+			"callflow_tip": "Connect a caller to a legacy pbx"
 		}
 
 	},
@@ -1367,6 +1432,7 @@
 		"call_forwarding_cat": "Call Forwarding",
 		"basic_cat": "Basic",
 		"advanced_cat": "Advanced",
+		"device_cat": "Devices",
 		"call_recording_cat": "Call Recording",
 		"caller_id_cat": "Caller-ID",
 		"delete_callflow_1": "Delete callflow",
@@ -1403,11 +1469,11 @@
 		"manual_presence": "Manual Presence",
 		"manual_presence_tip": "Manual Presence Help",
 		"group_pickup": "Group Pickup",
-		"group_pickup_tip": "Setup the group pickup feature for a user, device or a group.",
+		"group_pickup_tip": "Setup the group pickup feature for a user, device or a group",
 		"receive_fax": "Receive Fax",
 		"receive_fax_tip": "Directs a fax to a specific user",
 		"pivot": "Pivot",
-		"pivot_tip": "!",
+		"pivot_tip": "Send a request to an external API endpoint to intelligently route calls",
 		"disa": "DISA",
 		"disa_tip": "DISA allows external callers to make outbound calls as though they originated from the system",
 		"response": "Response",
@@ -1421,9 +1487,9 @@
 		"dynamic_cid": "Dynamic cid",
 		"dynamic_cid_tip": "Set your CallerId by entering it on the phone",
 		"prepend": "Prepend",
-		"prepend_tip": "Prepend Caller ID with a text.",
+		"prepend_tip": "Prepend Caller ID with a text",
 		"reset_prepend": "Reset Prepend",
-		"reset_prepend_tip": "Reset all the prepended texts before the Caller ID.",
+		"reset_prepend_tip": "Reset all the prepended texts before the Caller ID",
 		"start_call_recording": "Start Call Recording",
 		"start_call_recording_tip": "Start Call Recording",
 		"stop_call_recording": "Stop Call Recording",
@@ -1507,7 +1573,7 @@
 		"hot_desking_name": "Hot Desking",
 		"language_title": "Language",
 		"language": "Language",
-		"language_tip": "This callflow action lets you change the language of the prompts used in this callflow!",
+		"language_tip": "This callflow action lets you change the language of the prompts used in this callflow",
 		"searchLink": "Search on the server for",
 		"searchReset": "Click again to clear the search",
 		"__comment": "UI-1742: Add a flag to list callflows in Main Numbers",

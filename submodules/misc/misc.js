@@ -64,16 +64,26 @@ define(function(require) {
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
-				// check if custom callflow actions are enabled, if not hide custom actions by default
+				// custom callflow actions
+				var customActions = [
+					'userCallflow[id=*]',
+					'phoneOnlyCallflow[id=*]',
+					'qubicleCallflow[id=*]',
+					'legacyPbxCallflow[id=*]'
+				];
+
+				// if custom callflow actions are disabled
 				if (!miscSettings.enableCustomCallflowActions) {
-					// additional custom actions should be listed here
-					if (key === 'userCallflow[id=*]' || key === 'phoneOnlyCallflow[id=*]') {
-						return hideCallflowAction[key] === true;
+					if (customActions.includes(key)) {
+						return false;
+					} else {
+						return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
 					}
+				} else {
+					return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
 				}
-				return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
 			};
-			
+
 			var actions = {
 				'root': {
 					name: 'Root',
@@ -125,15 +135,24 @@ define(function(require) {
 							filter_not_numbers: 'no_match'
 						};
 
+						var hideDimensionDeviceCallflow = [];
+
+						// are custom callflow actions are enabled
 						if (miscSettings.enableCustomCallflowActions) {
 							if (miscSettings.callflowActionHideSmartPbxCallflows) {
 								callflowFilters['filter_not_type'] = 'mainUserCallflow';
 							}
-							if (miscSettings.callflowActionHidePhoneOnlyCallflows) {
-								callflowFilters['filter_not_dimension.type'] = 'communal';
-							}
 							if (miscSettings.callflowActionHideQubicleCallflows) {
 								callflowFilters['filter_not_flow.module'] = 'qubicle';
+							}
+							if (miscSettings.callflowActionHidePhoneOnlyCallflows) {
+								hideDimensionDeviceCallflow.push('communal');
+							}
+							if (miscSettings.callflowActionHideLegacyPbxCallflows) {
+								hideDimensionDeviceCallflow.push('legacypbx');
+							}
+							if (hideDimensionDeviceCallflow.length > 0) {
+								callflowFilters['filter_not_dimension.type'] = hideDimensionDeviceCallflow;
 							}
 						}
 
@@ -167,6 +186,21 @@ define(function(require) {
 									submodule: 'misc'
 								}));
 
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#object-selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#object-selector', popup_html).change(toggleSaveButton);
+
 								$('#add', popup_html).click(function() {
 									node.setMetadata('id', $('#object-selector', popup_html).val());
 
@@ -188,12 +222,11 @@ define(function(require) {
 					}
 				},
 				'userCallflow[id=*]': {
-					name: self.i18n.active().callflows.userCallflow.user,
-					//name: 'User Callflow',
+					name: self.i18n.active().callflows.userCallflow.callflow,
 					icon: 'user',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
-					tip: self.i18n.active().callflows.userCallflow.userCallflow_tip,
+					tip: self.i18n.active().callflows.userCallflow.callflow_tip,
 					data: {
 						id: 'null'
 					},
@@ -249,7 +282,7 @@ define(function(require) {
 								});
 
 								popup_html = $(self.getTemplate({
-									name: 'userCallflow-edit_dialog',
+									name: 'callflowUser-edit_dialog',
 									data: {
 										objects: {
 											type: 'callflow',
@@ -259,6 +292,21 @@ define(function(require) {
 									},
 									submodule: 'misc'
 								}));
+
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#object-selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#object-selector', popup_html).change(toggleSaveButton);
 
 								$('#add', popup_html).click(function() {
 									node.setMetadata('id', $('#object-selector', popup_html).val());
@@ -281,11 +329,11 @@ define(function(require) {
 					}
 				},
 				'phoneOnlyCallflow[id=*]': {
-					name: self.i18n.active().callflows.phoneOnlyCallflow.phone_only,
+					name: self.i18n.active().callflows.phoneOnlyCallflow.callflow,
 					icon: 'phone',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
-					tip: self.i18n.active().callflows.phoneOnlyCallflow.phoneOnlyCallflow_tip,
+					tip: self.i18n.active().callflows.phoneOnlyCallflow.callflow_tip,
 					data: {
 						id: 'null'
 					},
@@ -336,7 +384,7 @@ define(function(require) {
 								});
 
 								popup_html = $(self.getTemplate({
-									name: 'phoneOnlyCallflow-edit_dialog',
+									name: 'callflowPhoneOnly-edit_dialog',
 									data: {
 										objects: {
 											type: 'callflow',
@@ -346,6 +394,21 @@ define(function(require) {
 									},
 									submodule: 'misc'
 								}));
+
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#object-selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#object-selector', popup_html).change(toggleSaveButton);
 
 								$('#add', popup_html).click(function() {
 									node.setMetadata('id', $('#object-selector', popup_html).val());
@@ -368,11 +431,11 @@ define(function(require) {
 					}
 				},
 				'qubicleCallflow[id=*]': {
-					name: self.i18n.active().callflows.qubicleCallflow.qubicle,
+					name: self.i18n.active().callflows.qubicleCallflow.callflow,
 					icon: 'support',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
-					tip: self.i18n.active().callflows.qubicleCallflow.qubicleCallflow_tip,
+					tip: self.i18n.active().callflows.qubicleCallflow.callflow_tip,
 					data: {
 						id: 'null'
 					},
@@ -422,13 +485,13 @@ define(function(require) {
 										} else {
 											this.name = this.numbers ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers;
 										}
-								
+
 										_data.push(this);
 									}
 								});
 
 								popup_html = $(self.getTemplate({
-									name: 'qubicleCallflow-edit_dialog',
+									name: 'callflowQubicle-edit_dialog',
 									data: {
 										objects: {
 											type: 'callflow',
@@ -439,6 +502,21 @@ define(function(require) {
 									submodule: 'misc'
 								}));
 
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#object-selector', popup_html).val();
+
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#object-selector', popup_html).change(toggleSaveButton);
+								
 								$('#add', popup_html).click(function() {
 									node.setMetadata('id', $('#object-selector', popup_html).val());
 
@@ -449,6 +527,108 @@ define(function(require) {
 
 								popup = monster.ui.dialog(popup_html, {
 									title: self.i18n.active().callflows.qubicleCallflow.title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
+						});
+					}
+				},
+				'legacyPbxCallflow[id=*]': {
+					name: self.i18n.active().callflows.legacyPbxCallflow.callflow,
+					icon: 'phone',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'callflow',
+					tip: self.i18n.active().callflows.legacyPbxCallflow.callflow_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isTerminating: 'true',
+					isUsable: 'true',
+					isListed: determineIsListed('legacyPbxCallflow[id=*]'),
+					weight: 80,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							return_value = '';
+
+						if (id in caption_map) {
+							if (caption_map[id].hasOwnProperty('name')) {
+								return_value = caption_map[id].name;
+							} else if (caption_map[id].hasOwnProperty('numbers')) {
+								return_value = caption_map[id].numbers.toString();
+							}
+						}
+
+						return return_value;
+					},
+					edit: function(node, callback) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match',
+									'filter_dimension.type': 'legacypbx'
+								}
+							},
+							success: function(data, status) {
+								var popup, popup_html, _data = [];
+
+								$.each(data.data, function() {
+									if (!this.featurecode && this.id !== self.flow.id) {
+										this.name = this.name ? this.name : ((this.numbers) ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
+
+										_data.push(this);
+									}
+								});
+
+								popup_html = $(self.getTemplate({
+									name: 'callflowLegacyPbx-edit_dialog',
+									data: {
+										objects: {
+											type: 'callflow',
+											items: _.sortBy(_data, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
+									},
+									submodule: 'misc'
+								}));
+
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#object-selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#object-selector', popup_html).change(toggleSaveButton);
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#object-selector', popup_html).val());
+
+									node.caption = $('#object-selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.legacyPbxCallflow.title,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
@@ -1637,7 +1817,7 @@ define(function(require) {
 				'missed_call_alert[]': {
 					name: self.i18n.active().callflows.missedCallAlert.title,
 					icon: 'bell1',
-					category: self.i18n.active().oldCallflows.advanced_cat,
+					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'missed_call_alert',
 					tip: self.i18n.active().callflows.missedCallAlert.tip,
 					data: {
