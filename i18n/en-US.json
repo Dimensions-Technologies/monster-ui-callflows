@@ -1411,7 +1411,7 @@
 			"callflow_tip": "Direct a caller to a specific phone only device"
 		},
 
-		"qubicleCallflow": {
+		"callCentreCallflow": {
 			"callflow": "Call Center Queue",
 			"connect_caller": "Connect a caller to a call center queue..",
 			"title": "Call Center Queue",
