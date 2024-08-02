@@ -1762,6 +1762,21 @@
 /* Media shoutcast addition */
 .media-edit-callflow-popup .form_content {
 	width: 360px;
+	padding-top: 20px;
+}
+
+.media-edit-callflow-popup .form_content .shoutcast-url-input {
+	width: 295px;
+	max-width: none;
+}
+
+.media-edit-callflow-popup .form_content select{
+	width: 310px;
+	max-width: none;
+}
+
+.media-edit-callflow-popup .form_content .select_wrapper{
+	float: none;
 }
 
 .media-edit-callflow-popup #edit_link {
