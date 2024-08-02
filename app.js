@@ -2649,6 +2649,11 @@ define(function(require) {
 					{ 
 						type: 'sipUriDevice', 
 						actionName: 'sipUriDevice[id=*]' 
+					},
+					// custom media actions
+					{ 
+						type: 'mailboxMedia',
+						actionName: 'mailboxMedia[id=*]'
 					}
 				];
 				
@@ -2672,7 +2677,7 @@ define(function(require) {
 				});
 
 				// re-render action on load or after save
-				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]') {
+				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]') {
 					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
 						
 						// check if the branch id is contained within the flags array

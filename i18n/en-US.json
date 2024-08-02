@@ -574,7 +574,9 @@
 			"shoutcastURL": "Stream URL",
 			"shoutcastURLHelp": "You can type any URL including :// (http, https, shout...)",
 			"silence": "Silence",
-			"shoutcastURLWarning": "WARNING: If the stream selected here attempts to be played, and is unavailable, the call may fail completely. Please make sure the stream you use is available 24/7."
+			"shoutcastURLWarning": "WARNING: If the stream selected here attempts to be played, and is unavailable, the call may fail completely. Please make sure the stream you use is available 24/7.",
+			"play_mailbox_media": "Mailbox Media",
+			"play_mailbox_media_tip": "Play a mailbox greeting recorded within a mailbox"
 		},
 		"menu": {
 			"menu": "Menu",
