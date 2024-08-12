@@ -1,14 +1,14 @@
-<div class="dialog_popup callflows-port">
-	<h1>{{ i18n.oldCallflows.pivot }}</h1>
+<div class="dialog_popup callflows-port callflow-action-form">
+	<!--<h1>{{ i18n.oldCallflows.pivot }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label for="pivot_voiceurl_input">{{ i18n.oldCallflows.voice_url }}: </label>
+				<label for="pivot_voiceurl_input">{{ i18n.oldCallflows.voice_url }} </label>
 				<input type="text" id="pivot_voiceurl_input" class="medium" value="{{data_pivot.voice_url}}"/>
 			</div>
 
 			<div class="popup_field">
-				<label for="pivot_method_input">{{ i18n.oldCallflows.method }}: </label>
+				<label for="pivot_method_input">{{ i18n.oldCallflows.method }} </label>
 				<select id="pivot_method_input">
 					{{#compare data_pivot.method "===" "POST"}}
 						<option value="POST" selected="selected">POST</option>
@@ -20,8 +20,9 @@
 				</select>
 			</div>
 
+			{{#unless miscSettings.hidePivotRequestFormat}}
 			<div class="popup_field">
-				<label for="pivot_format_input">{{ i18n.oldCallflows.format }}: </label>
+				<label for="pivot_format_input">{{ i18n.oldCallflows.format }} </label>
 				<select id="pivot_format_input">
 					{{#compare data_pivot.req_format "===" "twiml"}}
 						<option value="twiml" selected="selected">twiml</option>
@@ -32,9 +33,11 @@
 					{{/compare}}
 				</select>
 			</div>
+			{{/unless}}
+			
 
 			<div class="popup_field">
-				<label for="pivot_timeout_input">{{ i18n.oldCallflows.pivot_timeout }}: </label>
+				<label for="pivot_timeout_input">{{ i18n.oldCallflows.pivot_timeout }} </label>
 				<input type="number" min="5" step="1" max="20" id="pivot_timeout_input" class="medium" value="{{data_pivot.req_timeout}}"/>
 			</div>
 		</div>

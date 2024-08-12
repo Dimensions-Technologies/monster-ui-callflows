@@ -1,11 +1,12 @@
-<div class="dialog_popup callflows-port">
-	<h1>{{ i18n.callflows.directory.connect_caller_to_directory }}</h1>
+<div class="dialog_popup callflows-port callflow-action">
+	<!--<h1>{{ i18n.callflows.directory.connect_caller_to_directory }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label for="directory_selector">{{ i18n.callflows.directory.directory }}</label>
+				<!--<label for="directory_selector">{{ i18n.callflows.directory.directory }}</label>-->
 				<div class="select_wrapper">
 					<select id="directory_selector">
+						<option value="null" hidden>Select a directory</option>
 						{{#select selected}}
 							{{#each items}}
 								<option value="{{ this.id }}">{{ this.name }}</option>

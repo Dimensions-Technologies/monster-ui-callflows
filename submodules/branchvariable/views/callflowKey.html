@@ -1,28 +1,27 @@
-<div class="dialog_popup callflows-port">
+<div class="dialog_popup callflows-port callflow-action-form">
 	<form id="branchvariable_key_form" class="form-horizontal">
-		<div class="control-group">
-			<label for="action" class="control-label">
-				{{ i18n.callflows.branchvariable.editKey.action }}
-			</label>
-			<div class="controls">
-				<select name="action">
-				{{#select action}}
-					<option value="default">
-						{{ i18n.callflows.branchvariable.editKey.default }}
-					</option>
-					<option value="variable">
-						{{ i18n.callflows.branchvariable.editKey.variable }}
-					</option>
-				{{/select}}
-				</select>
-			</div>
-		</div>
-		<div class="control-group"{{#compare action "===" "default"}} style="display: none;"{{/compare}}>
-			<label for="value" class="control-label">
-				{{i18n.callflows.branchvariable.editKey.value}}
-			</label>
-			<div class="controls">
-				<input type="text" name="value" value="{{value}}">
+		<div class="form_content">
+			<div class="branch-on-variable"> 
+				<div class="control-group">
+					<label for="action" class="control-label">{{ i18n.callflows.branchvariable.editKey.action }}</label>
+						<select name="action" id="action">
+						{{#select action}}
+							<option value="null" hidden>
+								Select branch on
+							</option>
+							<option value="default">
+								{{ i18n.callflows.branchvariable.editKey.default }}
+							</option>
+							<option value="variable">
+								{{ i18n.callflows.branchvariable.editKey.variable }}
+							</option>
+						{{/select}}
+						</select>
+				</div>
+				<div class="control-group variable-control-group"{{#compare action "===" "default"}} style="display: none;"{{/compare}}>
+					<label for="value" class="control-label">{{i18n.callflows.branchvariable.editKey.value}}</label>
+					<input type="text" name="value" id="value" value="{{value}}">
+				</div>
 			</div>
 		</div>
 	</form>

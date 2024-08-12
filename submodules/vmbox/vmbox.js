@@ -558,6 +558,23 @@ define(function(require) {
 									submodule: 'vmbox'
 								}));
 
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#vmbox_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#vmbox_selector', popup_html).change(toggleSaveButton);
+
 								if ($('#vmbox_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
 								}
@@ -757,6 +774,8 @@ define(function(require) {
 					}
 				},
 				success: function(data) {
+					// sort data alphabetically
+					data.data = _.sortBy(data.data, 'name');
 					callback && callback(data.data);
 				}
 			});

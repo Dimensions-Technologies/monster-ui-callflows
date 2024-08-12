@@ -55,9 +55,14 @@
 	width: 315px;
 }
 
-.callflows-port#ring_group_popup #two_columns .column.right .item_name {
+.callflows-port#ring_group_popup .ring-group-list .column.right .item_name {
 	width: 205px;
-	padding-left: 6px;
+	padding-left: 4px;
+}
+
+.callflows-port#ring_group_popup .page-group-list .column.right .item_name {
+	width: 305px;
+	padding-left: 4px;
 }
 
 .callflows-port#ring_group_popup #two_columns .actions_item {
@@ -86,9 +91,16 @@
 	width: 420px;
 }
 
-.callflows-port#ring_group_popup #two_columns .column.right .title_column .title{
+.callflows-port#ring_group_popup .ring-group-list .column.right .title_column .title{
 	float: left;
 	width: 243px;
+	height: 28px;
+	line-height: 28px;
+}
+
+.callflows-port#ring_group_popup .page-group-list .column.right .title_column .title{
+	float: left;
+	width: 343px;
 	height: 28px;
 	line-height: 28px;
 }

@@ -1,11 +1,12 @@
-<div class="dialog_popup callflows-port">
-	<h1>{{ i18n.callflows.user.connect_caller_to_user }}</h1>
+<div class="dialog_popup callflows-port callflow-action">
+	<!--<h1>{{ i18n.callflows.user.connect_caller_to_user }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label for="user_selector">{{ i18n.callflows.user.which_user }}</label>
+				<!--<label for="user_selector">{{ i18n.callflows.user.which_user }}</label>-->
 				<div class="select_wrapper">
 					<select id="user_selector">
+					<option value="null" hidden>Select a user</option>
 					{{#select objects.selected}}
 						{{#each objects.items}}
 							<option value="{{id}}">{{name}}</option>
@@ -24,17 +25,21 @@
 				<div class="clear"/>
 			</div>
 		</div>
-		<div class="parameter_div">
-			{{ i18n.callflows.user.ring_this_users_devices_for }} <input type="text" class="size2" name="parameter_input" id="parameter_input" value="{{parameter.value}}"/> {{ i18n.callflows.user.seconds }}.
-		</div>
-		{{#unless hideFromCallflowAction.user.callThemselves}}
-			<div class="parameter_div">
-				<input type="checkbox"{{#if can_call_self}} checked="checked"{{/if}} id="user_can_call_self">
 
-				{{ i18n.callflows.user.allow_this_user_to_call_themselves }}
-				<div class="parameter_description">{{ i18n.callflows.user.when_you_check_this_box }}</div>
+		<div>
+			<div class="parameter_div">
+				{{ i18n.callflows.user.ring_this_users_devices_for }} <input type="text" class="size2" name="parameter_input" id="parameter_input" value="{{parameter.value}}"/> {{ i18n.callflows.user.seconds }}.
 			</div>
-		{{/unless}}
+			{{#unless hideFromCallflowAction.user.callThemselves}}
+				<div class="parameter_div">
+					<input type="checkbox"{{#if can_call_self}} checked="checked"{{/if}} id="user_can_call_self">
+
+					{{ i18n.callflows.user.allow_this_user_to_call_themselves }}
+					<div class="parameter_description">{{ i18n.callflows.user.when_you_check_this_box }}</div>
+				</div>
+			{{/unless}}
+		</div>
+
 	</form>
 	<div class="buttons-center">
 		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>

@@ -211,9 +211,11 @@
 }
 
 /* Collect DTMF Popup */
+/*
 .dialog_popup.collect-dtmf-popup .form_content .popup_field {
 	padding-bottom: 0;
 }
+*/
 
 /************ Webhooks *************/
 .callflows-port#webhook_popup {
@@ -241,15 +243,20 @@
 
 /* tts callflow action reformatting */
 .dialog_popup.set-tts-input .form_content .popup_field textarea {
-    min-height: 150px ; 
-	min-width: 500px;
+    min-height: 150px; 
+	min-width: 400px;
+	margin-right: 50px;
+}
+
+/* tts callflow action reformatting */
+.dialog_popup.set-tts-input .popup_field:has(#tts_text_input) {
+	margin-top: 20px;
 }
 
 /* tts callflow action reformatting */
 .dialog_popup.set-tts-input .form_content .popup_field.tts-input {
 	display: flex;
-	align-items: left;
-	
+	align-items: left;	
 }
 
 /* tts callflow action reformatting */
@@ -258,3 +265,12 @@
 	text-align: left;
 }
 
+/* tts callflow action reformatting */
+.dialog_popup.set-tts-input .form_content .popup_field label {
+	width: 90px;
+}
+
+/* tts media action reformatting */
+#media-form #tts_text {
+	min-height: 150px; 
+}

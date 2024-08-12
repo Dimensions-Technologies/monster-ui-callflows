@@ -41,7 +41,8 @@
 				"nodeName": "After Bridge: Transfer",
 				"tooltip": "Allow transfer on the caller after the bridge is terminated.",
 				"dialog_title": "After Bridge: Transfer",
-				"number": "Number"
+				"number": "Number",
+				"denyNumbers": "The follow numbers are not allowed: <br>"
 			},
 			"hangup": {
 				"nodeName": "After Bridge: Hangup",
@@ -369,19 +370,23 @@
 			"title": "DISA",
 			"default": "Default",
 			"pin": {
-				"label": "PIN"
+				"label": "PIN",
+				"invalid": "Invalid Value <br> The entered value must be 4 or more digits in length"
 			},
 			"retries": {
 				"label": "Retries",
-				"help": "The number of times to attempt to collect a pin number after an invalid attempt "
+				"help": "The number of times to attempt to collect a pin number after an invalid attempt",
+				"invalid": "Invalid Value <br> The entered value must be between 0 and 10"
 			},
 			"interdigit": {
-				"label": "Interdigit",
-				"help": "The amount of time (in seconds) to wait for the next digit before considering the entry complete "
+				"label": "Interdigit Timeout (s)",
+				"help": "The amount of time (in seconds) to wait for the next digit before considering the entry complete",
+				"invalid": "Invalid Value <br> The entered value must be between 5 and 20"
 			},
 			"max_digits": {
 				"label": "Max Digits",
-				"help": "The max digits to collect for the destination number "
+				"help": "The max digits to collect for the destination number",
+				"invalid": "Invalid Value <br> The entered value must be between 4 and 20"
 			},
 			"use_account_caller_id": {
 				"label": "Keep the original Caller-ID",
@@ -399,7 +404,7 @@
 			"directory_tip": "Ask the caller to input the first letters of the name of the person that he wants to reach",
 			"connect_caller_to_directory": "Connect caller to directory...",
 			"edit_directory_options": "Edit directory options",
-			"create": "Create",
+			"create": "Add a new directory",
 			"directory_title": "Directory",
 			"create_directory": "Create Directory",
 			"edit_directory": "Edit Directory",
@@ -529,6 +534,13 @@
 			"there_were_errors_on_the_form": "There were errors on the form, please correct!",
 			"are_you_sure_you_want_to_delete": "Are you sure you want to delete this group?"
 		},
+		"ring_groups": {
+			"users": "Users",
+			"devices": "Devices",
+			"phone_only_devices": "Phone Only Devices",
+			"groups": "Groups",
+			"personal_ring_groups": "Personal Ring Groups"
+		},
 		"media": {
 			"play_media": "Media",
 			"play_media_tip": "Play an audio file such as a greeting",
@@ -645,17 +657,18 @@
 			"global_carrier": "Global Carrier",
 			"global_carrier_tip": "Route calls to the phone network through pre-configured service providers",
 			"account_carrier": "Account Carrier",
-			"account_carrier_tip": "Route calls to the phone network through a configured SIP provider, Google Voice or physical digital/analog line",
+			"account_carrier_tip": "Route calls to the phone network through a configured SIP provider on a specific account",
 			"account_carrier_title": "Account Carrier",
 			"use_carriers_from_specific_account": "Use carriers from a specific account",
-			"account_id": "Account ID"
+			"account_id": "Account ID",
+			"account_carrier_help": "Enter the Account ID calls should be routed via"
 		},
 		"timeofday": {
 			"time_of_day": "Time of Day",
 			"time_of_day_cat": "Time of Day",
-			"disable_time_of_day": "Disable Time of Day",
-			"enable_time_of_day": "Enable Time of Day",
-			"reset_time_of_day": "Reset Time of Day",
+			"disable_time_of_day": "Disable <br> Time of Day",
+			"enable_time_of_day": "Enable <br> Time of Day",
+			"reset_time_of_day": "Reset <br> Time of Day",
 			"timezone": "Timezone",
 			"select_a_timezone_title": "Select a Timezone",
 			"unselected_time_of_day_rules": "Unselected time of day rules",
@@ -705,7 +718,7 @@
 			"manual_tts_off_text": "Night mode is now disabled",
 			"manual_tts_off_help": "This is the text to speech returned to the user when the time of day rule is disabled",
 			"manual_tts_id": "Feature Code Id",
-			"manual_tts_id_invalid": "The Feature Code Id value must be a value between 1 and 9999",
+			"manual_tts_id_invalid": "Invalid Value <br> The entered value must be between 1 and 9999",
 			"manual_tts_id_exists": "The Feature Code Id already exists within the following Time of Day rule: <br> <br>",
 			"manual_tts_id_help": "This Id is used after the feature code for manual night mode when manually dialling the feature code",
 			"automatic_rule": "Time Based Rule",
@@ -770,11 +783,11 @@
 			"none": "None",
 			"user": "User",
 			"user_tip": "Direct a caller to a specific user",
-			"hot_desk_login": "Hot Desk login",
+			"hot_desk_login": "Hot Desk <br> Login",
 			"hot_desk_login_tip": "Enable Hot desking",
-			"hot_desk_logout": "Hot Desk logout",
+			"hot_desk_logout": "Hot Desk <br> Logout",
 			"hot_desk_logout_tip": "Disable Hot desking",
-			"hot_desk_toggle": "Hot Desk toggle",
+			"hot_desk_toggle": "Hot Desk <br> Toggle",
 			"hot_desk_toggle_tip": "Toggle Hot desking",
 			"hotdesking_cat": "Hotdesking",
 			"connect_caller_to_user": "Connect a caller to a user...",
@@ -823,7 +836,7 @@
 			"ringing_timeout_help": "This will set the Ringing Timeout for this User. For example, if you set it to 20, this user will be rung for 20 seconds before the system send the call to Voicemail",
 			"ringing_timeout_disabled_help1": "Ringing Timeout is disabled as this is managed by Find Me Follow Me",
 			"ringing_timeout_disabled_help2": "Ringing Timeout is disabled as this is managed by the users Presence Profile",
-			"ringing_timeout_invalid": "Invalid Ringing Timeout value.<br>The Ringing Timeout value must be between 10 and 120 seconds.",
+			"ringing_timeout_invalid": "Invalid Value <br> The entered value must be between 10 and 120",
 			"voicemail_data_content": "By checking this option, an email will be sent to the specified e-mail address each time this user gets a voicemail.",
 			"in_house_calls": "In-House Calls",
 			"caller_id_name": "Caller ID Name",
@@ -960,7 +973,7 @@
 			"voicemail": "Voicemail",
 			"voicemail_title": "Voicemail",
 			"voicemail_tip": "Direct a caller to leave a voicemail message",
-			"check_voicemail": "Check Voicemail",
+			"check_voicemail": "Check <br> Voicemail",
 			"check_voicemail_tip": "Prompt the caller for a mailbox number and password so they can check voicemails",
 			"connect_caller_to_voicemail": "Connect caller to voicemail...",
 			"which_voicemail_box": "Which Voicemail Box?",
@@ -1214,7 +1227,7 @@
 			}
 		},
 		"missedCallAlert": {
-			"title": "Missed Call Alert",
+			"title": "Missed Call <br> Alert",
 			"tip": "Allows users to receive an email notification for unanswered inbound calls that do not result in a voicemail message.",
 			"help": "This feature allows you to let users receive email notification for unanswered inbound calls that do not result in a voicemail message. Please type a list of emails, separated by commas, or select users from the list below, then press Save, to create a callflow with this feature.",
 			"emails": "Emails",
@@ -1226,8 +1239,8 @@
 
 		"setCav": {
 			"title": "Set CAV",
-			"popupTitle": "Setting custom application vars",
-			"tip": "Set Custom Application Var ",
+			"popupTitle": "Custom Application Variable",
+			"tip": "Set Custom Application Variables",
 			"help": "This feature allows you to set custom application variables providing key/value",
 			"key": "Key",
 			"value": "Value"
@@ -1236,12 +1249,12 @@
 		"__comment": "UI-2646: adding ring group togle to adv. callflows",
 		"__version": "v4.1",
 		"ringGroupToggle": {
-			"loginTitle": "Ring Group Login",
+			"loginTitle": "Ring Group <br> Login",
 			"logoutTitle": "Ring Group Logout",
 			"loginDialogTitle": "Login to callflow with a ring group in it",
 			"logoutDialogTitle": "Login to callflow with a ring group in it",
 			"name": "Ring Group Toggle",
-			"loginTip": "Ring Group Toggle allows a user to log in a ring group dynamically.",
+			"loginTip": "Ring Group Toggle allows a user to log into a ring group dynamically.",
 			"logoutTip": "Ring Group Toggle allows a user to log out of a ring group dynamically.",
 			"callflow": "Which Callflow?",
 			"category": "Ring Group Toggle"
@@ -1263,8 +1276,9 @@
 				"help": "Store collected DTMF in a named key. Leave empty to leave it to set it to the back-end default value."
 			},
 			"interdigitTimeout": {
-				"label": "Interdigit Timeout",
-				"help": "How long, in milliseconds, to wait for the next DTMF. Leave empty to leave it to set it to the back-end default value."
+				"label": "Interdigit Timeout (s)",
+				"help": "How long, in milliseconds, to wait for the next DTMF. Leave empty to leave it to set it to the back-end default value.",
+				"alert": "Invalid Interdigit Timeout value<br>The Interdigit Timeout value must be between 5 - 20"
 			},
 			"terminator": {
 				"label": "Terminator",
@@ -1272,12 +1286,14 @@
 			},
 			"maxDigits": {
 				"label": "Max Digits",
-				"help": "How many DTMFs to collect from the caller"
+				"help": "How many DTMFs to collect from the caller",
+				"alert": "Invalid Max Digits value<br>The Max Digits value must be between 1 - 40"
 			},
 			"timeout": {
-				"label": "Timeout",
-				"help": "How long, in milliseconds, to wait for the first DTMF"
-			}
+				"label": "Timeout (s)",
+				"help": "How long, in milliseconds, to wait for the first DTMF",
+				"alert": "Invalid Timeout value<br>The Timeout value must be between 5 - 20"
+			}			
 		},
 
 		"__comment": "UI-413: adding eavesdrop to adv. callflows",
@@ -1336,30 +1352,30 @@
 		"doNotDisturb": {
 			"categoryName": "Do Not Disturb",
 			"activate": {
-				"label": "Activate Do Not Disturb",
+				"label": "Activate <br> Do Not Disturb",
 				"tip": "Activates Do Not Disturb"
 			},
 			"deactivate": {
-				"label": "Dectivate Do Not Disturb",
+				"label": "Dectivate <br> Do Not Disturb",
 				"tip": "Dectivates Do Not Disturb"
 			},
 			"toggle": {
-				"label": "Toggle Do Not Disturb",
+				"label": "Toggle <br> Do Not Disturb",
 				"tip": "Toggles Do Not Disturb"
 			}
 		},
 
 		"__comment": "UI-3210: Add Set Ringtone callflow element",
 		"setAlertInfo": {
-			"name": "Distinctive Ring",
-			"title": "Set Distinctive Ring",
+			"name": "Distinctive <br> Ring",
+			"title": "Distinctive Ring",
 			"label": "\"Alert-Info\" Header",
 			"tip": "Set distinctive ring for incoming call"
 		},
 
 		"webhook": {
 			"help": "This feature allows you to trigger a webhook call at any level of the callflow, to get \"real time\" info on how the callflow is behaving.",
-			"popupTitle": "Trigger Webhook",
+			"popupTitle": "Webhook",
 			"title": "Webhook",
 			"tip": "Trigger a webhook at any level in a callflow to get \"real time\" info on how the callflow is behaving.",
 			"uri": {
@@ -1367,10 +1383,11 @@
 				"help": "The HTTP URI to send the request",
 				"errorMessages": {
 					"url": "Invalid URL"
-				}
+				},
+				"invalid": "Invalid Value <br> The entered value should start with http:// or https://"
 			},
 			"httpVerb": {
-				"label": "Request Type",
+				"label": "Method",
 				"help": "HTTP method to use when sending the request"
 			},
 			"format": {
@@ -1382,8 +1399,9 @@
 				}
 			},
 			"retries": {
-				"label": "Re-try attempts",
-				"help": "How many times to retry the request if the host isn't available"
+				"label": "Retries",
+				"help": "How many times to retry the request if the host isn't available",
+				"invalid": "Invalid Value <br> The entered value must be between 1 and 4"
 			},
 			"customData": {
 				"label": "Custom data (optional)",
@@ -1406,7 +1424,7 @@
 		},
 
 		"phoneOnlyCallflow": {
-			"callflow": "Phone Only Device",
+			"callflow": "Phone Only <br> Device",
 			"connect_caller": "Connect a caller to a phone only device..",
 			"title": "Phone Only Device",
 			"which_callflow": "Which Phone Only Device?",
@@ -1414,7 +1432,7 @@
 		},
 
 		"callCentreCallflow": {
-			"callflow": "Call Center Queue",
+			"callflow": "Call Center <br> Queue",
 			"connect_caller": "Connect a caller to a call center queue..",
 			"title": "Call Center Queue",
 			"which_callflow": "Which Call Center Queue?",
@@ -1463,15 +1481,23 @@
 		"you_didnt_select": "You didn't select a valid phone number.",
 		"this_number_is_already_attached": "This number is already attached to a callflow",
 		"ring_group": "Ring Group",
-		"ring_group_tip": "Ring several VoIP or cell phones in order or at the same time",
+		"ring_group_tip": "Ring several phones in order or at the same time",
+		"ring_group_attempts_per_member_invalid": "Invalid Value <br> The entered value must be between 1 and 99",
 		"callflow": "Callflow",
 		"callflow_tip": "Transfer the call to another call flow",
 		"page_group": "Page Group",
-		"page_group_tip": "Ring several VoIP or cell phones",
-		"manual_presence": "Manual Presence",
-		"manual_presence_tip": "Manual Presence Help",
+		"page_group_tip": "Make an announcement over the speakerphone of multiple devices",
+		"manual_presence": "Manual <br> Presence",
+		"manual_presence_tip": "Set the presence state of an extension",
 		"group_pickup": "Group Pickup",
-		"group_pickup_tip": "Setup the group pickup feature for a user, device or a group",
+		"group_pickup_title": "Group Pickup",
+		"group_pickup_tip": "Setup the group pickup feature",
+		"user_pickup": "User Pickup",
+		"user_pickup_title": "User Pickup",
+		"user_pickup_tip": "Setup the user pickup feature",
+		"device_pickup": "Device Pickup",
+		"device_pickup_title": "Device Pickup",
+		"device_pickup_tip": "Setup the device pickup feature",
 		"receive_fax": "Receive Fax",
 		"receive_fax_tip": "Directs a fax to a specific user",
 		"pivot": "Pivot",
@@ -1486,17 +1512,17 @@
 		"disable_call_forwarding_tip": "Disable call forwarding",
 		"update_call_forwarding": "Update Call Forwarding",
 		"update_call_forwarding_tip": "Update the call forwarding number",
-		"dynamic_cid": "Dynamic cid",
+		"dynamic_cid": "Dynamic <br> Caller ID",
 		"dynamic_cid_tip": "Set your CallerId by entering it on the phone",
 		"prepend": "Prepend",
-		"prepend_tip": "Prepend Caller ID with a text",
-		"reset_prepend": "Reset Prepend",
-		"reset_prepend_tip": "Reset all the prepended texts before the Caller ID",
+		"prepend_tip": "Prepend the incomming Caller ID",
+		"reset_prepend": "Reset <br> Prepend",
+		"reset_prepend_tip": "Reset all Caller ID prepends",
 		"start_call_recording": "Start Call Recording",
 		"start_call_recording_tip": "Start Call Recording",
 		"stop_call_recording": "Stop Call Recording",
 		"stop_call_recording_tip": "Stop Call Recording",
-		"name_this_ring_group": "Name this ring group",
+		"name_this_ring_group": "Ring Group Name",
 		"ring_strategy": "Ring Strategy",
 		"at_the_same_time": "At the same time",
 		"in_order": "In order",
@@ -1515,9 +1541,9 @@
 		"connect_caller_to_another_callflow": "Connect a caller to another callflow...",
 		"which_callflow": "Which callflow?",
 		"callflow_title": "Callflow",
-		"name_this_page_group": "Name this page group",
+		"name_this_page_group": "Page Group Name",
 		"page_group_title": "Page Group",
-		"ID": "ID:",
+		"ID": "ID",
 		"status": "Status",
 		"idle": "Idle",
 		"ringing": "Ringing",
@@ -1533,9 +1559,10 @@
 		"select_user_title": "Select User",
 		"t_38_checkbox": "Enable T.38?",
 		"pivot_timeout": "Request Timeout (s)",
-		"pivot_timeout_invalid": "Invalid Request Timeout value<br>The Request Timeout range must be between 5 - 20",
-		"device_timeout_invalid": "Invalid ring timeout value<br>Timeout range must be between 10 - 120",
-		"voice_url": "Voice URL",
+		"pivot_timeout_invalid": "Invalid Value <br> The entered value must be between 5 and 20",
+		"pivot_url_invalid": "Invalid Value <br> The entered value should start with http:// or https://",
+		"device_timeout_invalid": "Invalid Value <br> The entered value must be between 10 and 120",
+		"voice_url": "URL",
 		"method": "Method",
 		"format": "Format",
 		"pivot_title": "Pivot",
@@ -1582,7 +1609,7 @@
 		"__comment": "UI-1742: Add a flag to list callflows in Main Numbers",
 		"__version": "3.22",
 		"list_this_callflow": "List this callflow in Main Number",
-		"numberOfTries": "Number of times to ring members",
+		"numberOfTries": "Ring Attempts Per Member",
 		"__comment": "UI-2910: add prepend id fields",
 		"__version": "4.1",
 		"applyTo": {

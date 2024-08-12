@@ -1,11 +1,12 @@
-<div class="dialog_popup callflows-port">
-	<h1> {{ i18n.callflows.menu.connect_caller_to_menu }}</h1>
+<div class="dialog_popup callflows-port callflow-action">
+	<!--<h1> {{ i18n.callflows.menu.connect_caller_to_menu }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label for="menu_selector">{{ i18n.callflows.menu.which_menu }}</label>
+				<!--<label for="menu_selector">{{ i18n.callflows.menu.which_menu }}</label>-->
 				<div class="select_wrapper">
 					<select id="menu_selector">
+						<option value="null" hidden>Select a menu</option>
 						{{#select selected}}
 							{{#each items}}
 								<option value="{{ this.id }}">{{ this.name }}</option>

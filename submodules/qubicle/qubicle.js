@@ -60,6 +60,21 @@ define(function(require) {
 								})),
 								popup;
 
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#queue_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#queue_selector', popup_html).change(toggleSaveButton);
+
 							$('#add', popup_html).click(function() {
 								node.setMetadata('id', $('#queue_selector', popup_html).val());
 

@@ -72,6 +72,23 @@ define(function(require) {
 								})),
 								popup;
 
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#conference_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#conference_selector', popup_html).change(toggleSaveButton);
+							
 							if ($('#conference_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
 							}
