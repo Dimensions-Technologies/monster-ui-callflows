@@ -1,4 +1,4 @@
-<div id="webhook_popup" class="dialog_popup callflows-port">
+<div id="webhook_popup" class="dialog_popup callflows-port callflow-action-form">
 	{{#monsterText}}
 		{{ i18n.callflows.webhook.help }}
 	{{/monsterText}}
@@ -6,14 +6,14 @@
 		<div class="form_content">
 			<div class="popup_field">
 				<label for="uri">
-					<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.uri.help }}"></i>
+					<!--<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.uri.help }}"></i>-->
 					{{ i18n.callflows.webhook.uri.label }}
 				</label>
 				<input type="text" id="uri" name="uri" value="{{uri}}"/>
 			</div>
 			<div class="popup_field">
 				<label for="http_verb">
-					<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.httpVerb.help }}"></i>
+					<!--<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.httpVerb.help }}"></i>-->
 					{{ i18n.callflows.webhook.httpVerb.label }}
 				</label>
 				<select id="http_verb" name="http_verb">
@@ -26,7 +26,7 @@
 			</div>
 			<div class="popup_field" id="form_popup_field"{{#unless hasVerbWithFormat}} style="display: none;"{{/unless}}>
 				<label for="format">
-					<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.format.help }}"></i>
+					<!--<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.format.help }}"></i>-->
 					{{ i18n.callflows.webhook.format.label }}
 				</label>
 				<select id="format" name="format">
@@ -37,28 +37,24 @@
 					{{/select}}
 				</select>
 			</div>
+			
 			<div class="popup_field">
-				<label for="retries">
-					<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.retries.help }}"></i>
-					{{ i18n.callflows.webhook.retries.label }}
-				</label>
-				<select id="retries" name="retries">
-					{{#select retries}}
-						<option value="1">1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4</option>
-					{{/select}}
-				</select>
-			</div>
-			<div class="popup_field custom-data">
+				<label for="retries">{{ i18n.callflows.webhook.retries.label }}</label>
+				<input type="number" min="1" step="1" max="4" id="retries" class="medium" value="{{retries}}"/>
+			</div>	
+		</div>
+
+		<div>
+			<div class="custom-data">
 				<label for="custom_data">
-					<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.customData.help }}"></i>
+					<!--<i class="help-popover fa fa-question" data-toggle="tooltip" data-placement="right" data-original-title="{{ i18n.callflows.webhook.customData.help }}"></i>-->
 					{{ i18n.callflows.webhook.customData.label }}
 				</label>
 				<div class="custom-data-container"></div>
 			</div>
+
 		</div>
+
 	</form>
 	<div class="buttons-center">
 		<button id="add" class="monster-button monster-button-primary">{{i18n.save}}</button>

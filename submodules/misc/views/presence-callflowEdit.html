@@ -1,13 +1,20 @@
-<div class="dialog_popup callflows-port">
-	<h1>{{ i18n.oldCallflows.manual_presence }}</h1>
+<div class="dialog_popup callflows-port callflow-action-form">
+	<!--<h1>{{ i18n.oldCallflows.manual_presence }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label for="presence_id_input">{{ i18n.oldCallflows.ID }} </label>
-				<input type="text" id="presence_id_input" class="medium" value="{{data_presence.presence_id}}"/>
+				<label for="presence_id_input">{{ i18n.oldCallflows.ID }}</label>
+				<!--<input type="text" id="presence_id_input" class="medium" value="{{data_presence.presence_id}}"/>-->
+
+				<input name="number" type="text" value="{{data_presence.presence_id}}" id="presence_id_input"
+					pattern="[0-9*#]*" inputmode="tel"
+					{{#if numberLength}}maxlength="{{ numberLength }}"{{/if}}
+					onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 42 || event.charCode == 35"
+				/>
+				
 			</div>
 			<div class="popup_field">
-				<label for="presence_status">{{ i18n.oldCallflows.status }}: </label>
+				<label for="presence_status">{{ i18n.oldCallflows.status }}</label>
 				<select id="presence_status" style="width: 100px; height: 28px;">
 					<option value="idle"{{#compare data_presence.status '===' 'idle'}} selected="selected"{{/compare}}>{{ i18n.oldCallflows.idle }}</option>
 					<option value="ringing"{{#compare data_presence.status '===' 'ringing'}} selected="selected"{{/compare}}>{{ i18n.oldCallflows.ringing }}</option>

@@ -1,10 +1,10 @@
-<div class="dialog_popup callflows-port after-bridge-dialog js-after-bridge-dialog">
-	{{#monsterPanelText i18n.callflows.after_bridge.warning 'warning' 'fill-width'}}
-		{{{ i18n.callflows.after_bridge.warning_dialog.message }}}
-	{{/monsterPanelText}}
+<div class="dialog_popup callflows-port callflow-action-form">
+	<form name="form" method="post" action="#">
+		{{#monsterPanelText i18n.callflows.after_bridge.warning 'warning' 'fill-width'}}
+			{{{ i18n.callflows.after_bridge.warning_dialog.message }}}
+		{{/monsterPanelText}}
+	</form>
 	<div class="buttons-center">
-		<button class="monster-button monster-button-primary js-confirm">
-			{{ i18n.dialog.confirmOk }}
-		</button>
+		<button id="ok" class="monster-button monster-button-primary">{{ i18n.dialog.confirmOk }}</button>
 	</div>
 </div>

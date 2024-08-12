@@ -1,9 +1,12 @@
-<div class="dialog_popup callflows-port">
+<div class="dialog_popup callflows-port callflow-action-form">
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
 				<label for="sleep_duration_input">{{ i18n.callflows.sleep.duration.label }}</label>
-				<input type="text" id="sleep_duration_input" value="{{ data_sleep.duration }}">
+				<input type="text" id="sleep_duration_input" value="{{ data_sleep.duration }}" 
+					pattern="[0-9]*" inputmode="numeric"
+					onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+				/>
 			</div>
 		</div>
 	</form>

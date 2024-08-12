@@ -13,7 +13,8 @@ define(function(require) {
 		afterbridgeDefineActions: function(args) {
 			var self = this,
 				callflow_nodes = args.actions,
-                hideCallflowAction = args.hideCallflowAction;
+                hideCallflowAction = args.hideCallflowAction,
+				afterBridgeTransfer = args.afterBridgeTransfer;
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
@@ -44,7 +45,29 @@ define(function(require) {
 						return '';
 					},
 					edit: function(node, callback) {
-						self.afterbridgeShowWarningDialog(node, callback);
+						var popup_html = $(self.getTemplate({
+								name: 'warningDialog',
+								data: {},
+								submodule: 'afterbridge'
+							})),
+							popup;
+		
+						$('#ok', popup_html).click(function() {
+							if (typeof callback === 'function') {
+								callback();
+							}
+							popup.dialog('close');
+						});
+			
+						popup = monster.ui.dialog(popup_html, {
+							title: self.i18n.active().callflows.after_bridge.park.nodeName,
+							minHeight: '0',
+							beforeClose: function() {
+								if (typeof callback === 'function') {
+									callback();
+								}
+							}
+						});
 					}
 				},
 				'after_bridge[action=transfer]': {
@@ -70,7 +93,70 @@ define(function(require) {
 						return node.getMetadata('data') || '';
 					},
 					edit: function(node, callback) {
-						self.afterbridgeTransferEdit(node, callback);
+						var action = node.getMetadata('action'),
+							number = node.getMetadata('data');
+
+						// Set numberLength to null or undefined if afterBridgeTransfer.numberLength is not set
+    					var numberLength = afterBridgeTransfer.numberLength !== undefined ? afterBridgeTransfer.numberLength : null;
+
+						var popup_html = $(self.getTemplate({
+								name: 'transferDialog',
+								data: {
+									action: action,
+									number: number || '',
+									numberLength: numberLength 
+								},
+								submodule: 'afterbridge'
+							})),
+							popup;
+
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#after-bridge-number', popup_html).val();
+							
+							if (Array.isArray(afterBridgeTransfer.denyNumbers) && afterBridgeTransfer.denyNumbers.includes(inputValue)) {
+								$('#after-bridge-number', popup_html).val('');
+								monster.ui.alert('warning', self.i18n.active().callflows.after_bridge.transfer.denyNumbers + afterBridgeTransfer.denyNumbers);
+								$('#add', popup_html).prop('disabled', true);
+							} else if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#after-bridge-number', popup_html).change(toggleSaveButton);
+
+						$('#add', popup_html).click(function() {
+							var number = $('#after-bridge-number').val(),
+								caption = '';
+
+							if(!number) {
+								number = false
+							} else {
+								caption = number;
+							}
+
+							node.setMetadata('data', number);
+							node.caption = caption;
+							if (typeof callback === 'function') {
+								callback();
+							}
+
+							popup.dialog('close');
+						});
+
+						popup = monster.ui.dialog(popup_html, {
+							title: self.i18n.active().callflows.after_bridge.transfer.dialog_title,
+							minHeight: '0',
+							beforeClose: function() {
+								if (typeof callback === 'function') {
+									callback();
+								}
+							}
+						});						
 					}
 				},
 				'after_bridge[action=hangup]': {
@@ -96,92 +182,35 @@ define(function(require) {
 						return '';
 					},
 					edit: function(node, callback) {
-						self.afterbridgeShowWarningDialog(node, callback);
+						var popup_html = $(self.getTemplate({
+								name: 'warningDialog',
+								data: {},
+								submodule: 'afterbridge'
+							})),
+							popup;
+		
+						$('#ok', popup_html).click(function() {
+							if (typeof callback === 'function') {
+								callback();
+							}
+							popup.dialog('close');
+						});
+			
+						popup = monster.ui.dialog(popup_html, {
+							title: self.i18n.active().callflows.after_bridge.hangup.nodeName,
+							minHeight: '0',
+							beforeClose: function() {
+								if (typeof callback === 'function') {
+									callback();
+								}
+							}
+						});
 					}
 				}
 
 			}
 
 			$.extend(callflow_nodes, actions);
-
-		},
-
-        afterbridgeShowWarningDialog: function (node, callback) {
-			var self = this,
-				$popup,
-				$dialog;
-
-			$dialog = $(self.getTemplate({
-				name: 'warningDialog',
-				data: {},
-				submodule: 'afterbridge'
-			}));
-
-			$popup = monster.ui.dialog($dialog, {
-				title: self.i18n.active().callflows.after_bridge.warning_dialog.title,
-				minHeight: '0',
-				width: 400,
-				beforeClose: function() {
-					if (typeof callback === 'function') {
-						callback();
-					}
-				}
-			});
-
-			$dialog.find('.js-confirm').click(function() {
-				if (typeof callback === 'function') {
-					callback();
-				}
-				$popup.dialog('close');
-			});
-
-		},
-
-		afterbridgeTransferEdit: function (node, callback) {
-			var self = this,
-				$popup,
-				$dialog,
-				action = node.getMetadata('action'),
-				number = node.getMetadata('data');
-
-			$dialog = $(self.getTemplate({
-				name: 'transferDialog',
-				data: {
-					action: action,
-					number: number || ''
-				},
-				submodule: 'afterbridge'
-			}));
-
-			$popup = monster.ui.dialog($dialog, {
-				title: self.i18n.active().callflows.after_bridge.transfer.dialog_title,
-				minHeight: '0',
-				width: 400,
-				beforeClose: function() {
-					if (typeof callback === 'function') {
-						callback();
-					}
-				}
-			});
-
-			$dialog.find('.js-save').click(function() {
-				var number = $('#after-bridge-number').val();
-				var caption = '';
-
-				if(!number) {
-					number = false
-				} else {
-					caption = number;
-				}
-
-				node.setMetadata('data', number);
-				node.caption = caption;
-				if (typeof callback === 'function') {
-					callback();
-				}
-
-				$popup.dialog('close');
-			});
 
 		}
 

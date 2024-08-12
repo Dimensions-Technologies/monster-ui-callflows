@@ -53,13 +53,20 @@ define(function(require) {
 
 			monster.parallel({
 				media_list: function(callback) {
+
+					var mediaFilters = {
+						paginate: false
+					};
+		
+					if (miscSettings.enableCustomCallflowActions && miscSettings.hideMailboxMedia) {
+						mediaFilters['filter_not_media_source'] = 'recording';
+					}
+
 					self.callApi({
 						resource: 'media.list',
 						data: {
 							accountId: self.accountId,
-							filters: {
-								paginate: false
-							}
+							filters: mediaFilters
 						},
 						success: function(mediaList, status) {
 							_.each(mediaList.data, function(media) {
@@ -67,6 +74,9 @@ define(function(require) {
 									media.name = '[' + media.media_source.substring(0, 3).toUpperCase() + '] ' + media.name;
 								}
 							});
+
+							// sort data alphabetically
+							mediaList.data = _.sortBy(mediaList.data, 'name');
 
 							mediaList.data.unshift({
 								id: '',
@@ -78,6 +88,7 @@ define(function(require) {
 							callback(null, mediaList);
 						}
 					});
+					
 				},
 				menu_get: function(callback) {
 					if (typeof data === 'object' && data.id) {
@@ -471,6 +482,23 @@ define(function(require) {
 								},
 								submodule: 'menu'
 							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#menu_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#menu_selector', popup_html).change(toggleSaveButton);
 
 							if ($('#menu_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
