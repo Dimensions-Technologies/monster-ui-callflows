@@ -1,0 +1,33 @@
+<div id="webhook_popup" class="dialog_popup callflows-port callflow-action-form">
+    <form id="webhook_form" method="post" action="#">
+        <div class="form_content">
+            <div class="popup_field">
+                <label for="name">
+                    Call Tag
+                </label>
+                <select id="name" name="name">
+                    <option value="null" hidden>Select a call tag</option>
+                    {{#select dimension.id}}
+                        {{#each callTags}}
+                            <option value="{{id}}">{{name}}</option>
+                        {{/each}}
+                    {{/select}}
+                </select>
+            </div>
+            <div class="popup_field">
+                <label for="tagValue">
+                     Tag Value
+                </label>
+                <input type="text" id="tagValue" name="tagValue" value="{{dimension.tagValue}}"/>
+            </div>
+        </div>
+        <div id="tagDeletedMessage">
+            {{#monsterText}}
+                {{ i18n.callflows.callTag.tagDeleted }}
+            {{/monsterText}}
+        </div>
+	</form>
+    <div class="buttons-center">
+        <button id="add" class="monster-button monster-button-primary">{{i18n.save}}</button>
+    </div>
+</div>
