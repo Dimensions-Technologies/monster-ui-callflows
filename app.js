@@ -2,6 +2,7 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
+		accountData = {},
 		isReseller = false,
 		uk999Enabled = false,
 		hideFromMenu = {},
@@ -16,7 +17,8 @@ define(function(require) {
 		deviceAudioCodecs = {},
 		deviceVideoCodecs = {},
 		afterBridgeTransfer = {},
-		callflowFlags = [];
+		callflowFlags = [],
+		callTags = {};
 
 	var appSubmodules = [
 		'afterbridge',
@@ -101,151 +103,165 @@ define(function(require) {
 
 		// Entry Point of the app
 		render: function(container) {
+
 			var self = this,
 				parent = _.isEmpty(container) ? $('#monster_content') : container;
 
-			// check if the account logged in with is a reseller account
-			if (monster.util.isReseller()) {
-				isReseller = true
-			}
-
-			// check whitelable doc for dimension configuration for app
-			if (monster.config.whitelabel.hasOwnProperty('dimension')) {
-
-				var data;
-				data = monster.config.whitelabel;
+			monster.waterfall([
 				
-				if (data.dimension.hasOwnProperty('dt_callflows')) {
+				function(callback) {
+					self.callApi({
+						resource: 'account.get',
+						data: {
+							accountId: self.accountId
+						},
+						success: function(data) {
+							accountData = data.data;
+							callback(null);
+						}
+					});
+				},
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideFromMenu')) {															
-						data.dimension.dt_callflows.hideFromMenu.forEach(function(action) {
-							hideFromMenu[action] = true;
-						});
+				function() {
+
+					// check if the account logged in with is a reseller account
+					if (monster.util.isReseller()) {
+						isReseller = true
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideAdd')) {															
-						data.dimension.dt_callflows.hideAdd.forEach(function(action) {
-							hideAdd[action] = true;
-						});
+					// check whitelable doc for dimension configuration for app
+					if (monster.config.whitelabel.hasOwnProperty('dimension')) {
+
+						var data;
+						data = monster.config.whitelabel;
+						
+						if (data.dimension.hasOwnProperty('dt_callflows')) {
+
+							if (data.dimension.dt_callflows.hasOwnProperty('hideFromMenu')) {															
+								data.dimension.dt_callflows.hideFromMenu.forEach(function(action) {
+									hideFromMenu[action] = true;
+								});
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('hideAdd')) {															
+								data.dimension.dt_callflows.hideAdd.forEach(function(action) {
+									hideAdd[action] = true;
+								});
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('hideCallflowAction')) {															
+								data.dimension.dt_callflows.hideCallflowAction.forEach(function(action) {
+									hideCallflowAction[action] = true;
+								});
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('hideFromCallflowAction')) {
+								Object.keys(data.dimension.dt_callflows.hideFromCallflowAction).forEach(function(key) {
+									data.dimension.dt_callflows.hideFromCallflowAction[key].forEach(function(action) {
+										if (!hideFromCallflowAction.hasOwnProperty(key)) {
+											hideFromCallflowAction[key] = {};
+										}
+										hideFromCallflowAction[key][action] = true;
+									});
+								});
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('hideClassifiers')) {															
+								data.dimension.dt_callflows.hideClassifiers.forEach(function(action) {
+									hideClassifiers[action] = true;
+								});
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {															
+								data.dimension.dt_callflows.miscSettings.forEach(function(action) {
+									miscSettings[action] = true;
+								});
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {															
+								data.dimension.dt_callflows.hideDeviceTypes.forEach(function(action) {
+									hideDeviceTypes[action] = true;
+								});
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('ttsLanguages')) {				
+								ttsLanguages = data.dimension.dt_callflows.ttsLanguages
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('deviceAudioCodecs')) {
+								deviceAudioCodecs = data.dimension.dt_callflows.deviceAudioCodecs
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('deviceVideoCodecs')) {
+								deviceVideoCodecs = data.dimension.dt_callflows.deviceVideoCodecs
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('afterBridgeTransfer')) {
+								afterBridgeTransfer = data.dimension.dt_callflows.afterBridgeTransfer
+							}
+						}
+
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideCallflowAction')) {															
-						data.dimension.dt_callflows.hideCallflowAction.forEach(function(action) {
-							hideCallflowAction[action] = true;
-						});
+					// set miscSettings.enableDimensionsCallTagAction check account doc for call tag data
+					if (miscSettings.enableDimensionsCallTagAction) {
+						if (accountData.hasOwnProperty('dimension') && accountData.dimension.hasOwnProperty('tags')) {
+							callTags = accountData.dimension.tags;
+						} else {
+							callTags = {};
+						}
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideFromCallflowAction')) {
-						Object.keys(data.dimension.dt_callflows.hideFromCallflowAction).forEach(function(key) {
-							data.dimension.dt_callflows.hideFromCallflowAction[key].forEach(function(action) {
-								if (!hideFromCallflowAction.hasOwnProperty(key)) {
-									hideFromCallflowAction[key] = {};
-								}
-								hideFromCallflowAction[key][action] = true;
-							});
-						});
+					// set miscSettings.hideCallRestictions based on account type if not explicitly set
+					if (miscSettings.hideCallRestictions == undefined) {
+
+						if (isReseller == true) {
+							miscSettings.hideCallRestictions = false
+						} else {
+							miscSettings.hideCallRestictions = true
+						}
+					
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideClassifiers')) {															
-						data.dimension.dt_callflows.hideClassifiers.forEach(function(action) {
-							hideClassifiers[action] = true;
-						});
+					// log to console if enabled
+					if (miscSettings.enableConsoleLogging) {
+						console.log('hideFromMenu:', hideFromMenu);
+						console.log('hideAdd:', hideAdd);
+						console.log('hideCallflowAction:', hideCallflowAction);
+						console.log('hideFromCallflowAction:', hideFromCallflowAction);
+						console.log('hideClassifiers:', hideClassifiers);
+						console.log('miscSettings:', miscSettings);
+						console.log('hideDeviceTypes:', hideDeviceTypes);
+						console.log('ttsLanguages:', ttsLanguages);
+						console.log('deviceAudioCodecs:', deviceAudioCodecs);
+						console.log('deviceVideoCodecs:', deviceVideoCodecs);
+						console.log('afterBridgeTransfer:', afterBridgeTransfer);
+						console.log('callTags:', callTags);
+						console.log('accountData:', accountData);
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {															
-						data.dimension.dt_callflows.miscSettings.forEach(function(action) {
-							miscSettings[action] = true;
-						});
-					}
+					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags });
+					self.renderEntityManager(parent);
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {															
-						data.dimension.dt_callflows.hideDeviceTypes.forEach(function(action) {
-							hideDeviceTypes[action] = true;
-						});
-					}
-
-					if (data.dimension.dt_callflows.hasOwnProperty('ttsLanguages')) {				
-						ttsLanguages = data.dimension.dt_callflows.ttsLanguages
-					}
-
-					if (data.dimension.dt_callflows.hasOwnProperty('deviceAudioCodecs')) {
-						deviceAudioCodecs = data.dimension.dt_callflows.deviceAudioCodecs
-					}
-
-					if (data.dimension.dt_callflows.hasOwnProperty('deviceVideoCodecs')) {
-						deviceVideoCodecs = data.dimension.dt_callflows.deviceVideoCodecs
-					}
-
-					if (data.dimension.dt_callflows.hasOwnProperty('afterBridgeTransfer')) {
-						afterBridgeTransfer = data.dimension.dt_callflows.afterBridgeTransfer
-					}
-				}
-
-			}
-
-			// set miscSettings.hideCallRestictions based on account type if not explicitly set
-			if (miscSettings.hideCallRestictions == undefined) {
-
-				if (isReseller == true) {
-					miscSettings.hideCallRestictions = false
-				} 
-
-				else {
-					miscSettings.hideCallRestictions = true
-				}
-			
-			}
-
-			// log to console if enabled
-			if (miscSettings.enableConsoleLogging == true || false) {
-				console.log('hideFromMenu:', hideFromMenu);
-				console.log('hideAdd:', hideAdd);
-				console.log('hideCallflowAction:', hideCallflowAction);
-				console.log('hideFromCallflowAction:', hideFromCallflowAction);
-				console.log('hideClassifiers:', hideClassifiers);
-				console.log('miscSettings:', miscSettings);
-				console.log('hideDeviceTypes:', hideDeviceTypes);
-				console.log('ttsLanguages:', ttsLanguages);
-				console.log('deviceAudioCodecs:', deviceAudioCodecs);
-				console.log('deviceVideoCodecs:', deviceVideoCodecs);
-				console.log('afterBridgeTransfer:', afterBridgeTransfer);
-			}
-
-			monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer });
-			self.renderEntityManager(parent);
-
-			// show warning message if emergency caller id has not been set on the account
-			if (miscSettings.checkEmergencyNumber == true || false) {
-
-				self.callApi({
-					resource: 'account.get',
-					data: {
-						accountId: self.accountId
-					},
-					success: function(data) {
-
+					// show warning message if emergency caller id has not been set on the account
+					if (miscSettings.checkEmergencyNumber == true || false) {
 
 						// check if 'uk_999_enabled' exists and is true on account doc
-						if (data.data.hasOwnProperty('dimension')) {
-							uk999Enabled = (data.data.dimension.hasOwnProperty('uk_999_enabled') && data.data.dimension.uk_999_enabled == true) ? true : false;	
-						} 
-						
-						else {
+						if (accountData.hasOwnProperty('dimension')) {
+							uk999Enabled = (accountData.dimension.hasOwnProperty('uk_999_enabled') && accountData.dimension.uk_999_enabled == true) ? true : false;	
+						} else {
 							uk999Enabled = false;
 						}
 
 						// check if emergency caller id has been set on the account
-						if (data.data.hasOwnProperty('caller_id') && data.data.caller_id.hasOwnProperty('emergency') && data.data.caller_id.emergency.hasOwnProperty('number')) {
-							
-							
+						if (accountData.hasOwnProperty('caller_id') && accountData.caller_id.hasOwnProperty('emergency') && accountData.caller_id.emergency.hasOwnProperty('number')) {
 							if (miscSettings.checkEmergencyAddress999 == true || false) {
-
 								if (uk999Enabled == true) {
 									self.callApi({
 										resource: 'numbers.get',
 										data: {
 											accountId: self.accountId,
-											phoneNumber: data.data.caller_id.emergency.number
+											phoneNumber: accountData.caller_id.emergency.number
 										},
 										success: function(data) {
 											if (!data.data.hasOwnProperty('dimension') || !data.data.dimension.hasOwnProperty('uk_999')) {
@@ -254,16 +270,14 @@ define(function(require) {
 										}
 									});
 								}
-
 							}
 
 							if (miscSettings.checkEmergencyAddress911 == true || false) {
-
 								self.callApi({
 									resource: 'numbers.get',
 									data: {
 										accountId: self.accountId,
-										phoneNumber: data.data.caller_id.emergency.number
+										phoneNumber: accountData.caller_id.emergency.number
 									},
 									success: function(data) {
 										if (!data.data.hasOwnProperty('e911')) {
@@ -271,21 +285,18 @@ define(function(require) {
 										}
 									}
 								});
-
 							}
 
-						}
-
-						else {
-
+						} else {
 							// emergency caller id has not been set on the account
 							monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdNotSet);
-						
 						}
+						
 					}
-				});
+					
+				}
 
-			}
+			]);
 
 		},
 
@@ -1570,7 +1581,6 @@ define(function(require) {
 			$('.buttons').append(buttons);
 		},
 
-		// Callflow JS code
 		buildFlow: function(json, parent, id, key) {
 			var self = this,
 				branch = self.branch(self.construct_action(json));
@@ -1580,8 +1590,14 @@ define(function(require) {
 			branch.key = key;
 			branch.disabled = _.get(json, 'data.skip_module');
 
-			branch.caption = self.actions.hasOwnProperty(branch.actionName) ? self.actions[branch.actionName].caption(branch, self.flow.caption_map) : '';
-
+			// check if the action is a webhook and adjust the caption logic
+			if (json.module == 'webhook' && json.data.hasOwnProperty('dimension')) {
+				var callTagCaption = json.data.dimension.name + ': ' + json.data.dimension.tagValue
+				branch.caption = callTagCaption;
+			} else {
+				branch.caption = self.actions.hasOwnProperty(branch.actionName) ? self.actions[branch.actionName].caption(branch, self.flow.caption_map) : '';
+			}
+			
 			if (self.actions.hasOwnProperty(parent.actionName) && self.actions[parent.actionName].hasOwnProperty('key_caption')) {
 				branch.key_caption = self.actions[parent.actionName].key_caption(branch, self.flow.caption_map);
 			}
@@ -1596,7 +1612,7 @@ define(function(require) {
 
 			return parent;
 		},
-
+		
 		construct_action: function(json) {
 			var self = this,
 				actionParams = '';
@@ -2664,24 +2680,18 @@ define(function(require) {
 					{
 						type: 'group_pickupDevice',
 						actionName: 'group_pickupDevice[device_id=*]'
-					}
+					},
+					// custom webhook actions
+					{
+						type: 'dimensionsCallTag',
+						actionName: 'dimensionsCallTag[id=*]'
+					},
 				];
 				
 				// render action and set callflowFlags when adding custom action to callflow
 				branchActions.forEach(action => {
 					if (branch.actionName === action.actionName) {
-						
-						/*
-						var branchId = branch.data.data.id;
-						var branchFlag = `${action.type}[id=${branchId}]`;
-				
-						// handle action that has not been set
-						if (branch.data.data.id == 'null') {
-							branch.data.data.id = action.type;
-							branchFlag = `${action.type}[id=${action.type}]`;
-						}
-						*/
-						
+
 						// Extract identifier type from actionName (e.g., device_id, user_id, id)
 						var identifierMatch = action.actionName.match(/\[(\w+)=\*\]/),
 							identifierType = identifierMatch ? identifierMatch[1] : 'id',
@@ -2703,37 +2713,9 @@ define(function(require) {
 				});
 
 				// re-render action on load or after save
-				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]') {
+				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]' || branch.actionName == 'webhook[]') {
 					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
-						
-						/*
-						// check if the branch id is contained within the flags array
-						self.dataCallflow.dimension.flags.forEach(function(flag) {
-							
-							var branchId = branch.data.data.id,
-								branchFlag = null,
-								flagParts = flag.match(/(\w+)\[id=(\w+)\]/);
-							
-							branchActions.forEach(callflow => {
-								if (flagParts[1] === callflow.type && flagParts[2] === branchId) {
-									branch.actionName = callflow.actionName;
-									branchFlag = `${callflow.type}[id=${branchId}]`;
-
-									if (callflow.captionToRemove) {
-										branch.caption = branch.caption.replace(callflow.captionToRemove, '');
-									}
-								}
-							});
-							
-							// check if callflowsFlags already contains the branchFlag
-							if (!callflowFlags.includes(branchFlag)) {
-								// push the flag into callflowsFlags if it doesn't already exist
-								callflowFlags.push(branchFlag);
-							}
-
-						});
-						*/
-						
+					
 						// Check if the branch id is contained within the flags array
 						self.dataCallflow.dimension.flags.forEach(function(flag) {
 							var branchId = null,
@@ -2778,7 +2760,7 @@ define(function(require) {
 				}
 
 			}
-
+			
 			// trim branch.caption if the length exceeds 22 characters
 			if (branch.caption.length > 22) {
 				branch.caption = branch.caption.substring(0, 22) + '...';
