@@ -2,6 +2,7 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
+		isReseller = false,
 		uk999Enabled = false,
 		hideFromMenu = {},
 		hideAdd = {},
@@ -91,6 +92,11 @@ define(function(require) {
 			var self = this,
 				parent = _.isEmpty(container) ? $('#monster_content') : container;
 
+			// check if the account logged in with is a reseller account
+			if (monster.util.isReseller()) {
+				isReseller = true
+			}
+
 			// check whitelable doc for dimension configuration for app
 			if (monster.config.whitelabel.hasOwnProperty('dimension')) {
 
@@ -162,6 +168,19 @@ define(function(require) {
 										
 						ttsLanguages = data.dimension.dt_callflows.ttsLanguages
 
+					}
+
+					// set miscSettings.hideCallRestictions based on account type if not explicitly set
+					if (miscSettings.hideCallRestictions == undefined) {
+
+						if (isReseller == true) {
+							miscSettings.hideCallRestictions = false
+						} 
+
+						else {
+							miscSettings.hideCallRestictions = true
+						}
+					
 					}
 
 					// log to console if enabled
@@ -634,70 +653,96 @@ define(function(require) {
 
 		renderAccountSettings: function(container) {
 			var self = this;
+		
+			self.list_classifiers(function(error, classifiersData) {
+				if (error) {
+					console.error('Error fetching classifiers:', error);
+					return;
+				}
+		
+				self.loadAccountSettingsData(function(accountSettingsData) {
 
-			self.loadAccountSettingsData(function(accountSettingsData) {
+					
+					var currentRestrictions = {};
+					
+					// Get current account call restictions
+					if (accountSettingsData.account.hasOwnProperty('call_restriction')) {
+						currentRestrictions = accountSettingsData.account.call_restriction;
+					}
 
-				var formattedData = self.formatAccountSettingsData(accountSettingsData),
-					template = $(self.getTemplate({
+					var formattedData = self.formatAccountSettingsData(accountSettingsData);
+		
+					// Set account call restictions for the ui
+					formattedData.classifiers = Object.keys(classifiersData).map(key => ({
+						id: key,
+						name: classifiersData[key].friendly_name,
+						action: currentRestrictions[key] && currentRestrictions[key].action === 'deny' ? 'deny' : 'inherit'
+					}));
+
+					var template = $(self.getTemplate({
 						name: 'accountSettings',
 						data: {
 							...formattedData,
 							miscSettings: miscSettings
 						}
-					})),
-					widgetBlacklist = self.renderBlacklists(template, accountSettingsData);
-
-				_.forEach(monster.util.getCapability('caller_id.external_numbers').isEnabled ? [
-					'external',
-					'emergency',
-					'asserted'
-				] : [], function(type) {
-					var $target = template.find('.caller-id-' + type + '-target');
-
-					if (!$target.length) {
-						return;
-					}
-					monster.ui.cidNumberSelector($target, {
-						allowAdd: allowAddingExternalCallerId,
-						noneLabel: self.i18n.active().callflows.accountSettings.callerId.defaultNumber,
-						selectName: 'caller_id.' + type + '.number',
-						selected: _.get(formattedData.account, ['caller_id', type, 'number']),
-						cidNumbers: formattedData.externalNumbers,
-						phoneNumbers: _.map(formattedData.numberList, function(number) {
-							return {
-								number: number
-							};
-						})
-					});
-				});
-
-				monster.ui.tooltips(template);
-
-				// Setup input fields
-				monster.ui.chosen(template.find('.cid-number-select, .preflow-callflows-dropdown'));
-				monster.ui.mask(template.find('.phone-number'), 'phoneNumber');
-
-				// Set validation rules
-				monster.ui.validate(template.find('#account_settings_form'), {
-					rules: {
-						'caller_id.asserted.number': {
-							phoneNumber: true
-						},
-						'caller_id.asserted.realm': {
-							realm: true
+					}));
+		
+					var widgetBlacklist = self.renderBlacklists(template, accountSettingsData);
+					var allowAddingExternalCallerId = !miscSettings.preventAddingExternalCallerId;
+		
+					_.forEach(monster.util.getCapability('caller_id.external_numbers').isEnabled ? [
+						'external',
+						'emergency',
+						'asserted'
+					] : [], function(type) {
+						var $target = template.find('.caller-id-' + type + '-target');
+		
+						if (!$target.length) {
+							return;
 						}
-					},
-					messages: {
-						'caller_id.asserted.number': self.i18n.active().callflows.accountSettings.callerId.messages.invalidNumber
-					}
+						monster.ui.cidNumberSelector($target, {
+							allowAdd: allowAddingExternalCallerId,
+							noneLabel: self.i18n.active().callflows.accountSettings.callerId.defaultNumber,
+							selectName: 'caller_id.' + type + '.number',
+							selected: _.get(formattedData.account, ['caller_id', type, 'number']),
+							cidNumbers: formattedData.externalNumbers,
+							phoneNumbers: _.map(formattedData.numberList, function(number) {
+								return {
+									number: number
+								};
+							})
+						});
+					});
+		
+					monster.ui.tooltips(template);
+		
+					// Setup input fields
+					monster.ui.chosen(template.find('.cid-number-select, .preflow-callflows-dropdown'));
+					monster.ui.mask(template.find('.phone-number'), 'phoneNumber');
+		
+					// Set validation rules
+					monster.ui.validate(template.find('#account_settings_form'), {
+						rules: {
+							'caller_id.asserted.number': {
+								phoneNumber: true
+							},
+							'caller_id.asserted.realm': {
+								realm: true
+							}
+						},
+						messages: {
+							'caller_id.asserted.number': self.i18n.active().callflows.accountSettings.callerId.messages.invalidNumber
+						}
+					});
+		
+					container.empty().append(template);
+		
+					self.bindAccountSettingsEvents(template, accountSettingsData, widgetBlacklist);
 				});
-
-				container.empty().append(template);
-
-				self.bindAccountSettingsEvents(template, accountSettingsData, widgetBlacklist);
-
 			});
 		},
+		
+
 
 		formatAccountSettingsData: function(data) {
 
@@ -945,6 +990,11 @@ define(function(require) {
 					if (formData.preflow.always === '_disabled') {
 						delete newData.preflow.always;
 					}
+				}
+
+				// Get call restriction data if account is reseller and call restrictions are not being hidden
+				if (isReseller == true && (miscSettings.hideCallRestictions != true || false)) {
+					formData.call_restriction;
 				}
 
 				if (!miscSettings.hideOutboundFlags) {
@@ -2690,7 +2740,57 @@ define(function(require) {
 					_.unset(obj, key);
 				}
 			});
+		},
+
+		list_classifiers: function(callback) {
+			var self = this;
+			self.callApi({
+				resource: 'numbers.listClassifiers',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						paginate: false
+					}
+				},
+				success: function(_data_classifiers, status) {
+							
+					if ('data' in _data_classifiers && typeof hideClassifiers === 'object') {
+
+						var formattedClassifiers = {}
+						
+						$.each(_data_classifiers.data, function(k, v) {
+							
+							// check if k exists in hideClassifiers and its value is true
+							if (hideClassifiers.hasOwnProperty(k) && hideClassifiers[k] === true) {
+
+								return; 
+						
+							}
+
+							else {
+
+								// if k is not in hideClassifiers or its value is not true
+								formattedClassifiers[k] = {
+									friendly_name: v.friendly_name
+								};
+
+							}
+
+							_data_classifiers.data = formattedClassifiers;
+
+						});
+					}
+
+					callback(null, formattedClassifiers);
+
+				}
+			});
 		}
+					
+		
+		
+
+		
 		
 
 	};
