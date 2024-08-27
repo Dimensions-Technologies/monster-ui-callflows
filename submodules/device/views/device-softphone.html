@@ -221,7 +221,7 @@
 					</div>
 					{{/if}}
 					-->
-					{{#unless dimensionDeviceType.hotdesk}}
+				{{#unless dimensionDeviceType.hotdesk}}
 					<div class="clearfix">
 						<label for="name">{{ i18n.callflows.device.presence_id }}</label>
 						{{#unless miscSettings.deviceReadOnlyFields}}
@@ -231,7 +231,7 @@
 						{{/unless}}
 						{{#if miscSettings.deviceReadOnlyFields}}
 							<div class="input">
-								<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.device.presence_id_placeholder }}" value="{{data.presence_id}}""/>
+								<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" />
 							</div>
 						{{/if}}
 					</div>
@@ -246,7 +246,7 @@
 						{{/unless}}
 						{{#if miscSettings.deviceReadOnlyFields}}
 							<div class="input">
-								<input disabled class="span4 input-readonly" id="caller_id_name_internal" name="caller_id.internal.name" type="text" placeholder="{{ i18n.callflows.device.caller_id_name_placeholder }}" value="{{data.caller_id.internal.name}}" />
+								<input disabled class="span4 input-readonly" id="caller_id_name_internal" name="caller_id.internal.name" type="text" />
 							</div>
 						{{/if}}
 					</div>
@@ -260,7 +260,7 @@
 						{{/unless}}
 						{{#if miscSettings.deviceReadOnlyFields}}
 							<div class="input">
-								<input disabled class="span4 input-readonly" id="caller_id_number_internal" name="caller_id.internal.number" type="text" placeholder="+15555555555" value="{{data.caller_id.internal.number}}" />
+								<input disabled class="span4 input-readonly" id="caller_id_number_internal" name="caller_id.internal.number" />
 							</div>
 						{{/if}}
 					</div>

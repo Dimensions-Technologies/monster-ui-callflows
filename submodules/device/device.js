@@ -65,6 +65,7 @@ define(function(require) {
 		},
 
 		deviceEdit: function(data, _parent, _target, _callbacks, data_defaults) {
+
 			var self = this,
 				parent = _parent || $('#device-content'),
 				target = _target || $('#device-view', parent),
@@ -358,6 +359,15 @@ define(function(require) {
 			if (typeof data === 'object' && data.id) {
 				self.deviceGet(data.id, function(_data, status) {
 					defaults.data.device_type = 'sip_device';
+
+					// support distinctive ringtone dropdown if enabled
+					if (miscSettings.deviceDistinctiveRingtones == true || false) { 
+						if (_data.ringtones && _data.ringtones.external == 'alert-external' && _data.ringtones.internal == 'alert-internal') {
+							defaults.data.ringtones.distinctive = 'enabled';
+						} else {
+							defaults.data.ringtones.distinctive = 'disabled';
+						}
+					}
 
 					if ('media' in _data && 'encryption' in _data.media) {
 						defaults.field_data.media.secure_rtp.value = _data.media.encryption.enforce_security ? _data.media.encryption.methods[0] : 'none';
@@ -1001,7 +1011,7 @@ define(function(require) {
 			return data;
 		},
 
-		deviceNormalizeData: function(data) {
+		deviceNormalizeData: function(data, form_data) {
 			var self = this;
 
 			if (data.hasOwnProperty('provision')) {
@@ -1076,12 +1086,33 @@ define(function(require) {
 				}
 			}
 
-			if (data.ringtones && 'internal' in data.ringtones && data.ringtones.internal === '') {
-				delete data.ringtones.internal;
+			// support distinctive ringtone dropdown if enabled
+			if (miscSettings.deviceDistinctiveRingtones == true || false) {
+
+				if (data.ringtones.distinctive == 'enabled') {
+					data.ringtones.internal = 'alert-internal';
+					data.ringtones.external = 'alert-external';
+				}
+
+				else {
+					delete data.ringtones.internal;
+					delete data.ringtones.external;
+				}
+				
+				delete data.ringtones.distinctive
+			
 			}
 
-			if (data.ringtones && 'external' in data.ringtones && data.ringtones.external === '') {
-				delete data.ringtones.external;
+			else {
+				
+				if (data.ringtones && 'internal' in data.ringtones && data.ringtones.internal === '') {
+					delete data.ringtones.internal;
+				}
+
+				if (data.ringtones && 'external' in data.ringtones && data.ringtones.external === '') {
+					delete data.ringtones.external;
+				}
+
 			}
 
 			// For devices who don't have sip creds, we need to use username, for sip url we already set it to "route", and for the others, the default is applied: "contact"
@@ -1098,7 +1129,7 @@ define(function(require) {
 			}
 
 			// add support for setting dnd doc for phone only devices
-			if (dimensionDeviceType == 'phoneOnly') {
+			if (dimensionDeviceType == 'communal') {
 				data.do_not_disturb = {
 					enabled: data.do_not_disturb.enabled
 				}
@@ -1229,6 +1260,7 @@ define(function(require) {
 		},
 
 		deviceSave: function(form_data, data, success) {
+
 			var self = this,
 				id = (typeof data.data === 'object' && data.data.id) ? data.data.id : undefined,
 				normalized_data = self.deviceFixArrays(self.deviceNormalizeData($.extend(true, {}, data.data, form_data)), form_data);
