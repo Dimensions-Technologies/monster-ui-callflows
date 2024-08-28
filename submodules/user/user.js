@@ -343,15 +343,17 @@ define(function(require) {
 						extension_numbers: [],
 						callflow_numbers: [],
 						call_restriction: {},
+						callflow_features: null,
 						canImpersonate: monster.util.canImpersonate(self.accountId)
 					}
 				};
 
 			self.random_id = false;
 
-			var userId = data.id
+			var userId = data.id,
+				userCallflow = null;
 
-			monster.parallel(_.merge({
+			monster.parallel(_.merge({		
 				
 				get_callflow: function(callback) {
 					self.callApi({
@@ -359,16 +361,19 @@ define(function(require) {
 						data: {
 							accountId: self.accountId,
 							filters: {
-								"filter_owner_id": userId
+								filter_owner_id: userId,
+								filter_type: 'mainUserCallflow',
+								paginate: false
 							}
 						},
 						success: function(callflow) {
 
 							if (callflow.data.length > 0 && callflow.data[0].numbers.length > 0) {
 
-								// set callflow id for the user
-								defaults.field_data.user_callflow = callflow.data[0].id;
-						
+								// set callflow for the user
+								defaults.field_data.user_callflow = callflow.data[0];
+								userCallflow = callflow.data[0];
+								
 								// filter numbers to get phone numbers
 								var phoneNumbers = callflow.data[0].numbers.filter(function(number) {
 									if (miscSettings.fixedExtensionLength) {
@@ -396,16 +401,18 @@ define(function(require) {
 								var formattedExtensionNumbers = extensionNumbers.map(function(number) {
 									return number
 								});
-					
+
 								if (miscSettings.enableConsoleLogging) {
-									console.log('Callflow ID', callflow.data[0].id)
-									console.log('Phone Numbers', formattedPhoneNumbers)
-									console.log('Extension Numbers', formattedExtensionNumbers)
+									console.log('User Callflow', callflow.data[0]);
+									console.log('Callflow Features', callflow.data[0].modules);
+									console.log('Phone Numbers', formattedPhoneNumbers);
+									console.log('Extension Numbers', formattedExtensionNumbers);
 								}
 							
-								defaults.field_data.callflow_numbers = callflow.data[0].numbers
+								defaults.field_data.callflow_numbers = callflow.data[0].numbers;
 								defaults.field_data.phone_numbers = formattedPhoneNumbers;
 								defaults.field_data.extension_numbers = formattedExtensionNumbers;
+								defaults.field_data.callflow_features = callflow.data[0].modules;
 								
 							}
 
@@ -617,11 +624,40 @@ define(function(require) {
 					}
 				}
 
-				self.userRender(render_data, target, callbacks);
+				// get user callflow if callflow id found before
+				if (userCallflow != null) {
+					self.callApi({
+						resource: 'callflow.get',
+						data: {
+							accountId: self.accountId,
+							callflowId: userCallflow.id
+						},
+						success: function(userCallflow) {
+							if (miscSettings.enableConsoleLogging) {
+								console.log('User Callflow', userCallflow.data);
+							}
+							
+							defaults.field_data.user_callflow = userCallflow.data;
+							
+							self.userRender(render_data, target, callbacks);
+							
+							if (typeof callbacks.after_render === 'function') {
+								callbacks.after_render();
+							}
+						}
+		
+					});
 
-				if (typeof callbacks.after_render === 'function') {
-					callbacks.after_render();
 				}
+
+				else {
+					self.userRender(render_data, target, callbacks);
+					
+					if (typeof callbacks.after_render === 'function') {
+						callbacks.after_render();
+					}
+				}
+
 			});
 		},
 
@@ -698,6 +734,24 @@ define(function(require) {
 				});
 			}
 
+			user_html.find('.ring-timeout').on('change', function(event) {
+
+				if (data.field_data.user_callflow != null) {
+					timeoutReset = data.field_data.user_callflow.flow.data.timeout
+				} else {
+					timeoutReset = 30
+				}
+
+				ringTimeout = $('#ring_timeout', user_html).val();
+
+				if (ringTimeout < 10 || ringTimeout > 120) {
+					$('#ring_timeout', user_html).val(timeoutReset);
+					monster.ui.alert('warning', self.i18n.active().callflows.user.ringing_timeout_invalid);
+					console.log('Invalid Ring Timeout');
+				}
+
+			});
+			
 			if (hasExternalCallerId) {
 				_.forEach(tabsWithCidSelectors, function(tab) {
 					_.forEach(cidSelectorsPerTab[tab], function(selector) {
@@ -1001,6 +1055,7 @@ define(function(require) {
 			});
 
 			$('.user-save', user_html).click(function(ev) {
+
 				ev.preventDefault();
 
 				var $this = $(this);
@@ -1010,9 +1065,12 @@ define(function(require) {
 
 					if (monster.ui.valid(user_form)) {
 						var form_data = monster.ui.getFormData('user-form'),
+							field_data = data.field_data,
 							callflowNumbers = data.field_data.callflow_numbers,
 							formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
-							userCallflow = data.field_data.user_callflow;
+							userCallflow = data.field_data.user_callflow,
+							userVoicemail = form_data.user_voicemail,
+							ringTimeout = parseInt(form_data.ring_timeout, 10);
 
 						if (miscSettings.enableConsoleLogging) {
 							console.log('Numbers on User Callflow', callflowNumbers);
@@ -1031,6 +1089,14 @@ define(function(require) {
 							delete form_data.extension_numbers;
 						}
 
+						if ('user_voicemail' in form_data) {
+							delete form_data.user_voicemail;
+						}
+
+						if ('ring_timeout' in form_data) {
+							delete form_data.ring_timeout;
+						}
+
 						if (form_data.enable_pin === false) {
 							delete data.data.queue_pin;
 							delete data.data.record_call;
@@ -1046,76 +1112,158 @@ define(function(require) {
 							delete data.field_data;
 						}
 
-						// patch users callflow if there is a change to the qty of numbers
-						if (formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
-							self.callApi({
-								resource: 'callflow.patch',
-								data: {
-									accountId: self.accountId,
-									callflowId: userCallflow,
-									data: {
-										numbers: formNumbers,
-										ui_metadata: {
-											origin: 'voip'
+						monster.waterfall([
+				
+							function(callback) {
+								// voicemail update function 
+								if (userCallflow != null) {
+
+									var voicemailFormValue,
+										voicemailEnabled;
+		
+									if (userVoicemail == 'enabled') {
+										voicemailFormValue = true
+									} else {
+										voicemailFormValue = false
+									}
+		
+									if (field_data.callflow_features.includes('voicemail')) {
+										voicemailEnabled = true
+									} else {
+										voicemailEnabled = false
+									}
+		
+									// check if there is a difference between the current state and form state
+									if (voicemailEnabled != voicemailFormValue ) {
+										if (miscSettings.enableConsoleLogging) {
+											console.log('Setting Voicemail State:', userVoicemail);
 										}
-									},
-									removeMetadataAPI: true
-								},
-								success: function(_callflow_update) {
-									if (miscSettings.enableConsoleLogging) {
-										console.log('User Callflow Updated', _callflow_update)
+										self.usersUpdateVMBoxStatusInCallflow({
+											callflow: userCallflow,
+											enabled: voicemailFormValue,
+											ringTimeout: ringTimeout
+										}, callback);
+									} else {
+										if (userCallflow.flow.data.timeout != ringTimeout) {
+											if (miscSettings.enableConsoleLogging) {
+												console.log('Updating Callflow Timeout:', ringTimeout);
+											}
+											self.callApi({
+												resource: 'callflow.patch',
+												data: {
+													accountId: self.accountId,
+													callflowId: userCallflow.id,
+													data: {
+														flow: {
+															data: { 
+																timeout: ringTimeout
+															}
+														},
+														ui_metadata: {
+															origin: 'voip'
+														}
+													},
+													removeMetadataAPI: true
+												},
+												success: function(_callflow_update) {
+													if (miscSettings.enableConsoleLogging) {
+														console.log('User Callflow Updated', _callflow_update)
+													}
+													callback(null);
+												}
+											})
+										} else {
+											callback(null)
+										}
 									}
-								}
-							})
-						}
-						
-						self.callApi({
-							resource: 'account.get',
-							data: {
-								accountId: self.accountId
-							},
-							success: function(_data, status) {
-								if (form_data.priv_level === 'admin') {
-									form_data.apps = form_data.apps || {};
-									if (!('voip' in form_data.apps) && $.inArray('voip', (_data.data.available_apps || [])) > -1) {
-										form_data.apps.voip = {
-											label: self.i18n.active().callflows.user.voip_services_label,
-											icon: 'device',
-											api_url: monster.config.api.default
-										};
-									}
-								} else if (form_data.priv_level === 'user' && $.inArray('userportal', (_data.data.available_apps || [])) > -1) {
-									form_data.apps = form_data.apps || {};
-									if (!('userportal' in form_data.apps)) {
-										form_data.apps.userportal = {
-											label: self.i18n.active().callflows.user.user_portal_label,
-											icon: 'userportal',
-											api_url: monster.config.api.default
-										};
-									}
+									
+								} else {
+									callback(null)
 								}
 
-								self.userSave(form_data, data, function(data, status, action) {
-									if (action === 'create') {
-										self.userAcquireDevice(data, function() {
-											if (typeof callbacks.save_success === 'function') {
-												callbacks.save_success(data, status, action);
+							},
+
+							function(callback) {
+								// patch users callflow if there is a change to the qty of numbers
+								if (userCallflow != null && formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
+									self.callApi({
+										resource: 'callflow.patch',
+										data: {
+											accountId: self.accountId,
+											callflowId: userCallflow.id,
+											data: {
+												numbers: formNumbers,
+												ui_metadata: {
+													origin: 'voip'
+												}
+											},
+											removeMetadataAPI: true
+										},
+										success: function(_callflow_update) {
+											if (miscSettings.enableConsoleLogging) {
+												console.log('User Callflow Updated', _callflow_update)
+											}
+											callback(null);
+										}
+									})
+								} else {
+									callback(null);
+								}
+
+							},
+
+							function() {
+								self.callApi({
+									resource: 'account.get',
+									data: {
+										accountId: self.accountId
+									},
+									success: function(_data, status) {
+										if (form_data.priv_level === 'admin') {
+											form_data.apps = form_data.apps || {};
+											if (!('voip' in form_data.apps) && $.inArray('voip', (_data.data.available_apps || [])) > -1) {
+												form_data.apps.voip = {
+													label: self.i18n.active().callflows.user.voip_services_label,
+													icon: 'device',
+													api_url: monster.config.api.default
+												};
+											}
+										} else if (form_data.priv_level === 'user' && $.inArray('userportal', (_data.data.available_apps || [])) > -1) {
+											form_data.apps = form_data.apps || {};
+											if (!('userportal' in form_data.apps)) {
+												form_data.apps.userportal = {
+													label: self.i18n.active().callflows.user.user_portal_label,
+													icon: 'userportal',
+													api_url: monster.config.api.default
+												};
+											}
+										}
+		
+										self.userSave(form_data, data, function(data, status, action) {
+											if (action === 'create') {
+												self.userAcquireDevice(data, function() {
+													if (typeof callbacks.save_success === 'function') {
+														callbacks.save_success(data, status, action);
+													}
+												}, function() {
+													if (typeof callbacks.save_error === 'function') {
+														callbacks.save_error(data, status, action);
+													}
+												});
+											} else {
+												if (typeof callbacks.save_success === 'function') {
+													callbacks.save_success(data, status, action);
+												}
 											}
 										}, function() {
-											if (typeof callbacks.save_error === 'function') {
-												callbacks.save_error(data, status, action);
-											}
+											$this.removeClass('disabled');
 										});
-									} else {
-										if (typeof callbacks.save_success === 'function') {
-											callbacks.save_success(data, status, action);
-										}
 									}
-								}, function() {
-									$this.removeClass('disabled');
 								});
+
 							}
-						});
+
+						],);
 					} else {
 						$this.removeClass('disabled');
 						monster.ui.alert(self.i18n.active().callflows.user.there_were_errors_on_the_form);
@@ -1135,6 +1283,26 @@ define(function(require) {
 				!$('#music_on_hold_media_id option:selected', user_html).val() ? $('#edit_link_media', user_html).hide() : $('#edit_link_media', user_html).show();
 
 				user_html.find('.shoutcast-div').toggleClass('active', $(this).val() === 'shoutcast');
+			});
+
+			$('.inline_action_vmbox', user_html).click(function(ev) {
+				var flow = self.usersExtractDataFromCallflow({
+					callflow: data.field_data.user_callflow,
+					module: 'voicemail'
+					})
+					
+				if (flow == null) {
+					monster.ui.alert('warning', self.i18n.active().callflows.user.voicemail_no_mailbox);
+				} else {
+					var	_data = ($(this).data('action') === 'edit') ? { id: flow.data.id } : {};
+
+					ev.preventDefault();
+					monster.pub('callflows.vmbox.editPopup', {
+						data: _data,
+						callback: function() {}		
+					});
+				}
+
 			});
 
 			$('.inline_action_media', user_html).click(function(ev) {
@@ -1759,7 +1927,73 @@ define(function(require) {
 					callback && callback();
 				}
 			});
+		},
+
+		usersExtractDataFromCallflow: function(args) {
+			var self = this,
+				flow = _.get(args, 'callflow.flow'),
+				cfModule = args.module;
+
+			if (_.isNil(flow)) {
+				return undefined;
+			}
+
+			while (flow.module !== cfModule && _.has(flow.children, '_')) {
+				flow = flow.children._;
+			}
+
+			if (flow.module !== cfModule) {
+				return undefined;
+			} else if (_.has(args, 'dataPath')) {
+				return _.get(flow, args.dataPath);
+			} else {
+				return flow;
+			}
+		},
+
+		usersUpdateVMBoxStatusInCallflow: function(args, callback) {
+			var self = this,
+				callflow = args.callflow,
+				enabled = args.enabled,
+				ringTimeout = args.ringTimeout;
+
+			var flow = self.usersExtractDataFromCallflow({
+				callflow: callflow,
+				module: 'voicemail'
+			});
+
+			if (flow) {
+				flow.data.skip_module = !enabled;
+				callflow.flow.data.timeout = ringTimeout;
+
+				self.usersUpdateCallflow(callflow, callback, function() {
+					callback(null);
+				});
+			} else {
+				callback(null);
+			}
+
+		},
+
+		usersUpdateCallflow: function(callflow, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.update',
+				data: {
+					accountId: self.accountId,
+					callflowId: callflow.id,
+					data: callflow
+				},
+				success: function(_callflow_update) {
+					if (miscSettings.enableConsoleLogging) {
+						console.log('User Callflow Updated', _callflow_update)
+					}
+					callback(null);
+				}
+			});
 		}
+
 	};
 
 	return app;

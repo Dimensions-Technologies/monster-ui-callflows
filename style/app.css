@@ -1764,6 +1764,15 @@
 
 }
 
+/* format edit_create text button */ 
+.callflows-port .pill-content .edit_create a {
+	display: inline-block;
+    padding: 4px 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 20px;
+    vertical-align: middle;
+}
 
 /* increase size of dropdown input fields */
 /*
