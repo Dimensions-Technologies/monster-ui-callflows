@@ -639,6 +639,9 @@ define(function(require) {
 			_.each(entities, function(entity) {
 				if (entity.first_name && entity.last_name) {
 					entity.displayName = entity.first_name + ' ' + entity.last_name;
+					if (miscSettings.userListShowExtension) {
+						entity.additionalInfo = entity.presence_id
+					}
 				} else if (entity.name) {
 					entity.displayName = entity.name;
 				} else {
@@ -650,7 +653,7 @@ define(function(require) {
 				}
 			});
 		},
-
+		
 		renderAccountSettings: function(container) {
 			var self = this;
 		
