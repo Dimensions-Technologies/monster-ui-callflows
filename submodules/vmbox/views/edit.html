@@ -85,9 +85,9 @@
 					{{/unless}}
 
 					{{#if miscSettings.vmboxPreventDelete}}
-						<div class="clearfix">
+						<div disabled class="clearfix input-readonly">
 							<label for="owner_id">{{ i18n.callflows.vmbox.assign_to }}</label>
-							<div disabled class="input input-readonly">
+							<div class="input">
 								<span>
 									<select name="owner_id" id="owner_id" class="medium" >
 										{{#each field_data.users}}
