@@ -133,10 +133,24 @@
 			</div>
 		</form>
 		<div class="buttons-right">
-			{{#if data.id}}
-				<button class="monster-button monster-button-danger directory-delete">{{ i18n.callflows.directory.delete }}</button>
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					<button class="monster-button monster-button-danger directory-delete">{{ i18n.callflows.directory.delete }}</button>	
+				{{/if}}
+				<button class="monster-button monster-button-success directory-save">{{ i18n.callflows.directory.save }}</button>
+			{{/unless}}
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.directory}}
+							<button class="monster-button monster-button-danger directory-delete">{{ i18n.callflows.directory.delete }}</button>
+						{{/unless}}
+					{{/if}}
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+				<button class="monster-button monster-button-success directory-save">{{ i18n.callflows.directory.save }}</button>
+				{{/if}}
 			{{/if}}
-			<button class="monster-button monster-button-success directory-save">{{ i18n.callflows.directory.save }}</button>
 		</div>
 	</div>
 </div>

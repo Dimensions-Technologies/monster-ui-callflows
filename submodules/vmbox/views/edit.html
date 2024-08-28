@@ -430,12 +430,28 @@
 		</form>
 
 		 <div class="buttons-right">
-			{{#unless miscSettings.vmboxPreventDelete}}
-			{{#if data.id}}
-				<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
-			{{/if}}
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#unless miscSettings.vmboxPreventDelete}}
+				{{#if data.id}}
+					<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
+				{{/if}}
+				{{/unless}}
+				<button class="monster-button monster-button-success vmbox-save">{{ i18n.callflows.vmbox.save }}</button>
 			{{/unless}}
-			<button class="monster-button monster-button-success vmbox-save">{{ i18n.callflows.vmbox.save }}</button>
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#unless miscSettings.vmboxPreventDelete}}
+					{{#if data.id}}
+						{{#if miscSettings.popupEdit}}
+							{{#unless hideAdd.voicemail}}
+								<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
+							{{/unless}}
+						{{/if}}
+					{{/if}}
+				{{/unless}}
+				{{#if miscSettings.popupEdit}}
+					<button class="monster-button monster-button-success vmbox-save">{{ i18n.callflows.vmbox.save }}</button>
+				{{/if}}
+			{{/if}}
 		</div>
 	</div>
 </div>

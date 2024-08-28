@@ -1,19 +1,26 @@
 define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
-		monster = require('monster');
+		monster = require('monster'),
+		hideAdd = false,
+		miscSettings = {};
 
 	var app = {
 		requests: {},
 
 		subscribe: {
 			'callflows.blacklist.edit': 'blacklistEdit',
-			'callflows.fetchActions': 'blacklistDefineActions'
+			'callflows.fetchActions': 'blacklistDefineActions',
+			'callflows.blacklist.submoduleButtons': 'blacklistSubmoduleButtons'
 		},
 
 		blacklistDefineActions: function(args) {
 			var self = this,
 				callflow_nodes = args.actions;
+
+			// set variables for use elsewhere
+			hideAdd = args.hideAdd;
+			miscSettings = args.miscSettings;
 
 			$.extend(callflow_nodes, {
 				'blacklist': {
@@ -45,7 +52,9 @@ define(function(require) {
 					var template = $(self.getTemplate({
 							name: 'edit',
 							data: {
-								data: data
+								data: data,
+								hideAdd: hideAdd,
+								miscSettings: miscSettings
 							},
 							submodule: 'blacklist'
 						})),
@@ -75,6 +84,10 @@ define(function(require) {
 						.append(template);
 				};
 
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.blacklistSubmoduleButtons(args);
+			};
+
 			if (args.data.id) {
 				self.blacklistGet(args.data.id, function(data) {
 					afterGetData(data);
@@ -84,7 +97,8 @@ define(function(require) {
 			}
 		},
 
-/*		blacklistBindEvents: function(data, template, callbacks) {
+		/*
+		blacklistBindEvents: function(data, template, callbacks) {
 			var self = this,
 				addNumber = function(e) {
 					var number = template.find('#number_value').val();
@@ -159,7 +173,8 @@ define(function(require) {
 					self.blacklistDelete(data.id, callbacks.delete_success);
 				});
 			});
-		},*/
+		},
+		*/
 
 		blacklistBindEvents: function(data, template, callbacks) {
 			var self = this,
@@ -213,6 +228,15 @@ define(function(require) {
 			});
 
 			$('.blacklist-save', template).click(function() {
+				saveButtonEvents();
+			});
+
+			$('#submodule-buttons-container .save').click(function() {
+				saveButtonEvents();
+			});
+
+			function saveButtonEvents() {
+
 				var formData = monster.ui.getFormData('blacklist-form'),
 					cleanData = self.blacklistCleanFormData(formData),
 					mapNumbers = {};
@@ -229,13 +253,25 @@ define(function(require) {
 				}
 
 				self.blacklistSave(cleanData, callbacks.save_success);
-			});
+
+			};
 
 			$('.blacklist-delete', template).click(function() {
+				deleteButtonEvents();
+			});
+
+			$('#submodule-buttons-container .delete').click(function() {
+				deleteButtonEvents();
+			});
+
+			function deleteButtonEvents() {
+
 				monster.ui.confirm(self.i18n.active().callflows.blacklist.are_you_sure_you_want_to_delete, function() {
 					self.blacklistDelete(data.id, callbacks.delete_success);
 				});
-			});
+
+			};
+
 		},
 
 		blacklistCleanFormData: function(data) {
@@ -330,6 +366,31 @@ define(function(require) {
 					callback && callback(data.data);
 				}
 			});
+		},
+
+		blacklistSubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.blacklist
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
 	};
 

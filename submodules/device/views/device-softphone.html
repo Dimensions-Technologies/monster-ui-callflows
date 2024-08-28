@@ -21,10 +21,10 @@
 			{{#unless miscSettings.hideDeviceSipSettings}}
 				<li><a href="#sip_settings">{{ i18n.callflows.device.sip_settings }}</a></li>
 			{{/unless}}
-			{{#unless miscSettings.hideDeviceAudioCodecs}}
+			{{#unless miscSettings.hideDeviceAudioCodecsSoftphone}}
 				<li><a href="#audio_settings">{{ i18n.callflows.device.audio_settings }}</a></li>
 			{{/unless}}
-			{{#unless miscSettings.hideDeviceVideoCodecs}}
+			{{#unless miscSettings.hideDeviceVideoCodecsSoftphone}}
 				<li><a href="#video_settings">{{ i18n.callflows.device.video_settings }}</a></li>
 			{{/unless}}
 			<li><a href="#options">{{ i18n.callflows.device.options }}</a></li>
@@ -750,12 +750,26 @@
 				</div>
 			</div>
 			<div class="buttons-right">
-				{{#if data.id}}
-				{{#unless dimensionDeviceType.preventDelete}}
-					<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+				{{#unless miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+					{{#unless dimensionDeviceType.preventDelete}}
+						<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+					{{/unless}}
+					{{/if}}
+					<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
 				{{/unless}}
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.device}}
+							<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+						{{/unless}}
+					{{/if}}
+					{{/if}}
+					{{#if miscSettings.popupEdit}}
+						<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+					{{/if}}
 				{{/if}}
-				<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
 			</div>
 		</form>
 	</div>

@@ -1,14 +1,17 @@
 define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
-		monster = require('monster');
+		monster = require('monster'),
+		hideAdd = false,
+		miscSettings = {};
 
 	var app = {
 		requests: {},
 
 		subscribe: {
 			'callflows.fetchActions': 'temporalsetDefineActions',
-			'callflows.temporalset.edit': '_temporalsetEdit'
+			'callflows.temporalset.edit': '_temporalsetEdit',
+			'callflows.temporal_set.submoduleButtons': 'temporalsetSubmoduleButtons'
 		},
 
 		temporalsetSave: function(form_data, data, success, error) {
@@ -85,6 +88,10 @@ define(function(require) {
 					}, data_defaults || {}),
 					field_data: {}
 				};
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.temporalsetSubmoduleButtons(data);
+			};
 
 			self.temporalSetGetData((data || {}).id, function(results) {
 				var formattedData = self.temporalsetFormatData(results.temporalSet),
@@ -170,7 +177,11 @@ define(function(require) {
 			var self = this,
 				temporalset_html = $(self.getTemplate({
 					name: 'callflowEdit',
-					data: data,
+					data: {
+						...data,
+						hideAdd: hideAdd,
+						miscSettings: miscSettings
+					},
 					submodule: 'temporalset'
 				})),
 				temporalsetForm = temporalset_html.find('#temporalset-form'),
@@ -195,6 +206,14 @@ define(function(require) {
 			self.winkstartTabs(temporalset_html);
 
 			$('.temporalset-save', temporalset_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var $this = $(this);
@@ -214,15 +233,24 @@ define(function(require) {
 						monster.ui.alert('error', self.i18n.active().callflows.temporalset.there_were_errors_on_the_form);
 					}
 				}
-			});
+			}
 
 			$('.temporalset-delete', temporalset_html).click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.temporalset.are_you_sure_you_want_to_delete, function() {
 					self.temporalSetDelete(data.data.id, callbacks.delete_success);
 				});
-			});
+
+			};
 
 			(target)
 				.empty()
@@ -262,6 +290,10 @@ define(function(require) {
 		temporalsetDefineActions: function(args) {
 			var self = this,
 				callflow_nodes = args.actions;
+
+			// set hideAdd variable for use elsewhere
+			hideAdd = args.hideAdd;
+			miscSettings = args.miscSettings;
 
 			$.extend(callflow_nodes, {
 				'temporal_set[]': {
@@ -370,6 +402,31 @@ define(function(require) {
 					callback && callback(data.data);
 				}
 			});
+		},
+
+		temporalsetSubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.temporal_set
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
 	};
 

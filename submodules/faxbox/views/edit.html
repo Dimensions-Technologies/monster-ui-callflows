@@ -175,9 +175,23 @@
 	 </form>
 
 	 <div class="buttons-right">
-		{{#if faxbox.id}}
-			<button class="monster-button monster-button-danger faxbox-delete">{{ i18n.callflows.faxbox.delete }}</button>
+		{{#unless miscSettings.callflowButtonsWithinHeader}}
+			{{#if data.id}}
+				<button class="monster-button monster-button-danger faxbox-delete">{{ i18n.callflows.faxbox.delete }}</button>	
+			{{/if}}
+			<button class="monster-button monster-button-success faxbox-save">{{ i18n.callflows.faxbox.save }}</button>
+		{{/unless}}
+		{{#if miscSettings.callflowButtonsWithinHeader}}
+			{{#if data.id}}
+				{{#if miscSettings.popupEdit}}
+					{{#unless hideAdd.faxbox}}
+						<button class="monster-button monster-button-danger faxbox-delete">{{ i18n.callflows.faxbox.delete }}</button>
+					{{/unless}}
+				{{/if}}
+			{{/if}}
+			{{#if miscSettings.popupEdit}}
+				<button class="monster-button monster-button-success faxbox-save">{{ i18n.callflows.faxbox.save }}</button>
+			{{/if}}
 		{{/if}}
-		<button class="monster-button monster-button-success faxbox-save">{{ i18n.callflows.faxbox.save }}</button>
 	</div>
 </div>

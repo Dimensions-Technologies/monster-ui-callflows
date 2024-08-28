@@ -68,10 +68,24 @@
 			</div>
 		</form>
 		<div class="buttons-right">
-			{{#if data.id}}
-				<button class="monster-button monster-button-danger group-delete">{{ @root.i18n.callflows.groups.delete }}</button>
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					<button class="monster-button monster-button-danger group-delete">{{ @root.i18n.callflows.groups.delete }}</button>	
+				{{/if}}
+				<button class="monster-button monster-button-success success group-save">{{ @root.i18n.callflows.groups.save }}</button>
+			{{/unless}}
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.groups}}
+							<button class="monster-button monster-button-danger group-delete">{{ @root.i18n.callflows.groups.delete }}</button>
+						{{/unless}}
+					{{/if}}
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+				<button class="monster-button monster-button-success success group-save">{{ @root.i18n.callflows.groups.save }}</button>
+				{{/if}}
 			{{/if}}
-			<button class="monster-button monster-button-success success group-save">{{ @root.i18n.callflows.groups.save }}</button>
 		</div>
 	</div>
 </div>
