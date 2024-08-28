@@ -2,6 +2,7 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
+		hideAdd = false,
 		miscSettings = {};
 
 	var app = {
@@ -9,7 +10,8 @@ define(function(require) {
 
 		subscribe: {
 			'callflows.fetchActions': 'directoryDefineActions',
-			'callflows.directory.edit': '_directoryEdit'
+			'callflows.directory.edit': '_directoryEdit',
+			'callflows.directory.submoduleButtons': 'directorySubmoduleButtons'
 		},
 
 		directoryRender: function(data, target, callbacks) {
@@ -18,6 +20,7 @@ define(function(require) {
 					name: 'edit',
 					data: {
 						...data,
+						hideAdd: hideAdd,
 						miscSettings: miscSettings
 					},
 					submodule: 'directory'
@@ -43,7 +46,17 @@ define(function(require) {
 
 			self.winkstartTabs(directory_html);
 
+
 			$('.directory-save', directory_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
+
 				ev.preventDefault();
 				var $this = $(this);
 
@@ -77,15 +90,25 @@ define(function(require) {
 						monster.ui.alert(self.i18n.active().callflows.directory.there_were_errors_on_the_form);
 					}
 				}
-			});
+
+			};
 
 			$('.directory-delete', directory_html).click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.directory.are_you_sure_you_want_to_delete, function() {
 					self.directoryDelete(data.data.id, callbacks.delete_success);
 				});
-			});
+
+			};
 
 			$('.add_user_div', directory_html).click(function() {
 				var $user = $('#select_user_id', directory_html);
@@ -221,6 +244,10 @@ define(function(require) {
 						}
 					}
 				};
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.directorySubmoduleButtons(data);
+			};
 
 			monster.parallel({
 				callflow_list: function(callback) {
@@ -462,6 +489,7 @@ define(function(require) {
 				hideCallflowAction = args.hideCallflowAction;
 
 			// set variables for use elsewhere
+			hideAdd = args.hideAdd;
 			miscSettings = args.miscSettings;
 			
 			// function to determine if an action should be listed
@@ -653,7 +681,33 @@ define(function(require) {
 					callback && callback(data.data);
 				}
 			});
+		},
+
+		directorySubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.directory
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
+
 	};
 
 	return app;

@@ -2,6 +2,7 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
+		hideAdd = false,
 		miscSettings = {};
 
 	var app = {
@@ -9,7 +10,8 @@ define(function(require) {
 
 		subscribe: {
 			'callflows.fetchActions': 'menuDefineActions',
-			'callflows.menu.edit': '_menuEdit'
+			'callflows.menu.edit': '_menuEdit',
+			'callflows.menu.submoduleButtons': 'menuSubmoduleButtons'
 		},
 
 		// Added for the subscribed event to avoid refactoring menuEdit
@@ -44,6 +46,10 @@ define(function(require) {
 						media: []
 					}
 				};
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.menuSubmoduleButtons(data);
+			};
 
 			monster.parallel({
 				media_list: function(callback) {
@@ -133,6 +139,7 @@ define(function(require) {
 					name: 'edit',
 					data: {
 						...data,
+						hideAdd: hideAdd,
 						miscSettings: miscSettings
 					},
 					submodule: 'menu'
@@ -212,6 +219,14 @@ define(function(require) {
 			});
 
 			$('.menu-save', menu_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var $this = $(this);
@@ -236,15 +251,24 @@ define(function(require) {
 						monster.ui.alert('error', self.i18n.active().callflows.menu.there_were_errors_on_the_form);
 					}
 				}
-			});
+			}
 
 			$('.menu-delete', menu_html).click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.menu.are_you_sure_you_want_to_delete, function() {
 					self.menuDelete(data.data.id, callbacks.delete_success, callbacks.delete_error);
 				});
-			});
+
+			};
 
 			(target)
 				.empty()
@@ -341,6 +365,7 @@ define(function(require) {
 				callflow_nodes = args.actions;
 
 			// set variables for use elsewhere
+			hideAdd = args.hideAdd;
 			miscSettings = args.miscSettings;
 
 			$.extend(callflow_nodes, {
@@ -578,6 +603,31 @@ define(function(require) {
 					callback && callback(data.data);
 				}
 			});
+		},
+
+		menuSubmoduleButtons: function(data) {
+			var existingItem = true;
+			
+			if (!data.id) {
+				existingItem = false;
+			}
+			
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.menu
+					}
+				}));
+			
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
 		}
 	};
 

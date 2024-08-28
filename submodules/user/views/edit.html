@@ -881,14 +881,31 @@
 		</div>
 	</form>
 	<div class="buttons-right">
-		{{#if data.id}}
+		{{#unless miscSettings.callflowButtonsWithinHeader}}
+			{{#if data.id}}
 			{{#if field_data.canImpersonate}}
 				<button class="monster-button monster-button-primary user-impersonate">{{ i18n.callflows.user.impersonate }}</button>
 			{{/if}}
 			{{#unless hideAdd.user}}
 				<button class="monster-button monster-button-danger user-delete">{{ i18n.callflows.user.delete }}</button>
 			{{/unless}}
+			{{/if}}
+			<button class="monster-button monster-button-success user-save">{{ i18n.callflows.user.save }}</button>
+		{{/unless}}
+		{{#if miscSettings.callflowButtonsWithinHeader}}
+			{{#if data.id}}
+				{{#if field_data.canImpersonate}}
+					<button class="monster-button monster-button-primary user-impersonate">{{ i18n.callflows.user.impersonate }}</button>
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+					{{#unless hideAdd.user}}
+						<button class="monster-button monster-button-danger user-delete">{{ i18n.callflows.user.delete }}</button>
+					{{/unless}}
+				{{/if}}
+			{{/if}}
+			{{#if miscSettings.popupEdit}}
+				<button class="monster-button monster-button-success user-save">{{ i18n.callflows.user.save }}</button>
+			{{/if}}
 		{{/if}}
-		<button class="monster-button monster-button-success user-save">{{ i18n.callflows.user.save }}</button>
 	</div>
 </div>

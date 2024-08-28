@@ -13,7 +13,8 @@ define(function(require) {
 		subscribe: {
 			'callflows.fetchActions': 'userDefineActions',
 			'callflows.user.popupEdit': 'userPopupEdit',
-			'callflows.user.edit': 'userEdit'
+			'callflows.user.edit': 'userEdit',
+			'callflows.user.submoduleButtons': 'userSubmoduleButtons'
 		},
 
 		random_id: false,
@@ -246,6 +247,10 @@ define(function(require) {
 				height: 500,
 				'overflow-y': 'scroll'
 			});
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				miscSettings.popupEdit = true;
+			}
 
 			self.userEdit({
 				data: data,
@@ -661,11 +666,19 @@ define(function(require) {
 			});
 		},
 
+
+		
+
 		userRender: function(data, target, callbacks) {
+			var self = this;
 
 			if (miscSettings.enableConsoleLogging) {
 				console.log('User Data', data)
 			}
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				self.userSubmoduleButtons(data);
+			};
 
 			var self = this,
 				cidSelectorsPerTab = {
@@ -1053,9 +1066,16 @@ define(function(require) {
 					userName: data.data.first_name + ' ' + data.data.last_name
 				});
 			});
-
+				
 			$('.user-save', user_html).click(function(ev) {
+				saveButtonEvents(ev);
+			});
 
+			$('#submodule-buttons-container .save').click(function(ev) {
+				saveButtonEvents(ev);
+			});
+
+			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var $this = $(this);
@@ -1269,15 +1289,23 @@ define(function(require) {
 						monster.ui.alert(self.i18n.active().callflows.user.there_were_errors_on_the_form);
 					}
 				}
+			}
+			
+			$('.user-delete', user_html).click(function(ev) {
+				deleteButtonEvents(ev);
 			});
 
-			$('.user-delete', user_html).click(function(ev) {
+			$('#submodule-buttons-container .delete').click(function(ev) {
+				deleteButtonEvents(ev);
+			});
+
+			function deleteButtonEvents(ev) {	
 				ev.preventDefault();
 
 				monster.ui.confirm(self.i18n.active().callflows.user.are_you_sure_you_want_to_delete, function() {
 					self.userDelete(data.data.id, callbacks.delete_success, callbacks.delete_error);
 				});
-			});
+			}
 
 			$('#music_on_hold_media_id', user_html).change(function() {
 				!$('#music_on_hold_media_id option:selected', user_html).val() ? $('#edit_link_media', user_html).hide() : $('#edit_link_media', user_html).show();
@@ -1992,6 +2020,32 @@ define(function(require) {
 					callback(null);
 				}
 			});
+		},
+
+		userSubmoduleButtons: function(data) {
+			var existingItem = true;
+
+			if (!data.data.id) {
+				existingItem = false;
+			}
+
+			var self = this,
+				buttons = $(self.getTemplate({
+					name: 'submoduleButtons',
+					data: {
+						miscSettings: miscSettings,
+						existingItem: existingItem,
+						hideDelete: hideAdd.user
+					}
+				}));
+
+			$('.entity-header-buttons').empty();
+			$('.entity-header-buttons').append(buttons);
+
+			if (!data.data.id) {
+				$('.delete', '.entity-header-buttons').addClass('disabled');
+			}
+		
 		}
 
 	};

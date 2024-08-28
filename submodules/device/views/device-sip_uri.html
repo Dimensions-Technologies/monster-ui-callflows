@@ -99,10 +99,24 @@
 				</div>
 			</div>
 			<div class="buttons-right">
-				{{#if data.id}}
-					<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+				{{#unless miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+						<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+					{{/if}}
+					<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+				{{/unless}}
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.device}}
+							<button class="monster-button monster-button-danger device-delete">{{ i18n.callflows.device.delete }}</button>
+						{{/unless}}
+					{{/if}}
+					{{/if}}
+					{{#if miscSettings.popupEdit}}
+						<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
+					{{/if}}
 				{{/if}}
-				<button type="submit" class="monster-button monster-button-success device-save">{{ i18n.callflows.device.save }}</button>
 			</div>
 		</form>
 	</div>
