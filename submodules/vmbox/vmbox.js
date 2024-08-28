@@ -11,7 +11,8 @@ define(function(require) {
 
 		subscribe: {
 			'callflows.fetchActions': 'vmboxDefineActions',
-			'callflows.vmbox.edit': '_vmboxEdit'
+			'callflows.vmbox.edit': '_vmboxEdit',
+			'callflows.vmbox.editPopup': 'vmboxPopupEdit'
 		},
 
 		vmboxPopupEdit: function(args) {
@@ -116,6 +117,14 @@ define(function(require) {
 			},
 			function(err, results) {
 				var render_data = defaults;
+
+				miscSettings.vmboxPreventDelete = false;
+
+				if (results.get_vmbox.hasOwnProperty('owner_id') && results.get_vmbox.owner_id != null) {
+					if (miscSettings.vmboxPreventDeletingUserAssociated == true || false) {
+						miscSettings.vmboxPreventDelete = true;
+					}
+				}
 
 				if (typeof data === 'object' && data.id) {
 					render_data = $.extend(true, defaults, { data: results.get_vmbox });

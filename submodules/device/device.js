@@ -206,23 +206,20 @@ define(function(require) {
 						dimensionDeviceType[deviceData.dimension.type] = true;
 						dimensionDeviceType['preventDelete'] = true;
 						dimensionDeviceType['showDeviceSimplifiedSipSettings'] = false;
-
-						console.log(deviceData.dimension)
-
+					
 						if (deviceData.dimension.model == 'UCS' || deviceData.dimension.type == 'legacypbx') {
-							console.log('condition matched')
 							dimensionDeviceType['showDeviceSimplifiedSipSettings'] = true;
+						}
+
+						if (miscSettings.enableConsoleLogging) {
+							console.log('Device Details', dimensionDeviceType);
+							console.log('Device Doc Details', deviceData.dimension);
 						}
 
 					}
 
-					if (miscSettings.enableConsoleLogging) {
-						console.log(dimensionDeviceType)
-					}
+					monster.parallel(_.merge({
 
-					monster.parallel({
-
-						
 						get_callflow: function(callback) {
 
 							// if the device is classed as a communal get associated callflow
@@ -446,7 +443,43 @@ define(function(require) {
 								callback(null, {});
 							}
 						}
-					},
+					}, monster.util.getCapability('caller_id.external_numbers').isEnabled && {
+						cidNumbers: function(callback) {
+							self.callApi({
+								resource: 'externalNumbers.list',
+								data: {
+									accountId: self.accountId
+								},
+								success: _.flow(
+									_.partial(_.get, _, 'data'),
+									_.partial(callback, null)
+								),
+								error: _.partial(_.ary(callback, 2), null, [])
+							});
+						},
+						phoneNumbers: function(callback) {
+							self.callApi({
+								resource: 'numbers.listAll',
+								data: {
+									accountId: self.accountId,
+									filters: {
+										paginate: false
+									}
+								},
+								success: _.flow(
+									_.partial(_.get, _, 'data.numbers'),
+									_.partial(_.map, _, function(meta, number) {
+										return {
+											number: number
+										};
+									}),
+									_.partial(_.sortBy, _, 'number'),
+									_.partial(callback, null)
+								),
+								error: _.partial(_.ary(callback, 2), null, [])
+							});
+						}
+					}),
 					function(err, results) {
 						var render_data = self.devicePrepareDataForTemplate(data, defaults, $.extend(true, results, {
 							get_device: deviceData
@@ -459,6 +492,7 @@ define(function(require) {
 						}
 					});
 				};
+					
 
 			if (typeof data === 'object' && data.id) {
 				self.deviceGet(data.id, function(_data, status) {
