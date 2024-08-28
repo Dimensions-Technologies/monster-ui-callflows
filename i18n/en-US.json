@@ -260,7 +260,11 @@
 					"number": "Please enter a valid phone number",
 					"realm": "Please enter a valid realm"
 				}
-			}
+			},
+			"phone_numbers": "Phone Numbers",
+			"phone_numbers_options": "Assigned Phone Numbers",
+			"phone_numbers_add": "Add Phone Number",
+			"phone_numbers_none": "This device currently has no assigned phone numbers"
 		},
 		"disa": {
 			"title": "DISA",
@@ -810,7 +814,11 @@
 			"do_not_disturb": "Do Not Disturb (DND)",
 			"do_not_disturb_status": "DND Status",
 			"do_not_disturb_status_true": "Enabled",
-			"do_not_disturb_status_false": "Disabled"
+			"do_not_disturb_status_false": "Disabled",
+			"phone_numbers": "Phone Numbers",
+			"phone_numbers_options": "Assigned Phone Numbers",
+			"phone_numbers_add": "Add Phone Number",
+			"phone_numbers_none": "This user currently has no assigned phone numbers"
 		},
 		"vmbox": {
 			"voicemail": "Voicemail",
