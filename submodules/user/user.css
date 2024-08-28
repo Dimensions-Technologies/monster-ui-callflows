@@ -169,3 +169,41 @@
 .callflows-port #user-form #hotdesk_devices .row input[type="checkbox"] {
 	margin-top: 10px;
 }
+
+/* phone numbers tab formatting */
+.callflows-port #user-form #phone_numbers #phone_numbers_container .numberRows .row {
+	margin-left: 0px;
+}
+
+/* phone numbers tab formatting */
+.callflows-port #user-form #phone_numbers .item-row .number-container {
+    min-width: 237px;
+	display: flex;
+}
+
+/* phone numbers tab formatting */
+.callflows-port #user-form #phone_numbers .item-row .number-container .number .phone-number-label {
+    text-align: left;
+}
+
+/* phone numbers tab formatting */
+.callflows-port #user-form #phone_numbers .item-row>* {
+    display: inline-block;
+    padding: 10px;
+    height: 32px;
+    line-height: 32px;
+}
+
+/* phone numbers tab formatting */
+.callflows-port #user-form #phone_numbers .item-row button {
+    margin-right: 25px;
+	text-align: center;
+	line-height: 10px;
+}
+
+/* phone numbers tab formatting */
+.callflows-port #user-form #phone_numbers .number-addition {
+	padding-top: 20px;
+	display: flex;
+    justify-content: flex-end;
+}

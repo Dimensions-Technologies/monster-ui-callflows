@@ -1,0 +1,24 @@
+<div class="row">
+    {{#if phone_numbers}}
+    <div id="phone_numbers_container">
+        {{#each phone_numbers}}
+        <div class="item-row">
+            
+            <div class="number-container">
+                <button type="button" class="monster-button monster-button-danger unassign-phone-number">{{ @root.i18n.unassign }}</button>
+                
+                <span class="number">
+                    <label class="phone-number-label">{{ formatPhoneNumber this }}</label>
+                    <input id="phone_numbers" name="phone_numbers[]" type="hidden" value="{{ this }}" />
+                </span>
+                                
+            </div>
+
+        </div>
+        <hr>
+        {{/each}}
+    </div>
+    {{else}}
+	    <div class="phone-numbers-none">{{ i18n.callflows.device.phone_numbers_none }}</div>
+    {{/if}}
+</div>
