@@ -199,13 +199,12 @@ define(function(require) {
 				},
 				parallelRequests = function(deviceData) {
 
+					// clear dimensionsDeviceType so device page loads correctly when switching between devices
+					dimensionDeviceType = {}
+
 					if (deviceData.hasOwnProperty('dimension') && deviceData.dimension.hasOwnProperty('type')) {
 						dimensionDeviceType[deviceData.dimension.type] = true;
 						dimensionDeviceType['preventDelete'] = true;
-					}
-
-					else {
-						dimensionDeviceType = {}
 					}
 
 					if (miscSettings.enableConsoleLogging) {
