@@ -347,6 +347,11 @@ define(function(require) {
 				if (typeof callbacks.after_render === 'function') {
 					callbacks.after_render();
 				}
+
+				if (miscSettings.callflowButtonsWithinHeader) {
+					miscSettings.popupEdit = false;
+				}
+				
 			}
 		},
 
@@ -408,6 +413,10 @@ define(function(require) {
 				data_defaults = args.data_defaults || {},
 				popup,
 				popup_html = $('<div class="inline_popup callflows-port"><div class="inline_content main_content"/></div>');
+
+			if (miscSettings.callflowButtonsWithinHeader) {
+				miscSettings.popupEdit = true;
+			}
 
 			self.mediaEdit(data, popup_html, $('.inline_content', popup_html), {
 				save_success: function(_data) {
