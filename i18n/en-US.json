@@ -1321,6 +1321,14 @@
 			"title": "Phone Only Device",
 			"which_phone_only": "Which Phone Only Device?",
 			"phoneOnlyCallflow_tip": "Direct a caller to a specific phone only device"
+		},
+
+		"qubicleCallflow": {
+			"qubicle": "Call Center Queue",
+			"connect_caller_to_qubicle_queue": "Connect a caller to a call center queue..",
+			"title": "Call Center Queue",
+			"which_qubicle_queue": "Which Call Center Queue?",
+			"qubicleCallflow_tip": "Direct a caller to a call center queue"
 		}
 
 	},
