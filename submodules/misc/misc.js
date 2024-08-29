@@ -68,7 +68,7 @@ define(function(require) {
 				var customActions = [
 					'userCallflow[id=*]',
 					'phoneOnlyCallflow[id=*]',
-					'qubicleCallflow[id=*]',
+					'callCentreCallflow[id=*]',
 					'legacyPbxCallflow[id=*]'
 				];
 
@@ -135,7 +135,8 @@ define(function(require) {
 							filter_not_numbers: 'no_match'
 						};
 
-						var hideDimensionDeviceCallflow = [];
+						var hideDimensionDeviceCallflow = [],
+							hideCallCentreCallflow = [];
 
 						// are custom callflow actions are enabled
 						if (miscSettings.enableCustomCallflowActions) {
@@ -143,7 +144,13 @@ define(function(require) {
 								callflowFilters['filter_not_type'] = 'mainUserCallflow';
 							}
 							if (miscSettings.callflowActionHideQubicleCallflows) {
-								callflowFilters['filter_not_flow.module'] = 'qubicle';
+								hideCallCentreCallflow.push('qubicle');
+							}
+							if (miscSettings.callflowActionHideAcdcCallflows) {
+								hideCallCentreCallflow.push('acdc_member');
+							}
+							if (hideCallCentreCallflow.length > 0) {
+								callflowFilters['filter_not_flow.module'] = hideCallCentreCallflow;
 							}
 							if (miscSettings.callflowActionHidePhoneOnlyCallflows) {
 								hideDimensionDeviceCallflow.push('communal');
@@ -430,12 +437,12 @@ define(function(require) {
 						});
 					}
 				},
-				'qubicleCallflow[id=*]': {
-					name: self.i18n.active().callflows.qubicleCallflow.callflow,
+				'callCentreCallflow[id=*]': {
+					name: self.i18n.active().callflows.callCentreCallflow.callflow,
 					icon: 'support',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
-					tip: self.i18n.active().callflows.qubicleCallflow.callflow_tip,
+					tip: self.i18n.active().callflows.callCentreCallflow.callflow_tip,
 					data: {
 						id: 'null'
 					},
@@ -447,7 +454,7 @@ define(function(require) {
 					],
 					isTerminating: 'true',
 					isUsable: 'true',
-					isListed: determineIsListed('qubicleCallflow[id=*]'),
+					isListed: determineIsListed('callCentreCallflow[id=*]'),
 					weight: 82,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
@@ -464,15 +471,29 @@ define(function(require) {
 						return return_value;
 					},
 					edit: function(node, callback) {
+
+						var callflowFilters = {
+							paginate: false,
+							filter_not_numbers: 'no_match'
+						};
+
+						var callCentreCallflow = [];
+
+						if (!miscSettings.callCentreActionHideQubicle) {
+							callCentreCallflow.push('qubicle');
+						}
+						if (miscSettings.callCentreActionShowAcdc) {
+							callCentreCallflow.push('acdc_member');
+						}
+						if (callCentreCallflow.length > 0) {
+							callflowFilters['filter_flow.module'] = callCentreCallflow;
+						}
+							
 						self.callApi({
 							resource: 'callflow.list',
 							data: {
 								accountId: self.accountId,
-								filters: {
-									paginate: false,
-									filter_not_numbers: 'no_match',
-									'filter_flow.module': 'qubicle'
-								}
+								filters: callflowFilters
 							},
 							success: function(data, status) {
 								var popup, popup_html, _data = [];
@@ -526,7 +547,7 @@ define(function(require) {
 								});
 
 								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().callflows.qubicleCallflow.title,
+									title: self.i18n.active().callflows.callCentreCallflow.title,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
