@@ -688,7 +688,7 @@ define(function(require) {
 								});
 
 								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().callflows.ringGroupToggle.loginTitle,
+									title: self.i18n.active().callflows.ringGroupToggle.loginPopupTitle,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
@@ -806,7 +806,7 @@ define(function(require) {
 								});
 
 								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().callflows.ringGroupToggle.logoutTitle,
+									title: self.i18n.active().callflows.ringGroupToggle.logoutPopupTitle,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
