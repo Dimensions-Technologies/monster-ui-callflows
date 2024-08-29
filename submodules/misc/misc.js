@@ -117,7 +117,8 @@ define(function(require) {
 							data: {
 								accountId: self.accountId,
 								filters: {
-									paginate: false
+									paginate: false,
+									filter_not_numbers: 'no_match'
 								}
 							},
 							success: function(data, status) {
