@@ -64,9 +64,16 @@ define(function(require) {
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
+				// check if custom callflow actions are enabled, if not hide custom actions by default
+				if (!miscSettings.enableCustomCallflowActions) {
+					// additional custom actions should be listed here
+					if (key === 'userCallflow[id=*]' || key === 'phoneOnlyCallflow[id=*]') {
+						return hideCallflowAction[key] === true;
+					} 	
+				}
 				return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
 			};
-
+			
 			var actions = {
 				'root': {
 					name: 'Root',
@@ -81,7 +88,7 @@ define(function(require) {
 				'callflow[id=*]': {
 					name: self.i18n.active().oldCallflows.callflow,
 					icon: 'callflow',
-					category: self.i18n.active().oldCallflows.advanced_cat,
+					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
 					tip: self.i18n.active().oldCallflows.callflow_tip,
 					data: {
@@ -112,14 +119,26 @@ define(function(require) {
 						return return_value;
 					},
 					edit: function(node, callback) {
+
+						var callflowFilters = {
+							paginate: false,
+							filter_not_numbers: 'no_match'
+						};
+
+						if (miscSettings.hideSmartPbxCallflows) {
+							callflowFilters['filter_not_type'] = 'mainUserCallflow';
+						}
+
+						if (miscSettings.hidePhoneOnlyCallflows) {
+							callflowFilters['filter_not_flags'] = 'dimensionDeviceType[communal]';
+						}
+
 						self.callApi({
+
 							resource: 'callflow.list',
 							data: {
 								accountId: self.accountId,
-								filters: {
-									paginate: false,
-									filter_not_numbers: 'no_match'
-								}
+								filters: callflowFilters
 							},
 							success: function(data, status) {
 								var popup, popup_html, _data = [];
@@ -154,6 +173,186 @@ define(function(require) {
 
 								popup = monster.ui.dialog(popup_html, {
 									title: self.i18n.active().oldCallflows.callflow_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
+						});
+					}
+				},
+				'userCallflow[id=*]': {
+					name: self.i18n.active().callflows.userCallflow.user,
+					//name: 'User Callflow',
+					icon: 'user',
+					category: self.i18n.active().oldCallflows.basic_cat,
+					module: 'callflow',
+					tip: self.i18n.active().callflows.userCallflow.userCallflow_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isTerminating: 'true',
+					isUsable: 'true',
+					isListed: determineIsListed('userCallflow[id=*]'),
+					weight: 20,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							return_value = '';
+
+						if (id in caption_map) {
+							if (caption_map[id].hasOwnProperty('name')) {
+								return_value = caption_map[id].name;
+							} else if (caption_map[id].hasOwnProperty('numbers')) {
+								return_value = caption_map[id].numbers.toString();
+							}
+						}
+
+						return return_value;
+					},
+					edit: function(node, callback) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match',
+									filter_type: 'mainUserCallflow'
+								}
+							},
+							success: function(data, status) {
+								var popup, popup_html, _data = [];
+
+								$.each(data.data, function() {
+									if (!this.featurecode && this.id !== self.flow.id) {
+										// remove 'SmartPBX's Callflow' from this.name if it exists
+										if (this.name) {
+											this.name = this.name.replace("SmartPBX's Callflow", '');
+										} else {
+											this.name = this.numbers ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers;
+										}
+								
+										_data.push(this);
+									}
+								});
+
+								popup_html = $(self.getTemplate({
+									name: 'userCallflow-edit_dialog',
+									data: {
+										objects: {
+											type: 'callflow',
+											items: _.sortBy(_data, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
+									},
+									submodule: 'misc'
+								}));
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#object-selector', popup_html).val());
+
+									node.caption = $('#object-selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.userCallflow.title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
+						});
+					}
+				},
+				'phoneOnlyCallflow[id=*]': {
+					name: self.i18n.active().callflows.phoneOnlyCallflow.phone_only,
+					icon: 'phone',
+					category: self.i18n.active().oldCallflows.basic_cat,
+					module: 'callflow',
+					tip: self.i18n.active().callflows.userCallflow.phoneOnlyCallflow_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isTerminating: 'true',
+					isUsable: 'true',
+					isListed: determineIsListed('phoneOnlyCallflow[id=*]'),
+					weight: 20,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							return_value = '';
+
+						if (id in caption_map) {
+							if (caption_map[id].hasOwnProperty('name')) {
+								return_value = caption_map[id].name;
+							} else if (caption_map[id].hasOwnProperty('numbers')) {
+								return_value = caption_map[id].numbers.toString();
+							}
+						}
+
+						return return_value;
+					},
+					edit: function(node, callback) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match',
+									'filter_dimension.type': 'communal'
+								}
+							},
+							success: function(data, status) {
+								var popup, popup_html, _data = [];
+
+								$.each(data.data, function() {
+									if (!this.featurecode && this.id !== self.flow.id) {
+										this.name = this.name ? this.name : ((this.numbers) ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
+
+										_data.push(this);
+									}
+								});
+
+								popup_html = $(self.getTemplate({
+									name: 'phoneOnlyCallflow-edit_dialog',
+									data: {
+										objects: {
+											type: 'callflow',
+											items: _.sortBy(_data, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
+									},
+									submodule: 'misc'
+								}));
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#object-selector', popup_html).val());
+
+									node.caption = $('#object-selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.phoneOnlyCallflow.title,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
