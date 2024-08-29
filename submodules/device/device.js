@@ -1928,7 +1928,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});
@@ -2121,7 +2120,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});
@@ -2251,7 +2249,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});
@@ -2381,7 +2378,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});
@@ -2511,7 +2507,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});
@@ -2641,7 +2636,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});
@@ -2771,7 +2765,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});
@@ -2901,7 +2894,6 @@ define(function(require) {
 									if (ringTimeout < 10 || ringTimeout > 120) {
 										$('#parameter_input', popup_html).val(20);
 										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
-										console.log('Invalid Timeout')
 									}
 								
 								});

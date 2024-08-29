@@ -6,14 +6,12 @@
 				<!--<label for="endpoint_selector">{{ i18n.oldCallflows.which_endpoint }}</label>-->
 				<div class="select_wrapper">
 					<select id="endpoint_selector">
-						<option value="null" hidden>Select a user, group or device</option>
+						<option value="null" hidden>Select a user</option>
 						{{#select data.selected}}
 							{{#each data.items}}
-								<optgroup data-type="{{ @key }}" label="{{ @key }}">
 								{{#each this}}
 									<option id="{{ this.id }}" value="{{ this.id }}" {{#compare ../../data.selected "===" this.id}} selected{{/compare}}>{{ this.name }}</option>
 								{{/each}}
-								</optgroup>
 							{{/each}}
 						{{/select}}
 					</select>

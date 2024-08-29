@@ -1,11 +1,12 @@
-<div class="dialog_popup callflows-port">
-	<h1>{{ i18n.callflows.conference.connect_caller_to_conference }}</h1>
+<div class="dialog_popup callflows-port callflow-action">
+	<!--<h1>{{ i18n.callflows.conference.connect_caller_to_conference }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label for="conference_selector">{{ i18n.callflows.conference.which_conference}}</label>
+				<!--<label for="conference_selector">{{ i18n.callflows.conference.which_conference}}</label>-->
 				<div class="select_wrapper">
 					<select id="conference_selector">
+					<option value="null" hidden>Select a conference</option>
 					{{#select selected}}
 						{{#each items}}
 							<option value="{{id}}">{{name}}</option>

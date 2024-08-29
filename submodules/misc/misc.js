@@ -69,7 +69,10 @@ define(function(require) {
 					'userCallflow[id=*]',
 					'phoneOnlyCallflow[id=*]',
 					'callCentreCallflow[id=*]',
-					'legacyPbxCallflow[id=*]'
+					'legacyPbxCallflow[id=*]',
+					'group_pickupUser[user_id=*]',
+					'group_pickupDevice[device_id=*]',
+					'group_pickupGroup[group_id=*]'
 				];
 
 				// if custom callflow actions are disabled
@@ -879,10 +882,32 @@ define(function(require) {
 							submodule: 'misc'
 						}));
 
+						// enable or disable the save button if name and number are empty
+						function toggleSaveButton() {
+							var cidName = $('#cid_name_prefix', popup_html).val(),
+								cidNumber = $('#cid_number_prefix', popup_html).val();
+							
+							if (cidName == '' && cidNumber == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#cid_name_prefix', popup_html).change(toggleSaveButton);
+						$('#cid_number_prefix', popup_html).change(toggleSaveButton);
+
 						$('#add', popup_html).click(function() {
 							var cid_name_val = $('#cid_name_prefix', popup_html).val(),
 								cid_number_val = $('#cid_number_prefix', popup_html).val(),
 								apply_to_val = $('#apply_to', popup_html).val();
+
+							// ensure there's a space at the end of `cid_name_prefix` for better formatting
+							if (cid_name_val !== '' && !cid_name_val.endsWith(' ')) {
+								cid_name_val += ' ';
+							}
 
 							node.setMetadata('caller_id_name_prefix', cid_name_val);
 							node.setMetadata('caller_id_number_prefix', cid_number_val);
@@ -969,6 +994,21 @@ define(function(require) {
 							})),
 							popup;
 
+						// enable or disable the save button based input value
+						function toggleSaveButton() {
+							var inputValue = $('#alert_info', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#alert_info', popup_html).change(toggleSaveButton);
+
 						$('#add', popup_html).click(function() {
 							var alert_info_val = $('#alert_info', popup_html).val();
 
@@ -1022,6 +1062,21 @@ define(function(require) {
 							})),
 							popup;
 
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#presence_id_input', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#presence_id_input', popup_html).change(toggleSaveButton);
+
 						$('#add', popup_html).click(function() {
 							var presence_id = $('#presence_id_input', popup_html).val();
 							node.setMetadata('presence_id', presence_id);
@@ -1074,6 +1129,21 @@ define(function(require) {
 							},
 							submodule: 'misc'
 						}));
+
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#language_id_input', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#language_id_input', popup_html).change(toggleSaveButton);
 
 						$('#add', popup_html).click(function() {
 							var language = $('#language_id_input', popup_html).val();
@@ -1129,11 +1199,118 @@ define(function(require) {
 								submodule: 'misc'
 							}));
 
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#endpoint_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#endpoint_selector', popup_html).change(toggleSaveButton);
+
 							$('#add', popup_html).click(function() {
 								var selector = $('#endpoint_selector', popup_html),
 									id = selector.val(),
 									name = selector.find('#' + id).html(),
 									type = $('#' + id, popup_html).parents('optgroup').data('type'),
+									type_id = type.substring(type, type.length - 1) + '_id';
+
+								console.log('id', id);
+								console.log('name', name);
+								console.log('type', type);
+								console.log('type_id', type);
+
+								/* Clear all the useless attributes */
+								node.data.data = {};
+								node.setMetadata(type_id, id);
+								node.setMetadata('name', name);
+
+								node.caption = name;
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().oldCallflows.group_pickup_title,
+								beforeClose: function() {
+									callback && callback();
+								}
+							});
+						});
+					}
+				},
+				'group_pickupUser[user_id=*]': {
+					name: self.i18n.active().oldCallflows.user_pickup,
+					icon: 'sip',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'group_pickup',
+					tip: self.i18n.active().oldCallflows.user_pickup_tip,
+					data: {},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '0'
+						}
+					],
+					isTerminating: true,
+					isUsable: true,
+					isListed: determineIsListed('group_pickupUser[user_id=*]'),
+					weight: 61,
+					caption: function(node) {
+						return node.getMetadata('name') || '';
+					},
+					edit: function(node, callback) {
+
+						function fetchUsers(callback) {
+							self.miscUserList(function(data) {
+								_.each(data, function(user) {
+									user.name = user.first_name + ' ' + user.last_name;
+								});
+								callback({ users: data });
+							});
+						}
+
+						fetchUsers(function(results) {
+
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'group_pickupUser',
+								data: {
+									data: {
+										items: results,
+										selected: node.getMetadata('user_id') || ''
+									}
+								},
+								submodule: 'misc'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#endpoint_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#endpoint_selector', popup_html).change(toggleSaveButton);
+
+							$('#add', popup_html).click(function() {
+								var selector = $('#endpoint_selector', popup_html),
+									id = selector.val(),
+									name = selector.find('#' + id).html(),
+									type = 'users',
 									type_id = type.substring(type, type.length - 1) + '_id';
 
 								/* Clear all the useless attributes */
@@ -1147,7 +1324,199 @@ define(function(require) {
 							});
 
 							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().oldCallflows.select_endpoint_title,
+								title: self.i18n.active().oldCallflows.user_pickup_title,
+								beforeClose: function() {
+									callback && callback();
+								}
+							});
+						});
+					}
+				},
+				'group_pickupGroup[group_id=*]': {
+					name: self.i18n.active().oldCallflows.group_pickup,
+					icon: 'sip',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'group_pickup',
+					tip: self.i18n.active().oldCallflows.group_pickup_tip,
+					data: {},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '0'
+						}
+					],
+					isTerminating: true,
+					isUsable: true,
+					isListed: determineIsListed('group_pickupGroup[group_id=*]'),
+					weight: 62,
+					caption: function(node) {
+						return node.getMetadata('name') || '';
+					},
+					edit: function(node, callback) {
+
+						function fetchGroups(callback) {
+							self.callApi({
+								resource: 'group.list',
+								data: {
+									accountId: self.accountId,
+									filters: {
+										paginate: false,
+										'filter_not_group_type': 'personal'
+									}
+								},
+								success: function(data, status) {
+									// sort groups alphabetically by name
+									var sortedGroups = data.data.sort((a, b) => a.name.localeCompare(b.name));
+									callback({ groups: sortedGroups });
+								}
+							});
+						}
+
+						fetchGroups(function(results) {
+
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'group_pickupGroup',
+								data: {
+									data: {
+										items: results,
+										selected: node.getMetadata('group_id') || ''
+									}
+								},
+								submodule: 'misc'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#endpoint_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#endpoint_selector', popup_html).change(toggleSaveButton);
+
+							$('#add', popup_html).click(function() {
+								var selector = $('#endpoint_selector', popup_html),
+									id = selector.val(),
+									name = selector.find('#' + id).html(),
+									type = 'groups',
+									type_id = type.substring(type, type.length - 1) + '_id';
+
+								/* Clear all the useless attributes */
+								node.data.data = {};
+								node.setMetadata(type_id, id);
+								node.setMetadata('name', name);
+
+								node.caption = name;
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().oldCallflows.group_pickup_title,
+								beforeClose: function() {
+									callback && callback();
+								}
+							});
+						});
+					}
+				},
+				'group_pickupDevice[device_id=*]': {
+					name: self.i18n.active().oldCallflows.device_pickup,
+					icon: 'sip',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'group_pickup',
+					tip: self.i18n.active().oldCallflows.device_pickup_tip,
+					data: {},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '0'
+						}
+					],
+					isTerminating: true,
+					isUsable: true,
+					isListed: determineIsListed('group_pickupDevice[device_id=*]'),
+					weight: 63,
+					caption: function(node) {
+						return node.getMetadata('name') || '';
+					},
+					edit: function(node, callback) {
+
+						function fetchDevices(callback) {
+							self.callApi({
+								resource: 'device.list',
+								data: {
+									accountId: self.accountId,
+									filters: {
+										paginate: false,
+										'filter_not_dimension.type': 'legacypbx'
+									}
+								},
+								success: function(data, status) {
+									// sort devices alphabetically by name
+									var sortedDevices = data.data.sort((a, b) => a.name.localeCompare(b.name));
+									callback({ devices: sortedDevices });
+								}
+							});
+						}
+
+						fetchDevices(function(results) {
+
+							var popup, popup_html;
+
+							popup_html = $(self.getTemplate({
+								name: 'group_pickupDevice',
+								data: {
+									data: {
+										items: results,
+										selected: node.getMetadata('device_id') || ''
+									}
+								},
+								submodule: 'misc'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#endpoint_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#endpoint_selector', popup_html).change(toggleSaveButton);
+
+							$('#add', popup_html).click(function() {
+								var selector = $('#endpoint_selector', popup_html),
+									id = selector.val(),
+									name = selector.find('#' + id).html(),
+									type = 'devices',
+									type_id = type.substring(type, type.length - 1) + '_id';
+
+								/* Clear all the useless attributes */
+								node.data.data = {};
+								node.setMetadata(type_id, id);
+								node.setMetadata('name', name);
+
+								node.caption = name;
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().oldCallflows.device_pickup_title,
 								beforeClose: function() {
 									callback && callback();
 								}
@@ -1188,6 +1557,7 @@ define(function(require) {
 							popup_html = $(self.getTemplate({
 								name: 'fax-callflowEdit',
 								data: {
+									hideFromCallflowAction: args.hideFromCallflowAction,
 									objects: {
 										items: data,
 										selected: node.getMetadata('owner_id') || '',
@@ -1216,6 +1586,23 @@ define(function(require) {
 								});
 							});
 
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#user_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#user_selector', popup_html).change(toggleSaveButton);
+
 							$('#add', popup_html).click(function() {
 								node.setMetadata('owner_id', $('#user_selector', popup_html).val());
 								node.setMetadata('media', {
@@ -1225,7 +1612,7 @@ define(function(require) {
 							});
 
 							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().oldCallflows.select_user_title,
+								title: self.i18n.active().oldCallflows.receive_fax,
 								minHeight: '0',
 								beforeClose: function() {
 									if (typeof callback === 'function') {
@@ -1351,6 +1738,7 @@ define(function(require) {
 						popup_html = $(self.getTemplate({
 							name: 'pivot',
 							data: {
+								miscSettings: miscSettings,
 								data_pivot: {
 									'method': node.getMetadata('method') || 'post',
 									'voice_url': node.getMetadata('voice_url') || '',
@@ -1361,10 +1749,37 @@ define(function(require) {
 							submodule: 'misc'
 						}));
 
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#pivot_voiceurl_input', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else if (!(inputValue.startsWith('http://') || inputValue.startsWith('https://'))) {
+								$('#add', popup_html).prop('disabled', true);
+								monster.ui.alert('warning', self.i18n.active().oldCallflows.pivot_url_invalid);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#pivot_voiceurl_input', popup_html).change(toggleSaveButton);
+
 						$('#add', popup_html).click(function() {
+							var requestFormat;
+							
+							if ($('#pivot_format_input', popup_html).length) {
+								requestFormat = $('#pivot_format_input', popup_html).val();
+							} else {
+								var metadataFormat = node.getMetadata('req_format');
+								requestFormat = metadataFormat ? metadataFormat : 'kazoo';
+							}
+
 							node.setMetadata('voice_url', $('#pivot_voiceurl_input', popup_html).val());
 							node.setMetadata('method', $('#pivot_method_input', popup_html).val());
-							node.setMetadata('req_format', $('#pivot_format_input', popup_html).val());
+							node.setMetadata('req_format', requestFormat);
 							node.setMetadata('req_timeout', $('#pivot_timeout_input', popup_html).val());
 
 							popup.dialog('close');
@@ -1382,17 +1797,12 @@ define(function(require) {
 
 						// alert for invalid request timeout value
 						$('#pivot_timeout_input', popup_html).change(function() {
-						
 							requestTimeout = $('#pivot_timeout_input', popup_html).val();
-
 							if (requestTimeout < 5 || requestTimeout > 20) {
 								$('#pivot_timeout_input', popup_html).val(5);
 								monster.ui.alert('warning', self.i18n.active().oldCallflows.pivot_timeout_invalid);
-								console.log('Invalid Timeout')
 							}
-						
 						});
-
 
 					}
 				},
@@ -1425,11 +1835,14 @@ define(function(require) {
 						popup_html = $(self.getTemplate({
 							name: 'disa',
 							data: {
+								miscSettings: miscSettings,
 								data_disa: {
 									'pin': node.getMetadata('pin'),
-									'retries': node.getMetadata('retries'),
-									'interdigit': node.getMetadata('interdigit'),
-									'max_digits': node.getMetadata('max_digits'),
+									'retries': node.getMetadata('retries') || '2',
+									'interdigit': node.getMetadata('interdigit') 
+										? (node.getMetadata('interdigit') / 1000).toString() 
+										: '5',
+									'max_digits': node.getMetadata('max_digits') || '4',
 									'preconnect_audio': node.getMetadata('preconnect_audio'),
 									'use_account_caller_id': node.getMetadata('use_account_caller_id')
 								}
@@ -1437,8 +1850,29 @@ define(function(require) {
 							submodule: 'misc'
 						}));
 
-						monster.ui.tooltips(popup_html);
+						//monster.ui.tooltips(popup_html);
 
+
+						if (miscSettings.disaActionEnforcePin) {
+							// enable or disable the save button based on the input value
+							function toggleSaveButton() {
+								var inputValue = $('#disa_pin_input', popup_html).val();
+								
+								if (inputValue == '') {
+									$('#add', popup_html).prop('disabled', true);
+								} else if (inputValue.length > 0 && inputValue.length < 4) {
+									monster.ui.alert('warning', self.i18n.active().callflows.disa.pin.invalid);
+									$('#add', popup_html).prop('disabled', true);
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#disa_pin_input', popup_html).change(toggleSaveButton);
+						}
+						
 						$('#add', popup_html).click(function() {
 							var save_disa = function() {
 								var setData = function(field, value) {
@@ -1449,9 +1883,13 @@ define(function(require) {
 									}
 								};
 
+								// convert interdigit timeout value to milliseconds
+								let interdigitTimeoutSeconds = $('#disa_interdigit_input', popup_html).val();
+								let interdigitTimeoutMilliseconds = interdigitTimeoutSeconds * 1000;
+
 								setData('pin', $('#disa_pin_input', popup_html).val());
 								setData('retries', $('#disa_retries_input', popup_html).val());
-								setData('interdigit', $('#disa_interdigit_input', popup_html).val());
+								setData('interdigit', interdigitTimeoutMilliseconds);
 								setData('preconnect_audio', $('#preconnect_audio', popup_html).val());
 								setData('use_account_caller_id', !$('#disa_keep_original_caller_id', popup_html).is(':checked'));
 								setData('max_digits', $('#disa_max_digits_input', popup_html).val());
@@ -1475,6 +1913,34 @@ define(function(require) {
 								}
 							}
 						});
+
+						// alert for invalid retries value
+						$('#disa_retries_input', popup_html).change(function() {
+							inputValue = $('#disa_retries_input', popup_html).val();
+							if (inputValue < 0 || inputValue > 10) {
+								$('#disa_retries_input', popup_html).val(2);
+								monster.ui.alert('warning', self.i18n.active().callflows.disa.retries.invalid);
+							}
+						});
+
+						// alert for invalid interdigit timeout value
+						$('#disa_interdigit_input', popup_html).change(function() {
+							inputValue = $('#disa_interdigit_input', popup_html).val();
+							if (inputValue < 5 || inputValue > 20) {
+								$('#disa_interdigit_input', popup_html).val(5);
+								monster.ui.alert('warning', self.i18n.active().callflows.disa.interdigit.invalid);
+							}
+						});
+
+						// alert for invalid max digits value
+						$('#disa_max_digits_input', popup_html).change(function() {
+							inputValue = $('#disa_max_digits_input', popup_html).val();
+							if (inputValue < 4 || inputValue > 20) {
+								$('#disa_max_digits_input', popup_html).val(4);
+								monster.ui.alert('warning', self.i18n.active().callflows.disa.max_digits.invalid);
+							}
+						});
+
 					}
 				},
 				'collect_dtmf[]': {
@@ -1506,17 +1972,36 @@ define(function(require) {
 							name: 'collect-dtmf',
 							data: {
 								data_dtmf: {
-									'interdigit_timeout': node.getMetadata('interdigit_timeout') || '',
-									'collection_name': node.getMetadata('collection_name') || '',
-									'max_digits': node.getMetadata('max_digits') || '',
-									'terminator': node.getMetadata('terminator') || '#',
-									'timeout': node.getMetadata('timeout') || '5000'
+									interdigit_timeout: node.getMetadata('interdigit_timeout') 
+										? (node.getMetadata('interdigit_timeout') / 1000).toString() 
+										: '5',
+									collection_name: node.getMetadata('collection_name') || '',
+									max_digits: node.getMetadata('max_digits') || '4',
+									terminator: node.getMetadata('terminator') || '#',
+									timeout: node.getMetadata('timeout') 
+										? (node.getMetadata('timeout') / 1000).toString() 
+										: '10'
 								}
 							},
 							submodule: 'misc'
 						}));
 
-						monster.ui.tooltips(popup_html);
+						//monster.ui.tooltips(popup_html);
+
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#collect_dtmf_collection_input', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#collect_dtmf_collection_input', popup_html).change(toggleSaveButton);
 
 						$('#add', popup_html).click(function() {
 							var setData = function(field, value) {
@@ -1527,13 +2012,57 @@ define(function(require) {
 								}
 							};
 
-							setData('interdigit_timeout', $('#collect_dtmf_interdigit_input', popup_html).val());
+							// convert interdigit timeout value to milliseconds
+							let interdigitTimeoutSeconds = $('#collect_dtmf_interdigit_input', popup_html).val();
+							let interdigitTimeoutMilliseconds = interdigitTimeoutSeconds * 1000;
+
+							// convert timeout value to milliseconds
+							let timeoutSeconds = $('#collect_dtmf_timeout_input', popup_html).val();
+							let timeoutMilliseconds = timeoutSeconds * 1000;
+
+							setData('interdigit_timeout', interdigitTimeoutMilliseconds);
 							setData('collection_name', $('#collect_dtmf_collection_input', popup_html).val());
 							setData('max_digits', $('#collect_dtmf_max_digits_input', popup_html).val());
 							setData('terminator', $('#collect_dtmf_terminator_input', popup_html).val());
-							setData('timeout', $('#collect_dtmf_timeout_input', popup_html).val());
+							setData('timeout', timeoutMilliseconds);
 
 							popup.dialog('close');
+						});
+
+						// alert for invalid interdigit timeout value
+						$('#collect_dtmf_interdigit_input', popup_html).change(function() {
+						
+							inputValue = $('#collect_dtmf_interdigit_input', popup_html).val();
+
+							if (inputValue < 5 || inputValue > 20) {
+								$('#collect_dtmf_interdigit_input', popup_html).val(5);
+								monster.ui.alert('warning', self.i18n.active().callflows.collectDTMF.interdigitTimeout.alert);
+							}
+						
+						});
+
+						// alert for invalid request timeout value
+						$('#collect_dtmf_timeout_input', popup_html).change(function() {
+						
+							inputValue = $('#collect_dtmf_timeout_input', popup_html).val();
+
+							if (inputValue < 5 || inputValue > 20) {
+								$('#collect_dtmf_timeout_input', popup_html).val(10);
+								monster.ui.alert('warning', self.i18n.active().callflows.collectDTMF.timeout.alert);
+							}
+						
+						});
+
+						// alert for invalid max digits value
+						$('#collect_dtmf_max_digits_input', popup_html).change(function() {
+						
+							inputValue = $('#collect_dtmf_max_digits_input', popup_html).val();
+
+							if (inputValue < 1 || inputValue > 40) {
+								$('#collect_dtmf_max_digits_input', popup_html).val(4);
+								monster.ui.alert('warning', self.i18n.active().callflows.collectDTMF.maxDigits.alert);
+							}
+						
 						});
 
 						popup = monster.ui.dialog(popup_html, {
@@ -1582,6 +2111,21 @@ define(function(require) {
 						}));
 
 						monster.ui.tooltips(popup_html);
+
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#sleep_duration_input', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#sleep_duration_input', popup_html).change(toggleSaveButton);
 
 						$('#add', popup_html).click(function() {
 							var setData = function(field, value) {
@@ -1699,6 +2243,21 @@ define(function(require) {
 							}
 
 						}
+
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#tts_text_input', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#tts_text_input', popup_html).change(toggleSaveButton);
 						
 						$('#add', popup_html).click(function() {
 							var setData = function(field, value) {
@@ -1771,6 +2330,23 @@ define(function(require) {
 								submodule: 'misc'
 							}));
 
+							// update label padding based on media selector value
+							function updateLabelPadding() {
+								var mediaValue = $('#media_selector', popup_html).val();
+								var label = $('.popup_field label[for="media_selector"]', popup_html);
+				
+								if (mediaValue === 'null' || mediaValue === undefined) {
+									label.css('padding-bottom', '22px');
+								} else {
+									label.css('padding-bottom', '45px');
+								}
+								
+							}
+				
+							updateLabelPadding();
+
+							$('#media_selector', popup_html).change(updateLabelPadding);
+
 							if ($('#media_selector option:selected', popup_html).val() === undefined
 							|| $('#media_selector option:selected', popup_html).val() === 'null') {
 								$('#edit_link', popup_html).hide();
@@ -1800,6 +2376,21 @@ define(function(require) {
 								});
 							});
 
+							// enable or disable the save button based on the input value
+							function toggleSaveButton() {
+								var inputValue = $('#response_code_input', popup_html).val();
+								
+								if (inputValue == '') {
+									$('#add', popup_html).prop('disabled', true);
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#response_code_input', popup_html).change(toggleSaveButton);
+
 							$('#add', popup_html).click(function() {
 								if ($('#response_code_input', popup_html).val().match(/^[1-6][0-9]{2}$/)) {
 									node.setMetadata('code', $('#response_code_input', popup_html).val());
@@ -1827,7 +2418,7 @@ define(function(require) {
 									}
 								}
 							});
-						});
+						}, 'play');
 					}
 				},
 				'missed_call_alert[]': {
@@ -1949,6 +2540,36 @@ define(function(require) {
 						containerClasses: 'skinny'
 					});
 
+				
+				// function to validate an email address
+				function isValidEmail(email) {
+					var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+					return emailRegex.test(email) && email.split('@')[1].split('.').length > 1;
+				}
+
+				// enable or disable the save button based on the users or emails value
+				function toggleSaveButton() {
+					var emails = template.find('#emails').val().replace(/\s/g, '').split(','),
+						userCount = widget.getSelectedItems().length,
+						hasValidEmails;
+					
+					if (emails.length == 1 && emails[0] == '') {
+						hasValidEmails = null;
+					} else {
+						hasValidEmails = emails.every(email => email === '' || isValidEmail(email));
+					}
+										
+					if (hasValidEmails == null && userCount >= 1 || hasValidEmails >= 1 && userCount >= 1 || hasValidEmails >= 1 && userCount == 0) {
+						$('#save_missed_call_alerts', template).prop('disabled', false);
+					} else {
+						$('#save_missed_call_alerts', template).prop('disabled', true);
+					}
+				}
+		
+				toggleSaveButton();
+		
+				$('#emails', template).change(toggleSaveButton);
+				
 				template.find('#save_missed_call_alerts').on('click', function() {
 					var recipients = [],
 						emails = template.find('#emails').val();
@@ -1982,96 +2603,119 @@ define(function(require) {
 						}
 					}
 				});
+
+				// monitor for changes to the selected column
+				var observer = new MutationObserver(toggleSaveButton),
+					selectedColumn = template.find('.selected').get(0),
+					config = { childList: true, subtree: true };
+
+				observer.observe(selectedColumn, config);
+
+				popup.on('dialogclose', function() {
+					observer.disconnect();
+				});
+
 			});
 		},
 
 		miscEditSetCAV: function(node, callback) {
 			var self = this,
 				variables = _.extend({}, node.getMetadata('custom_application_vars')),
-				initTemplate = function() {
-					var template = $(self.getTemplate({
-							name: 'setcav-dialog',
-							data: {
-								variables: variables
-							},
-							submodule: 'misc'
-						})),
-						popup;
-
-					if (_.size(variables) <= 0) {
-						addRow(template);
-					}
-
-					_.each(variables, function(variable, key) {
-						addRow(template, {
-							key: key,
-							value: variable
-						});
-					});
-
-					popup = monster.ui.dialog(template, {
-						title: self.i18n.active().callflows.setCav.popupTitle,
-						width: 500,
-						beforeClose: function() {
-							if (typeof callback === 'function') {
-								callback();
-							}
+				formData;
+		
+			function checkFormValidity(template) {
+				formData = monster.ui.getFormData('set_cav_form');
+				var items = formData.items;
+		
+				var hasEmptyKeyOrValue = items.some(function(item) {
+					return _.isEmpty(item.key) || _.isEmpty(item.value);
+				});
+		
+				if (hasEmptyKeyOrValue) {
+					$('#save_cav_variables', template).prop('disabled', true);
+				} else {
+					$('#save_cav_variables', template).prop('disabled', false);
+				}
+			}
+		
+			var initTemplate = function() {
+				var template = $(self.getTemplate({
+						name: 'setcav-dialog',
+						data: { variables: variables },
+						submodule: 'misc'
+					})),
+					popup;
+		
+				if (_.size(variables) <= 0) {
+					addRow(template);
+				}
+		
+				_.each(variables, function(variable, key) {
+					addRow(template, { key: key, value: variable });
+				});
+		
+				popup = monster.ui.dialog(template, {
+					title: self.i18n.active().callflows.setCav.popupTitle,
+					width: 500,
+					beforeClose: function() {
+						if (typeof callback === 'function') {
+							callback();
 						}
-					});
-
-					bindSetCavEvents({
-						template: template,
-						popup: popup
-					});
-				},
-				bindSetCavEvents = function(args) {
-					var template = args.template,
-						popup = args.popup,
-						formData;
-
-					template.find('.cav-add-row .svg-icon')
-						.on('click', function() {
-							addRow(template);
-						});
-
-					template.find('#save_cav_variables').on('click', function() {
-						formData = monster.ui.getFormData('set_cav_form');
-						variables = _
-							.chain(formData.items)
-							.reject(function(item) {
-								return _.isEmpty(item.key) || _.isEmpty(item.value);
-							})
-							.keyBy('key')
-							.mapValues('value')
-							.value();
-
-						node.setMetadata('custom_application_vars', variables);
-
-						popup.dialog('close');
-					});
-				},
-				addRow = function(template, data) {
-					var cavRow = $(self.getTemplate({
-						name: 'setcav-row',
-						submodule: 'misc',
-						data: _.merge(data, {
-							index: template.find('.cav-list tbody tr').length + 1
+					}
+				});
+		
+				bindSetCavEvents({ template: template, popup: popup });
+			},
+		
+			bindSetCavEvents = function(args) {
+				var template = args.template,
+					popup = args.popup;
+		
+				template.find('.cav-add-row').on('click', function() {
+					addRow(template);
+					checkFormValidity(template);
+				});
+		
+				template.on('change', '.cav-key, .cav-value', function() {
+					checkFormValidity(template);
+				});
+		
+				template.find('#save_cav_variables').on('click', function() {
+					formData = monster.ui.getFormData('set_cav_form');
+					var variables = _.chain(formData.items)
+						.reject(function(item) {
+							return _.isEmpty(item.key) || _.isEmpty(item.value);
 						})
-					}));
-
-					template.find('.cav-list tbody')
-						.append(cavRow);
-
-					template.find('.cav-remove-row')
-						.on('click', function() {
-							if (template.find('.cav-list tbody tr').length <= 1) {
-								return;
-							}
-
-							$(this).parent().parent().remove();
-						});
-				};
-
+						.keyBy('key')
+						.mapValues('value')
+						.value();
+		
+					node.setMetadata('custom_application_vars', variables);
+					popup.dialog('close');
+				});
+		
+				checkFormValidity(template);
+			},
+		
+			addRow = function(template, data) {
+				var cavRow = $(self.getTemplate({
+					name: 'setcav-row',
+					submodule: 'misc',
+					data: _.merge(data, {
+						index: template.find('.cav-list tbody tr').length + 1
+					})
+				}));
+		
+				template.find('.cav-list tbody').append(cavRow);
+		
+				template.find('.cav-remove-row').off('click').on('click', function() {
+					if (template.find('.cav-list tbody tr').length > 1) {
+						$(this).closest('tr').remove();
+						checkFormValidity(template);
+					}
+				});
+			};
+		
 			initTemplate();
 		},
 
@@ -2108,6 +2752,7 @@ define(function(require) {
 
 					monster.ui.tooltips($template);
 
+					/*
 					monster.ui.validate($form, {
 						rules: {
 							uri: {
@@ -2119,6 +2764,34 @@ define(function(require) {
 							uri: {
 								url: self.i18n.active().callflows.webhook.uri.errorMessages.url
 							}
+						}
+					});
+					*/
+
+					// enable or disable the save button based on the input value
+					function toggleSaveButton() {
+						var inputValue = $template.find('#uri').val();
+		
+						if (inputValue === '') {
+							$template.find('#add').prop('disabled', true);
+						} else if (!(inputValue.startsWith('http://') || inputValue.startsWith('https://'))) {
+							$template.find('#add').prop('disabled', true);
+							monster.ui.alert('warning', self.i18n.active().callflows.webhook.uri.invalid);
+						} else {
+							$template.find('#add').prop('disabled', false);
+						}
+					}
+		
+					toggleSaveButton();
+		
+					$template.find('#uri').on('change', toggleSaveButton);
+
+					// alert for invalid retries value
+					$template.find('#retries').on('change', function() {
+						inputValue = $template.find('#retries').val();
+						if (inputValue < 1 || inputValue > 4) {
+							$template.find('#retries').val(1);
+							monster.ui.alert('warning', self.i18n.active().callflows.webhook.retries.invalid);
 						}
 					});
 
@@ -2228,19 +2901,32 @@ define(function(require) {
 			});
 		},
 
-		miscMediaList: function(callback) {
+		miscMediaList: function(callback, mediaAction) {
 			var self = this;
+
+			var mediaFilters = {
+				paginate: false
+			};
+
+			if (miscSettings.enableCustomCallflowActions && miscSettings.responseActionHideMailboxMedia) {
+				if (mediaAction == 'play') {
+					mediaFilters['filter_not_media_source'] = 'recording';
+				}
+				if (mediaAction == 'mailboxMedia') {
+					mediaFilters['filter_media_source'] = 'recording';
+				}
+			}
 
 			self.callApi({
 				resource: 'media.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: mediaFilters
 				},
 				success: function(data, status) {
-					callback && callback(data.data);
+					// sort media alphabetically by name
+					var sortedMedia = data.data.sort((a, b) => a.name.localeCompare(b.name));
+					callback && callback(sortedMedia);
 				}
 			});
 		}

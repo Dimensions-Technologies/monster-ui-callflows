@@ -80,6 +80,21 @@ define(function(require) {
 							submodule: 'resource'
 						}));
 
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#hunt_account_id', popup_html).val();
+							
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#hunt_account_id', popup_html).change(toggleSaveButton);
+
 						$('#add', popup_html).click(function() {
 							var hunt_id = $('#hunt_account_id', popup_html).val();
 

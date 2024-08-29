@@ -1,0 +1,31 @@
+<div class="dialog_popup callflows-port callflow-action-form">
+	<!--<h1>{{ i18n.callflows.branchvariable.edit.title }}</h1>-->
+	<form id="branchvariable_form" class="form-horizontal">
+		<div class="form_content">
+			<div class="popup_field">
+				<label for="scope">{{i18n.callflows.branchvariable.edit.scope}}</label>
+				<select name="scope" id="scope">
+					<option value="null" hidden>Select a scope</option>
+					{{#select scope.selected}}
+						{{#each scope.options as |option|}}
+							<option value="{{option}}">{{option}}</option>
+						{{/each}}
+					{{/select}}
+				</select>	
+			</div>
+			<div class="popup_field"{{#compare scope.selected "!==" "doc"}} style="display: none;"{{/compare}}>
+				<label for="id">{{i18n.callflows.branchvariable.edit.id}}</label>
+				<input type="text" id="id" name="id" value="{{id}}">
+			</div>
+			<div class="popup_field">
+				<label for="variable">{{i18n.callflows.branchvariable.edit.variable}}</label>
+				<input type="text" id="variable" name="variable" value="{{variable}}">
+			</div>
+		</div>
+	</form>
+	<div class="buttons-center">
+		<button id="save" class="monster-button-primary">
+			{{ i18n.save }}
+		</button>
+	</div>
+</div>

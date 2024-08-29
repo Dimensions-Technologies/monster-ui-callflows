@@ -1,12 +1,17 @@
-<div class="dialog_popup callflows-port after-bridge-dialog js-after-bridge-dialog">
-	<form method="post" action="#" class="after-bridge-form js-after-bridge-form">
+<div class="dialog_popup callflows-port callflow-action-form">
+	<!--<h1>{{ i18n.oldCallflows.language }}</h1>-->
+	<form name="form" method="post" action="#">
 		<div class="form_content">
-			<div class="popup_field clear js-after-bridge-number after-bridge-number">
+			<div class="popup_field">
 				<label for="after-bridge-number">
 					{{ i18n.callflows.after_bridge.transfer.number }}
 				</label>
 				<div class="field_wrapper">
-					<input name="number" type="text" value="{{ number }}" id="after-bridge-number"/>
+					<input name="number" type="text" value="{{ number }}" id="after-bridge-number"
+						pattern="[0-9*#]*" inputmode="tel"
+						{{#if numberLength}}maxlength="{{ numberLength }}"{{/if}}
+						onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 42 || event.charCode == 35"
+					/>
 				</div>
 			</div>
 		</div>
@@ -14,10 +19,7 @@
 			{{{ i18n.callflows.after_bridge.warning_dialog.message }}}
 		{{/monsterPanelText}}
 	</form>
-
 	<div class="buttons-center">
-		<button class="monster-button monster-button-primary js-save">
-			{{ i18n.save }}
-		</button>
+		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>
 	</div>
 </div>
