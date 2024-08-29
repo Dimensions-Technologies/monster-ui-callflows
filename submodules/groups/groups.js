@@ -191,7 +191,9 @@ define(function(require) {
 				.empty()
 				.append(groups_html);
 		},
+		
 
+		
 		// Added for the subscribed event to avoid refactoring mediaEdit
 		_groupsEdit: function(args) {
 			var self = this;
@@ -267,6 +269,7 @@ define(function(require) {
 				self.groupsRender(render_data, target, callbacks);
 			});
 		},
+		
 
 		groupsRenderEndpointList: function(data, parent) {
 			var self = this;
@@ -381,13 +384,20 @@ define(function(require) {
 					name: self.i18n.active().callflows.groups.title,
 					module: 'groups',
 					listEntities: function(callback) {
+						
+						var groupFilters = {
+							paginate: false
+						};
+
+						if (miscSettings.hidePrgFromGroupList) {
+							groupFilters['filter_not_group_type'] = 'personal';
+						}
+						
 						self.callApi({
 							resource: 'group.list',
 							data: {
 								accountId: self.accountId,
-								filters: {
-									paginate: false
-								}
+								filters: groupFilters
 							},
 							success: function(data, status) {
 								callback && callback(data.data);
@@ -606,11 +616,33 @@ define(function(require) {
 							resource: 'callflow.list',
 							data: {
 								accountId: self.accountId,
-								filters: { paginate: false }
+								filters: { 
+									paginate: false
+								}
 							},
 							success: function(data, status) {
-								var popup, popup_html, _data = [];
 
+								var popup, popup_html, _data = [];
+	
+								function filterCallflows(callflow, filterRingGroup) {
+									if (!callflow.featurecode && callflow.id !== self.flow.id) {
+										// additional filtering based on ringGroupToggleActionFilterCallflows
+										if (filterRingGroup) {
+											return callflow.modules.includes('ring_group') && callflow.type !== 'mainUserCallflow';
+										}
+										return true; // No additional filter needed
+									}
+									return false;
+								}
+
+								$.each(data.data, function() {
+									if (filterCallflows(this, miscSettings.ringGroupToggleActionFilterCallflows)) {
+										this.name = this.name || (this.numbers ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
+										_data.push(this);
+									}
+								});
+
+								/*
 								$.each(data.data, function() {
 									if (!this.featurecode && this.id !== self.flow.id) {
 										this.name = this.name ? this.name : ((this.numbers) ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
@@ -618,6 +650,7 @@ define(function(require) {
 										_data.push(this);
 									}
 								});
+								*/
 
 								popup_html = $(self.getTemplate({
 									name: 'ring_group_login_dialog',
@@ -631,6 +664,21 @@ define(function(require) {
 									submodule: 'groups'
 								}));
 
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#object-selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#object-selector', popup_html).change(toggleSaveButton);
+
 								$('#add', popup_html).click(function() {
 									node.setMetadata('callflow_id', $('#object-selector', popup_html).val());
 
@@ -640,7 +688,7 @@ define(function(require) {
 								});
 
 								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().oldCallflows.callflow_title,
+									title: self.i18n.active().callflows.ringGroupToggle.loginTitle,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
@@ -651,7 +699,6 @@ define(function(require) {
 						});
 					}
 				},
-
 				'ring_group_toggle[action=logout]': {
 					name: self.i18n.active().callflows.ringGroupToggle.logoutTitle,
 					icon: 'ring_group',
@@ -695,6 +742,25 @@ define(function(require) {
 							success: function(data, status) {
 								var popup, popup_html, _data = [];
 
+								function filterCallflows(callflow, filterRingGroup) {
+									if (!callflow.featurecode && callflow.id !== self.flow.id) {
+										// additional filtering based on ringGroupToggleActionFilterCallflows
+										if (filterRingGroup) {
+											return callflow.modules.includes('ring_group') && callflow.type !== 'mainUserCallflow';
+										}
+										return true; // No additional filter needed
+									}
+									return false;
+								}
+
+								$.each(data.data, function() {
+									if (filterCallflows(this, miscSettings.ringGroupToggleActionFilterCallflows)) {
+										this.name = this.name || (this.numbers ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
+										_data.push(this);
+									}
+								});
+
+								/*
 								$.each(data.data, function() {
 									if (!this.featurecode && this.id !== self.flow.id) {
 										this.name = this.name ? this.name : ((this.numbers) ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
@@ -702,6 +768,7 @@ define(function(require) {
 										_data.push(this);
 									}
 								});
+								*/
 
 								popup_html = $(self.getTemplate({
 									name: 'ring_group_logout_dialog',
@@ -715,6 +782,21 @@ define(function(require) {
 									submodule: 'groups'
 								}));
 
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#object-selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#object-selector', popup_html).change(toggleSaveButton);
+
 								$('#add', popup_html).click(function() {
 									node.setMetadata('callflow_id', $('#object-selector', popup_html).val());
 
@@ -724,7 +806,7 @@ define(function(require) {
 								});
 
 								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().oldCallflows.callflow_title,
+									title: self.i18n.active().callflows.ringGroupToggle.logoutTitle,
 									beforeClose: function() {
 										if (typeof callback === 'function') {
 											callback();
@@ -779,6 +861,7 @@ define(function(require) {
 			return data;
 		},
 
+		/*
 		groupsEditPageGroup: function(node, callback) {
 			var self = this;
 
@@ -925,6 +1008,8 @@ define(function(require) {
 							} else if (tab_id === 'devices_tab_link') {
 								$('#devices_pane', popup_html).show();
 							} else if (tab_id === 'groups_tab_link') {
+								$('#groups_pane', popup_html).show();
+							} else if (tab_id === 'personal_ring_groups_tab_link') {
 								$('#groups_pane', popup_html).show();
 							}
 
@@ -1100,28 +1185,534 @@ define(function(require) {
 			});
 		},
 
-		groupsEditRingGroup: function(node, callback) {
-			var self = this,
-				default_timeout = '20',
-				default_delay = '0';
+		*/
 
-			monster.waterfall([
-				function(callback) {
+
+		groupsEditPageGroup: function(node, callback) {
+			var self = this;
+
+			monster.parallel({
+				unfilteredDevices: function(callback) {
 					self.groupsRequestDeviceList({
+						success: function(data) {
+							callback(null, data);
+						}
+					}, false);
+				},
+				filteredDevices: function(callback) {
+					self.groupsRequestDeviceList({
+						success: function(data) {
+							callback(null, data);
+						}
+					}, true);
+				},
+				unfilteredGroups: function(callback) {
+					self.groupsGroupList(function(data) {
+						callback(null, data);
+					}, false);
+				},
+				filteredGroups: function(callback) {
+					self.groupsGroupList(function(data) {
+						callback(null, data);
+					}, true);
+				},
+				users: function(callback) {
+					self.groupsRequestUserList({
 						success: function(data) {
 							callback(null, data);
 						}
 					});
 				}
-			], function(err, data) {
+			}, function(err, results) {
+				
+				if (err) {
+					console.error('Error occurred while fetching data:', err);
+					return;
+				}
+
 				var popup,
 					popup_html,
 					endpoints = node.getMetadata('endpoints'),
 					selected_endpoints = {},
 					unselected_endpoints = [],
 					unselected_groups = [],
+					unselected_filtered_groups = [],
 					unselected_devices = [],
+					unselected_filtered_devices = [],
 					unselected_users = [];
+					unfilteredDevices = results.unfilteredDevices,
+					filteredDevices = results.filteredDevices,
+					unfilteredGroups = results.unfilteredGroups,
+					filteredGroups = results.filteredGroups,
+					users = results.users;
+
+				if (endpoints) {
+					// We need to translate the endpoints to prevent nasty O(N^2) time complexities,
+					// we also need to clone to prevent managing of objects
+					$.each($.extend(true, {}, endpoints), function(i, obj) {
+						obj.name = 'Undefined Device';
+						selected_endpoints[obj.id] = obj;
+					});
+				}
+
+				// populate unselected_devices without the filter
+				$.each(unfilteredDevices, function(i, obj) {
+					obj.endpoint_type = 'device';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'device';
+						selected_endpoints[obj.id].owner_id = obj.owner_id;
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						unselected_devices.push(obj);
+					}
+				});
+
+				unselected_devices = _.sortBy(unselected_devices, 'name');
+
+				// populate unselected_filtered_devices with the filter
+				$.each(filteredDevices, function(i, obj) {
+					obj.endpoint_type = 'device';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'device';
+						selected_endpoints[obj.id].owner_id = obj.owner_id;
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						unselected_filtered_devices.push(obj);
+					}
+				});
+
+				unselected_filtered_devices = _.sortBy(unselected_filtered_devices, 'name');
+
+				// populate unselected groups without filter
+				$.each(unfilteredGroups, function(i, obj) {
+					obj.endpoint_type = 'group';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'group';
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						unselected_groups.push(obj);
+					}
+				});
+
+				unselected_groups = _.sortBy(unselected_groups, 'name');
+
+				// populate unselected groups with filter
+				$.each(filteredGroups, function(i, obj) {
+					obj.endpoint_type = 'group';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'group';
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						unselected_filtered_groups.push(obj);
+					}
+				});
+
+				unselected_filtered_groups = _.sortBy(unselected_filtered_groups, 'name');
+
+				// populate unselected users
+				$.each(users, function(i, obj) {
+					obj.name = obj.first_name + ' ' + obj.last_name;
+					obj.endpoint_type = 'user';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'user';
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						unselected_users.push(obj);
+					}
+				});
+
+				unselected_users = _.sortBy(unselected_users, 'name');
+
+				popup_html = $(self.getTemplate({
+					name: 'page_group_dialog',
+					data: {
+						form: {
+							name: node.getMetadata('name') || '',
+							audio: node.getMetadata('audio') || 'one-way'
+						},
+						miscSettings: miscSettings
+					},
+					submodule: 'groups'
+				}));
+
+				// append unselected groups without filter
+				$.each(unselected_groups, function() {
+					$('#groups_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'page_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				// append unselected groups with filter
+				$.each(unselected_filtered_groups, function() {
+					$('#personal_ring_groups_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'page_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				})
+
+				// append unselected devices without filter
+				$.each(unselected_devices, function() {
+					$('#devices_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'page_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				// append unselected devices with filter
+				$.each(unselected_filtered_devices, function() {
+					$('#phone_only_devices_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'page_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				$.each(unselected_users, function() {
+					$('#users_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'page_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				$.each(selected_endpoints, function() {
+					//Check if user/device exists.
+					if (this.endpoint_type) {
+						$('.connect.right', popup_html)
+							.append($(self.getTemplate({
+								name: 'page_group_element',
+								data: this,
+								submodule: 'groups'
+							})));
+					}
+				});
+
+				$('#name', popup_html).bind('keyup blur change', function() {
+					$('.column.right .title', popup_html).html('Page Group - ' + $(this).val());
+				});
+
+				// Listen for change events on the dropdown
+				$('#settings-dropdown', popup_html).change(function() {
+					// Hide all pane contents
+					$('.pane_content', popup_html).hide();
+
+					// Reset Search field
+					$('.searchfield', popup_html).val('');
+					$('.column.left li', popup_html).show();
+
+					// Get the selected value from the dropdown
+					var selectedValue = $(this).val();
+
+					// Show the appropriate pane based on the selected value
+					if (selectedValue === 'users_pane') {
+						$('#users_pane', popup_html).show();
+					} else if (selectedValue === 'devices_pane') {
+						$('#devices_pane', popup_html).show();
+					} else if (selectedValue === 'phone_only_devices_pane') {
+						$('#phone_only_devices_pane', popup_html).show();
+					} else if (selectedValue === 'groups_pane') {
+						$('#groups_pane', popup_html).show();
+					} else if (selectedValue === 'personal_ring_groups_pane') {
+						$('#personal_ring_groups_pane', popup_html).show();
+					}
+				});
+
+				// Trigger change event on page load to show the first pane
+				$('#settings-dropdown', popup_html).trigger('change');
+
+				$('.searchsubmit2', popup_html).click(function() {
+					$('.searchfield', popup_html).val('');
+					$('.column li', popup_html).show();
+				});
+
+				$('#devices_pane .searchfield', popup_html).keyup(function() {
+					$('#devices_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#devices_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#phone_only_devices_pane .searchfield', popup_html).keyup(function() {
+					$('#phone_only_devices_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#phone_only_devices_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#groups_pane .searchfield', popup_html).keyup(function() {
+					$('#groups_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#groups_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#personal_ring_groups_pane .searchfield', popup_html).keyup(function() {
+					$('#personal_ring_groups_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#personal_ring_groups_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#users_pane .searchfield', popup_html).keyup(function() {
+					$('#users_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#users_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				if ($.isEmptyObject(selected_endpoints)) {
+					$('.column.right .connect', popup_html).addClass('no_element');
+				} else {
+					$('.column.right .connect', popup_html).removeClass('no_element');
+				}
+
+				$('.column.left .options', popup_html).hide();
+				$('.column.left .actions', popup_html).hide();
+
+				$('.options .option.delay', popup_html).bind('keyup', function() {
+					$(this).parents('li').data('delay', $(this).val());
+				});
+
+				$('.options .option.timeout', popup_html).bind('keyup', function() {
+					$(this).parents('li').data('timeout', $(this).val());
+				});
+
+				$('#save_ring_group', popup_html).click(function() {
+					var name = $('#name', popup_html).val();
+					var audio = $('#audio', popup_html).val();
+
+					endpoints = [];
+
+					$('.right .connect li', popup_html).each(function() {
+						var item_data = $(this).data();
+						delete item_data.owner_id;
+						endpoints.push(item_data);
+					});
+
+					node.setMetadata('endpoints', endpoints);
+					node.setMetadata('name', name);
+					node.setMetadata('audio', audio);
+					node.caption = name;
+
+					popup.dialog('close');
+				});
+
+				popup = monster.ui.dialog(popup_html, {
+					title: self.i18n.active().oldCallflows.page_group_title,
+					beforeClose: function() {
+						if (typeof callback === 'function') {
+							callback();
+						}
+					}
+				});
+
+				// $('.scrollable', popup).jScrollPane({
+				// 	horizontalDragMinWidth: 0,
+				// 	horizontalDragMaxWidth: 0
+				// });
+
+				$('.connect', popup).sortable({
+					connectWith: $('.connect.right', popup),
+					zIndex: 2000,
+					helper: 'clone',
+					appendTo: $('.wrapper', popup),
+					scroll: false,
+					tolerance: 'pointer',
+					receive: function(ev, ui) {
+						var data = ui.item[0].dataset,
+							list_li = [],
+							confirm_text;
+
+						if (data.endpoint_type === 'device') {
+							confirm_text = self.i18n.active().oldCallflows.the_owner_of_this_device_is_already;
+							$('.connect.right li', popup_html).each(function() {
+								if ($(this).data('id') === data.owner_id) {
+									list_li.push($(this));
+								}
+							});
+						} else if (data.endpoint_type === 'user') {
+							confirm_text = self.i18n.active().oldCallflows.this_user_has_already_some_devices;
+							$('.connect.right li', popup_html).each(function() {
+								if ($(this).data('owner_id') === data.id) {
+									list_li.push($(this));
+								}
+							});
+						}
+
+						if (list_li.length > 0) {
+							monster.ui.confirm(confirm_text,
+								function() {
+									$.each(list_li, function() {
+										remove_element(this);
+									});
+								},
+								function() {
+									remove_element(ui.item);
+								}
+							);
+						}
+
+						if ($(this).hasClass('right')) {
+							$('.options', ui.item).show();
+							$('.actions', ui.item).show();
+							//$('.item_name', ui.item).addClass('right');
+							$('.column.right .connect', popup).removeClass('no_element');
+						}
+					}
+				});
+
+				$(popup_html).delegate('.trash', 'click', function() {
+					var $parent_li = $(this).parents('li').first();
+					remove_element($parent_li);
+				});
+
+				$('.pane_content', popup_html).hide();
+				
+				// set the default tab when loaded
+				if (miscSettings.filterRingGroupLists) {
+					$('#personal_ring_groups_pane', popup_html).show();
+				} else {
+					$('#users_pane', popup_html).show();
+				}
+
+				var remove_element = function(li) {
+					var $parent_li = li;
+					var data = $parent_li.data();
+					data.name = jQuery.trim($('.item_name', $parent_li).html());
+					$('#' + data.endpoint_type + 's_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'page_group_element',
+							data: data,
+							submodule: 'groups'
+						})));
+					$parent_li.remove();
+
+					if ($('.connect.right li', popup_html).size() === 0) {
+						$('.column.right .connect', popup).addClass('no_element');
+					}
+
+					if (data.name.toLowerCase().indexOf($('#' + data.endpoint_type + 's_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+						$('#' + data.id, popup_html).hide();
+					}
+				};
+
+				// enable or disable the save button based on the dropdown value
+				function toggleSaveButton() {
+    				var ulElement = document.querySelector('ul.connect.right.ui-sortable'),
+    					numberOfItems = ulElement.querySelectorAll('li.sortable_li').length,
+						groupName = document.querySelector('#name').value;
+
+					if (numberOfItems > 0 && groupName != '') {
+						$('#save_ring_group', popup_html).prop('disabled', false);
+					} else {
+						$('#save_ring_group', popup_html).prop('disabled', true);
+					}
+				}
+
+				toggleSaveButton();
+
+				// monitor for changes to the selected column
+				var observer = new MutationObserver(toggleSaveButton),
+					selectedColumn = popup.find('.right').get(0),
+					config = { childList: true, subtree: true };
+
+				observer.observe(selectedColumn, config);
+
+				popup.on('dialogclose', function() {
+					observer.disconnect();
+				});
+			});
+		},
+
+		groupsEditRingGroup: function(node, callback) {
+			var self = this,
+				default_timeout = '20',
+				default_delay = '0';
+		
+			monster.parallel({
+				unfilteredDevices: function(callback) {
+					self.groupsRequestDeviceList({
+						success: function(data) {
+							callback(null, data);
+						}
+					}, false);
+				},
+				filteredDevices: function(callback) {
+					self.groupsRequestDeviceList({
+						success: function(data) {
+							callback(null, data);
+						}
+					}, true);
+				},
+				unfilteredGroups: function(callback) {
+					self.groupsGroupList(function(data) {
+						callback(null, data);
+					}, false);
+				},
+				filteredGroups: function(callback) {
+					self.groupsGroupList(function(data) {
+						callback(null, data);
+					}, true);
+				},
+				users: function(callback) {
+					self.groupsRequestUserList({
+						success: function(data) {
+							callback(null, data);
+						}
+					});
+				},
+				media: function(callback) {
+					self.groupsMediaList(function(data) {
+						callback(null, data);
+					});
+				}			
+			}, function(err, results) {
+				
+				if (err) {
+					console.error('Error occurred while fetching data:', err);
+					return;
+				}
+		
+				var popup,
+					popup_html,
+					endpoints = node.getMetadata('endpoints'),
+					selected_endpoints = {},
+					unselected_endpoints = [],
+					unselected_groups = [],
+					unselected_filtered_groups = [],
+					unselected_devices = [],
+					unselected_filtered_devices = [],
+					unselected_users = [],
+					unfilteredDevices = results.unfilteredDevices,
+					filteredDevices = results.filteredDevices,
+					unfilteredGroups = results.unfilteredGroups,
+					filteredGroups = results.filteredGroups,
+					users = results.users,
+					media = results.media;
 
 				if (endpoints) {
 					// We need to translate the endpoints to prevent nasty O(N^2) time complexities,
@@ -1132,7 +1723,8 @@ define(function(require) {
 					});
 				}
 
-				$.each(data, function(i, obj) {
+				// populate unselected_devices without the filter
+				$.each(unfilteredDevices, function(i, obj) {
 					obj.endpoint_type = 'device';
 					if (obj.id in selected_endpoints) {
 						selected_endpoints[obj.id].endpoint_type = 'device';
@@ -1147,445 +1739,574 @@ define(function(require) {
 
 				unselected_devices = _.sortBy(unselected_devices, 'name');
 
-				self.groupsGroupList(function(_data) {
-					$.each(_data, function(i, obj) {
-						obj.endpoint_type = 'group';
-						if (obj.id in selected_endpoints) {
-							selected_endpoints[obj.id].endpoint_type = 'group';
-							selected_endpoints[obj.id].name = obj.name;
-						} else {
-							obj.delay = default_delay;
-							obj.timeout = default_timeout;
-							unselected_groups.push(obj);
-						}
-					});
+				// populate unselected_filtered_devices with the filter
+				$.each(filteredDevices, function(i, obj) {
+					obj.endpoint_type = 'device';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'device';
+						selected_endpoints[obj.id].owner_id = obj.owner_id;
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						obj.delay = default_delay;
+						obj.timeout = default_timeout;
+						unselected_filtered_devices.push(obj);
+					}
+				});
 
-					unselected_groups = _.sortBy(unselected_groups, 'name');
+				unselected_filtered_devices = _.sortBy(unselected_filtered_devices, 'name');
 
-					monster.waterfall([
-						function(callback) {
-							self.groupsRequestUserList({
-								success: function(data) {
-									callback(null, data);
-								}
-							});
-						}
-					], function(err, _data) {
-						$.each(_data, function(i, obj) {
-							obj.name = obj.first_name + ' ' + obj.last_name;
-							obj.endpoint_type = 'user';
-							if (obj.id in selected_endpoints) {
-								selected_endpoints[obj.id].endpoint_type = 'user';
-								selected_endpoints[obj.id].name = obj.name;
-							} else {
-								obj.delay = default_delay;
-								obj.timeout = default_timeout;
-								unselected_users.push(obj);
-							}
-						});
+				// populate unselected groups without filter
+				$.each(unfilteredGroups, function(i, obj) {
+					obj.endpoint_type = 'group';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'group';
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						obj.delay = default_delay;
+						obj.timeout = default_timeout;
+						unselected_groups.push(obj);
+					}
+				});
 
-						unselected_users = _.sortBy(unselected_users, 'name');
+				unselected_groups = _.sortBy(unselected_groups, 'name');
 
-						self.groupsMediaList(function(_data) {
-							var media_array = _data.sort(function(a, b) {
-									return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
-								}),
-								mediaId = node.getMetadata('ringback') || 'default',
-								isShoutcast = mediaId.indexOf('://') >= 0 && mediaId !== 'silence_stream://300000',
-								strategy = node.getMetadata('strategy');
+				// populate unselected groups with filter
+				$.each(filteredGroups, function(i, obj) {
+					obj.endpoint_type = 'group';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'group';
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						obj.delay = default_delay;
+						obj.timeout = default_timeout;
+						unselected_filtered_groups.push(obj);
+					}
+				});
 
-							popup_html = $(self.getTemplate({
-								name: 'ring_group_dialog',
-								data: {
-									form: {
-										name: node.getMetadata('name') || '',
-										strategy: {
-											items: [
-												{
-													id: 'simultaneous',
-													name: self.i18n.active().oldCallflows.at_the_same_time
-												},
-												{
-													id: 'single',
-													name: self.i18n.active().oldCallflows.in_order
-												}
-											],
-											selected: node.getMetadata('strategy') || 'simultaneous'
-										},
-										timeout: node.getMetadata('timeout') || '30',
-										repeats: node.getMetadata('repeats') || 1,
-										ringback: {
-											items: $.merge([
-												{
-													id: 'default',
-													name: self.i18n.active().oldCallflows.default,
-													class: 'uneditable'
-												},
-												{
-													id: 'silence_stream://300000',
-													name: self.i18n.active().oldCallflows.silence,
-													class: 'uneditable'
-												},
-												{
-													id: 'shoutcast_url',
-													name: self.i18n.active().callflows.media.shoutcastURL,
-													class: 'uneditable'
-												}
-											], media_array),
-											selected: isShoutcast ? 'shoutcast_url' : mediaId,
-											shoutcastValue: mediaId
-										}
+				unselected_filtered_groups = _.sortBy(unselected_filtered_groups, 'name');
+
+				// populate unselected users
+				$.each(users, function(i, obj) {
+					obj.name = obj.first_name + ' ' + obj.last_name;
+					obj.endpoint_type = 'user';
+					if (obj.id in selected_endpoints) {
+						selected_endpoints[obj.id].endpoint_type = 'user';
+						selected_endpoints[obj.id].name = obj.name;
+					} else {
+						obj.delay = default_delay;
+						obj.timeout = default_timeout;
+						unselected_users.push(obj);
+					}
+				});
+
+				unselected_users = _.sortBy(unselected_users, 'name');
+
+				// process media list
+				var media_array = media.sort(function(a, b) {
+					return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+				}),
+				mediaId = node.getMetadata('ringback') || 'default',
+				isShoutcast = mediaId.indexOf('://') >= 0 && mediaId !== 'silence_stream://300000',
+				strategy = node.getMetadata('strategy');
+
+				popup_html = $(self.getTemplate({
+					name: 'ring_group_dialog',
+					data: {
+						form: {
+							name: node.getMetadata('name') || '',
+							strategy: {
+								items: [
+									{
+										id: 'simultaneous',
+										name: self.i18n.active().oldCallflows.at_the_same_time
+									},
+									{
+										id: 'single',
+										name: self.i18n.active().oldCallflows.in_order
 									}
-								},
+								],
+								selected: node.getMetadata('strategy') || 'simultaneous'
+							},
+							timeout: node.getMetadata('timeout') || '30',
+							repeats: node.getMetadata('repeats') || 1,
+							ringback: {
+								items: $.merge([
+									{
+										id: 'default',
+										name: self.i18n.active().oldCallflows.default,
+										class: 'uneditable'
+									},
+									{
+										id: 'silence_stream://300000',
+										name: self.i18n.active().oldCallflows.silence,
+										class: 'uneditable'
+									},
+									{
+										id: 'shoutcast_url',
+										name: self.i18n.active().callflows.media.shoutcastURL,
+										class: 'uneditable'
+									}
+								], media_array),
+								selected: isShoutcast ? 'shoutcast_url' : mediaId,
+								shoutcastValue: mediaId
+							}
+						},
+						miscSettings: miscSettings
+					},
+					submodule: 'groups'
+				}));
+
+				// append unselected groups without filter
+				$.each(unselected_groups, function() {
+					$('#groups_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'ring_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				// append unselected groups with filter
+				$.each(unselected_filtered_groups, function() {
+					$('#personal_ring_groups_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'ring_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				})
+
+				// append unselected devices without filter
+				$.each(unselected_devices, function() {
+					$('#devices_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'ring_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				// append unselected devices with filter
+				$.each(unselected_filtered_devices, function() {
+					$('#phone_only_devices_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'ring_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				$.each(unselected_users, function() {
+					$('#users_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'ring_group_element',
+							data: this,
+							submodule: 'groups'
+						})));
+				});
+
+				$.each(selected_endpoints, function() {
+					//Check if user/device exists.
+					if (this.endpoint_type) {
+						$('.connect.right', popup_html)
+							.append($(self.getTemplate({
+								name: 'ring_group_element',
+								data: this,
 								submodule: 'groups'
-							}));
+							})));
+					}
+				});
 
-							$.each(unselected_groups, function() {
-								$('#groups_pane .connect.left', popup_html)
-									.append($(self.getTemplate({
-										name: 'ring_group_element',
-										data: this,
-										submodule: 'groups'
-									})));
-							});
+				//Hide delay column if ring strategy is set to 'In order'
+				if (strategy === 'single') {
+					$('.options .option.delay', popup_html).hide();
+				}
 
-							$.each(unselected_devices, function() {
-								$('#devices_pane .connect.left', popup_html)
-									.append($(self.getTemplate({
-										name: 'ring_group_element',
-										data: this,
-										submodule: 'groups'
-									})));
-							});
+				$('#name', popup_html).bind('keyup blur change', function() {
+					$('.column.right .title', popup_html).html(self.i18n.active().oldCallflows.ring_group_val + $(this).val());
+				});
 
-							$.each(unselected_users, function() {
-								$('#users_pane .connect.left', popup_html)
-									.append($(self.getTemplate({
-										name: 'ring_group_element',
-										data: this,
-										submodule: 'groups'
-									})));
-							});
+				$('#ringback', popup_html).change(function(e) {
+					var val = $(this).val(),
+						isShoutcast = val === 'shoutcast_url';
 
-							$.each(selected_endpoints, function() {
-								//Check if user/device exists.
-								if (this.endpoint_type) {
-									$('.connect.right', popup_html)
-										.append($(self.getTemplate({
-											name: 'ring_group_element',
-											data: this,
-											submodule: 'groups'
-										})));
+					popup_html.find('.shoutcast-div').toggleClass('hidden', !isShoutcast).find('input').val('');
+
+					if ($(this).find('option:selected').hasClass('uneditable')) {
+						$('.media_action[data-action="edit"]', popup_html).hide();
+					} else {
+						$('.media_action[data-action="edit"]', popup_html).show();
+					}
+				});
+
+				$('.media_action', popup_html).click(function(e) {
+					var isCreation = $(this).data('action') === 'create',
+						mediaData = isCreation ? {} : { id: $('#ringback', popup_html).val() };
+
+					monster.pub('callflows.media.editPopup', {
+						data: mediaData,
+						callback: function(_mediaData) {
+							if (_mediaData) {
+								if (isCreation) {
+									$('#ringback', popup_html).append('<option value="' + _mediaData.id + '">' + _mediaData.name + '</option>');
+								} else {
+									$('#ringback option[value="' + _mediaData.id + '"]', popup_html).text(_mediaData.name);
 								}
-							});
-
-							//Hide delay column if ring strategy is set to 'In order'
-							if (strategy === 'single') {
-								$('.options .option.delay', popup_html).hide();
+								$('#ringback', popup_html).val(_mediaData.id);
 							}
-
-							$('#name', popup_html).bind('keyup blur change', function() {
-								$('.column.right .title', popup_html).html(self.i18n.active().oldCallflows.ring_group_val + $(this).val());
-							});
-
-							$('#ringback', popup_html).change(function(e) {
-								var val = $(this).val(),
-									isShoutcast = val === 'shoutcast_url';
-
-								popup_html.find('.shoutcast-div').toggleClass('hidden', !isShoutcast).find('input').val('');
-
-								if ($(this).find('option:selected').hasClass('uneditable')) {
-									$('.media_action[data-action="edit"]', popup_html).hide();
-								} else {
-									$('.media_action[data-action="edit"]', popup_html).show();
-								}
-							});
-
-							$('.media_action', popup_html).click(function(e) {
-								var isCreation = $(this).data('action') === 'create',
-									mediaData = isCreation ? {} : { id: $('#ringback', popup_html).val() };
-
-								monster.pub('callflows.media.editPopup', {
-									data: mediaData,
-									callback: function(_mediaData) {
-										if (_mediaData) {
-											if (isCreation) {
-												$('#ringback', popup_html).append('<option value="' + _mediaData.id + '">' + _mediaData.name + '</option>');
-											} else {
-												$('#ringback option[value="' + _mediaData.id + '"]', popup_html).text(_mediaData.name);
-											}
-											$('#ringback', popup_html).val(_mediaData.id);
-										}
-									}
-								});
-							});
-
-							$('ul.settings1 > li > a', popup_html).click(function(item) {
-								$('.pane_content', popup_html).hide();
-
-								//Reset Search field
-								$('.searchfield', popup_html).val('');
-								$('.column.left li', popup_html).show();
-
-								$('ul.settings1 > li', popup_html).removeClass('current');
-
-								var tab_id = $(this).attr('id');
-
-								if (tab_id === 'users_tab_link') {
-									$('#users_pane', popup_html).show();
-								} else if (tab_id === 'devices_tab_link') {
-									$('#devices_pane', popup_html).show();
-								} else if (tab_id === 'groups_tab_link') {
-									$('#groups_pane', popup_html).show();
-								}
-
-								$(this).parent().addClass('current');
-							});
-
-							$('.searchsubmit2', popup_html).click(function() {
-								$('.searchfield', popup_html).val('');
-								$('.column li', popup_html).show();
-							});
-
-							$('#devices_pane .searchfield', popup_html).keyup(function() {
-								$('#devices_pane .column.left li').each(function() {
-									if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#devices_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-										$(this).hide();
-									} else {
-										$(this).show();
-									}
-								});
-							});
-
-							$('#users_pane .searchfield', popup_html).keyup(function() {
-								$('#users_pane .column.left li').each(function() {
-									if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#users_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-										$(this).hide();
-									} else {
-										$(this).show();
-									}
-								});
-							});
-
-							$('#groups_pane .searchfield', popup_html).keyup(function() {
-								$('#groups_pane .column.left li').each(function() {
-									if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#groups_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-										$(this).hide();
-									} else {
-										$(this).show();
-									}
-								});
-							});
-
-							if ($.isEmptyObject(selected_endpoints)) {
-								$('.column.right .connect', popup_html).addClass('no_element');
-							} else {
-								$('.column.right .connect', popup_html).removeClass('no_element');
-							}
-
-							$('.column.left .options', popup_html).hide();
-							$('.column.left .actions', popup_html).hide();
-
-							$('.options .option.delay', popup_html).bind('keyup', function() {
-								$(this).parents('li').data('delay', $(this).val());
-							});
-
-							$('.options .option.timeout', popup_html).bind('keyup', function() {
-								$(this).parents('li').data('timeout', $(this).val());
-							});
-
-							$('#strategy', popup_html).bind('change', function() {
-								var strategy = $(this).val(),
-									$delay = $('.options .option.delay', popup_html);
-									$delayTitle = $('.options .delay_title', popup_html);
-
-								if (strategy === 'single') {
-									$delay.hide();
-									$delayTitle.hide();
-								} else {
-									$delay.show();
-									$delayTitle.show();
-								}
-							});
-
-							$('#save_ring_group', popup_html).click(function() {
-								var name = $('#name', popup_html).val(),
-									global_timeout = 0,
-									strategy = $('#strategy', popup_html).val(),
-									ringback = $('#ringback', popup_html).val(),
-									repeats = $('#repeats', popup_html).val(),
-									shoutcastValue = $('.shoutcast-url-input', popup_html).val();
-
-								if (ringback === 'shoutcast_url') {
-									ringback = shoutcastValue;
-								}
-
-								endpoints = [];
-
-								if (strategy === 'simultaneous') {
-									var computeTimeout = function(delay, local_timeout, global_timeout) {
-										var duration = delay + local_timeout;
-
-										if (duration > global_timeout) {
-											global_timeout = duration;
-										}
-
-										return global_timeout;
-									};
-								} else {
-									var computeTimeout = function(delay, local_timeout, global_timeout) {
-										global_timeout += local_timeout;
-
-										return global_timeout;
-									};
-								}
-
-								$('.right .connect li', popup_html).each(function() {
-									var item_data = $(this).data();
-
-									if (strategy === 'single') {
-										delete item_data.delay;
-									}
-									delete item_data.owner_id;
-									endpoints.push(item_data);
-									global_timeout = computeTimeout(parseFloat(item_data.delay), parseFloat(item_data.timeout), global_timeout);
-								});
-
-								if (repeats < 1) {
-									repeats = 1;
-								}
-
-								node.setMetadata('endpoints', endpoints);
-								node.setMetadata('name', name);
-								node.setMetadata('strategy', strategy);
-								node.setMetadata('timeout', global_timeout);
-								node.setMetadata('repeats', repeats);
-								if (ringback === 'default') {
-									node.deleteMetadata('ringback', ringback);
-								} else {
-									node.setMetadata('ringback', ringback);
-								}
-
-								node.caption = name;
-
-								popup.dialog('close');
-							});
-
-							monster.ui.tooltips(popup_html);
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().oldCallflows.ring_group,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
-
-							// $('.scrollable', popup).jScrollPane({
-							// 	horizontalDragMinWidth: 0,
-							// 	horizontalDragMaxWidth: 0
-							// });
-
-							$('.connect', popup).sortable({
-								connectWith: $('.connect.right', popup),
-								zIndex: 2000,
-								helper: 'clone',
-								appendTo: $('.wrapper', popup),
-								scroll: false,
-								tolerance: 'pointer',
-								receive: function(ev, ui) {
-									var data = ui.item[0].dataset,
-										list_li = [],
-										confirm_text;
-
-									if (data.endpoint_type === 'device') {
-										confirm_text = self.i18n.active().oldCallflows.the_owner_of_this_device_is_already;
-										$('.connect.right li', popup_html).each(function() {
-											if ($(this).data('id') === data.owner_id) {
-												list_li.push($(this));
-											}
-										});
-									} else if (data.endpoint_type === 'user') {
-										confirm_text = self.i18n.active().oldCallflows.this_user_has_already_some_devices;
-										$('.connect.right li', popup_html).each(function() {
-											if ($(this).data('owner_id') === data.id) {
-												list_li.push($(this));
-											}
-										});
-									}
-
-									if (list_li.length > 0) {
-										monster.ui.confirm(confirm_text,
-											function() {
-												$.each(list_li, function() {
-													remove_element(this);
-												});
-											},
-											function() {
-												remove_element(ui.item);
-											}
-										);
-									}
-
-									if ($(this).hasClass('right')) {
-										$('.options', ui.item).show();
-										$('.actions', ui.item).show();
-										//$('.item_name', ui.item).addClass('right');
-										$('.column.right .connect', popup).removeClass('no_element');
-									}
-								}
-							});
-
-							$(popup_html).delegate('.trash', 'click', function() {
-								var $parent_li = $(this).parents('li').first();
-								remove_element($parent_li);
-							});
-
-							$('.pane_content', popup_html).hide();
-							$('#users_pane', popup_html).show();
-							if ($('#ringback option:selected').hasClass('uneditable')) {
-								$('.media_action[data-action="edit"]', popup_html).hide();
-							} else {
-								$('.media_action[data-action="edit"]', popup_html).show();
-							}
-
-							var remove_element = function(li) {
-								var $parent_li = li;
-								var data = $parent_li.data();
-								data.name = jQuery.trim($('.item_name', $parent_li).html());
-								$('#' + data.endpoint_type + 's_pane .connect.left', popup_html)
-									.append($(self.getTemplate({
-										name: 'ring_group_element',
-										data: data,
-										submodule: 'groups'
-									})));
-								$parent_li.remove();
-
-								if ($('.connect.right li', popup_html).size() === 0) {
-									$('.column.right .connect', popup).addClass('no_element');
-								}
-
-								if (data.name.toLowerCase().indexOf($('#' + data.endpoint_type + 's_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-									$('#' + data.id, popup_html).hide();
-								}
-							};
-						});
+						}
 					});
 				});
+
+				// Listen for change events on the dropdown
+				$('#settings-dropdown', popup_html).change(function() {
+					// Hide all pane contents
+					$('.pane_content', popup_html).hide();
+
+					// Reset Search field
+					$('.searchfield', popup_html).val('');
+					$('.column.left li', popup_html).show();
+
+					// Get the selected value from the dropdown
+					var selectedValue = $(this).val();
+
+					// Show the appropriate pane based on the selected value
+					if (selectedValue === 'users_pane') {
+						$('#users_pane', popup_html).show();
+					} else if (selectedValue === 'devices_pane') {
+						$('#devices_pane', popup_html).show();
+					} else if (selectedValue === 'phone_only_devices_pane') {
+						$('#phone_only_devices_pane', popup_html).show();
+					} else if (selectedValue === 'groups_pane') {
+						$('#groups_pane', popup_html).show();
+					} else if (selectedValue === 'personal_ring_groups_pane') {
+						$('#personal_ring_groups_pane', popup_html).show();
+					}
+				});
+
+				// Trigger change event on page load to show the first pane
+				$('#settings-dropdown', popup_html).trigger('change');
+				
+
+				$('.searchsubmit2', popup_html).click(function() {
+					$('.searchfield', popup_html).val('');
+					$('.column li', popup_html).show();
+				});
+
+				$('#devices_pane .searchfield', popup_html).keyup(function() {
+					$('#devices_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#devices_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#phone_only_devices_pane .searchfield', popup_html).keyup(function() {
+					$('#phone_only_devices_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#phone_only_devices_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#groups_pane .searchfield', popup_html).keyup(function() {
+					$('#groups_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#groups_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#personal_ring_groups_pane .searchfield', popup_html).keyup(function() {
+					$('#personal_ring_groups_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#personal_ring_groups_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				$('#users_pane .searchfield', popup_html).keyup(function() {
+					$('#users_pane .column.left li').each(function() {
+						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#users_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+							$(this).hide();
+						} else {
+							$(this).show();
+						}
+					});
+				});
+
+				if ($.isEmptyObject(selected_endpoints)) {
+					$('.column.right .connect', popup_html).addClass('no_element');
+				} else {
+					$('.column.right .connect', popup_html).removeClass('no_element');
+				}
+
+				$('.column.left .options', popup_html).hide();
+				$('.column.left .actions', popup_html).hide();
+
+				$('.options .option.delay', popup_html).bind('keyup', function() {
+					$(this).parents('li').data('delay', $(this).val());
+				});
+
+				$('.options .option.timeout', popup_html).bind('keyup', function() {
+					$(this).parents('li').data('timeout', $(this).val());
+				});
+
+				$('#strategy', popup_html).bind('change', function() {
+					var strategy = $(this).val(),
+						$delay = $('.options .option.delay', popup_html);
+						$delayTitle = $('.options .delay_title', popup_html);
+
+					if (strategy === 'single') {
+						$delay.hide();
+						$delayTitle.hide();
+					} else {
+						$delay.show();
+						$delayTitle.show();
+					}
+				});
+
+				$('#save_ring_group', popup_html).click(function() {
+					var name = $('#name', popup_html).val(),
+						global_timeout = 0,
+						strategy = $('#strategy', popup_html).val(),
+						ringback = $('#ringback', popup_html).val(),
+						repeats = $('#repeats', popup_html).val(),
+						shoutcastValue = $('.shoutcast-url-input', popup_html).val();
+
+					if (ringback === 'shoutcast_url') {
+						ringback = shoutcastValue;
+					}
+
+					endpoints = [];
+
+					if (strategy === 'simultaneous') {
+						var computeTimeout = function(delay, local_timeout, global_timeout) {
+							var duration = delay + local_timeout;
+
+							if (duration > global_timeout) {
+								global_timeout = duration;
+							}
+
+							return global_timeout;
+						};
+					} else {
+						var computeTimeout = function(delay, local_timeout, global_timeout) {
+							global_timeout += local_timeout;
+
+							return global_timeout;
+						};
+					}
+
+					$('.right .connect li', popup_html).each(function() {
+						var item_data = $(this).data();
+
+						if (strategy === 'single') {
+							delete item_data.delay;
+						}
+						delete item_data.owner_id;
+						endpoints.push(item_data);
+						global_timeout = computeTimeout(parseFloat(item_data.delay), parseFloat(item_data.timeout), global_timeout);
+					});
+
+					if (repeats < 1) {
+						repeats = 1;
+					}
+
+					node.setMetadata('endpoints', endpoints);
+					node.setMetadata('name', name);
+					node.setMetadata('strategy', strategy);
+					node.setMetadata('timeout', global_timeout);
+					node.setMetadata('repeats', repeats);
+					if (ringback === 'default') {
+						node.deleteMetadata('ringback', ringback);
+					} else {
+						node.setMetadata('ringback', ringback);
+					}
+
+					node.caption = name;
+
+					popup.dialog('close');
+				});
+
+				monster.ui.tooltips(popup_html);
+
+				popup = monster.ui.dialog(popup_html, {
+					title: self.i18n.active().oldCallflows.ring_group,
+					beforeClose: function() {
+						if (typeof callback === 'function') {
+							callback();
+						}
+					}
+				});
+
+				// $('.scrollable', popup).jScrollPane({
+				// 	horizontalDragMinWidth: 0,
+				// 	horizontalDragMaxWidth: 0
+				// });
+
+				$('.connect', popup).sortable({
+					connectWith: $('.connect.right', popup),
+					zIndex: 2000,
+					helper: 'clone',
+					appendTo: $('.wrapper', popup),
+					scroll: false,
+					tolerance: 'pointer',
+					receive: function(ev, ui) {
+						var data = ui.item[0].dataset,
+							list_li = [],
+							confirm_text;
+
+						if (data.endpoint_type === 'device') {
+							confirm_text = self.i18n.active().oldCallflows.the_owner_of_this_device_is_already;
+							$('.connect.right li', popup_html).each(function() {
+								if ($(this).data('id') === data.owner_id) {
+									list_li.push($(this));
+								}
+							});
+						} else if (data.endpoint_type === 'user') {
+							confirm_text = self.i18n.active().oldCallflows.this_user_has_already_some_devices;
+							$('.connect.right li', popup_html).each(function() {
+								if ($(this).data('owner_id') === data.id) {
+									list_li.push($(this));
+								}
+							});
+						}
+
+						if (list_li.length > 0) {
+							monster.ui.confirm(confirm_text,
+								function() {
+									$.each(list_li, function() {
+										remove_element(this);
+									});
+								},
+								function() {
+									remove_element(ui.item);
+								}
+							);
+						}
+
+						if ($(this).hasClass('right')) {
+							$('.options', ui.item).show();
+							$('.actions', ui.item).show();
+							//$('.item_name', ui.item).addClass('right');
+							$('.column.right .connect', popup).removeClass('no_element');
+						}
+					}
+				});
+
+				$(popup_html).delegate('.trash', 'click', function() {
+					var $parent_li = $(this).parents('li').first();
+					remove_element($parent_li);
+				});
+
+				$('.pane_content', popup_html).hide();
+				
+				// set the default tab when loaded
+				if (miscSettings.filterRingGroupLists) {
+					$('#personal_ring_groups_pane', popup_html).show();
+				} else {
+					$('#users_pane', popup_html).show();
+				}
+				//$('#users_pane', popup_html).show();
+				//$('#personal_ring_groups_pane', popup_html).show();
+				if ($('#ringback option:selected').hasClass('uneditable')) {
+					$('.media_action[data-action="edit"]', popup_html).hide();
+				} else {
+					$('.media_action[data-action="edit"]', popup_html).show();
+				}
+
+				var remove_element = function(li) {
+					var $parent_li = li;
+					var data = $parent_li.data();
+					data.name = jQuery.trim($('.item_name', $parent_li).html());
+					$('#' + data.endpoint_type + 's_pane .connect.left', popup_html)
+						.append($(self.getTemplate({
+							name: 'ring_group_element',
+							data: data,
+							submodule: 'groups'
+						})));
+					$parent_li.remove();
+
+					if ($('.connect.right li', popup_html).size() === 0) {
+						$('.column.right .connect', popup).addClass('no_element');
+					}
+
+					if (data.name.toLowerCase().indexOf($('#' + data.endpoint_type + 's_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
+						$('#' + data.id, popup_html).hide();
+					}
+				};
+
+				// alert for invalid ring attempts per member
+				$('#repeats', popup_html).change(function() {
+								
+					repeatsValue = $('#repeats', popup_html).val();
+
+					if (repeatsValue < 1 || repeatsValue > 99) {
+						$('#repeats', popup_html).val(1);
+						monster.ui.alert('warning', self.i18n.active().oldCallflows.ring_group_attempts_per_member_invalid);
+					}
+				
+				});
+
+				// enable or disable the save button based on the dropdown value
+				function toggleSaveButton() {
+    				var ulElement = document.querySelector('ul.connect.right.ui-sortable'),
+    					numberOfItems = ulElement.querySelectorAll('li.sortable_li').length,
+						groupName = document.querySelector('#name').value;
+
+					if (numberOfItems > 0 && groupName != '') {
+						$('#save_ring_group', popup_html).prop('disabled', false);
+					} else {
+						$('#save_ring_group', popup_html).prop('disabled', true);
+					}
+				}
+
+				toggleSaveButton();
+
+				// monitor for changes to the selected column
+				var observer = new MutationObserver(toggleSaveButton),
+					selectedColumn = popup.find('.right').get(0),
+					config = { childList: true, subtree: true };
+
+				observer.observe(selectedColumn, config);
+
+				popup.on('dialogclose', function() {
+					observer.disconnect();
+				});
+
 			});
 		},
 
-		groupsGroupList: function(callback) {
+		groupsGroupList: function(callback, applyFilter) {
 			var self = this;
+
+			// this is the function to get groups within ring groups - need to add a setting to include or exclude personal groups
+			var groupFilters = {
+				paginate: false
+			};
+
+			if (miscSettings.filterRingGroupLists && !applyFilter) {
+				groupFilters['filter_not_group_type'] = 'personal';
+			}
+
+			if (miscSettings.filterRingGroupLists && applyFilter) {
+				groupFilters['filter_group_type'] = 'personal';
+			}
 
 			self.callApi({
 				resource: 'group.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: groupFilters
 				},
 				success: function(data, status) {
 					callback && callback(data.data);
@@ -1596,13 +2317,20 @@ define(function(require) {
 		groupsMediaList: function(callback) {
 			var self = this;
 
+			var mediaFilters = {
+				paginate: false
+			};
+
+			if (miscSettings.filterRingGroupLists && miscSettings.hideMailboxMedia) {
+				mediaFilters['filter_not_media_source'] = 'recording';
+			}
+
+
 			self.callApi({
 				resource: 'media.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: mediaFilters
 				},
 				success: function(data, status) {
 					callback && callback(data.data);
@@ -1682,16 +2410,51 @@ define(function(require) {
 			});
 		},
 
-		groupsRequestDeviceList: function(args) {
+		groupsRequestDeviceList: function(args, applyFilter) {
 			var self = this;
 
+			var deviceFilters = {
+				paginate: false
+			};
+
+			// get phone only devices
+			if (miscSettings.filterRingGroupLists && applyFilter) {
+				deviceFilters['filter_dimension.type'] = 'communal';
+			}
+
+			// get all other devices with filters
+			if (miscSettings.filterRingGroupLists && !applyFilter) {
+				var dimensionsDeviceType = [],
+					deviceType = [];
+
+				dimensionsDeviceType.push('communal');
+				dimensionsDeviceType.push('legacypbx');
+				dimensionsDeviceType.push('hotdesk');
+
+				if (miscSettings.filterRingGroupListsRemoveLandline) {
+					deviceType.push('landline');
+				}
+				if (miscSettings.filterRingGroupListsRemoveCellphone) {
+					deviceType.push('cellphone');
+				}
+				if (miscSettings.filterRingGroupListsRemoveFax) {
+					deviceType.push('fax');
+				}
+				
+				if (dimensionsDeviceType.length > 0) {
+					deviceFilters['filter_not_dimension.type'] = dimensionsDeviceType;
+				}
+				
+				if (deviceType.length > 0) {
+					deviceFilters['filter_not_device_type'] = deviceType;
+				}
+			}
+			
 			self.callApi({
 				resource: 'device.list',
 				data: _.merge({
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: deviceFilters
 				}, args.data),
 				success: function(data, status) {
 					args.hasOwnProperty('success') && args.success(data.data);

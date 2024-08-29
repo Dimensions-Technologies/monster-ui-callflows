@@ -1,11 +1,12 @@
-<div class="dialog_popup callflows-port">
-    <h1>{{ i18n.callflows.vmbox.connect_caller_to_voicemail }}</h1>
+<div class="dialog_popup callflows-port callflow-action">
+    <!--<h1>{{ i18n.callflows.vmbox.connect_caller_to_voicemail }}</h1>-->
     <form name="form" method="post" action="#">
         <div class="form_content">
             <div class="popup_field">
-                <label for="vmbox_selector">{{ i18n.callflows.vmbox.which_voicemail_box }}</label>
+                <!--<label for="vmbox_selector">{{ i18n.callflows.vmbox.which_voicemail_box }}</label>-->
                 <div class="select_wrapper">
                     <select id="vmbox_selector">
+                        <option value="null" hidden>Select a voicemail</option>
                     	{{#select selected}}
 							{{#each items}}
 								<option value="{{ this.id }}">{{ this.name }}</option>

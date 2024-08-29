@@ -571,6 +571,23 @@ define(function(require) {
 								});
 							});
 
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#directory_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#directory_selector', popup_html).change(toggleSaveButton);
+
 							$('#add', popup_html).click(function() {
 								node.setMetadata('id', $('#directory_selector', popup).val());
 

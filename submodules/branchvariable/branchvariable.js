@@ -56,7 +56,8 @@ define(function(require) {
 						name: 'callflowEdit',
 						data: _.merge({
 							scope: {
-								selected: node.getMetadata('scope', scopeSchema.default),
+								//selected: node.getMetadata('scope', scopeSchema.default),
+								selected: node.getMetadata('scope') || '',
 								options: _.sortBy(scopeSchema.enum)
 							},
 							variable: _
@@ -75,6 +76,7 @@ define(function(require) {
 				bindEvents = function($popup) {
 					var $form = $popup.find('form');
 
+					/*
 					monster.ui.validate($form, {
 						rules: {
 							id: {
@@ -85,6 +87,7 @@ define(function(require) {
 							}
 						}
 					});
+					*/
 
 					$popup.find('#scope').on('change', function(event) {
 						event.preventDefault();
@@ -98,6 +101,23 @@ define(function(require) {
 						}
 						$id.parents('.control-group').toggle(shouldShowId);
 					});
+
+					// enable or disable the save button based on the selected value
+					function toggleSaveButton() {
+						var selectedValue = $popup.find('#scope').val();
+						var inputValue = $popup.find('#variable').val();
+
+						if (selectedValue == 'null' || inputValue == '') {
+							$popup.find('#save').prop('disabled', true);
+						} else {
+							$popup.find('#save').prop('disabled', false);
+						}
+					}
+		
+					toggleSaveButton();
+		
+					$popup.find('#scope').on('change', toggleSaveButton);
+					$popup.find('#variable').on('change', toggleSaveButton);
 
 					$popup.find('#save').on('click', function(event) {
 						event.preventDefault();
@@ -163,9 +183,11 @@ define(function(require) {
 						submodule: 'branchvariable'
 					}));
 				},
+				
 				bindEvents = function($popup) {
 					var $form = $popup.find('form');
 
+					/*
 					monster.ui.validate($form, {
 						rules: {
 							value: {
@@ -173,7 +195,8 @@ define(function(require) {
 							}
 						}
 					});
-
+					*/
+					
 					$form.find('select[name="action"]').on('change', function(event) {
 						event.preventDefault();
 
@@ -182,6 +205,23 @@ define(function(require) {
 
 						$select.parents('.control-group').siblings('.control-group').toggle(newValue === 'variable');
 					});
+
+					// enable or disable the save button based on the selected value
+					function toggleSaveButton() {
+						var selectedValue = $popup.find('#action').val();
+						var inputValue = $popup.find('#value').val();
+
+						if (selectedValue == 'variable' && inputValue == '') {
+							$popup.find('#save').prop('disabled', true);
+						} else {
+							$popup.find('#save').prop('disabled', false);
+						}
+					}
+		
+					toggleSaveButton();
+		
+					$popup.find('#action').on('change', toggleSaveButton);
+					$popup.find('#value').on('change', toggleSaveButton);
 
 					$popup.find('#save').on('click', function(event) {
 						event.preventDefault();
@@ -207,6 +247,7 @@ define(function(require) {
 				);
 
 			renderTemplate(node.key);
-		}
+		}	
+
 	};
 });

@@ -15,6 +15,7 @@ define(function(require) {
 		selectedItemId = null,
 		deviceAudioCodecs = {},
 		deviceVideoCodecs = {},
+		afterBridgeTransfer = {},
 		callflowFlags = [];
 
 	var appSubmodules = [
@@ -110,28 +111,22 @@ define(function(require) {
 				
 				if (data.dimension.hasOwnProperty('dt_callflows')) {
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideFromMenu')) {
-																						
+					if (data.dimension.dt_callflows.hasOwnProperty('hideFromMenu')) {															
 						data.dimension.dt_callflows.hideFromMenu.forEach(function(action) {
 							hideFromMenu[action] = true;
-						});							
-
+						});
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideAdd')) {
-																						
+					if (data.dimension.dt_callflows.hasOwnProperty('hideAdd')) {															
 						data.dimension.dt_callflows.hideAdd.forEach(function(action) {
 							hideAdd[action] = true;
-						});							
-
+						});
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideCallflowAction')) {
-																						
+					if (data.dimension.dt_callflows.hasOwnProperty('hideCallflowAction')) {															
 						data.dimension.dt_callflows.hideCallflowAction.forEach(function(action) {
 							hideCallflowAction[action] = true;
-						});							
-
+						});
 					}
 
 					if (data.dimension.dt_callflows.hasOwnProperty('hideFromCallflowAction')) {
@@ -145,36 +140,39 @@ define(function(require) {
 						});
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideClassifiers')) {
-																						
+					if (data.dimension.dt_callflows.hasOwnProperty('hideClassifiers')) {															
 						data.dimension.dt_callflows.hideClassifiers.forEach(function(action) {
 							hideClassifiers[action] = true;
-						});							
-
+						});
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {
-																						
+					if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {															
 						data.dimension.dt_callflows.miscSettings.forEach(function(action) {
 							miscSettings[action] = true;
-						});							
-
+						});
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {
-																						
+					if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {															
 						data.dimension.dt_callflows.hideDeviceTypes.forEach(function(action) {
 							hideDeviceTypes[action] = true;
-						});							
-
+						});
 					}
 
-					if (data.dimension.dt_callflows.hasOwnProperty('ttsLanguages')) {
-										
+					if (data.dimension.dt_callflows.hasOwnProperty('ttsLanguages')) {				
 						ttsLanguages = data.dimension.dt_callflows.ttsLanguages
-
 					}
 
+					if (data.dimension.dt_callflows.hasOwnProperty('deviceAudioCodecs')) {
+						deviceAudioCodecs = data.dimension.dt_callflows.deviceAudioCodecs
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('deviceVideoCodecs')) {
+						deviceVideoCodecs = data.dimension.dt_callflows.deviceVideoCodecs
+					}
+
+					if (data.dimension.dt_callflows.hasOwnProperty('afterBridgeTransfer')) {
+						afterBridgeTransfer = data.dimension.dt_callflows.afterBridgeTransfer
+					}
 				}
 
 			}
@@ -194,17 +192,20 @@ define(function(require) {
 
 			// log to console if enabled
 			if (miscSettings.enableConsoleLogging == true || false) {
-				console.log('"hideFromMenu":', JSON.stringify(hideFromMenu));
-				console.log('"hideAdd":', JSON.stringify(hideAdd));
-				console.log('"hideCallflowAction":', JSON.stringify(hideCallflowAction));
-				console.log('"hideFromCallflowAction":', JSON.stringify(hideFromCallflowAction));
-				console.log('"hideClassifiers":', JSON.stringify(hideClassifiers));
-				console.log('"miscSettings":', JSON.stringify(miscSettings));
-				console.log('"hideDeviceTypes":', JSON.stringify(hideDeviceTypes));
-				console.log('"ttsLanguages":', JSON.stringify(ttsLanguages));
+				console.log('hideFromMenu:', hideFromMenu);
+				console.log('hideAdd:', hideAdd);
+				console.log('hideCallflowAction:', hideCallflowAction);
+				console.log('hideFromCallflowAction:', hideFromCallflowAction);
+				console.log('hideClassifiers:', hideClassifiers);
+				console.log('miscSettings:', miscSettings);
+				console.log('hideDeviceTypes:', hideDeviceTypes);
+				console.log('ttsLanguages:', ttsLanguages);
+				console.log('deviceAudioCodecs:', deviceAudioCodecs);
+				console.log('deviceVideoCodecs:', deviceVideoCodecs);
+				console.log('afterBridgeTransfer:', afterBridgeTransfer);
 			}
 
-			monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages });
+			monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer });
 			self.renderEntityManager(parent);
 
 			// show warning message if emergency caller id has not been set on the account
@@ -308,6 +309,13 @@ define(function(require) {
 					container.find('.search-query').focus();
 
 					self.hackResize(callflowsTemplate);
+
+					// hide scrollbar within callflow designer
+					if (miscSettings.hideScrollbars) {
+						$('#ws_callflow .tools', callflowsTemplate).addClass('scrollbar-hidden');
+						$('#ws_callflow .flowchart', callflowsTemplate).addClass('scrollbar-hidden');
+					}
+
 				}
 			});
 		},
@@ -2543,7 +2551,7 @@ define(function(require) {
 					{
 						type: 'userCallflow',
 						actionName: 'userCallflow[id=*]',
-						captionToRemove: "SmartPBX's Callflow"
+						captionToRemove: "SmartPBX's Callflow",
 					},
 					{
 						type: 'phoneOnlyCallflow',
@@ -2591,12 +2599,27 @@ define(function(require) {
 					{ 
 						type: 'mailboxMedia',
 						actionName: 'mailboxMedia[id=*]'
+					},
+					// custom group pickup actions
+					{
+						type: 'group_pickupUser',
+						actionName: 'group_pickupUser[user_id=*]'
+					},
+					{
+						type: 'group_pickupGroup',
+						actionName: 'group_pickupGroup[group_id=*]'
+					},
+					{
+						type: 'group_pickupDevice',
+						actionName: 'group_pickupDevice[device_id=*]'
 					}
 				];
 				
 				// render action and set callflowFlags when adding custom action to callflow
 				branchActions.forEach(action => {
 					if (branch.actionName === action.actionName) {
+						
+						/*
 						var branchId = branch.data.data.id;
 						var branchFlag = `${action.type}[id=${branchId}]`;
 				
@@ -2605,18 +2628,33 @@ define(function(require) {
 							branch.data.data.id = action.type;
 							branchFlag = `${action.type}[id=${action.type}]`;
 						}
+						*/
+						
+						// Extract identifier type from actionName (e.g., device_id, user_id, id)
+						var identifierMatch = action.actionName.match(/\[(\w+)=\*\]/),
+							identifierType = identifierMatch ? identifierMatch[1] : 'id',
+							branchId = branch.data.data[identifierType],
+							branchFlag = `${action.type}[${identifierType}=${branchId}]`;
+
+						// Handle action that has not been set
+						if (branchId == 'null' || branchId == null) {
+							branch.data.data[identifierType] = action.type;
+							branchFlag = `${action.type}[${identifierType}=${action.type}]`;
+						}
 
 						// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
 						if (!callflowFlags.includes(branchFlag)) {
 							callflowFlags.push(branchFlag);
 						}
+
 					}
 				});
 
 				// re-render action on load or after save
-				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]') {
+				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]') {
 					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
 						
+						/*
 						// check if the branch id is contained within the flags array
 						self.dataCallflow.dimension.flags.forEach(function(flag) {
 							
@@ -2642,7 +2680,47 @@ define(function(require) {
 							}
 
 						});
+						*/
+						
+						// Check if the branch id is contained within the flags array
+						self.dataCallflow.dimension.flags.forEach(function(flag) {
+							var branchId = null,
+								branchFlag = null,
+								flagParts = flag.match(/(\w+)\[(\w+)=([\w\*]+)\]/);
 
+							if (flagParts) {
+								var flagType = flagParts[1],
+									identifierType = flagParts[2],
+									flagId = flagParts[3];
+
+								// Determine the correct branchId from branch data based on identifier type
+								branchId = branch.data.data[identifierType];
+
+								// Iterate over branchActions to match the action type and id
+								branchActions.forEach(callflow => {
+									// Extract identifier type from callflow actionName (e.g., device_id, user_id, id)
+									var actionIdentifierMatch = callflow.actionName.match(/\[(\w+)=\*\]/),
+										actionIdentifierType = actionIdentifierMatch ? actionIdentifierMatch[1] : 'id';
+
+									// Check if the flag matches the callflow type and id
+									if (flagType === callflow.type && flagId === branchId) {
+										branch.actionName = callflow.actionName;
+										branchFlag = `${callflow.type}[${actionIdentifierType}=${branchId}]`;
+
+										if (callflow.captionToRemove) {
+											branch.caption = branch.caption.replace(callflow.captionToRemove, '');
+										}
+									}
+								});
+
+								// Check if callflowFlags already contains the branchFlag and add if necessary
+								if (branchFlag && !callflowFlags.includes(branchFlag)) {
+									callflowFlags.push(branchFlag);
+								}
+
+							}
+						});
+						
 					} 
 					
 				}

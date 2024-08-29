@@ -804,6 +804,7 @@
 	width: 241px;
 	height: 100%;
 	max-height: inherit;
+	scrollbar-width: thin;
 }
 
 #callflow_container .left-bar-container .list-add {
@@ -1012,6 +1013,7 @@
 
 .dialog_popup input.size2 {
 	width: 25px;
+	margin-bottom: 2px;
 }
 
 .inline_popup {
@@ -1756,13 +1758,14 @@
 }
 
 /* Media shoutcast addition */
+/*
 .media-edit-callflow-popup .form_content {
 	width: 360px;
 	padding-top: 20px;
 }
 
 .media-edit-callflow-popup .form_content .shoutcast-url-input {
-	width: 295px;
+	width: 286px;
 	max-width: none;
 }
 
@@ -1782,6 +1785,7 @@
 .media-edit-callflow-popup #edit_link.active {
 	display: block;
 }
+*/
 
 .monster-button-duplicate {
 	margin-left: 10px !important;
@@ -1937,34 +1941,235 @@
 	margin-right: 10px;
 }
 
-.dialog_popup.callflows-port.callflow-action {
-	width: 300px;
+/* formatting of callflow actions with a single dropdown */
+.dialog_popup.callflows-port.callflow-action,
+.dialog_popup.callflows-port.media-edit-callflow-popup {
+	width: 420px;
 	padding-top: 20px;
 }
 
-.dialog_popup.callflows-port.callflow-action select {
-	width: 250px;
+.dialog_popup.callflows-port.callflow-action select,
+.dialog_popup.callflows-port.media-edit-callflow-popup select {
+	width: 300px;
 	max-width: none;
 }
 
-.dialog_popup.callflows-port.callflow-action .select_wrapper {
+.dialog_popup.callflows-port.callflow-action .select_wrapper,
+.dialog_popup.callflows-port.media-edit-callflow-popup .select_wrapper {
 	float: none;
 }
 
-/*
-.callflows-port form label-wide {
-	width: 150px;
+/* Formatting of callflow actions with input fields */
+.dialog_popup.callflows-port.callflow-action-form {
+	width: 420px;
+	padding-top: 20px;
 }
-*/
+
+.dialog_popup.callflows-port.callflow-action-form .popup_field {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	/*justify-content: flex-end;*/
+}
+
+.dialog_popup.callflows-port.callflow-action-form label,
+.dialog_popup.callflows-port.media-edit-callflow-popup label {
+	margin-right: 10px;
+	white-space: nowrap; /* Prevent label text from wrapping */
+	width: auto;
+}
+
+.dialog_popup.callflows-port.callflow-action-form input,
+.dialog_popup.callflows-port.callflow-action-form select {
+	max-width: none; /* Remove any max-width constraints */
+	box-sizing: border-box; /* Include padding and border in width */
+	margin-bottom: 0px;
+	width: 220px !important;
+	height: 30px !important;
+}
+
+.dialog_popup.callflows-port.callflow-action-missed-call label {
+	margin-right: 10px !important;
+	white-space: nowrap; /* Prevent label text from wrapping */
+	width: auto !important;
+}
+.dialog_popup.callflows-port.callflow-action-missed-call textarea {
+	max-width: none;
+	width: 350px !important;
+	height: 90px !important;
+}
+
+.dialog_popup.callflows-port.callflow-action-form .input {
+	margin-left: 0px;
+}
+
+/* fix for caller id prepend */
+.dialog_popup.callflows-port.callflow-action-form label[for="apply_to"] {
+	padding-right: 70px;
+}
+
+/* callflow name pop up formatting */
+.dialog_popup.edit_name {
+	width: 400px;
+	padding-top: 20px;
+}
+
+.dialog_popup.edit_name input[type="text"] {
+	max-width: none;
+	box-sizing: border-box;
+	margin-bottom: 0px;
+	width: 350px !important;
+	height: 30px !important;
+}
+
+.dialog_popup.edit_name .popup_check_box {
+	text-align: left;
+}
+
+.dialog_popup.edit_name input[type="checkbox"] {
+    width: 25px;
+    margin-right: 10px;
+	margin-left: 80px;
+	margin-bottom: 5px;
+}
+
+.dialog_popup.edit_name .fancy_help_text {
+    padding-top: 20px;
+	text-align: justify !important;
+}
+
+/* disa formatting */
+.dialog_popup.callflows-port.callflow-action-form input[type="checkbox"] {
+    width: auto !important;
+    height: 16px !important;
+	margin-right: 30px;
+	margin-left: 50px;
+}
+
+.dialog_popup.callflows-port.callflow-action-form .popup_check_box {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
 
 
-/* increase size of dropdown input fields */
+/* receive fax */
+.dialog_popup.callflows-port.callflow-action .receive-fax .popup_check_box {
+	margin-top: 20px;
+	margin-bottom: 40px;
+}
+
+.dialog_popup.callflows-port.callflow-action .receive-fax .popup_check_box label[for="t_38_checkbox"] {
+	width: auto;
+	margin-left: 10px;
+}
+
+.dialog_popup.callflows-port.callflow-action .receive-fax .popup_check_box {
+	display: flex;
+	align-items: center;
+	margin-left: 150px;
+}
+
+/* account carrier input field formatting */
+.dialog_popup.callflows-port.callflow-action-form #hunt_account_id {
+    width: 280px !important;
+}
+
+.dialog_popup.callflows-port.callflow-action-form .fancy_help_text {
+    padding-left: 30px;
+}
+
+/* media input field formatting */
+.dialog_popup.callflows-port.media-edit-callflow-popup .form_content .shoutcast-url-input {
+	width: 286px;
+	max-width: none;
+}
+
+.dialog_popup.callflows-port.media-edit-callflow-popup .shoutcast-div.active {
+	width: 300px;
+}
+
+.dialog_popup.callflows-port.media-edit-callflow-popup .shoutcast-div.active .help-box .text-wrapper {
+	text-align: justify;
+}
+
+/* branch variable */
+
+.dialog_popup.callflows-port.callflow-action-form #scope {
+	width: 280px !important;
+}
+
+.dialog_popup.callflows-port.callflow-action-form #variable {
+	width: 280px !important;
+}
+
+.branch-on-variable label[for="value"] {
+	padding-right: 26px;
+}
+
+
+/* ring groups */
+.dialog_popup.callflows-port.callflow-action-group {
+	width: 800px;
+	padding-top: 20px;
+}
+
+.dialog_popup.callflows-port.callflow-action-group .group-settings .popup_field,
+.dialog_popup.callflows-port.callflow-action-group .page-group-settings .popup_field {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	/*justify-content: flex-end;*/
+}
+
+.dialog_popup.callflows-port.callflow-action-group .group-settings label {
+	margin-right: 10px;
+	white-space: nowrap; /* Prevent label text from wrapping */
+	width: 180px;
+	margin-left: 44px;
+}
+
+.dialog_popup.callflows-port.callflow-action-group .page-group-settings label {
+	margin-right: 10px;
+	white-space: nowrap; /* Prevent label text from wrapping */
+	width: 120px;
+}
+
+.dialog_popup.callflows-port.callflow-action-group .group-settings input,
+.dialog_popup.callflows-port.callflow-action-group .group-settings select,
+.dialog_popup.callflows-port.callflow-action-group .page-group-settings input,
+.dialog_popup.callflows-port.callflow-action-group .page-group-settings select {
+	max-width: none; /* Remove any max-width constraints */
+	box-sizing: border-box; /* Include padding and border in width */
+	margin-bottom: 0px;
+	width: 220px !important;
+	height: 30px !important;
+}
+
+.dialog_popup.callflows-port.callflow-action-group .group-settings .end_column {
+	width: 100px;
+}
+
+.dialog_popup.callflows-port.callflow-action-group #two_columns {
+	display: flex;
+	justify-content: center;
+}
+
+.dialog_popup.callflows-port.callflow-action-group #two_columns #settings-dropdown {
+	display: flex;
+	align-items: left;
+}
+
+/* class to control scrollbar visibility */
+.scrollbar-hidden {
+    overflow-y: scroll !important; /* enable scrolling */
+    scrollbar-width: none !important; /* firefox */
+    -ms-overflow-style: none !important; /* ie and edge */
+}
+
+/* hide monster alert warning triangle and header */
 /*
-.input .medium,
-.caller-id-asserted-target,
-.chosen-container,
-.chosen-container-single,
-.chosen-container .chosen-drop {
-    width: 323px !important;
+.alert-dialog .dialog-content .dialog-header,
+.ui-dialog.monster-alert .ui-dialog-titlebar .ui-dialog-title {
+	display: none;
 }
 */

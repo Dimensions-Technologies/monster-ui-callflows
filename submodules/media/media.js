@@ -443,8 +443,6 @@ define(function(require) {
 
 		mediaDefineActions: function(args) {
 
-			console.log('loading media actions', args);
-
 			var self = this,
 				callflow_nodes = args.actions;
 
@@ -530,15 +528,16 @@ define(function(require) {
 
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
-								var selectedValue = $('#media_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
+								var selectedValue = $('#media_selector', popup_html).val(),
+									streamUrl = $('.shoutcast-url-input', popup_html).val();
+
+								if (selectedValue == 'null' || selectedValue == 'shoutcast' && streamUrl == '') {
 									$('#add', popup_html).prop('disabled', true);
 									$('#edit_link', popup_html).hide();
 								} else if (selectedValue == 'silence_stream://300000') {
 									$('#add', popup_html).prop('disabled', false);
 									$('#edit_link', popup_html).hide();
-								} else if (selectedValue == 'shoutcast') {
+								} else if (selectedValue == 'shoutcast' && streamUrl != '') {
 									$('#add', popup_html).prop('disabled', false);
 									$('#edit_link', popup_html).hide();
 								} else {
@@ -550,6 +549,7 @@ define(function(require) {
 							toggleSaveButton();
 
 							$('#media_selector', popup_html).change(toggleSaveButton);
+							$('.shoutcast-url-input', popup_html).change(toggleSaveButton);
 
 							if ($('#media_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
