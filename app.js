@@ -1796,7 +1796,7 @@ define(function(require) {
 			}
 
 			var metadata = self.dataCallflow.hasOwnProperty('ui_metadata') ? self.dataCallflow.ui_metadata : false,
-				module = self.dataCallflow.flow.hasOwnProperty('module') ? self.dataCallflow.flow.module : false,
+				module = self.dataCallflow.hasOwnProperty('flow') && self.dataCallflow.flow.hasOwnProperty('module') ? self.dataCallflow.flow.module : false,
 				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && hideModule.includes(module);
 
 			isHiddenCallflow ? $('#hidden_callflow_warning').show() : $('#hidden_callflow_warning').hide();
@@ -2771,7 +2771,7 @@ define(function(require) {
 
 			var self = this,
 				metadata = self.dataCallflow.hasOwnProperty('ui_metadata') ? self.dataCallflow.ui_metadata : false,
-				module = self.dataCallflow.flow.hasOwnProperty('module') ? self.dataCallflow.flow.module : false,
+				module = self.dataCallflow.hasOwnProperty('flow') && self.dataCallflow.flow.hasOwnProperty('module') ? self.dataCallflow.flow.module : false,
 				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && hideModule.includes(module),
 				showAllCallflows = (monster.config.hasOwnProperty('developerFlags') && monster.config.developerFlags.showAllCallflows) || monster.apps.auth.originalAccount.superduper_admin;
 
