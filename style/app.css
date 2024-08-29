@@ -371,6 +371,7 @@
 .callflow-preview .div_icon .module_name {
 	text-transform: uppercase;
 	text-align: center;
+	padding-left: 4px;
 }
 
 #ws_callflow .details,
@@ -1010,7 +1011,7 @@
 }
 
 .dialog_popup input.size2 {
-	width: 20px;
+	width: 25px;
 }
 
 .inline_popup {
@@ -1332,7 +1333,7 @@
 	line-height: 18px;
 	padding-top: 6px;
 	text-align: right;
-	width: 150px;
+	width: 180px;
 	color:#e6e6e6;
 }
 
@@ -1919,6 +1920,20 @@
 .callflow-preview .entity-header .wrapper_callflow_buttons .monster-button:first-child,
 .callflow-preview .entity-header .wrapper_callflow_buttons .monster-button:last-child {
 	margin-right: 10px;
+}
+
+.dialog_popup.callflows-port.callflow-action {
+	width: 300px;
+	padding-top: 20px;
+}
+
+.dialog_popup.callflows-port.callflow-action select {
+	width: 250px;
+	max-width: none;
+}
+
+.dialog_popup.callflows-port.callflow-action .select_wrapper {
+	float: none;
 }
 
 /*

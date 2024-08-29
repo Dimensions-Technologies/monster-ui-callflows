@@ -1,11 +1,12 @@
-<div class="dialog_popup callflows-port">
-	<h1>{{ i18n.callflows.qubicleCallflow.connect_caller_to_qubicle_queue }}</h1>
+<div class="dialog_popup callflows-port callflow-action">
+	<!--<h1>{{ i18n.callflows.legacyPbxCallflow.connect_caller }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field">
-				<label-wide for="object-selector">{{ i18n.callflows.qubicleCallflow.which_qubicle_queue }}</label-wide>
+				<!--<label for="object-selector">{{ i18n.callflows.legacyPbxCallflow.which_callflow }}</label>-->
 				<div class="select_wrapper">
 					<select id="object-selector">
+						<option value="null" hidden>Select a pbx</option>
 						{{#select objects.selected}}
 							{{#each objects.items}}
 									<option value="{{ id }}">{{ name }}</option>
