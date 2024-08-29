@@ -12,7 +12,10 @@ define(function(require) {
 		miscSettings = {},
 		hideDeviceTypes = {},
 		ttsLanguages = {},
-		selectedItemId = null;
+		selectedItemId = null,
+		deviceAudioCodecs = {},
+		deviceVideoCodecs = {},
+		callflowFlags = [];
 
 	var appSubmodules = [
 		'afterbridge',
@@ -1247,14 +1250,27 @@ define(function(require) {
 		},
 
 		listData: function(args) {
-			var hideModule = ['qubicle'];
+			var callflowFilters = {
+				paginate: miscSettings.paginateListCallflows || false,
+				filter_not_numbers: 'no_match',
+				'filter_not_ui_metadata.origin': [
+					'voip',
+					'callqueues',
+					'callqueues-pro',
+					'csv-onboarding'
+				]
+			};
+
+			var hideModule = [];
 			
-			if (miscSettings.showQubicleCallflows) {
-				hideModule = [];
+			if (miscSettings.hideQubicleCallflows) {
+				hideModule.push('qubicle');
+				callflowFilters['filter_not_flow.module'] = hideModule;
 			}
 
 			if (miscSettings.hideAcdcCallflows) {
 				hideModule.push('acdc_member');
+				callflowFilters['filter_not_flow.module'] = hideModule;
 			}
 
 			var self = this,
@@ -1269,17 +1285,7 @@ define(function(require) {
 						start_key: nextStartKey
 					}
 				}, !self.appFlags.showAllCallflows && {
-					filters: {
-						paginate: miscSettings.paginateListCallflows || false,
-						filter_not_numbers: 'no_match',
-						'filter_not_ui_metadata.origin': [
-							'voip',
-							'callqueues',
-							'callqueues-pro',
-							'csv-onboarding'
-						],
-						'filter_not_flow.module': hideModule						
-					}
+					filters: callflowFilters
 				}, searchValue && {
 					value: searchValue 
 				});
@@ -1763,7 +1769,10 @@ define(function(require) {
 		},
 
 		repaintFlow: function() {
+			
 			var self = this;
+
+			callflowFlags = [];
 
 			// Let it there for now, if we need to save callflows automatically again.
 			/*if ('savable' in THIS.flow) {
@@ -1785,10 +1794,10 @@ define(function(require) {
 				self.show_pending_change(self.original_flow !== current_flow);
 			}
 
-			var hideModule = ['qubicle'];
+			var hideModule = [];
 			
-			if (miscSettings.showQubicleCallflows) {
-				hideModule = [];
+			if (miscSettings.hideQubicleCallflows) {
+				hideModule.push('qubicle');
 			}
 
 			if (miscSettings.hideAcdcCallflows) {
@@ -1800,6 +1809,11 @@ define(function(require) {
 				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && hideModule.includes(module);
 
 			isHiddenCallflow ? $('#hidden_callflow_warning').show() : $('#hidden_callflow_warning').hide();
+
+			if (miscSettings.enableConsoleLogging) {
+				console.log('callflowFlags', callflowFlags);
+			}
+
 		},
 
 		show_pending_change: function(pending_change) {
@@ -2518,6 +2532,73 @@ define(function(require) {
 				})),
 				children;
 
+			if (miscSettings.enableCustomCallflowActions) {
+				
+				// support for user callflow action
+				if (branch.actionName === 'userCallflow[id=*]') {
+					var branchId = branch.data.data.id,
+						branchFlag = 'userCallflow[id=' + branchId + ']';
+					
+					// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
+					if (!callflowFlags.includes(branchFlag) && branchFlag != 'userCallflow[id=null]') {
+						callflowFlags.push(branchFlag);
+					}	
+				}
+
+				// support for phone only callflow action
+				if (branch.actionName === 'phoneOnlyCallflow[id=*]') {
+					var branchId = branch.data.data.id,
+						branchFlag = 'phoneOnlyCallflow[id=' + branchId + ']';
+					
+					// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
+					if (!callflowFlags.includes(branchFlag) && branchFlag != 'phoneOnlyCallflow[id=null]') {
+						callflowFlags.push(branchFlag);
+					}	
+				}
+
+				// re-render callflow action
+				if (branch.actionName === 'callflow[id=*]') {
+					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
+						// check if the branch ID is contained within the flags array
+						self.dataCallflow.dimension.flags.forEach(function(flag) {
+							
+							var branchId = branch.data.data.id,
+								branchFlag = null,
+								flagParts = flag.match(/(\w+)\[id=(\w+)\]/);
+							
+							// re-render as user callflow action
+							if (flagParts[1] == 'userCallflow' && flagParts[2] === branch.data.data.id) {
+								branch.actionName = 'userCallflow[id=*]';
+								branchFlag = 'userCallflow[id=' + branchId + ']';
+								// remove 'SmartPBX's Callflow' from action label
+								branch.caption = branch.caption.replace("SmartPBX's Callflow", '');
+							}
+
+							// re-render as phone only callflow action
+							if (flagParts[1] == 'phoneOnlyCallflow' && flagParts[2] === branch.data.data.id) {
+								branch.actionName = 'phoneOnlyCallflow[id=*]';
+								branchFlag = 'phoneOnlyCallflow[id=' + branchId + ']';
+							}
+
+							if (miscSettings.enableConsoleLogging) {
+								console.log('flagParts', flagParts);
+								console.log('actionName Updated', branch.actionName);
+							}
+
+							// check if callflowsFlags already contains the branchFlag
+							if (!callflowFlags.includes(branchFlag)) {
+								// push the flag into callflowsFlags if it doesn't already exist
+								callflowFlags.push(branchFlag);
+							}
+
+						});
+
+					} 
+					
+				}
+
+			}
+
 			if (branch.parent && ('key_edit' in self.actions[branch.parent.actionName])) {
 				$('.div_option', flow).click(function() {
 					self.actions[branch.parent.actionName].key_edit(branch, function() {
@@ -2759,10 +2840,10 @@ define(function(require) {
 
 		save: function() {
 
-			var hideModule = ['qubicle'];
+			var hideModule = [];
 			
-			if (miscSettings.showQubicleCallflows) {
-				hideModule = [];
+			if (miscSettings.hideQubicleCallflows) {
+				hideModule.push('qubicle');
 			}
 
 			if (miscSettings.hideAcdcCallflows) {
@@ -2804,6 +2885,15 @@ define(function(require) {
 				data_request = $.extend(true, {}, self.dataCallflow, data_request);
 				delete data_request.metadata;
 
+				// set dimensions flags on callflow doc if custom actions enabled
+				if (miscSettings.enableCustomCallflowActions) {
+					if (!data_request.dimension) {
+						data_request.dimension = {};
+					}
+					delete data_request.dimension.flags;
+					data_request.dimension.flags = callflowFlags;
+				}
+				
 				if (self.flow.id) {
 					// if show all callflows is enabled and this is a hidden callflow then retain existing ui_metadata 
 					if (showAllCallflows == true && isHiddenCallflow == true) {

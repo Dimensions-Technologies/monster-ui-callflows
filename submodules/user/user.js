@@ -51,7 +51,7 @@ define(function(require) {
 						}
 					],
 					isUsable: 'true',
-					isListed: true,
+					isListed: determineIsListed('user[id=*]'),
 					weight: 40,
 					caption: function(node, caption_map) {
 						var id = node.getMetadata('id'),
