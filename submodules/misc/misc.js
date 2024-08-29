@@ -126,10 +126,10 @@ define(function(require) {
 						};
 
 						if (miscSettings.enableCustomCallflowActions) {
-							if (miscSettings.hideSmartPbxCallflows) {
+							if (miscSettings.callflowsActionHideSmartPbxCallflows) {
 								callflowFilters['filter_not_type'] = 'mainUserCallflow';
 							}
-							if (miscSettings.hidePhoneOnlyCallflows) {
+							if (miscSettings.callflowsActionHidePhoneOnlyCallflows) {
 								callflowFilters['filter_not_dimension.type'] = 'communal';
 							}
 						}
