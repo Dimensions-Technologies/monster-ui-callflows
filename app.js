@@ -2284,11 +2284,11 @@ define(function(require) {
 							}
 						}
 						*/
-						
+
 						function addChildBelow(parent, node, position) {
 							// add the node below the target at the specified position
 							parent.addChild(node, position);
-							
+
 						}
 						
 						// action is a new item being added to the callflow
@@ -2389,13 +2389,10 @@ define(function(require) {
 								if (target.addChild(branch)) {
 
 									// if we move a node, destroy its key
-									
 									branch.key = '_';
 	
 									if (branch.parent && ('key_caption' in self.actions[branch.parent.actionName])) {
-
 										branch.key_caption = self.actions[branch.parent.actionName].key_caption(branch, self.flow.caption_map);
-									
 									}
 									
 									ui.draggable.remove();
@@ -2407,26 +2404,32 @@ define(function(require) {
 
 								var draggedNodeId = ui.draggable.attr('id');
 								var draggedNode = self.flow.nodes[draggedNodeId];
+
+								// if we move a node, destroy its key and caption
+								draggedNode.key = '_';
+								draggedNode.key_caption = '';
 					
-								// Store the children of the target temporarily
+								// store the children of the target temporarily
 								var originalChildren = target.children.slice();
 					
-								// Remove the children from the target
+								// remove the children from the target
 								target.children = [];
 					
-								// Add the dragged node below the target
+								// add the dragged node below the target
 								addChildBelow(target, draggedNode);
 					
-								// Re-add the original children as children of the dragged node
+								// re-add the original children as children of the dragged node
 								originalChildren.forEach(function(child) {
 									draggedNode.addChild(child);
 								});
-					
+
+								/*
 								if (draggedNode.parent && ('key_caption' in self.actions[draggedNode.parent.actionName])) {
 									draggedNode.key_caption = self.actions[draggedNode.parent.actionName].key_caption(draggedNode, self.flow.caption_map);
 								}
+								*/
 					
-								// Repaint the flow after all operations are completed
+								// repaint the flow after all operations are completed
 								self.repaintFlow();
 
 							}	
