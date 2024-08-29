@@ -1645,7 +1645,14 @@ define(function(require) {
 						return '';
 					},
 					edit: function(node, callback) {
-						var popup_html = $(self.getTemplate({
+						if (miscSettings.hideStartCallRecordingSettings) {
+							node.setMetadata('format', 'mp3');
+							node.setMetadata('time_limit', 10800);
+							if (typeof callback === 'function') {
+								callback();
+							}
+						} else {
+							var popup_html = $(self.getTemplate({
 								name: 'recordCall-callflowEdit',
 								data: {
 									data_call_record: {
@@ -1658,23 +1665,29 @@ define(function(require) {
 							})),
 							popup;
 
-						$('#add', popup_html).click(function() {
-							node.setMetadata('url', $('#url', popup_html).val());
-							node.setMetadata('format', $('#format', popup_html).val());
-							node.setMetadata('time_limit', $('#time_limit', popup_html).val());
-
-							popup.dialog('close');
-						});
-
-						popup = monster.ui.dialog(popup_html, {
-							title: self.i18n.active().oldCallflows.start_call_recording,
-							minHeight: '0',
-							beforeClose: function() {
-								if (typeof callback === 'function') {
-									callback();
+							$('#add', popup_html).click(function() {
+								var callRecordUrl = $('#url', popup_html).val();
+								if (callRecordUrl.trim() !== '') {
+									node.setMetadata('url', callRecordUrl);
+								} else {
+									node.deleteMetadata('url');
 								}
-							}
-						});
+								node.setMetadata('format', $('#format', popup_html).val());
+								node.setMetadata('time_limit', $('#time_limit', popup_html).val());
+
+								popup.dialog('close');
+							});
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().oldCallflows.start_call_recording,
+								minHeight: '0',
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}
 					}
 				},
 				'record_call[action=stop]': {
@@ -1698,7 +1711,10 @@ define(function(require) {
 					caption: function(node) {
 						return '';
 					},
-					edit: function(node) {
+					edit: function(node, callback) {
+						if (typeof callback === 'function') {
+							callback();
+						}
 					}
 				},
 				'pivot[]': {
