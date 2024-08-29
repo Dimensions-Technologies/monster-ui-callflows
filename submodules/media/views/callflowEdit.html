@@ -1,11 +1,12 @@
 <div class="dialog_popup callflows-port media-edit-callflow-popup">
-	<h1>{{ i18n.callflows.media.connect_caller_to_media }}</h1>
+	<!--<h1>{{ i18n.callflows.media.connect_caller_to_media }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
 			<div class="popup_field clearfix">
-				<label for="media_selector">{{ i18n.callflows.media.media }}</label>
+				<!--<label for="media_selector">{{ i18n.callflows.media.media }}</label>-->
 				<div class="select_wrapper">
 					<select id="media_selector">
+						<option value="null" hidden>Select a media file</option>
 						{{#select selected}}
 							{{#each items}}
 								<option value="{{ this.id }}">{{ this.name }}</option>
