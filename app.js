@@ -2550,8 +2550,8 @@ define(function(require) {
 						actionName: 'phoneOnlyCallflow[id=*]'
 					},
 					{
-						type: 'qubicleCallflow',
-						actionName: 'qubicleCallflow[id=*]',
+						type: 'callCentreCallflow',
+						actionName: 'callCentreCallflow[id=*]',
 						captionToRemove: 'Qubicle Callflow'
 					},
 					{
