@@ -1919,6 +1919,21 @@ define(function(require) {
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
 
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
+							}
+
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
 							}
@@ -2097,6 +2112,21 @@ define(function(require) {
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
 
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
+							}
+
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
 							}
@@ -2212,9 +2242,19 @@ define(function(require) {
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
 
-							// disable the dropdown if there is only the "No Data Found" option
-							if (devices.length === 1 && devices[0].name === 'No Data Found') {
-								$('#device_selector', popup_html).prop('disabled', true);
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
 							}
 
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
@@ -2332,6 +2372,21 @@ define(function(require) {
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
 
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
+							}
+
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
 							}
@@ -2446,6 +2501,21 @@ define(function(require) {
 							toggleSaveButton();
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
+							}
 
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
@@ -2562,6 +2632,21 @@ define(function(require) {
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
 
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
+							}
+
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
 							}
@@ -2677,6 +2762,21 @@ define(function(require) {
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
 
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
+							}
+
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
 							}
@@ -2791,6 +2891,21 @@ define(function(require) {
 							toggleSaveButton();
 
 							$('#device_selector', popup_html).change(toggleSaveButton);
+
+							if (miscSettings.deviceValidateRingTimeout) {
+								// alert for invalid device timeout value
+								$('#parameter_input', popup_html).change(function() {
+								
+									ringTimeout = $('#parameter_input', popup_html).val();
+
+									if (ringTimeout < 10 || ringTimeout > 120) {
+										$('#parameter_input', popup_html).val(20);
+										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										console.log('Invalid Timeout')
+									}
+								
+								});
+							}
 
 							if ($('#device_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
