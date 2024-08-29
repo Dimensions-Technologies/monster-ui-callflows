@@ -442,6 +442,9 @@ define(function(require) {
 		},
 
 		mediaDefineActions: function(args) {
+
+			console.log('loading media actions', args);
+
 			var self = this,
 				callflow_nodes = args.actions;
 
@@ -449,6 +452,25 @@ define(function(require) {
 			hideAdd = args.hideAdd;
 			miscSettings = args.miscSettings,
 			ttsLanguages = args.ttsLanguages;
+
+			// function to determine if an action should be listed
+			var determineIsListed = function(key) {
+				// custom callflow actions
+				var customActions = [
+					'mailboxMedia[id=*]'
+				];
+
+				// if custom callflow actions are disabled
+				if (!miscSettings.enableCustomCallflowActions) {
+					if (customActions.includes(key)) {
+						return false;
+					} else {
+						return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
+					}
+				} else {
+					return !(hideCallflowAction.hasOwnProperty(key) && hideCallflowAction[key] === true);
+				}
+			};
 
 			$.extend(callflow_nodes, {
 				'play[id=*]': {
@@ -485,7 +507,8 @@ define(function(require) {
 						return returned_value;
 					},
 					edit: function(node, callback) {
-						var _this = this;
+						var _this = this,
+							mediaAction = 'play';
 
 						self.mediaList(function(medias) {
 							var popup, popup_html,
@@ -504,6 +527,29 @@ define(function(require) {
 								},
 								submodule: 'media'
 							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#media_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else if (selectedValue == 'silence_stream://300000') {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).hide();
+								} else if (selectedValue == 'shoutcast') {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#media_selector', popup_html).change(toggleSaveButton);
 
 							if ($('#media_selector option:selected', popup_html).val() === undefined) {
 								$('#edit_link', popup_html).hide();
@@ -557,8 +603,162 @@ define(function(require) {
 									}
 								}
 							});
+						}, mediaAction);
+					},
+					listEntities: function(callback) {
+
+						var mediaFilters = {
+							paginate: false
+						};
+			
+						if (miscSettings.enableCustomCallflowActions && miscSettings.hideMailboxMedia) {
+							mediaFilters['filter_not_media_source'] = 'recording';
+						}
+
+						self.callApi({
+							resource: 'media.list',
+							data: {
+								accountId: self.accountId,
+								filters: mediaFilters
+							},
+							success: function(data, status) {
+								callback && callback(data.data);
+							}
 						});
 					},
+					editEntity: 'callflows.media.edit'
+				},
+				'mailboxMedia[id=*]': {
+					name: self.i18n.active().callflows.media.play_mailbox_media,
+					icon: 'play',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'play',
+					tip: self.i18n.active().callflows.media.play_mailbox_media_tip,
+					data: {
+						id: 'null'
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('mailboxMedia[id=*]'),
+					weight: 200,
+					caption: function(node, caption_map) {
+						var id = node.getMetadata('id'),
+							isSilence = id && id === 'silence_stream://300000',
+							isShoutcast = id && id.indexOf('://') >= 0 && !isSilence,
+							returned_value = '';
+
+						if (id in caption_map) {
+							returned_value = caption_map[id].name;
+						} else if (isShoutcast) {
+							returned_value = id;
+						} else if (isSilence) {
+							returned_value = self.i18n.active().callflows.media.silence;
+						}
+
+						return returned_value;
+					},
+					edit: function(node, callback) {
+						var _this = this,
+							mediaAction = 'mailboxMedia';
+
+						self.mediaList(function(medias) {
+							var popup, popup_html,
+								mediaId = node.getMetadata('id') || '',
+								isSilence = !mediaId || (mediaId && mediaId === 'silence_stream://300000'), // because silence is the default choice, we test for !mediaId
+								isShoutcast = mediaId.indexOf('://') >= 0 && mediaId !== 'silence_stream://300000';
+
+							popup_html = $(self.getTemplate({
+								name: 'callflowEdit',
+								data: {
+									items: medias,
+									selected: isShoutcast ? 'shoutcast' : mediaId,
+									isShoutcast: isShoutcast,
+									shoutcastValue: mediaId,
+									isEditable: !isShoutcast && !isSilence
+								},
+								submodule: 'media'
+							}));
+
+							// enable or disable the save button based on the dropdown value
+							function toggleSaveButton() {
+								var selectedValue = $('#media_selector', popup_html).val();
+								
+								if (selectedValue == 'null') {
+									$('#add', popup_html).prop('disabled', true);
+									$('#edit_link', popup_html).hide();
+								} else {
+									$('#add', popup_html).prop('disabled', false);
+									$('#edit_link', popup_html).show();
+								}
+							}
+
+							toggleSaveButton();
+
+							$('#media_selector', popup_html).change(toggleSaveButton);
+
+							if ($('#media_selector option:selected', popup_html).val() === undefined) {
+								$('#edit_link', popup_html).hide();
+							}
+
+							// hide the add button as we can't add something that is recorded through the handset
+							popup_html.find('a.inline_action[data-action="create"]').hide();
+
+							$('.inline_action', popup_html).click(function(ev) {
+								var _data = ($(this).data('action') === 'edit') ? { id: $('#media_selector', popup_html).val() } : {};
+
+								ev.preventDefault();
+
+								self.mediaPopupEdit({
+									data: _data,
+									callback: function(media) {
+										node.setMetadata('id', media.id || 'null');
+										node.caption = media.name || '';
+
+										popup.dialog('close');
+									}
+								});
+							});
+
+							popup_html.find('#media_selector').on('change', function() {
+								var val = $(this).val(),
+									isSilence = val && val === 'silence_stream://300000',
+									isShoutcast = val === 'shoutcast',
+									isEditable = !isShoutcast && !isSilence;
+
+								popup_html.find('#edit_link').toggleClass('active', isEditable);
+								popup_html.find('.shoutcast-div').toggleClass('active', isShoutcast).find('input').val('');
+							});
+
+							$('#add', popup_html).click(function() {
+								var mediaValue = $('#media_selector', popup_html).val(),
+									shoutcastValue = $('.shoutcast-url-input', popup_html).val();
+
+								node.caption = mediaValue === 'shoutcast' ? shoutcastValue : $('#media_selector option:selected', popup_html).text();
+								mediaValue = mediaValue === 'shoutcast' ? shoutcastValue : mediaValue;
+								node.setMetadata('id', mediaValue);
+
+								popup.dialog('close');
+							});
+
+							monster.ui.tooltips(popup_html);
+
+							popup = monster.ui.dialog(popup_html, {
+								title: self.i18n.active().callflows.media.media,
+								minHeight: '0',
+								beforeClose: function() {
+									if (typeof callback === 'function') {
+										callback();
+									}
+								}
+							});
+						}, mediaAction);
+					},		
+					/* commented out so the custom action is not rendered within the menu - can add back in at a later date		
 					listEntities: function(callback) {
 						self.callApi({
 							resource: 'media.list',
@@ -573,35 +773,49 @@ define(function(require) {
 							}
 						});
 					},
+					*/
 					editEntity: 'callflows.media.edit'
 				}
 			});
 		},
 
-		mediaList: function(callback) {
+		mediaList: function(callback, mediaAction) {
 			var self = this;
 
+			var mediaFilters = {
+				paginate: false
+			};
+
+			if (miscSettings.enableCustomCallflowActions && miscSettings.mediaActionHideMailboxMedia) {
+				if (mediaAction == 'play') {
+					mediaFilters['filter_not_media_source'] = 'recording';
+				}
+				if (mediaAction == 'mailboxMedia') {
+					mediaFilters['filter_media_source'] = 'recording';
+				}
+			}
+			
 			self.callApi({
 				resource: 'media.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: mediaFilters
 				},
 				success: function(data) {
 					var mediaList = _.sortBy(data.data, function(item) { return item.name.toLowerCase(); });
 
-					mediaList.unshift(
-						{
-							id: 'silence_stream://300000',
-							name: self.i18n.active().callflows.media.silence
-						},
-						{
-							id: 'shoutcast',
-							name: self.i18n.active().callflows.media.shoutcastURL
-						}
-					);
+					if (mediaAction != 'mailboxMedia') {
+						mediaList.unshift(
+							{
+								id: 'silence_stream://300000',
+								name: self.i18n.active().callflows.media.silence
+							},
+							{
+								id: 'shoutcast',
+								name: self.i18n.active().callflows.media.shoutcastURL
+							}
+						);
+					}
 
 					callback && callback(mediaList);
 				}
