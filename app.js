@@ -1810,6 +1810,9 @@ define(function(require) {
 
 			isHiddenCallflow ? $('#hidden_callflow_warning').show() : $('#hidden_callflow_warning').hide();
 
+			// remove null entries from callflowFlags
+			callflowFlags = callflowFlags.filter(item => item !== null);
+
 			if (miscSettings.enableConsoleLogging) {
 				console.log('callflowFlags', callflowFlags);
 			}
@@ -2532,78 +2535,101 @@ define(function(require) {
 				})),
 				children;
 
+			// are custom callflow actions are enabled
 			if (miscSettings.enableCustomCallflowActions) {
 				
-				// support for user callflow action
-				if (branch.actionName === 'userCallflow[id=*]') {
-					var branchId = branch.data.data.id,
-						branchFlag = 'userCallflow[id=' + branchId + ']';
-					
-					// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
-					if (!callflowFlags.includes(branchFlag) && branchFlag != 'userCallflow[id=null]') {
-						callflowFlags.push(branchFlag);
-					}	
-				}
+				var branchActions = [
+					// custom callflow actions
+					{
+						type: 'userCallflow',
+						actionName: 'userCallflow[id=*]',
+						captionToRemove: "SmartPBX's Callflow"
+					},
+					{
+						type: 'phoneOnlyCallflow',
+						actionName: 'phoneOnlyCallflow[id=*]'
+					},
+					{
+						type: 'qubicleCallflow',
+						actionName: 'qubicleCallflow[id=*]',
+						captionToRemove: 'Qubicle Callflow'
+					},
+					{
+						type: 'legacyPbxCallflow',
+						actionName: 'legacyPbxCallflow[id=*]'
+					},
+					// custom device actions
+					{ 
+						type: 'cellphoneDevice', 
+						actionName: 'cellphoneDevice[id=*]' 
+					},
+					{ 
+						type: 'smartphoneDevice', 
+						actionName: 'smartphoneDevice[id=*]' 
+					},
+					{ 
+						type: 'landlineDevice', 
+						actionName: 'landlineDevice[id=*]' 
+					},
+					{ 
+						type: 'softphoneDevice', 
+						actionName: 'softphoneDevice[id=*]' 
+					},
+					{ 
+						type: 'faxDevice', 
+						actionName: 'faxDevice[id=*]' 
+					},
+					{ 
+						type: 'ataDevice', 
+						actionName: 'ataDevice[id=*]' 
+					},
+					{ 
+						type: 'sipUriDevice', 
+						actionName: 'sipUriDevice[id=*]' 
+					}
+				];
+				
+				// render action and set callflowFlags when adding custom action to callflow
+				branchActions.forEach(action => {
+					if (branch.actionName === action.actionName) {
+						var branchId = branch.data.data.id;
+						var branchFlag = `${action.type}[id=${branchId}]`;
+				
+						// handle action that has not been set
+						if (branch.data.data.id == 'null') {
+							branch.data.data.id = action.type;
+							branchFlag = `${action.type}[id=${action.type}]`;
+						}
 
-				// support for phone only callflow action
-				if (branch.actionName === 'phoneOnlyCallflow[id=*]') {
-					var branchId = branch.data.data.id,
-						branchFlag = 'phoneOnlyCallflow[id=' + branchId + ']';
-					
-					// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
-					if (!callflowFlags.includes(branchFlag) && branchFlag != 'phoneOnlyCallflow[id=null]') {
-						callflowFlags.push(branchFlag);
-					}	
-				}
+						// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
+						if (!callflowFlags.includes(branchFlag)) {
+							callflowFlags.push(branchFlag);
+						}
+					}
+				});
 
-				// support for qubicle callflow action
-				if (branch.actionName === 'qubicleCallflow[id=*]') {
-					var branchId = branch.data.data.id,
-						branchFlag = 'qubicleCallflow[id=' + branchId + ']';
-					
-					// check if callflowsFlags already contains the branchFlag and if not push the flag into callflowFlags
-					if (!callflowFlags.includes(branchFlag) && branchFlag != 'qubicleCallflow[id=null]') {
-						callflowFlags.push(branchFlag);
-					}	
-				}
-
-				// re-render callflow action
-				if (branch.actionName === 'callflow[id=*]') {
+				// re-render action on load or after save
+				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]') {
 					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
-						// check if the branch ID is contained within the flags array
+						
+						// check if the branch id is contained within the flags array
 						self.dataCallflow.dimension.flags.forEach(function(flag) {
 							
 							var branchId = branch.data.data.id,
 								branchFlag = null,
 								flagParts = flag.match(/(\w+)\[id=(\w+)\]/);
 							
-							// re-render as user callflow action
-							if (flagParts[1] == 'userCallflow' && flagParts[2] === branch.data.data.id) {
-								branch.actionName = 'userCallflow[id=*]';
-								branchFlag = 'userCallflow[id=' + branchId + ']';
-								// remove 'SmartPBX's Callflow' from action label
-								branch.caption = branch.caption.replace("SmartPBX's Callflow", '');
-							}
+							branchActions.forEach(callflow => {
+								if (flagParts[1] === callflow.type && flagParts[2] === branchId) {
+									branch.actionName = callflow.actionName;
+									branchFlag = `${callflow.type}[id=${branchId}]`;
 
-							// re-render as phone only callflow action
-							if (flagParts[1] == 'phoneOnlyCallflow' && flagParts[2] === branch.data.data.id) {
-								branch.actionName = 'phoneOnlyCallflow[id=*]';
-								branchFlag = 'phoneOnlyCallflow[id=' + branchId + ']';
-							}
-
-							// re-render as qubicle callflow action
-							if (flagParts[1] == 'qubicleCallflow' && flagParts[2] === branch.data.data.id) {
-								branch.actionName = 'qubicleCallflow[id=*]';
-								branchFlag = 'qubicleCallflow[id=' + branchId + ']';
-								// remove 'Qubicle Callflow' from action label
-								branch.caption = branch.caption.replace("Qubicle Callflow", '');
-							}
-
-							if (miscSettings.enableConsoleLogging) {
-								console.log('flagParts', flagParts);
-								console.log('actionName Updated', branch.actionName);
-							}
-
+									if (callflow.captionToRemove) {
+										branch.caption = branch.caption.replace(callflow.captionToRemove, '');
+									}
+								}
+							});
+							
 							// check if callflowsFlags already contains the branchFlag
 							if (!callflowFlags.includes(branchFlag)) {
 								// push the flag into callflowsFlags if it doesn't already exist
@@ -2617,6 +2643,11 @@ define(function(require) {
 				}
 
 			}
+
+			// trim branch.caption if the length exceeds 22 characters
+			if (branch.caption.length > 22) {
+				branch.caption = branch.caption.substring(0, 22) + '...';
+			} 
 
 			if (branch.parent && ('key_edit' in self.actions[branch.parent.actionName])) {
 				$('.div_option', flow).click(function() {
