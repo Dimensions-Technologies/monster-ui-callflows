@@ -15,6 +15,7 @@ define(function(require) {
 		selectedItemId = null;
 
 	var appSubmodules = [
+		'afterbridge',
 		'blacklist',
 		'conference',
 		'device',
