@@ -3,7 +3,8 @@ define(function(require) {
 		_ = require('lodash'),
 		monster = require('monster'),
 		miscSettings = {},
-		ttsLanguages = {};
+		ttsLanguages = {},
+		callTags = {};
 
 	var app = {
 		requests: {},
@@ -60,7 +61,8 @@ define(function(require) {
 
 			// set variables for use elsewhere
 			miscSettings = args.miscSettings,
-			ttsLanguages = args.ttsLanguages;
+			ttsLanguages = args.ttsLanguages,
+			callTags = args.callTags;
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
@@ -72,7 +74,8 @@ define(function(require) {
 					'legacyPbxCallflow[id=*]',
 					'group_pickupUser[user_id=*]',
 					'group_pickupDevice[device_id=*]',
-					'group_pickupGroup[group_id=*]'
+					'group_pickupGroup[group_id=*]',
+					'dimensionsCallTag[id=*]'
 				];
 
 				// if custom callflow actions are disabled
@@ -1220,11 +1223,6 @@ define(function(require) {
 									name = selector.find('#' + id).html(),
 									type = $('#' + id, popup_html).parents('optgroup').data('type'),
 									type_id = type.substring(type, type.length - 1) + '_id';
-
-								console.log('id', id);
-								console.log('name', name);
-								console.log('type', type);
-								console.log('type_id', type);
 
 								/* Clear all the useless attributes */
 								node.data.data = {};
@@ -2499,6 +2497,24 @@ define(function(require) {
 					edit: function(node, callback) {
 						self.miscRenderEditWebhook(node, callback);
 					}
+				},
+				'dimensionsCallTag[id=*]': {
+					name: self.i18n.active().callflows.callTag.title,
+					icon: 'to_cloud',
+					category: self.i18n.active().oldCallflows.basic_cat,
+					module: 'webhook',
+					tip: self.i18n.active().callflows.callTag.tip,
+					data: {},
+					rules: [],
+					isUsable: 'true',
+					isListed: miscSettings.enableDimensionsCallTagAction && determineIsListed('dimensionsCallTag[id=*]'),
+					weight: 90,
+					caption: function() {
+						return '';
+					},
+					edit: function(node, callback) {
+						self.miscRenderEditCallTag(node, callback);
+					}
 				}
 			}
 
@@ -2864,6 +2880,320 @@ define(function(require) {
 				}
 			});
 		},
+
+		miscRenderEditCallTag: function(node, callback) {
+			var self = this,
+				selectedTag,
+				dimensionData = node.getMetadata('dimension', ''),
+				data = {			
+					callTags: callTags,
+					dimension: dimensionData
+				},
+				popup_html = $(self.getTemplate({
+					name: 'webhookCallTag-callflowEdit',
+					data: data,
+					submodule: 'misc'
+				})),
+				popup;
+
+			$('#tagDeletedMessage', popup_html).hide();
+			
+			// populate the tagValue field with the existing dimension.tagValue if present
+			var tagValue = dimensionData.tagValue || '';
+			popup_html.find('#tagValue').val(tagValue);
+
+			// get selected call tag data
+			function getTagData() {
+				var selectedTagId = popup_html.find('#name').val();
+					selectedTag = _.find(callTags, { id: selectedTagId }),
+					nodeData = node.data.data;
+				
+				$('#tagValue', popup_html).prop('disabled', true);
+				$('#add', popup_html).prop('disabled', true);
+		
+				if (miscSettings.enableConsoleLogging) {
+					console.log('selectedTag', selectedTag);
+				}
+	
+				if (selectedTag) {
+					var $tagValueField = popup_html.find('#tagValue');
+					
+   					$tagValueField.val(null);
+
+					if (selectedTag.type == 'StringListTagValueType') {
+
+						$('#tagValue', popup_html).prop('disabled', false);
+					
+						var dropdown = $('<select>', { id: 'tagValue', name: 'tagValue' });
+					
+						dropdown.append($('<option>', { value: '', text: 'Select a tag value', hidden: true }));
+
+						var selectedValue;
+
+						if (dimensionData.hasOwnProperty('dimension') && nodeData.dimension.type == 'StringListTagValueType') {
+							selectedValue = dimensionData.tagValue;
+						} else if (selectedTag.hasOwnProperty('defaultValue')) {
+							selectedValue = selectedTag.defaultValue;
+						} else {
+							selectedValue = '';
+						}
+					
+						_.each(selectedTag.values, function(value) {
+							var option = $('<option>', { value: value, text: value });
+							
+							if (value == selectedValue) {
+								option.prop('selected', true);
+							}
+					
+							dropdown.append(option);
+						});
+					
+						$tagValueField.replaceWith(dropdown);
+					
+						if (selectedTag.defaultValue != undefined || selectedValue != '') {
+							$('#add', popup_html).prop('disabled', false);
+						}
+					
+					}
+					
+					if (selectedTag.type == 'BoolTagValueType') {
+
+						$('#tagValue', popup_html).prop('disabled', false);
+
+						var boolDropdown = $('<select>', { id: 'tagValue', name: 'tagValue' });
+						
+						boolDropdown.append($('<option>', { value: '', text: 'Select a tag value', hidden: true }));
+						boolDropdown.append($('<option>', { value: 'Yes', text: 'Yes' }));
+						boolDropdown.append($('<option>', { value: 'No', text: 'No' }));
+					
+						var selectedValue;
+
+						if (nodeData.hasOwnProperty('dimension') && nodeData.dimension.type == 'BoolTagValueType') {
+							selectedValue = dimensionData.tagValue;
+						} else if (selectedTag.hasOwnProperty('defaultValue')) {
+							selectedValue = selectedTag.defaultValue === true ? 'Yes' : 'No';
+						} else {
+							selectedValue = '';
+						}
+
+						boolDropdown.find(`option[value="${selectedValue}"]`).prop('selected', true);
+					
+						$tagValueField.replaceWith(boolDropdown);
+
+						if (selectedTag.defaultValue != undefined || selectedValue != '') {
+							$('#add', popup_html).prop('disabled', false);
+						}
+					
+					}
+					
+	
+					if (selectedTag.type == 'StringTagValueType') {
+
+						$('#tagValue', popup_html).prop('disabled', false);
+
+						var formValue;
+
+						if (nodeData.hasOwnProperty('dimension') && nodeData.dimension.type == 'StringTagValueType') {
+							formValue = dimensionData.tagValue;
+						} else if (selectedTag.hasOwnProperty('defaultValue')) {
+							formValue = selectedTag.defaultValue;
+						} else {
+							formValue = '';
+						}
+
+						var textInput = $('<input>', {
+							type: 'text',
+							id: 'tagValue',
+							name: 'tagValue',
+							value: formValue
+						});
+						
+						$tagValueField.replaceWith(textInput);
+
+						if (selectedTag.defaultValue != undefined || formValue != '') {
+							$('#add', popup_html).prop('disabled', false);
+						}
+
+					}
+
+					if (selectedTag.type == 'LinkTagValueType') {
+
+						$('#tagValue', popup_html).prop('disabled', false);
+
+						var formValue;
+
+						if (nodeData.hasOwnProperty('dimension') && nodeData.dimension.type == 'LinkTagValueType') {
+							formValue = dimensionData.tagValue;
+						} else if (selectedTag.hasOwnProperty('defaultValue')) {
+							formValue = selectedTag.defaultValue;
+						} else {
+							formValue = '';
+						}
+
+						var textInput = $('<input>', {
+							type: 'text',
+							id: 'tagValue',
+							name: 'tagValue',
+							value: formValue
+						});
+						
+						$tagValueField.replaceWith(textInput);
+
+						if (selectedTag.defaultValue != undefined || formValue != '') {
+							$('#add', popup_html).prop('disabled', false);
+						}
+
+					}
+					
+					if (selectedTag.type == 'NumericRangeTagValueType') {
+
+						$('#tagValue', popup_html).prop('disabled', false);
+					
+						var formValue;
+					
+						if (nodeData.hasOwnProperty('dimension') && nodeData.dimension.type == 'NumericRangeTagValueType') {
+							formValue = dimensionData.tagValue;
+						} else if (selectedTag.hasOwnProperty('defaultValue')) {
+							formValue = selectedTag.defaultValue;
+						} else {
+							formValue = '';
+						}
+						
+						var numericInput = $('<input>', {
+							type: 'text',
+							id: 'tagValue',
+							name: 'tagValue',
+							value: formValue,
+							inputmode: 'numeric',
+							pattern: '[0-9]*'
+						});
+						
+						// prevent non-numeric input using the keypress event
+						numericInput.on('keypress', function(event) {
+							var charCode = event.which ? event.which : event.keyCode;
+							// allow only digits (0-9)
+							if (charCode < 48 || charCode > 57) {
+								event.preventDefault();
+							}
+						});
+						
+						$tagValueField.replaceWith(numericInput);
+					
+						if (selectedTag.defaultValue != undefined || formValue != '') {
+							$('#add', popup_html).prop('disabled', false);
+						}
+					
+					}
+					
+				} 
+				
+				// handle scenario where selectedTag is not found due to the tag being deleted
+				if (!selectedTag && nodeData.hasOwnProperty('dimension')) {
+
+					var $callTagField = popup_html.find('#name'), 
+						$tagValueField = popup_html.find('#tagValue');
+					
+					var callTagInput = $('<input>', {
+						type: 'text',
+						id: 'name',
+						name: 'name',
+						value: dimensionData.name
+					});
+					
+					$callTagField.replaceWith(callTagInput);
+
+					var tagValueInput = $('<input>', {
+						type: 'text',
+						id: 'tagValue',
+						name: 'tagValue',
+						value: dimensionData.tagValue
+					});
+					
+					$tagValueField.replaceWith(tagValueInput);
+
+					$('#name', popup_html).prop('disabled', true);
+					$('#tagValue', popup_html).prop('disabled', true);
+					$('#add', popup_html).prop('disabled', true);
+
+					$('#tagDeletedMessage', popup_html).show();
+
+				}
+
+			}
+
+			getTagData();
+
+			popup_html.find('#name').on('change', getTagData);
+
+			// enable or disable the save button based on the tag value
+			function toggleSaveButton() {
+
+				if (selectedTag) {
+					var tagValue = popup_html.find('#tagValue').val();
+
+					if (tagValue == '') {
+						$('#add', popup_html).prop('disabled', true);
+					} else if (tagValue != '' && selectedTag.type == 'NumericRangeTagValueType') {
+						if (tagValue < selectedTag.min || tagValue > selectedTag.max) {
+							$('#add', popup_html).prop('disabled', true);
+							popup_html.find('#tagValue').val('')
+							monster.ui.alert('warning', self.i18n.active().callflows.callTag.numericInputInvalid + selectedTag.min + ' - ' + selectedTag.max);
+						} else {
+							$('#add', popup_html).prop('disabled', false);
+						}
+					} else {
+						$('#add', popup_html).prop('disabled', false);
+					}
+				}				
+			}
+
+			toggleSaveButton();
+
+			popup_html.on('change', '#tagValue', toggleSaveButton);
+			
+			$('#add', popup_html).click(function() {
+				
+				var encodedTagValue,
+					tagUri,
+					tagValue = $('#tagValue', popup_html).val();
+
+				if (selectedTag.type == 'BoolTagValueType') {
+					encodedTagValue = tagValue == 'Yes' ? 'true' : 'false';
+       				tagUri = selectedTag.endpoint + encodedTagValue;
+				} else {
+					encodedTagValue = encodeURIComponent(tagValue),
+					tagUri = selectedTag.endpoint + encodedTagValue;
+				}	
+
+				node.setMetadata('uri', tagUri),
+				node.setMetadata('format', 'json'),
+				node.setMetadata('http_verb', 'post'),
+				node.setMetadata('retries', 1),
+				node.setMetadata('dimension', {
+					'id': selectedTag.id,
+					'name': selectedTag.name,
+					'type': selectedTag.type,
+					'endpoint': selectedTag.endpoint,
+					'tagValue': $('#tagValue', popup_html).val()
+				});
+
+				var callTagCaption = selectedTag.name + ': ' + $('#tagValue', popup_html).val();
+				node.caption = callTagCaption;
+				
+				popup.dialog('close');
+			});
+
+			popup = monster.ui.dialog(popup_html, {
+				title: self.i18n.active().callflows.callTag.popupTitle,
+				beforeClose: function() {
+					if (typeof callback === 'function') {
+						callback();
+					}
+				}
+			});
+	
+		},
+		
 
 		/* API helpers */
 		miscDeviceList: function(callback) {
