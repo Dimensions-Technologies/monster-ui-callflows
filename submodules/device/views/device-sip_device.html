@@ -704,8 +704,7 @@
 							</select>
 						</div>
 					</div>
-					-->
-
+					
 					{{#each field_data.media.audio.codecs}}
 						<div>
 							<div class="input">
@@ -720,8 +719,12 @@
 							</div>
 						</div>
 					{{/each}}
+					-->
+
+					<div class="callflows-codecs-ui" id="media_audio_codecs"></div>
 				</div>
 
+				<!--
 				<div id="video_settings">
 					{{#each field_data.media.video.codecs}}
 						<div class="clearfix">
@@ -737,6 +740,11 @@
 							</div>
 						</div>
 					{{/each}}
+				</div>
+				-->
+
+				<div class="items-selector codec-selector" id="video_settings">
+					<div class="clearfix" id="media_video_codecs"></div>
 				</div>
 
 				<input type="hidden" value="{{ data.device_type }}" name="device_type"/>

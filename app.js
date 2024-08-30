@@ -16,6 +16,8 @@ define(function(require) {
 		selectedItemId = null,
 		deviceAudioCodecs = {},
 		deviceVideoCodecs = {},
+		deviceAudioCodecs = {},
+		deviceVideoCodecs = {},
 		afterBridgeTransfer = {},
 		callflowFlags = [],
 		callTags = {};
