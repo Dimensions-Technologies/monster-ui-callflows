@@ -611,23 +611,24 @@ define(function(require) {
 					} else {
 						callback(null, defaults);
 					}
-				}
-			}, monster.util.getCapability('caller_id.external_numbers').isEnabled && {
-				cidNumbers: function(next) {
+				},
+				numberList: function(callback) {
 					self.callApi({
-						resource: 'externalNumbers.list',
+						resource: 'numbers.list',
 						data: {
-							accountId: self.accountId
+							accountId: self.accountId,
+							filters: {
+								paginate: false
+							}
 						},
-						success: _.flow(
-							_.partial(_.get, _, 'data'),
-							_.partial(next, null)
-						),
-						error: _.partial(_.ary(next, 2), null, [])
+						success: function(data, status) {
+							callback(null, data.data.numbers);
+						}
 					});
 				}
 			}),
 			function(err, results) {
+
 				var render_data = defaults;
 				if (typeof data === 'object' && data.id) {
 					if (results.user_get.hasOwnProperty('call_restriction')) {
@@ -640,12 +641,20 @@ define(function(require) {
 
 					render_data = $.extend(true, defaults, { data: results.user_get });
 
+					/*
 					render_data.extra = _.merge({}, render_data.extra, {
 						isShoutcast: false
 					}, _.pick(results, [
 						'cidNumbers',
 						'phoneNumbers'
 					]));
+					*/
+
+					render_data.extra = _.merge({}, render_data.extra, {
+						isShoutcast: false
+					});
+
+					render_data.callerIdNumberList = results.numberList;
 
 					// if the value is set to a stream, we need to set the value of the media_id to shoutcast so it gets selected by the old select mechanism,
 					// but we also need to store the  value so we can display it
@@ -701,6 +710,7 @@ define(function(require) {
 		
 
 		userRender: function(data, target, callbacks) {
+
 			var self = this;
 
 			if (miscSettings.enableConsoleLogging) {
@@ -711,40 +721,19 @@ define(function(require) {
 				self.userSubmoduleButtons(data);
 			};
 
-			var self = this,
-				cidSelectorsPerTab = {
-					basic: [
-						'external'
-					],
-					caller_id: [
-						'external',
-						'emergency',
-						'asserted'
-					]
-				},
-				tabsWithCidSelectors = _.keys(cidSelectorsPerTab),
-				selectorsWithReflectedValue = _.spread(_.intersection)(_.map(cidSelectorsPerTab)),
-				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled,
-				allowAddingExternalCallerId;
-
-				if (miscSettings.preventAddingExternalCallerId == true || false) {
-					allowAddingExternalCallerId = false
-				}
-				else {
-					allowAddingExternalCallerId = true
-				}
-				
+			var self = this,				
 				user_html = $(self.getTemplate({
 					name: 'edit',
 					data: _.merge({
 						hideAdd: hideAdd,
 						hideClassifiers: hideClassifiers,
 						miscSettings: miscSettings,
-						hasExternalCallerId: hasExternalCallerId,
+						//hasExternalCallerId: hasExternalCallerId,
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
 						data: {
 							vm_to_email_enabled: _.get(data, 'data.vm_to_email_enabled', true)
-						}
+						},
+						callerIdNumberList: _.keys(data.callerIdNumberList)
 					}, _.pick(data.extra, [
 						'phoneNumbers'
 					]), data),
@@ -753,6 +742,10 @@ define(function(require) {
 				user_form = user_html.find('#user-form'),
 				hotdesk_pin = $('.hotdesk_pin', user_html),
 				hotdesk_pin_require = $('#hotdesk_require_pin', user_html);
+
+
+			// Setup input fields
+			monster.ui.chosen(user_html.find('.cid-number-select, .preflow-callflows-dropdown'));
 
 			if (miscSettings.readOnlyCallerIdName == true || false) {
 				user_html.find('.caller-id-external-number').on('change', function(event) {
@@ -795,73 +788,6 @@ define(function(require) {
 
 			});
 			
-			if (hasExternalCallerId) {
-				_.forEach(tabsWithCidSelectors, function(tab) {
-					_.forEach(cidSelectorsPerTab[tab], function(selector) {
-						var $target = user_html.find('#' + tab + ' .caller-id-' + selector + '-target');
-
-						monster.ui.cidNumberSelector($target, _.merge({
-
-							
-							onAdded: function(numberMetadata) {
-								user_html.find('select[name^="caller_id."]').each(function() {
-									var $select = $(this),
-										hasNumber = $select.find('option[value="' + numberMetadata.number + '"]') > 0;
-
-									if (hasNumber) {
-										return;
-									}
-									$select
-										.append($('<option>', {
-											value: numberMetadata.number,
-											text: monster.util.formatPhoneNumber(numberMetadata.number)
-										}))
-										.trigger('chosen:updated');
-								});
-
-								if (!_.includes(selectorsWithReflectedValue, selector)) {
-									return;
-								}
-								var reflectedTab = tab === 'basic' ? 'caller_id' : 'basic',
-									reflectedSelect = '#' + reflectedTab + ' .caller-id-' + selector + '-target select';
-
-								user_html
-									.find(reflectedSelect)
-									.val(numberMetadata.number)
-									.trigger('chosen:updated');
-							},
-							selectName: 'caller_id.' + selector + '.number',
-							selected: _.get(data.data, ['caller_id', selector, 'number']),
-							allowAdd: allowAddingExternalCallerId
-						}, _.pick(data.extra, [
-							'cidNumbers',
-							'phoneNumbers'
-						])));
-					});
-				});
-
-				
-				_.forEach(selectorsWithReflectedValue, function(type) {
-					user_html.find('#basic .caller-id-' + type + '-target select').on('change', function(event) {
-						event.preventDefault();
-
-						user_html
-							.find('#caller_id .caller-id-' + type + '-target select')
-							.val($(this).val())
-							.trigger('chosen:updated');
-					});
-					user_html.find('#caller_id .caller-id-' + type + '-target select').on('change', function(event) {
-						event.preventDefault();
-
-						user_html
-							.find('#basic .caller-id-' + type + '-target select')
-							.val($(this).val())
-							.trigger('chosen:updated');
-					});
-				});
-				
-			}
-
 			self.userRenderDeviceList(data, user_html);
 			self.userRenderNumberList(data, user_html);
 

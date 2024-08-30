@@ -771,7 +771,6 @@ define(function(require) {
 		
 				self.loadAccountSettingsData(function(accountSettingsData) {
 
-					
 					var currentRestrictions = {};
 					
 					// Get current account call restictions
@@ -797,31 +796,6 @@ define(function(require) {
 					}));
 		
 					var widgetBlacklist = self.renderBlacklists(template, accountSettingsData);
-					var allowAddingExternalCallerId = !miscSettings.preventAddingExternalCallerId;
-		
-					_.forEach(monster.util.getCapability('caller_id.external_numbers').isEnabled ? [
-						'external',
-						'emergency',
-						'asserted'
-					] : [], function(type) {
-						var $target = template.find('.caller-id-' + type + '-target');
-		
-						if (!$target.length) {
-							return;
-						}
-						monster.ui.cidNumberSelector($target, {
-							allowAdd: allowAddingExternalCallerId,
-							noneLabel: self.i18n.active().callflows.accountSettings.callerId.defaultNumber,
-							selectName: 'caller_id.' + type + '.number',
-							selected: _.get(formattedData.account, ['caller_id', type, 'number']),
-							cidNumbers: formattedData.externalNumbers,
-							phoneNumbers: _.map(formattedData.numberList, function(number) {
-								return {
-									number: number
-								};
-							})
-						});
-					});
 		
 					monster.ui.tooltips(template);
 		
@@ -850,9 +824,7 @@ define(function(require) {
 				});
 			});
 		},
-		
-
-
+				
 		formatAccountSettingsData: function(data) {
 
 			var silenceMedia = 'silence_stream://300000',
@@ -884,11 +856,9 @@ define(function(require) {
 						_.partial(_.get, _, 'friendlyName'),
 						_.toLower
 					))
-					.value(),
-				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled;
+					.value();
 
 			return _.merge({
-				hasExternalCallerId: hasExternalCallerId,
 				numberList: _.keys(data.numberList),
 				extra: {
 					isShoutcast: isShoutcast,
