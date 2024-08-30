@@ -5,7 +5,9 @@ define(function(require) {
 		hideAdd = false,
 		hideClassifiers = {},
 		miscSettings = {},
-		dimensionDeviceType = {};
+		dimensionDeviceType = {},
+		deviceAudioCodecs = {},
+		deviceVideoCodecs = {};
 
 	var app = {
 		requests: {
@@ -717,13 +719,43 @@ define(function(require) {
 					submodule: 'device'
 				}));
 
-				if (device_html.find('#media_audio_codecs')) {
-					var audioSelector = monster.ui.codecSelector('audio', device_html.find('#media_audio_codecs'), data.data.media.audio.codecs);
-				};
+				var defaultAudioCodecs;
 
-				if (device_html.find('#media_video_codecs')) {
-					var videoSelector = monster.ui.codecSelector('video', device_html.find('#media_video_codecs'), data.data.media.video.codecs);
-				};
+				if (miscSettings.deviceSetDefaultAudioCodecs) {
+					if ((data.data.media.audio.codecs).length == 0) {
+						defaultAudioCodecs = Object.keys(deviceAudioCodecs.defaultCodecs)
+					} else  {
+						defaultAudioCodecs = data.data.media.audio.codecs;
+					}
+				} else {
+					defaultAudioCodecs = data.data.media.audio.codecs;
+				}
+
+				if (miscSettings.enableConsoleLogging) {
+					console.log('Audio Codecs', deviceAudioCodecs);
+					console.log('Video Codecs', deviceVideoCodecs);
+					console.log('Current Device Codecs', data.data.media.audio.codecs)
+				}
+				
+				if (miscSettings.deviceSetAudioCodecs) {
+					if (device_html.find('#media_audio_codecs')) {
+						var audioSelector = self.customDeviceCodecSelector('audio', device_html.find('#media_audio_codecs'), defaultAudioCodecs, deviceAudioCodecs);
+					};
+				} else {
+					if (device_html.find('#media_audio_codecs')) {
+						var audioSelector = monster.ui.codecSelector('audio', device_html.find('#media_audio_codecs'), data.data.media.audio.codecs);
+					};
+				}
+
+				if (miscSettings.deviceSetVideoCodecs) {
+					if (device_html.find('#media_video_codecs')) {
+						var videoSelector = self.customDeviceCodecSelector('video', device_html.find('#media_video_codecs'), data.data.media.video.codecs, deviceVideoCodecs);
+					};
+				} else {
+					if (device_html.find('#media_video_codecs')) {
+						var videoSelector = monster.ui.codecSelector('video', device_html.find('#media_video_codecs'), data.data.media.video.codecs);
+					};
+				}
 
 				if (device_html.find('#caller_id').length && hasExternalCallerId) {
 					_.forEach(cidSelectors, function(selector) {
@@ -953,7 +985,9 @@ define(function(require) {
 			var self = this,
 				data = args.data,
 				callbacks = args.callbacks,
-				device_html = args.template;
+				device_html = args.template,
+				audioSelector = args.selectors.audio,
+				videoSelector = args.selectors.video;
 
 			if (typeof data.data === 'object' && data.data.device_type) {
 				var deviceForm = device_html.find('#device-form');
@@ -1812,7 +1846,9 @@ define(function(require) {
 			hideAdd = args.hideAdd;
 			hideClassifiers = args.hideClassifiers,
 			miscSettings = args.miscSettings,
-			hideDeviceTypes = args.hideDeviceTypes,
+			hideDeviceTypes = args.hideDeviceTypes
+			deviceAudioCodecs = args.deviceAudioCodecs,
+			deviceVideoCodecs = args.deviceVideoCodecs,
 			hideCallflowAction = args.hideCallflowAction;
 
 			// function to determine if an action should be listed
@@ -3027,7 +3063,158 @@ define(function(require) {
 			if (!data.id) {
 				$('.delete', '.entity-header-buttons').addClass('disabled');
 			}
+		},
+
+		// linkedColumns added from monster.ui.js to support customDeviceCodecSelector
+		linkedColumns: function(target, items, selectedItems, pOptions) {
+			var self = this,
+				coreApp = monster.apps.core,
+				defaultOptions = {
+					insertionType: 'appendTo',
+					searchable: true,
+					i18n: {
+						search: coreApp.i18n.active().search,
+						columnsTitles: {
+							available: coreApp.i18n.active().linkedColumns.available,
+							selected: coreApp.i18n.active().linkedColumns.selected
+						}
+					}
+				},
+				unselectedItems = (function findUnselectedItems(items, selectedItems) {
+					var selectedKeys = selectedItems.map(function(item) { return item.key; }),
+						unselectedItems = items.filter(function(item) { return selectedKeys.indexOf(item.key) < 0; });
+
+					return unselectedItems;
+				})(items, selectedItems),
+				options = $.extend(true, defaultOptions, pOptions || {}),
+				dataTemplate = {
+					unselectedItems: unselectedItems,
+					selectedItems: selectedItems,
+					options: options
+				},
+				widgetTemplate = $(monster.template(coreApp, 'linkedColumns-template', dataTemplate)),
+				widget;
+
+			widgetTemplate
+				.find('.available, .selected')
+					.sortable({
+						items: '.item-selector',
+						connectWith: '.connected',
+						tolerance: 'pointer'
+					});
+
+			widgetTemplate.find('.available, .selected').on('dblclick', '.item-selector', function() {
+				var newColumnClass = $(this).parent().hasClass('available') ? '.selected' : '.available';
+
+				$(this).appendTo(widgetTemplate.find(newColumnClass));
+			});
+
+			if (options.searchable) {
+				widgetTemplate
+					.find('.search-wrapper')
+						.on('keyup', function(event) {
+							event.preventDefault();
+
+							var $this = $(this),
+								$input = $this.find('input'),
+								searchString = $input.val().toLowerCase(),
+								items = $(this).siblings('ul').find('.item-selector');
+
+							_.each(items, function(item) {
+								var $item = $(item),
+									value = $item.find('.item-value').html().toLowerCase();
+
+								value.indexOf(searchString) < 0 ? $item.hide() : $item.show();
+							});
+						});
+			}
+
+			widget = widgetTemplate[options.insertionType](target);
+
+			widget.getSelectedItems = function getSelectedItems() {
+				var results = [];
+
+				widgetTemplate.find('ul.selected .item-selector').each(function(k, item) {
+					results.push($(item).data('key'));
+				});
+
+				return results;
+			};
+
+			return widget;
+		},
+		
+		// modified monster.ui.codecSelector to support specifying which codecs are avaialble
+		customDeviceCodecSelector: function(type, target, selectedCodecs, customCodecs, options) {
+
+			var availableCodecs = customCodecs.availableCodecs;
+
+			var self = this,
+				codecsI18n = monster.apps.core.i18n.active().codecs,
+				defaultAudioList = {
+					'AMR-WB': codecsI18n.audio['AMR-WB'],
+					'AMR': codecsI18n.audio.AMR,
+					'CELT@32000h': codecsI18n.audio['CELT@32000h'],
+					'CELT@48000h': codecsI18n.audio['CELT@48000h'],
+					'CELT@64000h': codecsI18n.audio['CELT@64000h'],
+					'G722': codecsI18n.audio.G722,
+					'G729': codecsI18n.audio.G729,
+					'G7221@16000h': codecsI18n.audio['G7221@16000h'],
+					'G7221@32000h': codecsI18n.audio['G7221@32000h'],
+					'GSM': codecsI18n.audio.GSM,
+					'OPUS': codecsI18n.audio.OPUS,
+					'PCMA': codecsI18n.audio.PCMA,
+					'PCMU': codecsI18n.audio.PCMU,
+					'speex@16000h': codecsI18n.audio['speex@16000h'],
+					'speex@32000h': codecsI18n.audio['speex@32000h']
+				},
+				defaultVideoList = {
+					'H261': codecsI18n.video.H261,
+					'H263': codecsI18n.video.H263,
+					'H264': codecsI18n.video.H264,
+					'VP8': codecsI18n.video.VP8
+				},
+				mapMigrateAudioCodec = {
+					'CELT_48': 'CELT@48000h',
+					'CELT_64': 'CELT@64000h',
+					'G722_16': 'G7221@16000h',
+					'G722_32': 'G7221@32000h',
+					'Speex': 'speex@16000h'
+				},
+				mapMigrateVideoCodec = {},
+				selectedItems = [],
+				items = [],
+				getLinkedColumn = function(selectedCodecs, defaultList, mapMigrate) {
+					selectedItems = _.map(selectedCodecs, function(codec) {
+						return {
+							key: codec,
+							// if codec is in the default List, get its i18n, if it's not, check if it's not an outdated modem from the migrate list, if it is, take the new value and its i18n, if not, just display the codec as it is stored in the db
+							value: defaultList.hasOwnProperty(codec) ? defaultList[codec] : (mapMigrate.hasOwnProperty(codec) ? defaultList[mapMigrate[codec]] : codec)
+						};
+					});
+		
+					items = _.map(defaultList, function(description, codec) {
+						return {
+							key: codec,
+							value: description
+						};
+					}).sort(function(a, b) {
+						return a.value > b.value ? 1 : -1;
+					});
+		
+					return self.linkedColumns(target, items, selectedItems, options);
+				};
+		
+			if (type === 'audio') {
+				return getLinkedColumn(selectedCodecs, availableCodecs || defaultAudioList, mapMigrateAudioCodec);
+			} else if (type === 'video') {
+				return getLinkedColumn(selectedCodecs, availableCodecs || defaultVideoList, mapMigrateVideoCodec);
+			} else {
+				console.error('This is not a valid type for our codec selector: ', type);
+			}
+
 		}
+		
 
 	};
 
