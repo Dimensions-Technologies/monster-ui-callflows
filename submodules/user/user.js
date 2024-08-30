@@ -728,7 +728,6 @@ define(function(require) {
 						hideAdd: hideAdd,
 						hideClassifiers: hideClassifiers,
 						miscSettings: miscSettings,
-						//hasExternalCallerId: hasExternalCallerId,
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
 						data: {
 							vm_to_email_enabled: _.get(data, 'data.vm_to_email_enabled', true)
