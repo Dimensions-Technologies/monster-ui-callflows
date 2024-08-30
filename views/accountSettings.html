@@ -75,9 +75,7 @@
 							</div>
 							<div class="control-group">
 								<label class="control-label" for="caller_id_external_number">{{ i18n.callflows.accountSettings.callerId.numberLabel }}</label>
-							{{#if hasExternalCallerId}}
-								<div class="controls caller-id-external-target caller-id-external-number"></div>
-							{{else}}
+							
 								<div class="controls">
 									<select id="caller_id_external_number" name="caller_id.external.number" class="cid-number-select">
 									{{#select account.caller_id.external.number}}
@@ -92,7 +90,7 @@
 									{{/select}}
 									</select>
 								</div>
-							{{/if}}
+							
 							</div>
 						</div>
 					</div>
@@ -116,9 +114,7 @@
 							</div>
 							<div class="control-group">
 								<label class="control-label" for="caller_id_emergency_number">{{ i18n.callflows.accountSettings.callerId.numberLabel }}</label>
-							{{#if hasExternalCallerId}}
-								<div class="controls caller-id-emergency-target caller-id-emergency-number"></div>
-							{{else}}
+							
 								<div class="controls">
 									<select id="caller_id_emergency_number" name="caller_id.emergency.number" class="cid-number-select">
 									{{#select account.caller_id.emergency.number}}
@@ -133,7 +129,7 @@
 									{{/select}}
 									</select>
 								</div>
-							{{/if}}
+							
 							</div>
 						</div>
 					</div>
@@ -158,9 +154,7 @@
 							</div>
 							<div class="control-group">
 								<label class="control-label" for="caller_id_asserted_number">{{ i18n.callflows.accountSettings.callerId.numberLabel }}</label>
-							{{#if hasExternalCallerId}}
-								<div class="controls caller-id-asserted-target caller-id-asserted-number"></div>
-							{{else}}
+							
 								<div class="controls">
 									{{#unless miscSettings.assertedIdNumberDropdown}}
 										<input type="text" class="phone-number" id="caller_id_asserted_number" name="caller_id.asserted.number" value="{{account.caller_id.asserted.number}}"/>
@@ -180,7 +174,7 @@
 										</select>
 									{{/if}}
 								</div>
-							{{/if}}
+							
 							</div>
 							{{#unless miscSettings.hideAssertedIdRealm}}
 								<div class="control-group">

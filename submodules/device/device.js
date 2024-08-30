@@ -455,41 +455,19 @@ define(function(require) {
 							} else {
 								callback(null, {});
 							}
-						}
-					}, monster.util.getCapability('caller_id.external_numbers').isEnabled && {
-						cidNumbers: function(callback) {
-							self.callApi({
-								resource: 'externalNumbers.list',
-								data: {
-									accountId: self.accountId
-								},
-								success: _.flow(
-									_.partial(_.get, _, 'data'),
-									_.partial(callback, null)
-								),
-								error: _.partial(_.ary(callback, 2), null, [])
-							});
 						},
-						phoneNumbers: function(callback) {
+						numberList: function(callback) {
 							self.callApi({
-								resource: 'numbers.listAll',
+								resource: 'numbers.list',
 								data: {
 									accountId: self.accountId,
 									filters: {
 										paginate: false
 									}
 								},
-								success: _.flow(
-									_.partial(_.get, _, 'data.numbers'),
-									_.partial(_.map, _, function(meta, number) {
-										return {
-											number: number
-										};
-									}),
-									_.partial(_.sortBy, _, 'number'),
-									_.partial(callback, null)
-								),
-								error: _.partial(_.ary(callback, 2), null, [])
+								success: function(data, status) {
+									callback(null, data.data.numbers);
+								}
 							});
 						}
 					}),
@@ -588,6 +566,8 @@ define(function(require) {
 			dataGlobal.extra = dataGlobal.extra || {};
 			dataGlobal.extra.isShoutcast = false;
 
+			dataGlobal.callerIdNumberList = results.numberList;
+
 			// if the value is set to a stream, we need to set the value of the media_id to shoutcast so it gets selected by the old select mechanism,
 			// but we also need to store the  value so we can display it
 			if (dataGlobal.data.hasOwnProperty('music_on_hold') && dataGlobal.data.music_on_hold.hasOwnProperty('media_id')) {
@@ -679,21 +659,7 @@ define(function(require) {
 			}
 
 			var self = this,
-				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled,
-				cidSelectors = [
-					'external',
-					'emergency',
-					'asserted'
-				],
-				device_html,
-				allowAddingExternalCallerId;
-
-			if (miscSettings.preventAddingExternalCallerId == true || false) {
-				allowAddingExternalCallerId = false
-			}
-			else {
-				allowAddingExternalCallerId = true
-			}
+				device_html;
 
 			if (data.data.hasOwnProperty('dimension') && data.data.dimension.hasOwnProperty('type')) {
 				dimensionDeviceType[data.data.dimension.type] = true;
@@ -711,15 +677,16 @@ define(function(require) {
 						hideAdd: hideAdd,
 						miscSettings: miscSettings,
 						dimensionDeviceType: dimensionDeviceType,
-						hasExternalCallerId: hasExternalCallerId,
-						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity
-					}, _.pick(data.extra, [
-						'phoneNumbers'
-					]), data),
+						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
+						callerIdNumberList: _.keys(data.callerIdNumberList)
+					}, data),
 					submodule: 'device'
 				}));
 
 				var defaultAudioCodecs;
+
+				// Setup input fields
+				monster.ui.chosen(device_html.find('.cid-number-select, .preflow-callflows-dropdown'));
 
 				if (miscSettings.deviceSetDefaultAudioCodecs) {
 					if ((data.data.media.audio.codecs).length == 0) {
@@ -755,24 +722,6 @@ define(function(require) {
 					if (device_html.find('#media_video_codecs')) {
 						var videoSelector = monster.ui.codecSelector('video', device_html.find('#media_video_codecs'), data.data.media.video.codecs);
 					};
-				}
-
-				if (device_html.find('#caller_id').length && hasExternalCallerId) {
-					_.forEach(cidSelectors, function(selector) {
-						var $target = device_html.find('.caller-id-' + selector + '-target');
-
-						if (!$target.length) {
-							return;
-						}
-						monster.ui.cidNumberSelector($target, _.merge({
-							allowAdd: allowAddingExternalCallerId,
-							selectName: 'caller_id.' + selector + '.number',
-							selected: _.get(data.data, ['caller_id', selector, 'number'])
-						}, _.pick(data.extra, [
-							'cidNumbers',
-							'phoneNumbers'
-						])));
-					});
 				}
 
 				if (miscSettings.readOnlyCallerIdName == true || false) {

@@ -1,13 +1,6 @@
 <div>
 	<div>
 		<div class="whapp-header clearfix">
-			<!--
-			{{#if data.id}}
-				<h1>{{ i18n.callflows.device.edit_smart_phone }}</h1>
-			{{else}}
-				<h1>{{ i18n.callflows.device.add_a_smart_phone }}</h1>
-			{{/if}}
-			-->
 			{{#unless miscSettings.hideBasicAdvancedButton}}
 				<div class="buttons-right pasted view-buttons">
 					<button class="btn black basic activate">{{ i18n.callflows.device.basic }}</button>
@@ -207,23 +200,6 @@
 					{{/unless}}
 				</div>
 				<div id="restrictions">
-					<!--
-					<div class="clearfix">
-						<div class="input">
-							<ul class="inputs-list">
-								<li>
-									<label>
-										<span rel="popover" data-content="{{ i18n.callflows.device.closed_groups_data_content }}">
-												<input type="checkbox" name="extra.closed_groups"{{#compare data.call_restriction.closed_groups.action "===" "deny"}} checked="checked"{{/compare}}/>
-											<span>{{ i18n.callflows.device.closed_groups }}</span>
-										</span>
-									</label>
-								</li>
-							</ul>
-						</div>
-					</div>
-					-->
-
 					{{#unless miscSettings.hideClosedGroups}}
 						<div class="clearfix label-wide">
 							<label>{{ i18n.callflows.device.closed_groups }}</label>
@@ -237,7 +213,6 @@
 						</div>
 					{{/unless}}
 					
-
 					{{#each field_data.call_restriction}}
 					<div class="clearfix label-wide">
 						<label>{{ this.friendly_name }}</label>

@@ -2166,6 +2166,16 @@
     -ms-overflow-style: none !important; /* ie and edge */
 }
 
+/* device and user caller id dropdown formatting */
+.callflows-port .chosen-container {
+	padding-left: 20px;
+	width: 224px !important;
+}
+
+.callflows-port .chosen-container .chosen-drop {
+    width: 224px !important;
+}
+
 /* hide monster alert warning triangle and header */
 /*
 .alert-dialog .dialog-content .dialog-header,
