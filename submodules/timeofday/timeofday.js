@@ -132,9 +132,11 @@ define(function(require) {
 						],
 
 						cycle: [
+							{ id: 'daily', value: 'Daily' },
 							{ id: 'weekly', value: 'Weekly' },
 							{ id: 'monthly', value: 'Monthly' },
-							{ id: 'yearly', value: 'Yearly' }
+							{ id: 'yearly', value: 'Yearly' },
+							{ id: 'date', value: 'Date' }
 						],
 
 						ordinals: [
@@ -162,7 +164,9 @@ define(function(require) {
 							{ id: 12, value: 'December' }
 						],
 
-						isAllDay: false
+						isAllDay: false,
+
+						hideCycle: false
 					}
 				};
 
@@ -171,18 +175,25 @@ define(function(require) {
 				self.timeofdaySubmoduleButtons(data);
 			};
 
-			if (typeof data === 'object' && data.id) {
-				self.temporalRuleGet(data.id, function(_data, status) {
-					var oldFormatData = { data: _data };
+			if (_.isPlainObject(data) && data.id) {
+				self.temporalRuleGet(data.id, function(_data) {
+					var oldFormatData = { data: _data },
+						isAllDay = _.get(_data, 'time_window_start', 0) === 0 && _.get(_data, 'time_window_stop', 86400) === 86400;
 
 					self.timeofdayMigrateData(oldFormatData);
 					self.timeofdayFormatData(oldFormatData);
 
 					var renderData = $.extend(true, defaults, oldFormatData);
 
-					if (renderData.data.time_window_start === 0 && renderData.data.time_window_stop === 86400) {
-						renderData.field_data.isAllDay = true;
-					}
+					renderData.field_data.isAllDay = isAllDay;
+					renderData.extra.holidayType = renderData.data.showSave || _data.type !== 'main_holidays'
+						? null
+						: _.has(_data, 'ordinal')
+							? 'advanced'
+							: _.has(_data, 'viewData') || _.chain(_data).get('days', []).size().value() > 1
+								? 'range'
+								: 'single';
+					renderData.field_data.hideCycle = !_.isNull(renderData.extra.holidayType) && !_.isNil(renderData.data.end_date);
 
 					self.timeofdayRender(renderData, target, callbacks);
 
@@ -196,12 +207,8 @@ define(function(require) {
 				if (typeof callbacks.after_render === 'function') {
 					callbacks.after_render();
 				}
-
-				if (miscSettings.callflowButtonsWithinHeader) {
-					miscSettings.popupEdit = false;
-				}
-
 			}
+
 		},
 
 		timeofdayRender: function(data, target, callbacks) {
@@ -241,6 +248,7 @@ define(function(require) {
 			self.winkstartTabs(timeofday_html);
 
 			monster.ui.datepicker(timeofday_html.find('#start_date'));
+			monster.ui.datepicker(timeofday_html.find('#end_date'));
 			monster.ui.timepicker(timeofday_html.find('.timepicker'), {
 				step: 5
 			});
@@ -254,10 +262,17 @@ define(function(require) {
 			$('#specific_day', timeofday_html).hide();
 
 			if (data.data.id === undefined) {
-				$('#weekly_every', timeofday_html).show();
-				$('#days_checkboxes', timeofday_html).show();
+				$('#every', timeofday_html).hide();
+				$('#on', timeofday_html).hide();
 			} else {
-				if (data.data.cycle === 'monthly') {
+				if (data.data.cycle === 'daily') {
+					$('#every', timeofday_html).hide();
+					$('#on', timeofday_html).hide();
+				} else if (data.data.cycle === 'date') {
+					$('#every', timeofday_html).hide();
+					$('#on', timeofday_html).hide();
+					$('#date_range_end', timeofday_html).hide();
+				} else if (data.data.cycle === 'monthly') {
 					$('#monthly_every', timeofday_html).show();
 					$('#ordinal', timeofday_html).show();
 					if (data.data.days !== undefined && data.data.days[0] !== undefined) {
@@ -312,6 +327,9 @@ define(function(require) {
 				$('#days_checkboxes', timeofday_html).hide();
 				$('#weekdays', timeofday_html).hide();
 				$('#specific_day', timeofday_html).hide();
+				$('#every', timeofday_html).show();
+				$('#on', timeofday_html).show();
+				$('#date_range_end', timeofday_html).show();
 
 				if ($this.val() === 'yearly') {
 					$('#yearly_every', timeofday_html).show();
@@ -336,6 +354,15 @@ define(function(require) {
 				} else if ($this.val() === 'weekly') {
 					$('#weekly_every', timeofday_html).show();
 					$('#days_checkboxes', timeofday_html).show();
+				} else if ($this.val() === 'daily') {
+					$('#every', timeofday_html).hide();
+					$('#on', timeofday_html).hide();
+				} else if ($this.val() === 'date') {
+					$('#every', timeofday_html).hide();
+					$('#on', timeofday_html).hide();
+					$('#date_range_end', timeofday_html).hide();
+					$('#end_date', timeofday_html).val(null);
+					delete(form_data.end_date);					
 				}
 			});
 
@@ -373,6 +400,10 @@ define(function(require) {
 						form_data.interval = $('#cycle', timeofday_html).val() === 'monthly' ? $('#interval_month', timeofday_html).val() : $('#interval_week', timeofday_html).val();
 						form_data.start_date = timeofday_html.find('#start_date').datepicker('getDate');
 
+						$(form_data.end_date !== '', timeofday_html).each(function() {
+							form_data.end_date = timeofday_html.find('#end_date').datepicker('getDate');
+						});
+
 						form_data = self.timeofdayCleanFormData(form_data);
 
 						self.timeofdaySave(form_data, data, callbacks.save_success);
@@ -405,6 +436,26 @@ define(function(require) {
 
 				$('input.timepicker', timeofday_html).val('');
 				$('.time-wrapper', timeofday_html).toggleClass('hidden', $this.is(':checked'));
+			});
+
+			// if start date is null prefill with todays date
+			$('#start_date', timeofday_html).each(function() {
+				if (!$(this).val()) {
+					$(this).val(monster.util.toFriendlyDate(new Date(), 'date'));
+				}
+			});
+
+			// end date must be greater than start date
+			$('#end_date', timeofday_html).change(function() {
+			
+				startDate = timeofday_html.find('#start_date').datepicker('getDate');
+				endDate = timeofday_html.find('#end_date').datepicker('getDate');
+
+				if (endDate <= startDate) {
+					$('#end_date', timeofday_html).val('');
+					monster.ui.alert('warning', self.i18n.active().callflows.timeofday.end_date_less_than_start_date);
+				}
+
 			});
 
 			_after_render = callbacks.after_render;
@@ -448,7 +499,11 @@ define(function(require) {
 			if (form_data.start_date === '') {
 				delete form_data.start_date;
 			} else {
-				form_data.start_date = monster.util.dateToGregorian(form_data.start_date);
+				form_data.start_date = monster.util.dateToBeginningOfGregorianDay(form_data.start_date, monster.util.getCurrentTimeZone());
+			}
+
+			if (form_data.end_date !== '') {
+				form_data.end_date = monster.util.dateToBeginningOfGregorianDay(form_data.end_date, monster.util.getCurrentTimeZone());
 			}
 
 			form_data.time_window_start = parseInt(monster.util.timeToSeconds(timeStart));
@@ -468,6 +523,11 @@ define(function(require) {
 				delete form_data.ordinal;
 				delete form_data.days;
 				delete form_data.month;
+			} else if (form_data.cycle === 'daily' || form_data.cycle === 'date') {
+				delete form_data.ordinal;
+				delete form_data.days;
+				delete form_data.month;
+				delete form_data.interval;
 			} else {
 				form_data.cycle === 'yearly' ? delete form_data.interval : delete form_data.month;
 				form_data.ordinal !== 'every' ? delete form_data.days : delete form_data.wdays;
@@ -475,7 +535,11 @@ define(function(require) {
 
 			delete form_data.time;
 			delete form_data.weekday;
-		
+
+			if (form_data.end_date === '') {
+				delete form_data.end_date;
+			}
+			
 			if (form_data.enabled === 'true') {
 				form_data.enabled = true;
 			} else if (form_data.enabled === 'false') {
