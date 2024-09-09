@@ -1872,7 +1872,8 @@ define(function(require) {
 			miscSettings = args.miscSettings,
 			hideDeviceTypes = args.hideDeviceTypes
 			deviceAudioCodecs = args.deviceAudioCodecs,
-			deviceVideoCodecs = args.deviceVideoCodecs;
+			deviceVideoCodecs = args.deviceVideoCodecs,
+			hideCallflowAction = args.hideCallflowAction;
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
