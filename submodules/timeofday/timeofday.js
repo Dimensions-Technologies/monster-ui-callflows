@@ -238,7 +238,8 @@ define(function(require) {
 				})),
 				selectedWdays = data.data.wdays.length,
 				_after_render,
-				timeofdayForm = timeofday_html.find('#timeofday-form');
+				timeofdayForm = timeofday_html.find('#timeofday-form'),
+				endDateValue = data.data.end_date;
 
 			monster.ui.validate(timeofdayForm, {
 				rules: {
@@ -542,6 +543,11 @@ define(function(require) {
 				}
 
 			});
+
+			// handle end_date value which is 0
+			if (endDateValue === 0) {
+				timeofday_html.find('#end_date').val(null);
+			}
 
 			_after_render = callbacks.after_render;
 
