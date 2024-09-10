@@ -449,7 +449,8 @@ define(function(require) {
 			// set variables for use elsewhere
 			hideAdd = args.hideAdd;
 			miscSettings = args.miscSettings,
-			ttsLanguages = args.ttsLanguages;
+			ttsLanguages = args.ttsLanguages,
+			hideCallflowAction = args.hideCallflowAction;
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
