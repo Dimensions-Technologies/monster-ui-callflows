@@ -1,0 +1,87 @@
+
+.callflows-port #queue-form .users-table,
+.callflows-port #queue-form .add-user-panel {
+	max-width: 800px;
+}
+
+.callflows-port #queue-form .users-table tr th:nth-child(2),
+.callflows-port #queue-form .users-table tr td:nth-child(2) {
+	width: 64px;
+	text-align: center;
+}
+
+.callflows-port #queue-form .add-user-panel {
+	width: 100%;
+}
+
+
+.callflows-port .add-user-panel .callflow-panel_body {
+	text-align: center;
+}
+
+.callflows-callcenter-popup .inline_content.main_content {
+	width: auto;
+}
+
+.queue-callflow-dialog .action_links_div {
+	margin-bottom: 15px;
+}
+
+.callflows-port #queue-form .callflow-panel_body_item.user-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.callflows-port #queue-form .callflow-panel_body_item select {
+    padding: 0 10px;
+    margin-bottom: 0px;
+}
+
+.callflows-port #queue-form .monster-button.add-user {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    padding: 0 10px;
+    min-width: 60px !important
+}
+
+.callflows-port #queue-form .table-and-dropdown {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align the dropdown and table at the top */
+}
+
+.callflows-port #queue-form .add-user-panel {
+    display: flex;
+    justify-content: flex-end; /* Push the dropdown to the right */
+}
+
+.callflows-port #queue-form .help-block, 
+.callflows-port #queue-form .help-inline {
+    color: #FFFFFF;
+}
+
+.callflows-port #queue-form .users-table .js-user-table-item td:first-child {
+    color: #555;
+}
+
+.callflows-port #queue-form .users-table thead th {
+    background-color: #eee;
+    color: #555;
+}
+
+.callflows-port #queue-form .add-user-panel h3 {
+    margin: 0px !important;
+    text-align: left !important;
+}
+
+.callflows-port #queue-form a:not(.monster-link):hover {
+    color: #14580e;
+    text-decoration: none;
+}
+
+.popup_field.queue_priority #queue_priority {
+    width: 146px;
+}

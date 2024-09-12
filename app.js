@@ -25,6 +25,7 @@ define(function(require) {
 	var appSubmodules = [
 		'afterbridge',
 		'blacklist',
+		'callcenter',
 		'conference',
 		'device',
 		'directory',
