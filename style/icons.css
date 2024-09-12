@@ -357,11 +357,11 @@
 }
 
 .icon.hotdesk_login {
-    background-position: -64px -288px;
+    background-position: -62px -288px;
 }
 
 .icon.hotdesk_logout {
-    background-position: 0 -288px;
+    background-position: 3px -288px;
 }
 
 .icon.hotdesk_toggle {
