@@ -1,11 +1,13 @@
-<div></div>
+<div>
 	<div>
 		<div class="whapp-header clearfix">
+			<!--
 			{{#if data.id}}
 				<h1>{{ i18n.callflows.timeofday.edit_time_of_day }}</h1>
 			{{else}}
 				<h1>{{ i18n.callflows.timeofday.create_time_of_day }}</h1>
 			{{/if}}
+			-->
 			<div class="buttons-right pasted view-buttons">
 				<button class="btn black basic activate">{{ i18n.callflows.timeofday.basic }}</button>
 				<button class="btn black advanced">{{ i18n.callflows.timeofday.advanced }}</button>
@@ -342,12 +344,29 @@
 			</div>
 		</form>
 		<div class="buttons-right">
-			{{#if data.showDelete}}
-				<button class="monster-button monster-button-danger timeofday-delete">{{ i18n.callflows.timeofday.delete }}</button>
-			{{/if}}
-
-			{{#if data.showSave}}
-			<button class="monster-button monster-button-success timeofday-save">{{ i18n.callflows.timeofday.save }}</button>
+			{{#unless miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.showDelete}}
+					<button class="monster-button monster-button-danger timeofday-delete">{{ i18n.callflows.timeofday.delete }}</button>
+				{{/if}}
+				{{#if data.showSave}}
+					<button class="monster-button monster-button-success timeofday-save">{{ i18n.callflows.timeofday.save }}</button>
+				{{/if}}
+			{{/unless}}
+			{{#if miscSettings.callflowButtonsWithinHeader}}
+				{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.temporal_route}}
+							{{#if data.showDelete}}
+								<button class="monster-button monster-button-danger timeofday-delete">{{ i18n.callflows.timeofday.delete }}</button>
+							{{/if}}
+						{{/unless}}
+					{{/if}}
+				{{/if}}
+				{{#if miscSettings.popupEdit}}
+					{{#if data.showSave}}
+						<button class="monster-button monster-button-success timeofday-save">{{ i18n.callflows.timeofday.save }}</button>
+					{{/if}}
+				{{/if}}
 			{{/if}}
 		</div>
 	</div>
