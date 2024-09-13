@@ -1530,14 +1530,28 @@ define(function(require) {
 						self.callApi({
 							resource: 'device.getStatus',
 							data: {
-								accountId: self.accountId
+								accountId: self.accountId,
+								filters: {
+									paginate: 'false'
+								}
 							},
 							success: function(_data, status) {
 								$.each(_data.data, function(key, val) {
-									$('#' + val.device_id + ' .column.third', parent).addClass('registered');
+									$('#' + val.device_id + ' .column.third', parent).text('Registered');
+									$('#' + val.device_id + ' .column.third', parent).removeClass('device-offline');
+									$('#' + val.device_id + ' .column.third', parent).addClass('device-registered');
+								});
+								$('.row', parent).each(function() {
+									var deviceId = $(this).attr('id');
+									if (deviceId && !$.grep(_data.data, function(status) { return status.device_id === deviceId; }).length) {
+										$(this).find('.column.third').text('Offline');
+										$(this).find('.column.third').removeClass('device-registered');
+										$(this).find('.column.third').addClass('device-offline');
+									}
 								});
 							}
 						});
+
 					} else {
 						$('.rows', parent)
 							.append($(self.getTemplate({
@@ -1583,10 +1597,13 @@ define(function(require) {
 				self.userUpdateDevice(device_id, _data, function(_data) {
 					$checkbox.removeAttr('disabled');
 					if (_data.enabled === true) {
-						$('#' + _data.id + ' .column.third', parent).removeClass('disabled');
+						//$('#' + _data.id + ' .column.third', parent).text('Registered');
 					} else {
-						$('#' + _data.id + ' .column.third', parent).addClass('disabled');
+						$('#' + _data.id + ' .column.third', parent).text('Offline');
+						$('#' + _data.id + ' .column.third', parent).removeClass('device-registered');
+						$('#' + _data.id + ' .column.third', parent).addClass('device-offline');
 					}
+
 				}, function() {
 					$checkbox.removeAttr('disabled');
 					enabled ? $checkbox.removeAttr('checked') : $checkbox.attr('checked', 'checked');

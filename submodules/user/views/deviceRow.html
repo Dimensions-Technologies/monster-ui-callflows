@@ -2,8 +2,8 @@
 {{#if id}}
 	<div class="column first">{{name}}</div>
 	<div class="column second">{{display_type}}</div>
-		<div class="column third {{device_type}}{{#if not_enabled}} disabled{{/if}}">
-	</div>
+	<!--<div class="column third {{device_type}}{{#if not_enabled}} disabled{{/if}}"></div>-->
+	<div class="column third"></div>
 	<div class="column fourth">
 		<input type="checkbox" class="enabled_checkbox" data-device_id="{{id}}"{{#unless not_enabled}} checked="checked"{{/unless}}/>
 	</div>
