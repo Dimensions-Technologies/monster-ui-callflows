@@ -6,6 +6,12 @@
 
 .callflows-port #queue-form .users-table tr th:nth-child(2),
 .callflows-port #queue-form .users-table tr td:nth-child(2) {
+	width: 150px;
+    text-align: center;
+}
+
+.callflows-port #queue-form .users-table tr th:nth-child(3),
+.callflows-port #queue-form .users-table tr td:nth-child(3) {
 	width: 64px;
 	text-align: center;
 }
@@ -63,7 +69,7 @@
     color: #FFFFFF;
 }
 
-.callflows-port #queue-form .users-table .js-user-table-item td:first-child {
+.callflows-port #queue-form .users-table .js-user-table-item td {
     color: #555;
 }
 
