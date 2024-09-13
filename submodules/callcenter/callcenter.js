@@ -30,6 +30,10 @@ define(function(require) {
 			'callcenter.agents.update': {
 				'verb': 'POST',
 				'url': 'accounts/{accountId}/queues/{queuesId}/roster'
+			},
+			'callcenter.agents.state': {
+				'verb': 'GET',
+				'url': 'accounts/{accountId}/queues/{queuesId}/agents/status'
 			}
 		},
 
@@ -396,6 +400,7 @@ define(function(require) {
 				parent = args.parent || $('#queue-content'),
 				target = args.target || $('#queue-view', parent),
 				_callbacks = args.callbacks || {},
+				queueId = data.id,
 				callbacks = {
 					save_success: _callbacks.save_success || function (_data) {
 						self.queueRenderList(parent);
@@ -430,6 +435,8 @@ define(function(require) {
 			if (miscSettings.callflowButtonsWithinHeader) {
 				self.queueSubmoduleButtons(data);
 			};
+
+			console.log('QueueData', data)
 
 			monster.parallel({
 				media_list: function (callback) {
@@ -478,8 +485,28 @@ define(function(require) {
 							callback(null, {});
 						}
 					});
+				},
+				agent_status: function (callback) {
+
+					monster.request({
+						resource: 'callcenter.agents.state',
+						data: {
+							accountId: self.accountId,
+							queuesId: queueId,
+							filters: { paginate: false },
+							generateError: false
+						},
+						success: function(data, status) {
+							agentList = data
+							defaults.field_data.agents = agentList.data;
+							callback(null, agentList);
+						}
+					});
 				}
 			}, function (err, results) {
+
+				console.log('defaults', defaults);
+
 				let render_data = defaults;
 				if (typeof data === 'object' && data.id) {
 					render_data = $.extend(true, defaults, results.user_list);
@@ -829,11 +856,27 @@ define(function(require) {
 					var user_item;
 					$.each(data.field_data.users, function(k, v) {
 						if (data.data.agents.indexOf(v.id) >= 0) {
+
+							var agentStatus = data.field_data.agents[v.id] ? data.field_data.agents[v.id].status : 'Unknown';
+
+							// function to format the status
+							function formatStatus(status) {
+								return status
+									.toLowerCase()                            
+									.replace(/_/g, ' ')                       
+									.replace(/\b\w/g, function(match) {
+										return match.toUpperCase();
+									});
+							}
+
+							agentStatus = formatStatus(agentStatus);
+
 							var html = $(self.getTemplate({
 								name: 'user-row',
 								data: {
 									user_id: v.id,
-									user_name: v.first_name + ' ' + v.last_name
+									user_name: v.first_name + ' ' + v.last_name,
+									agent_status: agentStatus
 								},
 								submodule: 'callcenter'
 							}));
