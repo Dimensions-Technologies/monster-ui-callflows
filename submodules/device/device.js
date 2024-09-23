@@ -973,15 +973,16 @@ define(function(require) {
 					});
 				});
 
-
 				device_html.find('#device-form').on('submit', function(ev) {
 					saveButtonEvents(ev)
 				});
 
-				$('#submodule-buttons-container .save').click(function(ev) {
-					saveButtonEvents(ev);
+				$('#submodule-buttons-container .save')
+					.off('click')  // remove any existing click handlers
+					.click(function(ev) {
+						saveButtonEvents(ev);
 				});
-
+				
 				function saveButtonEvents(ev) {
 
 					ev.preventDefault();
@@ -1106,6 +1107,7 @@ define(function(require) {
 				});
 			} else {
 				$('.media_tabs .buttons', device_html).click(function() {
+
 					var $this = $(this);
 					$('.media_pane', device_html).show();
 
@@ -2985,6 +2987,9 @@ define(function(require) {
 		},
 
 		deviceSubmoduleButtons: function(data) {
+
+			console.log('deviceSubmoduleButtons');
+
 			var existingItem = true,
 				hideDelete = false;
 			
