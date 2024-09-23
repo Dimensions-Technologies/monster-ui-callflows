@@ -138,7 +138,8 @@ define(function(require) {
 
 						var callflowFilters = {
 							paginate: false,
-							filter_not_numbers: 'no_match'
+							filter_not_numbers: 'no_match',
+							filter_not_name: 'Dimensions_ReservedFeatureCodes'
 						};
 
 						var hideDimensionDeviceCallflow = [],
