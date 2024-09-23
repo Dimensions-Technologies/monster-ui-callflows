@@ -623,9 +623,10 @@ define(function(require) {
 
 			form_data.cycle = 'daily';
 			form_data.enabled = form_data.rule_state;
-			form_data.start_date = monster.util.dateToBeginningOfGregorianDay(form_data.start_date, monster.util.getCurrentTimeZone());
+
 			form_data.dimension.rule_type = 'manual';
 
+			delete form_data.start_date;
 			delete form_data.extra;
 
 			var formFeatureCodeState = form_data.enabled;
