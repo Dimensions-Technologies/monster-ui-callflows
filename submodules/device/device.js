@@ -1036,8 +1036,10 @@ define(function(require) {
 					saveButtonEvents(ev)
 				});
 
-				$('#submodule-buttons-container .save').click(function(ev) {
-					saveButtonEvents(ev);
+				$('#submodule-buttons-container .save')
+					.off('click')  // remove any existing click handlers
+					.click(function(ev) {
+						saveButtonEvents(ev);
 				});
 
 				function saveButtonEvents(ev) {
