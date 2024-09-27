@@ -150,6 +150,9 @@ define(function(require) {
 							if (miscSettings.callflowActionHideSmartPbxCallflows) {
 								callflowFilters['filter_not_type'] = 'mainUserCallflow';
 							}
+							if (miscSettings.callflowActionHideOriginVoip) {
+								callflowFilters['filter_not_ui_metadata.origin'] = 'voip';
+							}
 							if (miscSettings.callflowActionHideQubicleCallflows) {
 								hideCallCentreCallflow.push('qubicle');
 							}
