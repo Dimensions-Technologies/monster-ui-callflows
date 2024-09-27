@@ -33,7 +33,8 @@ define(function(require) {
 			},
 			'callcenter.agents.state': {
 				'verb': 'GET',
-				'url': 'accounts/{accountId}/queues/{queuesId}/agents/status'
+				'url': 'accounts/{accountId}/queues/{queuesId}/agents/status',
+				'generateError': false
 			}
 		},
 
@@ -395,6 +396,7 @@ define(function(require) {
 		},
 
 		queueEdit: function(args) {
+
 			var self = this,
 				data = args.data,
 				parent = args.parent || $('#queue-content'),
@@ -436,11 +438,9 @@ define(function(require) {
 				self.queueSubmoduleButtons(data);
 			};
 
-			console.log('QueueData', data)
+			var parallelTasks = {
 
-			monster.parallel({
 				media_list: function (callback) {
-
 					self.callApi({
 						resource: 'media.list',
 						data: {
@@ -467,7 +467,6 @@ define(function(require) {
 					});
 				},
 				user_list: function (callback) {
-
 					self.getUsersList(function (users) {
 						defaults.field_data.users = users;
 
@@ -485,43 +484,49 @@ define(function(require) {
 							callback(null, {});
 						}
 					});
-				},
-				agent_status: function (callback) {
+				}
 
+			};
+  
+			// conditionally add `agent_status` to the parallel tasks if this is an existing queue
+			if (data && data.id) {
+				parallelTasks.agent_status = function (callback) {
 					monster.request({
 						resource: 'callcenter.agents.state',
 						data: {
 							accountId: self.accountId,
 							queuesId: queueId,
-							filters: { paginate: false },
-							generateError: false
+							filters: { 
+								paginate: false 
+							}
 						},
 						success: function(data, status) {
 							agentList = data
 							defaults.field_data.agents = agentList.data;
 							callback(null, agentList);
+						},
+						error: function (data) {
+							callback(null, {});  
 						}
 					});
-				}
-			}, function (err, results) {
-
-				console.log('defaults', defaults);
-
+				};
+			}
+			  
+			// execute the parallel tasks
+			monster.parallel(parallelTasks, function (err, results) {
 				let render_data = defaults;
 				if (typeof data === 'object' && data.id) {
-					render_data = $.extend(true, defaults, results.user_list);
+				  render_data = $.extend(true, defaults, results.user_list);
 				}
-
+			  
 				self.queueRender(render_data, target, callbacks);
-
-				if (typeof (callbacks.after_render) === 'function') {
-					callbacks.after_render();
+			  
+				if (typeof callbacks.after_render === 'function') {
+				  callbacks.after_render();
 				}
 			});
 
-
 		},
-
 
 		getUsersList: function(callback) {
 			var self = this;
@@ -857,8 +862,9 @@ define(function(require) {
 					$.each(data.field_data.users, function(k, v) {
 						if (data.data.agents.indexOf(v.id) >= 0) {
 
-							var agentStatus = data.field_data.agents[v.id] ? data.field_data.agents[v.id].status : 'Unknown';
-
+							// check if field_data.agents exists before trying to access it
+							var agentStatus = (data.field_data.agents && data.field_data.agents[v.id]) ? data.field_data.agents[v.id].status : 'Logged Out';
+					  
 							// function to format the status
 							function formatStatus(status) {
 								return status
