@@ -1560,21 +1560,21 @@
 	background: url(static/images/search_mid.png) repeat-x;
 }
 
-
-#callflow_container .entity-manager {
+/* box menu specific */
+#callflow_container .entity-manager.box-menu {
 	padding: 10px;
 	max-width: 1280px;
 	margin: auto;
 	color: #303039;
 }
 
-#callflow_container .entity-manager .grid-header {
+#callflow_container .entity-manager.box-menu .grid-header {
 	font-size: 34px;
 	line-height: 40px;
 	margin: 20px 10px;
 }
 
-#callflow_container .entity-manager .entity-element {
+#callflow_container .entity-manager.box-menu .entity-element {
 	display: inline-block;
 	margin: 10px;
 	text-align: center;
@@ -1589,7 +1589,7 @@
 	vertical-align: top;
 }
 
-#callflow_container .entity-manager .entity-element.callflow-element {
+#callflow_container .entity-manager.box-menu .entity-element.callflow-element {
 	width: 260px;
 	height: 260px;
 	float: left;
@@ -1597,16 +1597,62 @@
 	font-weight: 300;
 }
 
-#callflow_container .entity-manager .entity-element:hover {
-	background-color: #f0f0f9;
-}
-
-#callflow_container .entity-manager .entity-element > div {
+#callflow_container .entity-manager.box-menu .entity-element > div {
 	position: relative;
 	top: 50%;
 	-webkit-transform: translateY(-50%);
 	-ms-transform: translateY(-50%);
 	transform: translateY(-50%);
+}
+/* end of box menu specific */
+
+/* list menu specific */
+#callflow_container .entity-manager.list-menu {
+    padding: 0px;
+    width: 241px;
+    margin: 0;
+    color: #303039;
+}
+
+#callflow_container .entity-manager > ul {
+	margin: 0;
+}
+
+#callflow_container .entity-manager.list-menu .grid-header {
+    font-size: 34px;
+    line-height: 40px;
+    margin: 0;
+	border-right: solid 1px #303039;
+	border-bottom: solid 1px #303039;
+	padding-left: 10px;
+}
+
+#callflow_container .entity-manager.list-menu .menu-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#callflow_container .entity-manager.list-menu .menu-item {
+    margin: 0; 
+    padding: 10px;
+    padding-left: 18px;
+    font-size: 20px;
+    cursor: pointer;
+    border-right: solid 1px #303039;
+    transition: background-color 0.3s;
+}
+
+#callflow_container .entity-manager.list-menu .menu-item:last-child {
+    border-bottom: solid 1px #303039;
+}
+
+#callflow_container .entity-manager.list-menu .menu-item:hover {
+    background-color: #f0f0f9;
+}
+/* end of list menu specific */
+
+#callflow_container .entity-manager .entity-element:hover {
+	background-color: #f0f0f9;
 }
 
 #callflow_container .entity-edition,
