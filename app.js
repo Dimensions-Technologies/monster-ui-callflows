@@ -281,7 +281,7 @@ define(function(require) {
 									},
 									success: function(data) {
 										if (!data.data.hasOwnProperty('e911')) {
-											monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdAddressNotSet);
+											monster.ui.alert('warning', self.i18n.active().callflows.e911.emergencyCallerIdAddressNotSet);
 										}
 									}
 								});
@@ -289,7 +289,13 @@ define(function(require) {
 
 						} else {
 							// emergency caller id has not been set on the account
-							monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdNotSet);
+							if (miscSettings.checkEmergencyAddress999) {
+								monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdNotSet);
+							}
+							else if (miscSettings.checkEmergencyAddress911) {
+								monster.ui.alert('warning', self.i18n.active().callflows.e911.emergencyCallerIdNotSet);
+							}
+														
 						}
 						
 					}
