@@ -1597,9 +1597,11 @@ define(function(require) {
 				self.userListDevice(filter, function(_data, status) {
 					$('.rows', parent).empty();
 					if (_data.length > 0) {
+
 						$.each(_data, function(k, v) {
 							v.display_type = data.field_data.device_types[v.device_type];
 							v.not_enabled = this.enabled === false ? true : false;
+				
 							$('.rows', parent)
 								.append($(self.getTemplate({
 									name: 'deviceRow',
@@ -1609,9 +1611,33 @@ define(function(require) {
 									},
 									submodule: 'user'
 								})));
-							if (self.isDeviceCallable(v)) {
-								$('#' + v.id + ' .column.third', parent).addClass('registered');
+
+							$('#' + v.id + ' .column.third', parent).removeClass('device-registered');
+							$('#' + v.id + ' .column.third', parent).removeClass('device-offline');
+							$('#' + v.id + ' .column.third', parent).removeClass('device-enabled');
+							$('#' + v.id + ' .column.third', parent).removeClass('device-disabled');
+
+							// Set 'Online' or 'Offline' based on the 'registered' status
+							if (!v.enabled) {
+								$('#' + v.id + ' .column.third', parent).text('Disabled');
+								$('#' + v.id + ' .column.third', parent).addClass('device-disabled');
 							}
+
+							else if (v.enabled && !v.registrable) {
+								$('#' + v.id + ' .column.third', parent).text('Enabled');
+								$('#' + v.id + ' .column.third', parent).addClass('device-enabled');
+							}
+							
+							else if (v.enabled && v.registrable && v.registered) {
+								$('#' + v.id + ' .column.third', parent).text('Registered');
+								$('#' + v.id + ' .column.third', parent).addClass('device-registered');
+							}
+
+							else {
+								$('#' + v.id + ' .column.third', parent).text('Offline');
+								$('#' + v.id + ' .column.third', parent).addClass('device-offline');
+							}
+
 						});
 					} else {
 						$('.rows', parent)
@@ -1656,12 +1682,35 @@ define(function(require) {
 				}
 				_data.enabled = enabled;
 				self.userUpdateDevice(device_id, _data, function(_data) {
+
 					$checkbox.removeAttr('disabled');
-					if (_data.enabled === true) {
-						$('#' + _data.id + ' .column.third', parent).removeClass('disabled');
-					} else {
-						$('#' + _data.id + ' .column.third', parent).addClass('disabled');
+					
+					$('#' + _data.id + ' .column.third', parent).removeClass('device-registered');
+					$('#' + _data.id + ' .column.third', parent).removeClass('device-offline');
+					$('#' + _data.id + ' .column.third', parent).removeClass('device-enabled');
+					$('#' + _data.id + ' .column.third', parent).removeClass('device-disabled');
+
+					// Set 'Online' or 'Offline' based on the 'registered' status
+					if (!_data.enabled) {
+						$('#' + _data.id + ' .column.third', parent).text('Disabled');
+						$('#' + _data.id + ' .column.third', parent).addClass('device-disabled');
 					}
+
+					else if (_data.enabled && !_data.registrable) {
+						$('#' + _data.id + ' .column.third', parent).text('Enabled');
+						$('#' + _data.id + ' .column.third', parent).addClass('device-enabled');
+					}
+					
+					else if (_data.enabled && v.registrable && _data.registered) {
+						$('#' + _data.id + ' .column.third', parent).text('Registered');
+						$('#' + _data.id + ' .column.third', parent).addClass('device-registered');
+					}
+
+					else {
+						$('#' + _data.id + ' .column.third', parent).text('Offline');
+						$('#' + _data.id + ' .column.third', parent).addClass('device-offline');
+					}
+
 				}, function() {
 					$checkbox.removeAttr('disabled');
 					enabled ? $checkbox.removeAttr('checked') : $checkbox.attr('checked', 'checked');

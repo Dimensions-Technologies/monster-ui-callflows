@@ -32,7 +32,7 @@
 	border-radius: 15px 15px 15px 15px;
 	color: #666666;
 	margin: 20px auto auto;
-	width: 560px;
+	width: 600px;
 }
 
 .callflows-port #user-form #equipment #tab_devices .action_device {
@@ -71,9 +71,10 @@
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.third {
-	min-width: 49px;
+	min-width: 80px;
 }
 
+/*
 .callflows-port #user-form #equipment #tab_devices .rows .column.third {
 	background-image: url('../../style/static/images/red_phone.png');
 	background-repeat: no-repeat;
@@ -87,6 +88,7 @@
 .callflows-port #user-form #equipment #tab_devices .rows .column.third.disabled {
 	background-image: url('../../style/static/images/gray_phone.png') !important;
 }
+*/
 
 .callflows-port #user-form #equipment #tab_devices .column.fourth {
 	width: 59px;
@@ -97,7 +99,7 @@
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.fifth {
-	width: 159px;
+	width: 100px;
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.merged {
@@ -206,4 +208,38 @@
 	padding-top: 20px;
 	display: flex;
     justify-content: flex-end;
+}
+
+/* device registration state */
+.device-registered {
+	color: green;
+}
+
+/* device registration state */
+.device-offline {
+	color: red;
+}
+
+/* device registration state */
+.device-disabled {
+	color: #666666;
+}
+
+/* device registration state */
+.device-enabled {
+	color: #666666;
+}
+
+/* formatting for devices table */
+.callflows-port #tab_devices .column.fourth input[type="checkbox"] {
+	margin: 0px !important;
+	margin-bottom: 2px !important;
+}
+
+/* formatting for devices table */
+.callflows-port #tab_devices .column.fifth .edit,
+.callflows-port #tab_devices .column.fifth .delete {
+    padding-top: 0px !important;
+	padding-bottom: 0px !important;
+	margin-bottom: 8px !important;
 }
