@@ -1,33 +1,68 @@
 <div id="callflow_container">
 	<!-- add here -->
-	<div class="entity-manager callflow-app-section">
-		<div class="grid-header">{{ i18n.entityManager.header }}</div>
-		<div class="entity-element callflow-element">
-			<div>{{ i18n.entityManager.callflowsTitle }}</div>
-		</div>
 	
-		{{#unless hideFromMenuAccountSettings}}
-			<div class="entity-element account-element">
-				<div>{{ i18n.entityManager.accountTitle }}</div>
+	{{#unless miscSettings.embeddedMenuView}}
+		<div class="entity-manager callflow-app-section box-menu">
+			<div class="grid-header">{{ i18n.entityManager.header }}</div>
+			<div class="entity-element callflow-element">
+				<div>{{ i18n.entityManager.callflowsTitle }}</div>
 			</div>
-		{{/unless}}
 		
-		{{#unless hideFromMenuFeatureCodes}}
-			<div class="entity-element feature-code-element">
-				<div>{{ i18n.entityManager.featureCodeTitle }}</div>
-			</div>
-		{{/unless}}
-		
-	{{#each actions}}
-		{{#unless hideFromMenu}}
-			<div class="entity-element {{module}}-element" data-type="{{module}}">
-				<div>
-					{{name}}
+			{{#unless hideFromMenuAccountSettings}}
+				<div class="entity-element account-element">
+					<div>{{ i18n.entityManager.accountTitle }}</div>
 				</div>
-			</div>
-		{{/unless}}
-	{{/each}}
-	</div>
+			{{/unless}}
+			
+			{{#unless hideFromMenuFeatureCodes}}
+				<div class="entity-element feature-code-element">
+					<div>{{ i18n.entityManager.featureCodeTitle }}</div>
+				</div>
+			{{/unless}}
+			
+		{{#each actions}}
+			{{#unless hideFromMenu}}
+				<div class="entity-element {{module}}-element" data-type="{{module}}">
+					<div>
+						{{name}}
+					</div>
+				</div>
+			{{/unless}}
+		{{/each}}
+		</div>
+	{{/unless}}
+	
+	{{#if miscSettings.embeddedMenuView}}
+		<div class="entity-manager callflow-app-section list-menu">
+			<div class="grid-header">Callflows</div>
+		
+			<ul class="menu-list">
+				<li class="entity-element callflow-element menu-item">
+					<div>{{ i18n.entityManager.callflowsTitle }}</div>
+				</li>
+		
+				{{#unless hideFromMenuAccountSettings}}
+					<li class="entity-element account-element menu-item">
+						<div>{{ i18n.entityManager.accountTitle }}</div>
+					</li>
+				{{/unless}}
+		
+				{{#unless hideFromMenuFeatureCodes}}
+					<li class="entity-element feature-code-element menu-item">
+						<div>{{ i18n.entityManager.featureCodeTitle }}</div>
+					</li>
+				{{/unless}}
+		
+				{{#each actions}}
+					{{#unless hideFromMenu}}
+						<li class="entity-element {{module}}-element menu-item" data-type="{{module}}">
+							<div>{{name}}</div>
+						</li>
+					{{/unless}}
+				{{/each}}
+			</ul>
+		</div>
+	{{/if}}
 
 	<div class="entity-edition callflow-app-section">
 		<div class="left-bar-container">
