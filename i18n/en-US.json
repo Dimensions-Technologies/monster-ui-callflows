@@ -1535,6 +1535,11 @@
 
 		},
 
+		"e911": {
+			"emergencyCallerIdNotSet": "The Emergency Caller ID has not been set for this account. Please set this under 'Account Settings'. If the customer has multiple locations, ensure that the correct Emergency Caller ID is set at the User or Device level, where this is different from the main account's Emergency Caller ID. <br> <br> <b>Failure to set an appropriate Emergency Caller ID and validated physical address may result in one or more fines to the account owners if any user dials 911 from this account without a properly configured Emergency Caller ID.</b>",
+			"emergencyCallerIdAddressNotSet": "The Emergency Caller ID that has been set does not have a validated physical address associated with it. Please set the E911 address for the number within the Numbers app. <br> <br> <b>Failure to set an appropriate Emergency Caller ID and validated physical address may result in one or more fines to the account owners if any user dials 911 from this account without a properly configured Emergency Caller ID.</b>"
+		},
+
 		"userCallflow": {
 			"callflow": "User Callflow",
 			"connect_caller": "Connect a caller to a user...",
