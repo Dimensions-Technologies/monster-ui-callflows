@@ -1104,8 +1104,6 @@ define(function(require) {
 
 			template.find('.account-settings-update').on('click', function() {
 
-				console.log('update account settings')
-
 				// Validate form
 				if (!monster.ui.valid(template.find('#account_settings_form'))) {
 					return;
@@ -1121,9 +1119,6 @@ define(function(require) {
 				if (_.has(newData.caller_id, 'asserted')) {
 					newData.caller_id.asserted.number = monster.util.getFormatPhoneNumber(newData.caller_id.asserted.number).e164Number;
 				}
-
-				console.log('formData', formData);
-				console.log('newData', newData)
 
 				// add support for setting caller id privacy on account doc
 				if (formData.caller_id_options.outbound_privacy === 'default') {
