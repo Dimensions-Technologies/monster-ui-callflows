@@ -134,8 +134,8 @@
 						</div>
 					</div>
 
-				<!-- p asserted id -->
-				{{#if showPAssertedIdentity}}
+					<!-- p asserted id -->
+					{{#if showPAssertedIdentity}}
 					<div class="settings-section">
 						<div class="section-title">{{ i18n.callflows.accountSettings.callerId.titleAsserted }}</div>
 						<div class="section-content">
@@ -186,7 +186,31 @@
 							{{/unless}}
 						</div>
 					</div>
-				{{/if}}
+					{{/if}}
+
+					<div class="settings-section">
+						<div class="section-title">{{ i18n.callflows.accountSettings.callerId.titlePrivacy }}</div>
+						<div class="section-content">
+							<div class="control-group">
+								<label class="control-label" for="caller_id_privacy">{{ i18n.callflows.user.caller_id_privacy }}</label>
+								<div class="controls">
+									<select id="caller_id_privacy" name="caller_id_options.outbound_privacy" class="medium" rel="popover">
+										<option value="default"{{#compare account.caller_id_options.outbound_privacy '===' 'default'}} selected{{/compare}}>{{ i18n.callflows.accountSettings.callerId.privacy.caller_id_privacy_default }}</option>
+										{{#unless miscSettings.hidePrivacyName}}
+											<option value="name"{{#compare account.caller_id_options.outbound_privacy '===' 'name'}} selected{{/compare}}>{{ i18n.callflows.accountSettings.callerId.privacy.caller_id_privacy_name }}</option>
+										{{/unless}}
+										{{#unless miscSettings.hidePrivacyNumber}}
+											<option value="number"{{#compare account.caller_id_options.outbound_privacy '===' 'number'}} selected{{/compare}}>{{ i18n.callflows.accountSettings.callerId.privacy.caller_id_privacy_number }}</option>
+										{{/unless}}
+										{{#unless miscSettings.hidePrivacyFull}}
+											<option value="full"{{#compare account.caller_id_options.outbound_privacy '===' 'full'}} selected{{/compare}}>{{ i18n.callflows.accountSettings.callerId.privacy.caller_id_privacy_full }}</option>
+										{{/unless}}
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+
 				</div>
 
 				<div class="tab-pane" id="account_settings_blacklist">
