@@ -1063,6 +1063,11 @@ define(function(require) {
 					newData.caller_id.asserted.number = monster.util.getFormatPhoneNumber(newData.caller_id.asserted.number).e164Number;
 				}
 
+				// add support for setting caller id privacy on account doc
+				if (formData.caller_id_options.outbound_privacy === 'default') {
+					delete newData.caller_id_options;
+				}
+
 				// Clean empty data
 				if (formData.music_on_hold.media_id === '') {
 					delete newData.music_on_hold.media_id;
