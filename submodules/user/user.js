@@ -1886,6 +1886,7 @@ define(function(require) {
 			if (data.caller_id_options.outbound_privacy === 'default') {
 				delete data.caller_id_options;
 			}
+			
 
 			return data;
 		},

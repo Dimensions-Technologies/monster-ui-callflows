@@ -1103,10 +1103,15 @@ define(function(require) {
 			});
 
 			template.find('.account-settings-update').on('click', function() {
+
+				console.log('update account settings')
+
 				// Validate form
 				if (!monster.ui.valid(template.find('#account_settings_form'))) {
 					return;
 				}
+
+				console.log('log point 1');
 
 				// Collect data
 				var formData = monster.ui.getFormData('account_settings_form'),
@@ -1117,6 +1122,14 @@ define(function(require) {
 					newData.caller_id.asserted.number = monster.util.getFormatPhoneNumber(newData.caller_id.asserted.number).e164Number;
 				}
 
+				console.log('formData', formData);
+				console.log('newData', newData)
+
+				// add support for setting caller id privacy on account doc
+				if (formData.caller_id_options.outbound_privacy === 'default') {
+					delete newData.caller_id_options;
+				}
+				
 				// Clean empty data
 				if (formData.music_on_hold.media_id === '') {
 					delete newData.music_on_hold.media_id;

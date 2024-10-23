@@ -1065,12 +1065,19 @@
 				"titleInbound": "Account's Internal/On-net Caller ID",
 				"titleEmergency": "Account's Emergency Caller ID",
 				"titleAsserted": "Account's Asserted ID",
+				"titlePrivacy": "Account's Caller ID Privacy",
 				"nameLabel": "Caller ID Name:",
 				"numberLabel": "Caller ID Number:",
 				"realmLabel": "Caller ID Realm:",
 				"defaultNumber": "Default",
 				"messages": {
 					"invalidNumber": "Please enter a valid number"
+				},
+				"privacy": {
+					"caller_id_privacy_default": "None",
+					"caller_id_privacy_name": "Withold Name",
+					"caller_id_privacy_number": "Withold Number",
+					"caller_id_privacy_full": "Withold Name & Number"
 				}
 			},
 			"musicOnHold": {
