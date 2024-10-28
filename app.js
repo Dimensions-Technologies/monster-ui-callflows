@@ -268,7 +268,7 @@ define(function(require) {
 					self.renderEntityManager(parent);
 
 					// show warning message if emergency caller id has not been set on the account
-					if (miscSettings.checkEmergencyNumber == true || false) {
+					if (miscSettings.checkEmergencyNumber) {
 
 						// check if 'uk_999_enabled' exists and is true on account doc
 						if (accountData.hasOwnProperty('dimension')) {
@@ -279,7 +279,7 @@ define(function(require) {
 
 						// check if emergency caller id has been set on the account
 						if (accountData.hasOwnProperty('caller_id') && accountData.caller_id.hasOwnProperty('emergency') && accountData.caller_id.emergency.hasOwnProperty('number')) {
-							if (miscSettings.checkEmergencyAddress999 == true || false) {
+							if (miscSettings.checkEmergencyAddress999) {
 								if (uk999Enabled == true) {
 									self.callApi({
 										resource: 'numbers.get',
@@ -296,7 +296,7 @@ define(function(require) {
 								}
 							}
 
-							if (miscSettings.checkEmergencyAddress911 == true || false) {
+							if (miscSettings.checkEmergencyAddress911) {
 								self.callApi({
 									resource: 'numbers.get',
 									data: {
@@ -388,7 +388,7 @@ define(function(require) {
 					.removeClass('listing-mode')
 					.addClass('edition-mode');
 				
-				if (miscSettings.enableSelectedElementColor == true || false) {
+				if (miscSettings.enableSelectedElementColor) {
 					$('.list-element').removeClass('selected-element');
 				}
 
@@ -400,7 +400,7 @@ define(function(require) {
 				var $this = $(this),
 					callflowId = $this.data('id');
 
-				if (miscSettings.enableSelectedElementColor == true || false) {
+				if (miscSettings.enableSelectedElementColor) {
 					$('.list-element').removeClass('selected-element');
 					$this.addClass('selected-element');
 				}
@@ -688,7 +688,7 @@ define(function(require) {
 				var type = template.find('.entity-edition .list-container .list').data('type');
 				editEntity(type);
 
-				if (miscSettings.enableSelectedElementColor == true || false) {
+				if (miscSettings.enableSelectedElementColor) {
 					$('.list-element').removeClass('selected-element');
 				};
 
@@ -706,7 +706,7 @@ define(function(require) {
 					id = $this.data('id'),
 					type = $this.parents('.list').data('type');
 
-				if (miscSettings.enableSelectedElementColor == true || false) {
+				if (miscSettings.enableSelectedElementColor) {
 					$('.list-element').removeClass('selected-element');
 					$this.addClass('selected-element');
 				}
@@ -1027,7 +1027,7 @@ define(function(require) {
 				template.find('.shoutcast-div').toggleClass('active', $(this).val() === 'shoutcast').find('input').val('');
 			});
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				template.find('.caller-id-external-number').on('change', function() {
 					phoneNumber = $('.caller-id-external-number select[name="caller_id.external.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -1035,7 +1035,7 @@ define(function(require) {
 				});
 			}
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				template.find('.caller-id-emergency-number').on('change', function() {
 					phoneNumber = $('.caller-id-emergency-number select[name="caller_id.emergency.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -1043,7 +1043,7 @@ define(function(require) {
 				});
 			}
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				template.find('.caller-id-asserted-number').on('change', function() {
 					phoneNumber = $('.caller-id-asserted-number select[name="caller_id.asserted.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -1339,7 +1339,7 @@ define(function(require) {
 						.append(listCallflows)
 						.data('next-key', callflowData.next_start_key || null);
 	
-					if (miscSettings.enableSelectedElementColor == true || false) {
+					if (miscSettings.enableSelectedElementColor) {
 						$('.list-element[data-id="' + selectedItemId + '"]').addClass('selected-element');
 					}
 
@@ -1578,7 +1578,7 @@ define(function(require) {
 			// copy callflow
 			$('.duplicate', buttons).click(function() {
 
-				if (miscSettings.enableSelectedElementColor == true || false) {
+				if (miscSettings.enableSelectedElementColor) {
 					$('.list-element').removeClass('selected-element');
 				}
 
@@ -3067,7 +3067,7 @@ define(function(require) {
 				isHiddenCallflow = metadata && metadata.hasOwnProperty('origin') && _.includes(['voip', 'migration', 'mobile', 'callqueues'], metadata.origin) || module && hideModule.includes(module),
 				showAllCallflows = (monster.config.hasOwnProperty('developerFlags') && monster.config.developerFlags.showAllCallflows) || monster.apps.auth.originalAccount.superduper_admin;
 
-			if (miscSettings.enableConsoleLogging == true || false) {
+			if (miscSettings.enableConsoleLogging) {
 				console.log('Callflow Metadata', metadata)
 				console.log('Hidden Callflow', isHiddenCallflow)
 				console.log('Show All Callflows', showAllCallflows)

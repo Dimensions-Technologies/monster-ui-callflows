@@ -126,7 +126,7 @@ define(function(require) {
 				miscSettings.vmboxPreventDelete = false;
 
 				if (results.get_vmbox.hasOwnProperty('owner_id') && results.get_vmbox.owner_id != null) {
-					if (miscSettings.vmboxPreventDeletingUserAssociated == true || false) {
+					if (miscSettings.vmboxPreventDeletingUserAssociated) {
 						miscSettings.vmboxPreventDelete = true;
 					}
 				}

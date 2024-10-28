@@ -730,7 +730,7 @@ define(function(require) {
 				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled,
 				allowAddingExternalCallerId;
 
-				if (miscSettings.preventAddingExternalCallerId == true || false) {
+				if (miscSettings.preventAddingExternalCallerId) {
 					allowAddingExternalCallerId = false
 				}
 				else {
@@ -757,7 +757,7 @@ define(function(require) {
 				hotdesk_pin = $('.hotdesk_pin', user_html),
 				hotdesk_pin_require = $('#hotdesk_require_pin', user_html);
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				user_html.find('.caller-id-external-number').on('change', function(event) {
 					phoneNumber = $('.caller-id-external-number select[name="caller_id.external.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -765,7 +765,7 @@ define(function(require) {
 				});
 			}
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				user_html.find('.caller-id-emergency-number').on('change', function(event) {
 					phoneNumber = $('.caller-id-emergency-number select[name="caller_id.emergency.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -773,7 +773,7 @@ define(function(require) {
 				});
 			}
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				user_html.find('.caller-id-asserted-number').on('change', function(event) {
 					phoneNumber = $('.caller-id-asserted-number select[name="caller_id.asserted.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
