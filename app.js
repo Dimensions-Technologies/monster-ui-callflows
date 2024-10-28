@@ -173,10 +173,15 @@ define(function(require) {
 								});
 							}
 
-							if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {															
-								data.dimension.dt_callflows.miscSettings.forEach(function(action) {
-									miscSettings[action] = true;
-								});
+							if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {
+								// support for original miscSettings format
+								if (Array.isArray(data.dimension.dt_callflows.miscSettings)) {
+									data.dimension.dt_callflows.miscSettings.forEach(function(action) {
+										miscSettings[action] = true;
+									});
+								} else {
+									miscSettings = data.dimension.dt_callflows.miscSettings;
+								}
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {															
@@ -1127,8 +1132,6 @@ define(function(require) {
 				if (!monster.ui.valid(template.find('#account_settings_form'))) {
 					return;
 				}
-
-				console.log('log point 1');
 
 				// Collect data
 				var formData = monster.ui.getFormData('account_settings_form'),
