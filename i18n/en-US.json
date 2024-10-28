@@ -1431,6 +1431,14 @@
 			"tagDeleted": "This call tag has been deleted and is now read-only"
 		},
 
+		"directoryRouting": {
+			"popupTitle": "Directory Routing",
+			"title": "Directory <br> Routing",
+			"tip": "Route calls based on a directory lookup",
+			"directoryFallback": "Add a callflow action following the directory lookup to route callers to a fallback callflow in case the directory lookup action does not find a valid contact match or fails",
+			"directoryDeleted": "This contact directory has been deleted, lookups to this directory will no longer work"
+		},
+
 		"uk999": {
 			"emergencyCallerIdNotSet": "The Emergency Caller ID has not been set for this account. Please set this under 'Account Settings'. If the customer has multiple locations please ensure you set the correct Emergency Caller ID at User level where this is different to the main account Emergency Caller ID.",
 			"emergencyCallerIdAddressNotSet": "The Emergency Caller ID that has been set does not have an address set against it. Please set the address against the number from within the Numbers App."
@@ -1584,7 +1592,7 @@
 		"add_a_user": "Add a user",
 		"select_user_title": "Select User",
 		"t_38_checkbox": "Enable T.38?",
-		"pivot_timeout": "Request Timeout (s)",
+		"pivot_timeout": "Request Timeout",
 		"pivot_timeout_invalid": "Invalid Value <br> The entered value must be between 5 and 20",
 		"pivot_url_invalid": "Invalid Value <br> The entered value should start with http:// or https://",
 		"device_timeout_invalid": "Invalid Value <br> The entered value must be between 10 and 120",

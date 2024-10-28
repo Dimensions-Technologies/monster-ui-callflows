@@ -107,7 +107,7 @@
 }
 
 .icon.callflow { /* 5, 0 */
-    background-position: -160px -5px;
+    background-position: -160px -1px;
 }
 
 .icon.conference { /* 14, 3 */
@@ -123,11 +123,11 @@
 }
 
 .icon.play { /* 10, 9 */
-    background-position: -320px -293px;
+    background-position: -320px -290px;
 }
 
 .icon.menu1 { /* 20, 5 */
-    background-position: -640px -165px;
+    background-position: -639px -162px;
 }
 
 .icon.registration { /* 18, 7 */
@@ -143,7 +143,7 @@
 }
 
 .icon.user { /* 17, 6 */
-    background-position: -544px -197px;
+    background-position: -544px -194px;
 }
 
 .icon.vmbox { /* 30, 5 */
@@ -151,7 +151,7 @@
 }
 
 .icon.voicemail { /* 30, 5 */
-    background-position: -960px -165px;
+    background-position: -960px -162px;
 }
 
 .icon.timeofday { /* 15, 8 */
@@ -159,11 +159,11 @@
 }
 
 .icon.temporal_route { /* 15, 8 */
-    background-position: -448px -229px;
+    background-position: -448px -225px;
 }
 
 .icon.ring_group { /* 10, 5 Needs to change to a better one */
-    background-position: -320px -165px;
+    background-position: -320px -163px;
 }
 
 .icon.settings {
@@ -176,7 +176,7 @@
 
 /************** ICONS ************/
 .icon.phone {
-    background-position: -510px -161px;
+    background-position: -510px -162px;
 }
 
 .icon.active_phone {
@@ -357,15 +357,15 @@
 }
 
 .icon.hotdesk_login {
-    background-position: -64px -288px;
+    background-position: -64px -290px;
 }
 
 .icon.hotdesk_logout {
-    background-position: 0 -288px;
+    background-position: 0 -290px;
 }
 
 .icon.hotdesk_toggle {
-    background-position: -288px 0px;
+    background-position: -288px -2px;
 }
 
 /**** The 'real' icons ****/
@@ -399,7 +399,7 @@
 }
 
 .icon.loop2 {
-    background-position: -480px 0px;
+    background-position: -480px -1px;
 }
 
 .icon.loop3 {
@@ -407,7 +407,7 @@
 }
 
 .icon.to_cloud {
-    background-position: -608px 0px;
+    background-position: -608px -1px;
 }
 
 .icon.from_cloud {
@@ -495,7 +495,7 @@
 }
 
 .icon.x_circle {
-    background-position: -960px -32px;
+    background-position: -960px -34px;
 }
 
 .icon.trash1 {
@@ -571,7 +571,7 @@
 }
 
 .icon.dot_chat {
-    background-position: -128px -96px;
+    background-position: -128px -98px;
 }
 
 .icon.chat_box {
@@ -579,7 +579,7 @@
 }
 
 .icon.chat_circle {
-    background-position: -256px -96px;
+    background-position: -256px -98px;
 }
 
 .icon.chat_bubble {
@@ -890,7 +890,7 @@
 }
 
 .icon.bell1 {
-    background-position: -94px -256px;
+    background-position: -93px -258px;
 }
 
 .icon.bell2 {
@@ -1098,7 +1098,7 @@
 }
 
 .icon.book {
-    background-position: -320px -352px;
+    background-position: -316px -352px;
 }
 
 .icon.upload {

@@ -274,3 +274,9 @@
 #media-form #tts_text {
 	min-height: 150px; 
 }
+
+#directoryFallbackMessage .help-box,
+#directoryDeletedMessage .help-box,
+#tagDeletedMessage .help-box {
+	width: 304px !important;
+}

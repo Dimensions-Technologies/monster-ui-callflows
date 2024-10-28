@@ -1,0 +1,65 @@
+<div class="dialog_popup callflows-port callflow-action-form">
+	<!--<h1>{{ i18n.oldCallflows.pivot }}</h1>-->
+	<form name="form" method="post" action="#">
+		<div class="form_content">
+			
+			<div class="popup_field">
+                <label for="name">
+                    Directory
+                </label>
+                <select id="name" name="name">
+                    <option value="null" hidden>Select a directory</option>
+                    {{#select dimension.id}}
+                        {{#each contactDirectories}}
+                            <option value="{{id}}">{{name}}</option>
+                        {{/each}}
+                    {{/select}}
+                </select>
+            </div>
+
+			<div class="popup_field">
+				<label for="directoryDescription">
+                    Description
+                </label>
+				<input type="text" id="directoryDescription" class="medium" value="{{dimension.description}}"/>
+			</div>
+
+			<div class="popup_field">
+                <label for="routingValue">
+                     Routing Field
+                </label>
+				<select id="routingValue">
+					{{#select dimension.routingValue}}
+						<option value="null" hidden>Select a routing field</option>
+						<option value="field1">Field 1</option>
+						<option value="field2">Field 2</option>
+						<option value="field3">Field 3</option>
+						<option value="field4">Field 4</option>
+						<option value="field5">Field 5</option>
+						<option value="field6">Field 6</option>
+						<option value="field7">Field 7</option>
+						<option value="field8">Field 8</option>
+						<option value="field9">Field 9</option>
+						<option value="field10">Field 10</option>
+					{{/select}}
+				</select>
+            </div>
+
+			<div id="directoryFallbackMessage">
+				{{#monsterText}}
+					{{ i18n.callflows.directoryRouting.directoryFallback }}
+				{{/monsterText}}
+			</div>
+		
+			<div id="directoryDeletedMessage">
+				{{#monsterText}}
+					{{ i18n.callflows.directoryRouting.directoryDeleted }}
+				{{/monsterText}}
+			</div>
+
+		</div>
+	</form>
+	<div class="buttons-center">
+		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>
+	</div>
+</div>
