@@ -4,7 +4,7 @@ define(function(require) {
 		monster = require('monster'),
 		miscSettings = {},
 		ttsLanguages = {},
-		callTags = {},
+		callTags = [],
 		contactDirectories = [];
 
 	var app = {
@@ -2957,7 +2957,7 @@ define(function(require) {
 
 						var selectedValue;
 
-						if (dimensionData.hasOwnProperty('dimension') && nodeData.dimension.type == 'StringListTagValueType') {
+						if (nodeData.hasOwnProperty('dimension') && nodeData.dimension.type == 'StringListTagValueType') {
 							selectedValue = dimensionData.tagValue;
 						} else if (selectedTag.hasOwnProperty('defaultValue')) {
 							selectedValue = selectedTag.defaultValue;

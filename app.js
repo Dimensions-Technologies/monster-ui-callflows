@@ -18,7 +18,7 @@ define(function(require) {
 		deviceVideoCodecs = {},
 		afterBridgeTransfer = {},
 		callflowFlags = [],
-		callTags = {},
+		callTags = [],
 		contactDirectories = [];
 
 	var appSubmodules = [
@@ -208,8 +208,12 @@ define(function(require) {
 					if (miscSettings.enableDimensionsCallTagAction) {
 						if (accountData.hasOwnProperty('dimension') && accountData.dimension.hasOwnProperty('tags')) {
 							callTags = accountData.dimension.tags;
+							// sort contactDirectories alphabetically by name
+							callTags.sort((a, b) => {
+								return a.name.localeCompare(b.name);
+							});
 						} else {
-							callTags = {};
+							callTags = [];
 						}
 					}
 
