@@ -218,7 +218,7 @@ define(function(require) {
 		},
 
 		timeofdayRender: function(data, target, callbacks) {
-			if (miscSettings.enableManualNightMode == true || false) {
+			if (miscSettings.enableManualNightMode) {
 				featureCodeIdReadOnly = false
 				if (data.data.hasOwnProperty('dimension') && data.data.dimension.hasOwnProperty('feature_code_id') && data.data.dimension.feature_code_id != null) {
 					featureCodeIdReadOnly = true
@@ -277,7 +277,7 @@ define(function(require) {
 			$('#specific_day', timeofday_html).hide();
 			$('#date_range_end', timeofday_html).show();
 
-			if (miscSettings.enableManualNightMode == true || false) {
+			if (miscSettings.enableManualNightMode) {
 
 				existingRule = false;
 
@@ -436,7 +436,7 @@ define(function(require) {
 
 				if (!$this.hasClass('disabled')) {
 
-					if ((miscSettings.enableManualNightMode == true || false) && $('#rule_type', timeofday_html).val() === 'manual' ) {
+					if (miscSettings.enableManualNightMode && $('#rule_type', timeofday_html).val() === 'manual' ) {
 
 						var form_data = monster.ui.getFormData('timeofday-form');
 
@@ -628,7 +628,7 @@ define(function(require) {
 
 			var formFeatureCodeState = form_data.enabled;
 
-			if (miscSettings.enableManualNightModePresenceUpdate == true || false) {
+			if (miscSettings.enableManualNightModePresenceUpdate) {
 				if (String(featureCodeState) != String(formFeatureCodeState)) {
 
 					var self = this,
@@ -663,7 +663,7 @@ define(function(require) {
 
 							} else {
 
-								if (miscSettings.enableConsoleLogging == true || false) {
+								if (miscSettings.enableConsoleLogging) {
 									console.log('DimensionsFeatureCode_TimeServiceToggle Callflow Not Found');
 								}
 
@@ -692,7 +692,7 @@ define(function(require) {
 				
 				self.checkFeatureCode(formFeatureCodeId, function(checkResult) {
 
-					if (miscSettings.enableConsoleLogging == true || false) {
+					if (miscSettings.enableConsoleLogging) {
 						console.log('Time of Day Feature Code Check', checkResult);
 					}
 		
@@ -743,7 +743,7 @@ define(function(require) {
 				delete form_data.enabled;
 			}
 
-			if (miscSettings.enableManualNightMode == true || false) {
+			if (miscSettings.enableManualNightMode) {
 				if (form_data.rule_type == 'manual') {
 					delete form_data.rule_type;
 					delete form_data.rule_state;
