@@ -187,14 +187,24 @@ define(function(require) {
 				temporalsetForm = temporalset_html.find('#temporalset-form'),
 				widgetRules = self.temporalSetFormatRules(data);
 
+			// truncate 'value' in widgetRules data to 50 characters
+			widgetRules.available = widgetRules.available.map(item => ({
+				...item,
+				value: item.value.length > 50 ? item.value.slice(0, 50) + '...' : item.value
+			}));
+
+			widgetRules.selected = widgetRules.selected.map(item => ({
+				...item,
+				value: item.value.length > 50 ? item.value.slice(0, 50) + '...' : item.value
+			}));
+
 			var widget = monster.ui.linkedColumns(temporalset_html.find('.items-selector-wrapper'), widgetRules.available, widgetRules.selected, {
 				i18n: {
 					columnsTitles: {
 						available: self.i18n.active().callflows.temporalset.unselectedTOD,
 						selected: self.i18n.active().callflows.temporalset.selectedTOD
 					}
-				},
-				containerClasses: 'skinny'
+				}
 			});
 
 			monster.ui.validate(temporalsetForm);
