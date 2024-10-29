@@ -106,12 +106,12 @@
 }
 
 .callflows-port .callflows-codecs-ui {
-	max-width: 900px;
+	max-width: 800px;
 }
 
 /* callflows - devices - fix width of video codec in line with audio codec */
 .core-content #callflow_container .callflows-port .pill-content #media_video_codecs {
-    max-width: 900px;
+    max-width: 800px;
 }
 
 /* callflows - callflow device pop up - codec drag and drop fix */
