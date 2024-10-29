@@ -9,7 +9,7 @@
 @import url('../submodules/groups/groups.css');
 @import url('../submodules/featurecodes/featurecodes.css');
 @import url('../submodules/temporalset/temporalset.css');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+@import url('../style/fonts.css');
 
 /* style.css */
 #ws_callflow > .callflow {
