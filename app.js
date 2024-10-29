@@ -139,32 +139,52 @@ define(function(require) {
 						if (data.dimension.hasOwnProperty('dt_callflows')) {
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideFromMenu')) {															
-								data.dimension.dt_callflows.hideFromMenu.forEach(function(action) {
-									hideFromMenu[action] = true;
-								});
+								// support for original hideFromMenu format
+								if (Array.isArray(data.dimension.dt_callflows.hideFromMenu)) {
+									data.dimension.dt_callflows.hideFromMenu.forEach(function(action) {
+										hideFromMenu[action] = true;
+									});
+								} else {
+									hideFromMenu = data.dimension.dt_callflows.hideFromMenu;
+								}
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideAdd')) {															
-								data.dimension.dt_callflows.hideAdd.forEach(function(action) {
-									hideAdd[action] = true;
-								});
+								// support for original hideAdd format
+								if (Array.isArray(data.dimension.dt_callflows.hideAdd)) {
+									data.dimension.dt_callflows.hideAdd.forEach(function(action) {
+										hideAdd[action] = true;
+									});
+								} else {
+									hideAdd = data.dimension.dt_callflows.hideAdd;
+								}
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideCallflowAction')) {															
-								data.dimension.dt_callflows.hideCallflowAction.forEach(function(action) {
-									hideCallflowAction[action] = true;
-								});
+								// support for original hideCallflowAction format
+								if (Array.isArray(data.dimension.dt_callflows.hideCallflowAction)) {
+									data.dimension.dt_callflows.hideCallflowAction.forEach(function(action) {
+										hideCallflowAction[action] = true;
+									});
+								} else {
+									hideCallflowAction = data.dimension.dt_callflows.hideCallflowAction;
+								}
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideFromCallflowAction')) {
 								Object.keys(data.dimension.dt_callflows.hideFromCallflowAction).forEach(function(key) {
-									data.dimension.dt_callflows.hideFromCallflowAction[key].forEach(function(action) {
-										if (!hideFromCallflowAction.hasOwnProperty(key)) {
-											hideFromCallflowAction[key] = {};
-										}
-										hideFromCallflowAction[key][action] = true;
-									});
-								});
+									// support for original hideFromCallflowAction format
+									if (Array.isArray(data.dimension.dt_callflows.hideFromCallflowAction[key])) {
+										data.dimension.dt_callflows.hideFromCallflowAction[key].forEach(function(action) {
+											if (!hideFromCallflowAction.hasOwnProperty(key)) {
+												hideFromCallflowAction[key] = {};
+											}
+											hideFromCallflowAction[key][action] = true;
+										});
+									} else {
+										hideFromCallflowAction = data.dimension.dt_callflows.hideFromCallflowAction;
+									}
+								})
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideClassifiers')) {															
@@ -185,9 +205,14 @@ define(function(require) {
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {															
-								data.dimension.dt_callflows.hideDeviceTypes.forEach(function(action) {
-									hideDeviceTypes[action] = true;
-								});
+								// support for original hideDeviceTypes format
+								if (Array.isArray(data.dimension.dt_callflows.hideDeviceTypes)) {
+									data.dimension.dt_callflows.hideDeviceTypes.forEach(function(action) {
+										hideDeviceTypes[action] = true;
+									});
+								} else {
+									hideDeviceTypes = data.dimension.dt_callflows.hideDeviceTypes;
+								}
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('ttsLanguages')) {				
