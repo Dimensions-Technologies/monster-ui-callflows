@@ -1595,6 +1595,7 @@
 		"pivot_timeout": "Request Timeout",
 		"pivot_timeout_invalid": "Invalid Value <br> The entered value must be between 5 and 20",
 		"pivot_url_invalid": "Invalid Value <br> The entered value should start with http:// or https://",
+		"pivot_fallback": "Add a callflow action following the pivot request to route callers to a fallback callflow in case the pivot request fails",
 		"device_timeout_invalid": "Invalid Value <br> The entered value must be between 10 and 120",
 		"voice_url": "URL",
 		"method": "Method",
