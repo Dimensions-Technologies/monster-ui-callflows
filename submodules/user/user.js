@@ -383,7 +383,9 @@ define(function(require) {
 						callflow_numbers: [],
 						call_restriction: {},
 						callflow_features: null,
-						canImpersonate: monster.util.canImpersonate(self.accountId)
+						canImpersonate: monster.util.canImpersonate(self.accountId),
+						ring_group: null,
+						callflow_ring_group: null
 					}
 				};
 
@@ -677,7 +679,11 @@ define(function(require) {
 							}
 							
 							defaults.field_data.user_callflow = userCallflow.data;
-							
+
+							if (defaults.field_data.callflow_features.includes("ring_group")) {
+								defaults.field_data.callflow_ring_group = userCallflow.data.flow.data;
+							}
+
 							self.userRender(render_data, target, callbacks);
 							
 							if (typeof callbacks.after_render === 'function') {
@@ -699,9 +705,6 @@ define(function(require) {
 
 			});
 		},
-
-
-		
 
 		userRender: function(data, target, callbacks) {
 			var self = this;
@@ -865,8 +868,24 @@ define(function(require) {
 				
 			}
 
-			self.userRenderDeviceList(data, user_html);
 			self.userRenderNumberList(data, user_html);
+
+			$('#tab_find_me_follow_me', user_html).hide(); // show find me follow me table
+
+			self.userGetDeviceList(data, function(callback) {
+				var deviceList = callback,
+					findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
+					userCallflow = data?.field_data?.user_callflow;
+
+				self.userRenderDeviceList(data, deviceList, user_html);
+
+				if (findMeFollowMeEnabled && userCallflow) {
+					$('#tab_find_me_follow_me', user_html).show(); // show find me follow me table
+					data.field_data.ring_group = userCallflow.flow.data;
+					self.usersRenderFindMeFollowMe(data, deviceList, user_html);
+				}
+
+			});
 
 			monster.ui.validate(user_form, {
 				rules: {
@@ -1127,7 +1146,11 @@ define(function(require) {
 							formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
 							userCallflow = data.field_data.user_callflow,
 							userVoicemail = form_data.user_voicemail,
-							ringTimeout = parseInt(form_data.ring_timeout, 10);
+							ringTimeout = parseInt(form_data.ring_timeout, 10),
+							findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
+							findMeFollowMe = form_data.smartpbx.find_me_follow_me.enabled === "true",
+							callflowRingGroup = data.field_data.callflow_ring_group,
+							ringGroup = data.field_data.ring_group;
 
 						if (miscSettings.enableConsoleLogging) {
 							console.log('Numbers on User Callflow', callflowNumbers);
@@ -1201,7 +1224,7 @@ define(function(require) {
 											ringTimeout: ringTimeout
 										}, callback);
 									} else {
-										if (userCallflow.flow.data.timeout != ringTimeout) {
+										if (findMeFollowMe == false && userCallflow.flow.data.timeout != ringTimeout) {
 											if (miscSettings.enableConsoleLogging) {
 												console.log('Updating Callflow Timeout:', ringTimeout);
 											}
@@ -1236,6 +1259,123 @@ define(function(require) {
 									
 								} else {
 									callback(null)
+								}
+
+							},
+
+							function(callback) {
+								
+								if (miscSettings.enableConsoleLogging) {
+									console.log('Find Me Follow Me Enabled:', findMeFollowMe);
+									console.log('callflowRingGroup', callflowRingGroup);
+									console.log('ringGroup', ringGroup);
+								}
+
+								var updateUserCallflow = false,
+									callflowNode = {};
+
+								// check if find me follow me is enabled
+								if (findMeFollowMe == true) {
+									
+									// function to compare callflowRingGroup and ringGroup
+									function areRingGroupsEqual(group1, group2) {
+										if (
+											group1.timeout !== group2.timeout ||
+											group1.strategy !== group2.strategy ||
+											group1.repeats !== group2.repeats ||
+											group1.ignore_forward !== group2.ignore_forward
+										) {
+											return false;
+										}
+									
+										// check if both have an endpoints array with the same length
+										if (!Array.isArray(group1.endpoints) || !Array.isArray(group2.endpoints) ||
+											group1.endpoints.length !== group2.endpoints.length) {
+											return false;
+										}
+									
+										// sort the endpoints arrays by id for a consistent comparison
+										const sortedEndpoints1 = [...group1.endpoints].sort((a, b) => a.id.localeCompare(b.id));
+										const sortedEndpoints2 = [...group2.endpoints].sort((a, b) => a.id.localeCompare(b.id));
+									
+										return sortedEndpoints1.every((endpoint1, index) => {
+											const endpoint2 = sortedEndpoints2[index];
+											return (
+												endpoint1.id === endpoint2.id &&
+												endpoint1.endpoint_type === endpoint2.endpoint_type &&
+												endpoint1.delay === endpoint2.delay &&
+												endpoint1.timeout === endpoint2.timeout
+											);
+										});
+									}
+
+									// check if find me follow me is currently enabled
+									if (findMeFollowMeEnabled == true) {
+										// check if there are differences between the existing ring group and what is on the form
+										if (!areRingGroupsEqual(callflowRingGroup, ringGroup)) {
+											// update user callflow
+											updateUserCallflow = true;
+											
+											callflowNode.module = 'ring_group';
+											callflowNode.data = {
+												strategy: 'simultaneous',
+												timeout: ringGroup.timeout,
+												repeats: 1,
+                								ignore_forward: true,
+												endpoints: ringGroup.endpoints											
+											};
+										} else {
+											callback(null);
+										}
+									} else {
+										// update user callflow
+										updateUserCallflow = true;
+											
+										callflowNode.module = 'ring_group';
+										callflowNode.data = {
+											strategy: 'simultaneous',
+											timeout: ringGroup.timeout,
+											repeats: 1,
+											ignore_forward: true,
+											endpoints: ringGroup.endpoints
+										};
+									}
+								} else {
+									// check if find me follow me state has been changed
+									if (findMeFollowMeEnabled != findMeFollowMe) {
+										// update user callflow
+										updateUserCallflow = true;
+
+										// set used module on callflow
+										callflowNode.module = 'user';
+										callflowNode.data = {
+											can_call_self: false,
+											id: data.data.id,
+											timeout: ringTimeout,
+											delay: 0,
+                							strategy: "simultaneous"
+										};
+									} else {
+										callback(null);
+									}
+
+								}
+
+								// does the users callflow needs to be updated it
+								if (updateUserCallflow) {
+									// update the flow section of the users callflow
+									var flow = userCallflow.flow;
+									while (flow.hasOwnProperty('module') && ['ring_group', 'user'].indexOf(flow.module) < 0) {
+										flow = flow.children._;
+									}
+									flow.module = callflowNode.module;
+									flow.data = callflowNode.data;
+
+									self.usersUpdateCallflow(userCallflow, callback, function() {
+										callback(null);
+									});
+								} else {
+									callback(null);
 								}
 
 							},
@@ -1400,13 +1540,106 @@ define(function(require) {
 
 			user_html.find('#pwd_mngt_pwd1').on('keyup', function(event) {
 				event.preventDefault();
-
 				user_html.find('#was_password_updated').prop('checked', 'checked');
 				user_html.find('#pwd_mngt_pwd2').val('');
 			});
 
-			$(user_html).delegate('.enabled_checkbox', 'click', function() {
+			$(user_html).delegate('#tab_devices .enabled_checkbox', 'click', function() {
 				self.userUpdateSingleDevice($(this), user_html);
+			});
+
+			// store initial ring group
+			const initialCallflowRingGroup = data.field_data.callflow_ring_group
+				? JSON.parse(JSON.stringify(data.field_data.callflow_ring_group))
+				: null;
+
+			data.field_data.callflow_ring_group = initialCallflowRingGroup;
+
+			$(user_html).delegate('#tab_find_me_follow_me .enabled_checkbox', 'click', function() {
+
+				var checkbox = $(this),
+					row = checkbox.closest('.row'),
+					deviceId = row.attr('id'),
+					sliderContainer = row.find('.column.third');
+
+				if (checkbox.is(':checked')) {
+
+					// Ensure ring_group and endpoints are initialized
+					data.field_data.ring_group = data.field_data.ring_group || {};
+					data.field_data.ring_group.endpoints = data.field_data.ring_group.endpoints || [];
+
+					// Add device to ringGroup.endpoints if it doesn't already exist
+					var existingEndpoint = data.field_data.ring_group.endpoints.find(endpoint => endpoint.id === deviceId);
+
+					if (!existingEndpoint) {
+						// Default delay and timeout values
+						let newEndpoint = {
+							id: deviceId,
+							endpoint_type: "device",
+							delay: 0,
+							timeout: 120
+						};
+						data.field_data.ring_group.endpoints.push(newEndpoint);
+					}
+
+					self.addFindMeFollowMeSlider(data, deviceId, sliderContainer);
+
+				} else {
+					sliderContainer.find('.slider').remove();
+					$(`#delay_value_${deviceId}`).text('');
+					$(`#timeout_value_${deviceId}`).text('');
+
+					// Remove device from ringGroup.endpoints
+					data.field_data.ring_group.endpoints = data.field_data.ring_group.endpoints.filter(endpoint => endpoint.id !== deviceId);
+
+					// Function to calculate the maximum delay + timeout across all endpoints
+					const getMaxDelayTimeoutSum = (endpoints) => {
+						return endpoints.reduce((maxSum, ep) => {
+							const currentSum = ep.delay + ep.timeout;
+							return currentSum > maxSum ? currentSum : maxSum;
+						}, 0);
+					};
+
+					// Get the maximum delay + timeout sum
+					const maxDelayTimeoutSum = getMaxDelayTimeoutSum(data.field_data.ring_group.endpoints);
+
+					data.field_data.ring_group.timeout = maxDelayTimeoutSum;
+
+				}
+
+			});
+
+			var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true;
+			const $ringTimeoutInput = $(user_html).find('#ring_timeout');
+
+			if (findMeFollowMeEnabled) {
+				$ringTimeoutInput.prop('disabled', true);
+        		$ringTimeoutInput.addClass('input-readonly'); 	
+			} 
+			
+			user_html.find('.smart-pbx-find-me-follow-me').on('change', function(event) {
+				var state = $('.smart-pbx-find-me-follow-me select[name="smartpbx.find_me_follow_me.enabled"]').val();
+
+				if (state == 'true') {					
+					self.userGetDeviceList(data, function(callback) {
+						var deviceList = callback,
+							userCallflow = data?.field_data?.user_callflow;
+
+						self.userRenderDeviceList(data, deviceList, user_html);
+		
+						if (userCallflow) {
+							$('#tab_find_me_follow_me', user_html).show(); // show find me follow me table
+							data.field_data.ring_group = userCallflow.flow.data;
+							self.usersRenderFindMeFollowMe(data, deviceList, user_html);
+						}
+					});
+					$ringTimeoutInput.prop('disabled', true);
+        			$ringTimeoutInput.addClass('input-readonly'); 
+				} else {
+					$('#tab_find_me_follow_me', user_html).hide();
+					$ringTimeoutInput.prop('disabled', false);
+        			$ringTimeoutInput.removeClass('input-readonly');
+				}
 			});
 
 			$(user_html).delegate('.action_device.edit', 'click', function() {
@@ -1426,6 +1659,7 @@ define(function(require) {
 				monster.pub('callflows.device.popupEdit', {
 					data: data_device,
 					callback: function(_data) {
+						/*
 						data_devices = {
 							data: { },
 							field_data: {
@@ -1433,8 +1667,12 @@ define(function(require) {
 							}
 						};
 						data_devices.data = _data.data.new_user ? { new_user: true, id: self.random_id } : { id: data.data.id };
+						*/
 
-						self.userRenderDeviceList(data_devices, user_html);
+						self.userGetDeviceList(data, function(callback) {
+							var deviceList = callback;
+							self.userRenderDeviceList(data, deviceList, user_html);
+						});
 					},
 					data_defaults: defaults
 				});
@@ -1444,6 +1682,7 @@ define(function(require) {
 				var device_id = $(this).data('id');
 				monster.ui.confirm(self.i18n.active().callflows.user.do_you_really_want_to_delete, function() {
 					self.userDeleteDevice(device_id, function() {
+						/*
 						data_devices = {
 							data: { },
 							field_data: {
@@ -1451,8 +1690,12 @@ define(function(require) {
 							}
 						};
 						data_devices.data = self.random_id ? { new_user: true, id: self.random_id } : { id: data.data.id };
+						*/
 
-						self.userRenderDeviceList(data_devices, user_html);
+						self.userGetDeviceList(data, function(callback) {
+							var deviceList = callback;
+							self.userRenderDeviceList(data, deviceList, user_html);
+						});
 					});
 				});
 			});
@@ -1474,6 +1717,7 @@ define(function(require) {
 				monster.pub('callflows.device.popupEdit', {
 					data: data_device,
 					callback: function(_data) {
+						/*
 						var data_devices = {
 							data: { },
 							field_data: {
@@ -1481,8 +1725,12 @@ define(function(require) {
 							}
 						};
 						data_devices.data = self.random_id ? { new_user: true, id: self.random_id } : { id: data.data.id };
+						*/
 
-						self.userRenderDeviceList(data_devices, user_html);
+						self.userGetDeviceList(data, function(callback) {
+							var deviceList = callback;
+							self.userRenderDeviceList(data, deviceList, user_html);
+						});
 					},
 					data_defaults: defaults
 				});
@@ -1581,80 +1829,85 @@ define(function(require) {
 				
 		},
 
-		userRenderDeviceList: function(data, parent) {
+		userGetDeviceList: function(data, callback) {
 			var self = this,
-				parent = $('#tab_devices', parent);
-
-			if (data.data.id) {
-				var filter = _.merge({
-					with_status: true
-				}, data.data.new_user ? {
-					filter_new_user: data.data.id
-				} : {
+				filters = { 
+					paginate: false,
+					with_status: true,
 					filter_owner_id: data.data.id
-				});
+				}
+		
+			self.callApi({
+				resource: 'device.list',
+				data: {
+					accountId: self.accountId,
+					filters: filters
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			});
 
-				self.userListDevice(filter, function(_data, status) {
-					$('.rows', parent).empty();
-					if (_data.length > 0) {
+		},
 
-						$.each(_data, function(k, v) {
-							v.display_type = data.field_data.device_types[v.device_type];
-							v.not_enabled = this.enabled === false ? true : false;
-				
-							$('.rows', parent)
-								.append($(self.getTemplate({
-									name: 'deviceRow',
-									data: {
-										...v,
-										miscSettings: miscSettings
-									},
-									submodule: 'user'
-								})));
-
-							$('#' + v.id + ' .column.third', parent).removeClass('device-registered');
-							$('#' + v.id + ' .column.third', parent).removeClass('device-offline');
-							$('#' + v.id + ' .column.third', parent).removeClass('device-enabled');
-							$('#' + v.id + ' .column.third', parent).removeClass('device-disabled');
-
-							// Set 'Online' or 'Offline' based on the 'registered' status
-							if (!v.enabled) {
-								$('#' + v.id + ' .column.third', parent).text('Disabled');
-								$('#' + v.id + ' .column.third', parent).addClass('device-disabled');
-							}
-
-							else if (v.enabled && !v.registrable) {
-								$('#' + v.id + ' .column.third', parent).text('Enabled');
-								$('#' + v.id + ' .column.third', parent).addClass('device-enabled');
-							}
+		userRenderDeviceList: function(data, deviceList, parent) {
+			var self = this,
+				parent = $('#tab_devices', parent),
+				_data = deviceList;
 							
-							else if (v.enabled && v.registrable && v.registered) {
-								$('#' + v.id + ' .column.third', parent).text('Registered');
-								$('#' + v.id + ' .column.third', parent).addClass('device-registered');
-							}
+			$('.rows', parent).empty();
+			if (_data.length > 0) {
 
-							else {
-								$('#' + v.id + ' .column.third', parent).text('Offline');
-								$('#' + v.id + ' .column.third', parent).addClass('device-offline');
-							}
+				$.each(_data, function(k, v) {
+					v.display_type = data.field_data.device_types[v.device_type];
+					v.not_enabled = this.enabled === false ? true : false;
+		
+					$('.rows', parent)
+						.append($(self.getTemplate({
+							name: 'deviceRow',
+							data: {
+								...v,
+								miscSettings: miscSettings
+							},
+							submodule: 'user'
+						})));
 
-						});
-					} else {
-						$('.rows', parent)
-							.append($(self.getTemplate({
-								name: 'deviceRow',
-								submodule: 'user'
-							})));
+					$('#' + v.id + ' .column.third', parent).removeClass('device-registered');
+					$('#' + v.id + ' .column.third', parent).removeClass('device-offline');
+					$('#' + v.id + ' .column.third', parent).removeClass('device-enabled');
+					$('#' + v.id + ' .column.third', parent).removeClass('device-disabled');
+
+					// Set 'Online' or 'Offline' based on the 'registered' status
+					if (!v.enabled) {
+						$('#' + v.id + ' .column.third', parent).text('Disabled');
+						$('#' + v.id + ' .column.third', parent).addClass('device-disabled');
 					}
+
+					else if (v.enabled && !v.registrable) {
+						$('#' + v.id + ' .column.third', parent).text('Enabled');
+						$('#' + v.id + ' .column.third', parent).addClass('device-enabled');
+					}
+					
+					else if (v.enabled && v.registrable && v.registered) {
+						$('#' + v.id + ' .column.third', parent).text('Registered');
+						$('#' + v.id + ' .column.third', parent).addClass('device-registered');
+					}
+
+					else {
+						$('#' + v.id + ' .column.third', parent).text('Offline');
+						$('#' + v.id + ' .column.third', parent).addClass('device-offline');
+					}
+
 				});
 			} else {
 				$('.rows', parent)
-					.empty()
 					.append($(self.getTemplate({
 						name: 'deviceRow',
 						submodule: 'user'
 					})));
 			}
+			
+			
 		},
 
 		userMigrateData: function(data) {
@@ -1685,30 +1938,30 @@ define(function(require) {
 
 					$checkbox.removeAttr('disabled');
 					
-					$('#' + _data.id + ' .column.third', parent).removeClass('device-registered');
-					$('#' + _data.id + ' .column.third', parent).removeClass('device-offline');
-					$('#' + _data.id + ' .column.third', parent).removeClass('device-enabled');
-					$('#' + _data.id + ' .column.third', parent).removeClass('device-disabled');
+					$('#tab_devices #' + _data.id + ' .column.third', parent).removeClass('device-registered');
+					$('#tab_devices #' + _data.id + ' .column.third', parent).removeClass('device-offline');
+					$('#tab_devices #' + _data.id + ' .column.third', parent).removeClass('device-enabled');
+					$('#tab_devices #' + _data.id + ' .column.third', parent).removeClass('device-disabled');
 
 					// Set 'Online' or 'Offline' based on the 'registered' status
 					if (!_data.enabled) {
-						$('#' + _data.id + ' .column.third', parent).text('Disabled');
-						$('#' + _data.id + ' .column.third', parent).addClass('device-disabled');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).text('Disabled');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).addClass('device-disabled');
 					}
 
 					else if (_data.enabled && !_data.registrable) {
-						$('#' + _data.id + ' .column.third', parent).text('Enabled');
-						$('#' + _data.id + ' .column.third', parent).addClass('device-enabled');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).text('Enabled');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).addClass('device-enabled');
 					}
 					
 					else if (_data.enabled && v.registrable && _data.registered) {
-						$('#' + _data.id + ' .column.third', parent).text('Registered');
-						$('#' + _data.id + ' .column.third', parent).addClass('device-registered');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).text('Registered');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).addClass('device-registered');
 					}
 
 					else {
-						$('#' + _data.id + ' .column.third', parent).text('Offline');
-						$('#' + _data.id + ' .column.third', parent).addClass('device-offline');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).text('Offline');
+						$('#tab_devices #' + _data.id + ' .column.third', parent).addClass('device-offline');
 					}
 
 				}, function() {
@@ -1877,9 +2130,14 @@ define(function(require) {
 				data.password = monster.util.randomString(8, 'safe');
 			}
 
+			// add support for setting find me follow me state
+			data.smartpbx.find_me_follow_me = {
+				enabled: data.smartpbx.find_me_follow_me.enabled === "true"
+			}
+
 			// add support for setting dnd on user doc
 			data.do_not_disturb = {
-				enabled: data.do_not_disturb.enabled
+				enabled: data.do_not_disturb.enabled === "true"
 			}
 
 			// add support for setting caller id privacy on user doc
@@ -2144,6 +2402,261 @@ define(function(require) {
 				$('.delete', '.entity-header-buttons').addClass('disabled');
 			}
 		
+		},
+
+		usersRenderFindMeFollowMe: function(data, devices, parent) {
+			var self = this;
+			parent = $('#tab_find_me_follow_me', parent);
+
+			$('.rows', parent).empty();
+
+			var scaleSections = 6,
+				scaleMaxSeconds = 120,
+				ringGroup = data.field_data.user_callflow.flow.data;
+			
+			var sliderTooltip = function(event, ui, deviceId) {
+				// update delay and timeout values in the respective columns
+				$(`#delay_value_${deviceId}`).text(ui.values[0] + 's');
+				$(`#timeout_value_${deviceId}`).text(ui.values[1] + 's');
+			};
+		
+			var createSliderScale = function(container) {
+				var scaleContainer = container.find('.scale-container');
+				scaleContainer.empty();
+				for (var i = 1; i <= scaleSections; i++) {
+					var toAppend = '<div class="scale-element" style="width:' + (100 / scaleSections) + '%;">' +
+						(i === scaleSections
+							? '<input type="text" value="' + scaleMaxSeconds + '" class="scale-max-input" maxlength="3"><span class="scale-max">'
+							: '<span>') +
+						Math.floor(i * scaleMaxSeconds / scaleSections) + ' Sec</span></div>';
+					scaleContainer.append(toAppend);
+				}
+				scaleContainer.append('<span>0 Sec</span>');
+			};
+		
+			if (devices.length > 0) {
+
+				$.each(devices, function(index, device) {
+					device.not_enabled = device.enabled === false;
+		
+					var ringGroupEndpoint = ringGroup.endpoints ? ringGroup.endpoints.find(endpoint => endpoint.id === device.id) : null;
+					var isDeviceInRingGroup = !!ringGroupEndpoint;
+		
+					device.checkbox_checked = isDeviceInRingGroup ? 'checked' : '';
+					device.show_slider = isDeviceInRingGroup;
+					device.delay_value = isDeviceInRingGroup ? ringGroupEndpoint.delay : 0;
+					device.timeout_value = isDeviceInRingGroup ? ringGroupEndpoint.delay + ringGroupEndpoint.timeout : 120;
+		
+					$('.rows', parent)
+						.append($(self.getTemplate({
+							name: 'findMeFollowMeRow',
+							data: {
+								...device,
+								miscSettings: miscSettings,
+							},
+							submodule: 'user'
+						})));
+		
+					if (device.show_slider) {
+						var target = $(`#slider_${device.id}`);
+		
+						target.slider({
+							range: true,
+							min: 0,
+							max: scaleMaxSeconds,
+							values: [device.delay_value, device.timeout_value],
+							slide: function(event, ui) {
+								// check which handle is being moved
+								var handleIndex = $(ui.handle).index();
+
+								//console.log('ui.values[0]', ui.values[0]); // min
+								//console.log('ui.values[1]', ui.values[1]); // max
+								
+								// logic for minimum handle
+								if (handleIndex == 1) {
+									if (ui.values[1] == ui.values[0] && ui.values[1] !== 120) {
+										ui.values[1] = ui.values[0] + 1;
+									}
+								} 
+								
+								// logic for minimum handle
+								if (handleIndex == 2) {
+									if (ui.values[0] == ui.values[1] && ui.values[0] !== 0) {
+										ui.values[0] = ui.values[1] - 1;
+									}
+								} 
+		
+								// update the slider values
+								target.slider("values", ui.values);
+								sliderTooltip(event, ui, device.id);
+							},
+							change: function(event, ui) {
+								sliderTooltip(event, ui, device.id);
+
+								// update the ringGroup endpoint with new delay and timeout values
+								var endpoint = data.field_data.ring_group.endpoints.find(endpoint => endpoint.id === device.id);
+								if (endpoint) {
+									endpoint.delay = ui.values[0];
+									endpoint.timeout = ui.values[1] - ui.values[0];
+
+									// function to calculate the maximum delay + timeout across all endpoints
+									const getMaxDelayTimeoutSum = (endpoints) => {
+										return endpoints.reduce((maxSum, ep) => {
+											const currentSum = ep.delay + ep.timeout;
+											return currentSum > maxSum ? currentSum : maxSum;
+										}, 0);
+									};
+
+									// get the maximum delay + timeout sum
+									const maxDelayTimeoutSum = getMaxDelayTimeoutSum(data.field_data.ring_group.endpoints);
+
+									data.field_data.ring_group.timeout = maxDelayTimeoutSum;
+
+								}
+
+							}
+						});
+		
+						var handles = target.find('.ui-slider-handle');
+
+						handles.eq(0).attr('id', `min_handle_${device.id}`);
+						handles.eq(1).attr('id', `max_handle_${device.id}`);
+		
+						if ($(`#device_row_${device.id}`).hasClass('deleted')) {
+							target.slider('disable');
+						}
+		
+						createSliderScale($(`#device_row_${device.id}`));
+
+					} else {
+						// clear delay and timeout if slider not being shown
+						$(`#delay_value_${device.id}`).text('');
+						$(`#timeout_value_${device.id}`).text('');
+					}
+
+				});
+			}
+
+		},	
+		
+		addFindMeFollowMeSlider(data, deviceId, targetColumn) {
+			var scaleSections = 6,
+				scaleMaxSeconds = 120;
+
+			var sliderTooltip = function(event, ui, deviceId) {
+				// update delay and timeout values in the respective columns
+				$(`#delay_value_${deviceId}`).text(ui.values[0] + 's');
+				$(`#timeout_value_${deviceId}`).text(ui.values[1] + 's');
+			};
+
+			// function to create the scale for the slider
+			var createSliderScale = function(container) {
+				var scaleContainer = container.find('.scale-container');
+				scaleContainer.empty();
+				for (var i = 1; i <= scaleSections; i++) {
+					var toAppend = '<div class="scale-element" style="width:' + (100 / scaleSections) + '%;">' +
+						(i === scaleSections
+							? '<input type="text" value="' + scaleMaxSeconds + '" class="scale-max-input" maxlength="3"><span class="scale-max">'
+							: '<span>') +
+						Math.floor(i * scaleMaxSeconds / scaleSections) + ' Sec</span></div>';
+					scaleContainer.append(toAppend);
+				}
+				scaleContainer.append('<span>0 Sec</span>');
+			};
+
+			// check if the slider-container already exists, if not create it
+			var sliderContainer = targetColumn.find('.slider-container');
+			if (sliderContainer.length === 0) {
+				sliderContainer = $('<div class="slider-container" data-device_id="' + deviceId + '"></div>');
+				targetColumn.append(sliderContainer);
+			}
+		
+			// create the slider element
+			var sliderHtml = `<div id="slider_${deviceId}" class="slider"></div>`;
+			sliderContainer.append(sliderHtml);
+
+			// retrieve the device data
+			var device = {
+				id: deviceId,
+				delay_value: 0,
+				timeout_value: 120
+			};
+
+			var target = targetColumn.find(`#slider_${deviceId}`);
+			
+			target.slider({
+				range: true,
+				min: 0,
+				max: scaleMaxSeconds,
+				values: [device.delay_value, device.timeout_value],
+
+				slide: function(event, ui) {
+					// check which handle is being moved
+					var handleIndex = $(ui.handle).index();
+
+					//console.log('ui.values[0]', ui.values[0]); // min
+					//console.log('ui.values[1]', ui.values[1]); // max
+					
+					// logic for minimum handle
+					if (handleIndex == 1) {
+						if (ui.values[1] == ui.values[0] && ui.values[1] !== 120) {
+							ui.values[1] = ui.values[0] + 1;
+						}
+					} 
+					
+					// logic for minimum handle
+					if (handleIndex == 2) {
+						if (ui.values[0] == ui.values[1] && ui.values[0] !== 0) {
+							ui.values[0] = ui.values[1] - 1;
+						}
+					} 
+
+					// update the slider values
+					target.slider("values", ui.values);
+					sliderTooltip(event, ui, device.id);
+				},
+				change: function(event, ui) {
+					sliderTooltip(event, ui, device.id);
+
+					// update the ringGroup endpoint with new delay and timeout values
+					var endpoint = data.field_data.ring_group.endpoints.find(endpoint => endpoint.id === device.id);
+					if (endpoint) {
+						endpoint.delay = ui.values[0];
+						endpoint.timeout = ui.values[1] - ui.values[0];
+
+						// function to calculate the maximum delay + timeout across all endpoints
+						const getMaxDelayTimeoutSum = (endpoints) => {
+							return endpoints.reduce((maxSum, ep) => {
+								const currentSum = ep.delay + ep.timeout;
+								return currentSum > maxSum ? currentSum : maxSum;
+							}, 0);
+						};
+
+						// get the maximum delay + timeout sum
+						const maxDelayTimeoutSum = getMaxDelayTimeoutSum(data.field_data.ring_group.endpoints);
+
+						data.field_data.ring_group.timeout = maxDelayTimeoutSum;
+
+					}
+
+				}
+
+
+			});
+
+			var handles = target.find('.ui-slider-handle');
+			
+			handles.eq(0).attr('id', `min_handle_${deviceId}`);
+			handles.eq(1).attr('id', `max_handle_${deviceId}`);
+
+			// set default timer values
+			$(`#delay_value_${device.id}`).text('0s');
+			$(`#timeout_value_${device.id}`).text('120s');
+
+			// set default ring group timeout value
+			data.field_data.ring_group.timeout = 120;
+
+			createSliderScale(targetColumn); 
 		}
 
 	};

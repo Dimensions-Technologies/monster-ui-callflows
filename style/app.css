@@ -2216,6 +2216,24 @@
     -ms-overflow-style: none !important; /* ie and edge */
 }
 
+/* align dropdown field width with input fields */
+.callflows-port #conference_form .input select,
+.callflows-port #device-form .input select,
+.callflows-port #device-form .chosen-container-single, 
+.callflows-port #device-form .chosen-drop,
+.callflows-port #directory-form .input select,
+.callflows-port #faxbox_form .input select,
+.callflows-port #faxbox_form .chosen-container-single, 
+.callflows-port #faxbox_form .chosen-drop,
+.callflows-port #media-form .input select,
+.callflows-port #menu-form .input select,
+.callflows-port #user-form .input select,
+.callflows-port #user-form .chosen-container-single, 
+.callflows-port #user-form .chosen-drop,
+.callflows-port #vmbox-form .input select {
+    width: 224px !important;
+}
+
 /* hide monster alert warning triangle and header */
 /*
 .alert-dialog .dialog-content .dialog-header,
