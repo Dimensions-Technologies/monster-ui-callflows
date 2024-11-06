@@ -1273,7 +1273,7 @@ define(function(require) {
 
 								var updateUserCallflow = false,
 									callflowNode = {};
-
+								
 								// check if find me follow me is enabled
 								if (findMeFollowMe == true) {
 									
@@ -1324,8 +1324,9 @@ define(function(require) {
                 								ignore_forward: true,
 												endpoints: ringGroup.endpoints											
 											};
+											callback(null, updateUserCallflow, callflowNode);
 										} else {
-											callback(null);
+											callback(null, updateUserCallflow, callflowNode);
 										}
 									} else {
 										// update user callflow
@@ -1339,6 +1340,7 @@ define(function(require) {
 											ignore_forward: true,
 											endpoints: ringGroup.endpoints
 										};
+										callback(null, updateUserCallflow, callflowNode);
 									}
 								} else {
 									// check if find me follow me state has been changed
@@ -1355,11 +1357,15 @@ define(function(require) {
 											delay: 0,
                 							strategy: "simultaneous"
 										};
+										callback(null, updateUserCallflow, callflowNode);
 									} else {
-										callback(null);
+										callback(null, updateUserCallflow, callflowNode);
 									}
-
 								}
+
+							},
+
+							function(updateUserCallflow, callflowNode, callback) {
 
 								// does the users callflow needs to be updated it
 								if (updateUserCallflow) {
