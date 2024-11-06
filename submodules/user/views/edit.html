@@ -20,7 +20,13 @@
 		<li class="active"><a href="#basic">{{ i18n.callflows.user.basic }}</a></li>
 		<li><a href="#caller_id">{{ i18n.callflows.user.caller_id }}</a></li>
 		<li><a href="#phone_numbers">{{ i18n.callflows.user.phone_numbers }}</a></li>
-		<li><a href="#voicemail">{{ i18n.callflows.user.voicemail }}</a></li>
+		{{#unless miscSettings.userShowCallRoutingTab}}
+			<li><a href="#voicemail">{{ i18n.callflows.user.voicemail }}</a></li>
+			<li><a href="#find_me_follow_me">{{ i18n.callflows.user.find_me_follow_me.label }}</a></li>
+		{{/unless}}
+		{{#if miscSettings.userShowCallRoutingTab}}
+			<li><a href="#call_routing">{{ i18n.callflows.user.call_routing }}</a></li>
+		{{/if}}
 		<li><a href="#options">{{ i18n.callflows.user.options }}</a></li>
 		<li><a href="#call_forward">{{ i18n.callflows.user.call_forward }}</a></li>
 		{{#unless miscSettings.hideUserPasswordManagement}}
@@ -197,12 +203,12 @@
 					{{/unless}}
 					<div id="tab_devices">
 						<div class="row title">
-							<div class="column first">{{ i18n.callflows.user.device_name }}&nbsp;&nbsp;<span class="icon medium device"/></div>
-							<div class="column second">{{ i18n.callflows.user.type }}&nbsp;&nbsp;<span class="icon medium iphone" style="margin-bottom: 4px;"/></div>
-							<div class="column third">{{ i18n.callflows.user.status }}</div>
-							<div class="column fourth">{{ i18n.callflows.user.enabled }}</div>
+							<div class="column first title">{{ i18n.callflows.user.device_name }}&nbsp;&nbsp;<span class="icon medium device"/></div>
+							<div class="column second title">{{ i18n.callflows.user.type }}&nbsp;&nbsp;<span class="icon medium iphone" style="margin-bottom: 4px;"/></div>
+							<div class="column third title">{{ i18n.callflows.user.status }}</div>
+							<div class="column fourth title">{{ i18n.callflows.user.enabled }}</div>
 							{{#unless miscSettings.hideUserDeviceTableActions}}
-								<div class="column fifth">{{ i18n.callflows.user.actions }}&nbsp;&nbsp;<span class="icon medium settings" style="margin-bottom: 2px;"/></div>
+								<div class="column fifth title">{{ i18n.callflows.user.actions }}&nbsp;&nbsp;<span class="icon medium settings" style="margin-bottom: 2px;"/></div>
 							{{/unless}}
 						</div>
 						<div class="rows">
@@ -394,57 +400,155 @@
 				</div>
 			</div>
 
-			<div id="voicemail">
-				<h3>{{ i18n.callflows.user.voicemail_options }}</h3>
+			{{#unless miscSettings.userShowCallRoutingTab}}
+				<div id="voicemail">
+					<h3>{{ i18n.callflows.user.voicemail_options }}</h3>
 
-				<div class="clearfix">
-					<label for="user_voicemail">{{ i18n.callflows.user.voicemail }}</label>
-					<div class="input user-voicemail">
-						<select id="user_voicemail" name="user_voicemail" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
-							<option value="disabled">{{ i18n.callflows.user.voicemail_disabled }}</option>
-							<option value="enabled"{{#ifInArray 'voicemail' field_data.callflow_features}}selected {{/ifInArray}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
-						</select>
-					  	<div class="edit_create">
-							<a id="edit_link_vmbox" class="inline_action_vmbox" data-action="edit" href="#">{{ i18n.callflows.user.voicemail_edit }}</a>
-						</div>
-					</div>
-				</div>
-
-				{{#unless data.smartpbx.find_me_follow_me.enabled}}
 					<div class="clearfix">
-						<label for="ring_timeout">{{ i18n.callflows.user.ringing_timeout }}</label>
-						<div class="input ring-timeout">
-							<input class="span4" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_callflow.flow.data.timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_help }}"/>
+						<label for="user_voicemail">{{ i18n.callflows.user.voicemail }}</label>
+						<div class="input user-voicemail">
+							<select id="user_voicemail" name="user_voicemail" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+								<option value="disabled">{{ i18n.callflows.user.voicemail_disabled }}</option>
+								<option value="enabled"{{#ifInArray 'voicemail' field_data.callflow_features}}selected {{/ifInArray}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
+							</select>
+							<div class="edit_create">
+								<a id="edit_link_vmbox" class="inline_action_vmbox" data-action="edit" href="#">{{ i18n.callflows.user.voicemail_edit }}</a>
+							</div>
 						</div>
 					</div>
-				{{/unless}}
 
-				{{#if data.smartpbx.find_me_follow_me.enabled}}
 					<div class="clearfix">
 						<label for="ring_timeout">{{ i18n.callflows.user.ringing_timeout }}</label>
 						<div class="input ring-timeout">
 							<input disabled class="span4 input-readonly" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_callflow.flow.data.timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_fmfm_help }}"/>
 							{{#unless miscSettings.userRingTimeoutPresenceProfileHelp}}
-							<div>{{ i18n.callflows.user.ringing_timeout_disabled_help1 }}</div>
+							<div class="information-text">{{ i18n.callflows.user.ringing_timeout_disabled_help1 }}</div>
 							{{/unless}}
 							{{#if miscSettings.userRingTimeoutPresenceProfileHelp}}
-							<div>{{ i18n.callflows.user.ringing_timeout_disabled_help2 }}</div>
+							<div class="information-text">{{ i18n.callflows.user.ringing_timeout_disabled_help2 }}</div>
 							{{/if}}
 						</div>
 					</div>
-				{{/if}}
-				
-				<div class="clearfix">
-					<label for="vm_to_email_enabled">{{ i18n.callflows.user.email_notifications }}</label>
-					<div class="input">
-					<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
-						<option value="false"{{#compare data.vm_to_email_enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_disabled }}</option>
-						<option value="true"{{#compare data.vm_to_email_enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
-					</select>
+					
+					<div class="clearfix">
+						<label for="vm_to_email_enabled">{{ i18n.callflows.user.email_notifications }}</label>
+						<div class="input">
+						<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+							<option value="false"{{#compare data.vm_to_email_enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_disabled }}</option>
+							<option value="true"{{#compare data.vm_to_email_enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
+						</select>
+						</div>
 					</div>
+
 				</div>
+
+				<div id="find_me_follow_me">
+
+					<div class="clearfix">
+						<label for="find_me_follow_me">{{ i18n.callflows.user.find_me_follow_me.label }}</label>
+						<div class="input smart-pbx-find-me-follow-me">
+							<select id="smartpbx.find_me_follow_me.enabled" name="smartpbx.find_me_follow_me.enabled" class="medium" rel="popover">
+								<option value="false"{{#compare data.smartpbx.find_me_follow_me.enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.find_me_follow_me.state.disabled }}</option>
+								<option value="true"{{#compare data.smartpbx.find_me_follow_me.enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.find_me_follow_me.state.enabled }}</option>
+							</select>
+						</div>
+					</div>
+
+					<div id="tab_find_me_follow_me">
+						<div class="row title">
+							<div class="column first title">{{ i18n.callflows.user.find_me_follow_me.table.device }}</div>
+							<div class="column second title">{{ i18n.callflows.user.find_me_follow_me.table.delay }}</div>
+							<div class="column third title"></div>
+							<div class="column fourth title">{{ i18n.callflows.user.find_me_follow_me.table.timeout }}</div>
+							<div class="column fifth title">{{ i18n.callflows.user.find_me_follow_me.table.enabled }}</div>
+						</div>
+						<div class="rows">
+						</div>
+					</div>
+
+					{{#if miscSettings.userShowPresenceProfileWarning}}
+						<div class="information-text presence-profile-warning">
+							{{ i18n.callflows.user.find_me_follow_me.warning }}
+						</div>
+					{{/if}}
+
+				</div>
+			{{/unless}}
+			
+			{{#if miscSettings.userShowCallRoutingTab}}
+				<div id="call_routing">
+
+					<h3>{{ i18n.callflows.user.voicemail_options }}</h3>
+
+					<div class="clearfix">
+						<label for="user_voicemail">{{ i18n.callflows.user.voicemail }}</label>
+						<div class="input user-voicemail">
+							<select id="user_voicemail" name="user_voicemail" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+								<option value="disabled">{{ i18n.callflows.user.voicemail_disabled }}</option>
+								<option value="enabled"{{#ifInArray 'voicemail' field_data.callflow_features}}selected {{/ifInArray}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
+							</select>
+							<div class="edit_create">
+								<a id="edit_link_vmbox" class="inline_action_vmbox" data-action="edit" href="#">{{ i18n.callflows.user.voicemail_edit }}</a>
+							</div>
+						</div>
+					</div>
+
+					<div class="clearfix">
+						<label for="ring_timeout">{{ i18n.callflows.user.ringing_timeout }}</label>
+						<div class="input ring-timeout">
+							<input class="span4" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_callflow.flow.data.timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_fmfm_help }}"/>
+							{{#unless miscSettings.userRingTimeoutPresenceProfileHelp}}
+							<div class="information-text">{{ i18n.callflows.user.ringing_timeout_disabled_help1 }}</div>
+							{{/unless}}
+							{{#if miscSettings.userRingTimeoutPresenceProfileHelp}}
+							<div class="information-text">{{ i18n.callflows.user.ringing_timeout_disabled_help2 }}</div>
+							{{/if}}
+						</div>
+					</div>
+					
+					<div class="clearfix">
+						<label for="vm_to_email_enabled">{{ i18n.callflows.user.email_notifications }}</label>
+						<div class="input">
+						<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+							<option value="false"{{#compare data.vm_to_email_enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_disabled }}</option>
+							<option value="true"{{#compare data.vm_to_email_enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
+						</select>
+						</div>
+					</div>
+
+					<hr />
 				
-			</div>
+					<h3>{{ i18n.callflows.user.find_me_follow_me.title }}</h3>
+					<div class="clearfix">
+						<label for="find_me_follow_me">{{ i18n.callflows.user.find_me_follow_me.label }}</label>
+						<div class="input smart-pbx-find-me-follow-me">
+							<select id="smartpbx.find_me_follow_me.enabled" name="smartpbx.find_me_follow_me.enabled" class="medium" rel="popover">
+								<option value="false"{{#compare data.smartpbx.find_me_follow_me.enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.find_me_follow_me.state.disabled }}</option>
+								<option value="true"{{#compare data.smartpbx.find_me_follow_me.enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.find_me_follow_me.state.enabled }}</option>
+							</select>
+						</div>
+					</div>
+
+					<div id="tab_find_me_follow_me">
+						<div class="row title">
+							<div class="column first title">{{ i18n.callflows.user.find_me_follow_me.table.device }}</div>
+							<div class="column second title">{{ i18n.callflows.user.find_me_follow_me.table.delay }}</div>
+							<div class="column third title"></div>
+							<div class="column fourth title">{{ i18n.callflows.user.find_me_follow_me.table.timeout }}</div>
+							<div class="column fifth title">{{ i18n.callflows.user.find_me_follow_me.table.enabled }}</div>
+						</div>
+						<div class="rows">
+						</div>
+					</div>
+
+					{{#if miscSettings.userShowPresenceProfileWarning}}
+						<div class="information-text presence-profile-warning">
+							{{ i18n.callflows.user.find_me_follow_me.warning }}
+						</div>
+					{{/if}}
+
+				</div>
+			{{/if}}
 
 			<div id="options">
 				<h3>{{ i18n.callflows.user.standard_options }}</h3>

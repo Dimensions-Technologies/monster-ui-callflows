@@ -31,8 +31,9 @@
 	border: 2px solid #666666;
 	border-radius: 15px 15px 15px 15px;
 	color: #666666;
-	margin: 20px auto auto;
-	width: 600px;
+	/*margin: 20px auto auto; */
+	margin: 20px 60px; /* left align table */
+	width: 900px;
 }
 
 .callflows-port #user-form #equipment #tab_devices .action_device {
@@ -61,45 +62,26 @@
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.first {
-	width: 190px;
-	overflow: hidden;
-	text-align:center;
+	width: 25% !important;
+    overflow: hidden;
+	text-align: left;
+	text-indent: 25px;
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.second {
-	width: 99px;
+	width: 20% !important;
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.third {
-	min-width: 80px;
+	width: 20% !important;
 }
-
-/*
-.callflows-port #user-form #equipment #tab_devices .rows .column.third {
-	background-image: url('../../style/static/images/red_phone.png');
-	background-repeat: no-repeat;
-	background-position: 16px center;
-}
-
-.callflows-port #user-form #equipment #tab_devices .rows .column.third.registered,.callflows-port #user-form #equipment #tab_devices .rows .column.third.cellphone {
-	background-image: url('../../style/static/images/green_phone.png');
-}
-
-.callflows-port #user-form #equipment #tab_devices .rows .column.third.disabled {
-	background-image: url('../../style/static/images/gray_phone.png') !important;
-}
-*/
 
 .callflows-port #user-form #equipment #tab_devices .column.fourth {
-	width: 59px;
-}
-
-.callflows-port #user-form #equipment #tab_devices .column.fourth .enabled_checkbox {
-	margin-top: 8px;
+	width: 15% !important;
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.fifth {
-	width: 100px;
+	width: 18% !important;
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.merged {
@@ -117,6 +99,15 @@
 	border-bottom: 2px solid #666666 !important;
 	border-radius: 15px 15px 0px 0px;
 	font-weight: bold;
+}
+
+.callflows-port #user-form #equipment #tab_devices .column.first.title{
+	text-align: center;
+	text-indent: 0px;
+}
+
+.callflows-port #user-form #equipment #tab_devices .row.title .icon.medium {
+	display: none
 }
 
 .callflows-port #user-form #equipment #tab_devices .row:not(:last-child) {
@@ -243,3 +234,127 @@
 	padding-bottom: 0px !important;
 	margin-bottom: 8px !important;
 }
+
+/* find me follow me table formatting */
+.callflows-port #user-form #tab_find_me_follow_me {
+    border: 2px solid #666666;
+    border-radius: 15px;
+    color: #666666;
+	/*margin: 20px auto auto; */
+    margin: 20px 60px; /* left align table */
+    max-width: 920px;
+	
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .action_device {
+    color: #666666;
+    cursor: pointer;
+    text-decoration: underline;
+    line-height: 30px;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .action_device:not(:first-child) {
+    margin-left: 10px;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .action_device:hover {
+    color: #05addc;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column:not(.fifth) {
+    border-right: 1px solid #A6A6A6;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column {
+    float: left;
+    text-align: center;
+    height: 30px;
+    line-height: 30px;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column.first {
+    width: 25% !important;
+    overflow: hidden;
+	text-align: left;
+	text-indent: 25px;	
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column.second {
+    width: 7% !important;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column.third {
+    width: 50% !important;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column.fourth {
+    width: 7% !important;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column.fifth {
+    width: 10% !important;
+}
+
+.callflows-port #user-form  #tab_find_me_follow_me .row.title {
+	background-color: #dddddd !important;
+	border-bottom: 2px solid #666666 !important;
+	border-radius: 15px 15px 0px 0px;
+	font-weight: bold;
+}
+
+.callflows-port #user-form #tab_find_me_follow_me .column.first.title{
+	text-align: center;
+	text-indent: 0px;
+}
+
+.callflows-port #user-form  #tab_find_me_follow_me .row:not(:last-child) {
+	border-bottom: 1px solid #A6A6A6;
+}
+
+.callflows-port #user-form  #tab_find_me_follow_me .row:last-child {
+	border-radius: 0px 0px 15px 15px;
+}
+
+.callflows-port #user-form  #tab_find_me_follow_me .row:nth-child(odd) {
+	background-color: #eeeeee;
+}
+
+.callflows-port #user-form  #tab_find_me_follow_me .row:nth-child(even) {
+	background-color: #dddddd;
+}
+
+/* find me follow me slider formatting */
+.callflows-port #user-form  #tab_find_me_follow_me .slider-container .ui-widget-content {
+	width: 92%;
+	margin: auto;
+	margin-top: 8px;
+}
+
+.callflows-port #user-form  #tab_find_me_follow_me .slider-container .ui-widget-content .ui-state-hover,
+.callflows-port #user-form  #tab_find_me_follow_me .slider-container .ui-widget-content .ui-state-focus {
+    border: 1px solid #ccc;
+    background: #2297FF url(images/ui-bg_glass_100_f6f6f6_1x400.png) 50% 50% repeat-x;
+}
+
+
+/* format slider for dimensions */
+.callflows-port #user-form  #tab_find_me_follow_me .slider-container .ui-widget-content {
+    /*border: 1px solid #ddd;
+	background: #eee;*/
+	height: 5px;
+	margin-top: 12px;
+}
+
+.callflows-port #user-form  #tab_find_me_follow_me .slider-container .ui-widget-content .ui-slider-handle {
+	border-radius: 10px;
+	margin-top: -3px;
+}
+
+.callflows-port #user-form .information-text { 
+	font-size: 13px;
+}
+
+.callflows-port #user-form .presence-profile-warning {
+	margin-left: 40px;
+}
+

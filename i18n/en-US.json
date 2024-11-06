@@ -970,7 +970,23 @@
 			"phone_numbers": "Phone Numbers",
 			"phone_numbers_options": "Assigned Phone Numbers",
 			"phone_numbers_add": "Add Phone Number",
-			"phone_numbers_none": "This user currently has no assigned phone numbers"
+			"phone_numbers_none": "This user currently has no assigned phone numbers",
+			"call_routing": "Call Routing",
+			"find_me_follow_me": {
+				"title": "Find Me Follow Me Settings",
+				"label": "Find Me Follow Me",
+				"table": {
+					"device": "Device Name", 
+					"delay": "Delay",
+					"timeout": "Timeout",
+					"enabled": "Enabled"
+				},
+				"state": {
+					"enabled": "Enabled",
+					"disabled": "Disabled"
+				},
+				"warning": "Note: Find Me Follow Me settings will be updated based on the Presence Profile selected by the user"
+			} 
 		},
 		"vmbox": {
 			"voicemail": "Voicemail",
