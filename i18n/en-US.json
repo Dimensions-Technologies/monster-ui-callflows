@@ -990,7 +990,8 @@
 			"hotdesk": {
 				"title": "Hotdesk Settings",
 				"devices": "Hotdesk Devices",
-				"not_hotdesking": "This user is not currently logged into any hotdesk devices",
+				"is_hotdesking": "This user is currently hot desking on the following device",
+				"not_hotdesking": "This user is not currently hot desking on any device",
 				"table": {
 					"device": "Device Name",
 					"mac_address": "MAC Address",
