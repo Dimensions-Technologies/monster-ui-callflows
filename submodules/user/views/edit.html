@@ -906,7 +906,12 @@
 				{{#if field_data.hotdesk_enabled}}
 					<hr/>
 					<h3>{{ i18n.callflows.user.hotdesk.devices }}</h3>
-					<div id="hotdesk_devices" class="hotdesk-table">
+					
+					{{#if field_data.device_list}}
+						<div class="text">{{ i18n.callflows.user.hotdesk.is_hotdesking }}</div>
+					{{/if}}
+				
+					<div id="hotdesk_devices" class="hotdesk-table">						
 						{{#if field_data.device_list}}
 						<div class="row title">
 							<div class="column first title">{{ i18n.callflows.user.hotdesk.table.device }}</div>
