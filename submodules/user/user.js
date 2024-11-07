@@ -587,35 +587,98 @@ define(function(require) {
 					}
 				},
 				user_hotdesks: function(callback) {
+
 					if (typeof data === 'object' && data.id) {
-						self.callApi({
-							resource: 'user.hotdesks',
-							data: {
-								accountId: self.accountId,
-								userId: data.id
-							},
-							success: function(_data_devices) {
-								defaults.field_data.hotdesk_enabled = true;
-								defaults.field_data.device_list = {};
+						
+						if (miscSettings.userShowHotdeskStatus) {
 
-								$.each(_data_devices.data, function(k, v) {
-									defaults.field_data.device_list[v.device_id] = { name: v.device_name };
-								});
-
-								if ($.isEmptyObject(defaults.field_data.device_list)) {
-									delete defaults.field_data.device_list;
-								}
-
-								callback(null, _data_devices);
-							},
-							error: function(_data, status) {
-								//callback({api_name: 'Hotdesk'}, _data);
-								callback(null, defaults);
+							var filters = { 
+								paginate: false,
+								with_status: true,
+								has_key: 'hotdesk.users.' + data.id
 							}
-						});
+							
+							self.callApi({
+								resource: 'device.list',
+								data: {
+									accountId: self.accountId,
+									filters: filters
+								},
+							
+								success: function(_data_devices) {
+	
+									defaults.field_data.hotdesk_enabled = true;
+									defaults.field_data.device_list = {};
+	
+									var deviceList = {};
+	
+									$.each(_data_devices.data, function(k, v) {
+	
+										var hotdeskDevice = v,
+											deviceName = hotdeskDevice.name,
+											deviceMac = hotdeskDevice.mac_address,
+											deviceRegistered = hotdeskDevice.registered,
+											deviceRegistrable = hotdeskDevice.registrable,
+											deviceEnabled = hotdeskDevice.enabled;
+										
+										deviceList[v.id] = {
+											name: deviceName,
+											mac_address: deviceMac,
+											registered: deviceRegistered,
+											registrable: deviceRegistrable,
+											enabled: deviceEnabled
+										};
+		
+									});
+	
+									if (_data_devices.data.length > 0) {
+										defaults.field_data.device_list = deviceList;
+									} else {
+										delete defaults.field_data.device_list;
+									}
+	
+									callback(null, _data_devices);
+								},
+								error: function(_data, status) {
+									//callback({api_name: 'Hotdesk'}, _data);
+									callback(null, defaults);
+								}
+							});
+
+						} else {
+
+							self.callApi({
+								resource: 'user.hotdesks',
+								data: {
+									accountId: self.accountId,
+									userId: data.id
+								},
+								success: function(_data_devices) {
+									defaults.field_data.hotdesk_enabled = true;
+									defaults.field_data.device_list = {};
+	
+									$.each(_data_devices.data, function(k, v) {
+										defaults.field_data.device_list[v.device_id] = { name: v.device_name };
+									});
+	
+									if ($.isEmptyObject(defaults.field_data.device_list)) {
+										delete defaults.field_data.device_list;
+									}
+	
+									callback(null, _data_devices);
+								},
+								error: function(_data, status) {
+									//callback({api_name: 'Hotdesk'}, _data);
+									callback(null, defaults);
+								}
+							});
+
+						}
+
 					} else {
 						callback(null, defaults);
 					}
+					
 				}
 			}, monster.util.getCapability('caller_id.external_numbers').isEnabled && {
 				cidNumbers: function(next) {
@@ -886,6 +949,11 @@ define(function(require) {
 				}
 
 			});
+
+			// if user the user is logged into a hotdesk device update the table
+			if (data.field_data.device_list) {
+				self.userRenderHotdeskList(data, user_html);
+			}
 
 			monster.ui.validate(user_form, {
 				rules: {
@@ -1914,6 +1982,55 @@ define(function(require) {
 			}
 			
 			
+		},
+
+		userRenderHotdeskList: function(data, parent) {
+			var self = this,
+				parent = $('#hotdesk_devices', parent),
+				deviceList = data.field_data.device_list;
+							
+			// loop through each item in deviceList
+			for (var deviceId in deviceList) {
+				if (deviceList.hasOwnProperty(deviceId)) {
+					var device = deviceList[deviceId];
+					
+					if (miscSettings.enableConsoleLogging) {
+						console.log('Hotdesk Device', device);
+					}
+
+					$('#' + deviceId + ' .column.third', parent).removeClass('device-registered');
+					$('#' + deviceId + ' .column.third', parent).removeClass('device-offline');
+					$('#' + deviceId + ' .column.third', parent).removeClass('device-enabled');
+					$('#' + deviceId + ' .column.third', parent).removeClass('device-disabled');
+			
+					// Set 'Online' or 'Offline' based on the 'registered' status
+					if (device.enabled === undefined) {
+						$('#' + deviceId + ' .column.second', parent).text('Unknown');
+						$('#' + deviceId + ' .column.third', parent).text('Unknown');
+						$('#' + deviceId + ' .column.third', parent).addClass('device-unknown');
+					}
+
+					else if (!device.enabled) {
+						$('#' + deviceId + ' .column.third', parent).text('Disabled');
+						$('#' + deviceId + ' .column.third', parent).addClass('device-disabled');
+					}
+			
+					else if (device.enabled && !device.registrable) {
+						$('#' + deviceId + ' .column.third', parent).text('Enabled');
+						$('#' + deviceId + ' .column.third', parent).addClass('device-enabled');
+					}
+					
+					else if (device.enabled && device.registrable && device.registered) {
+						$('#' + deviceId + ' .column.third', parent).text('Registered');
+						$('#' + deviceId + ' .column.third', parent).addClass('device-registered');
+					}
+			
+					else {
+						$('#' + deviceId + ' .column.third', parent).text('Offline');
+						$('#' + deviceId + ' .column.third', parent).addClass('device-offline');
+					}
+				}
+			}
 		},
 
 		userMigrateData: function(data) {

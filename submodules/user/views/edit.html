@@ -827,6 +827,9 @@
 			{{/unless}}
 
 			<div id="hot_desking">
+
+				<h3>{{ i18n.callflows.user.hotdesk.title }}</h3>
+
 				<div class="clearfix">
 					<div class="input">
 						<ul class="inputs-list">
@@ -900,33 +903,30 @@
 					</div>
 				{{/unless}}
 
-
 				{{#if field_data.hotdesk_enabled}}
 					<hr/>
-
-					<h3>{{ i18n.callflows.user.devices_where_this_user }}</h3>
-
-					<!--<div class="help_box">In order to actually log out from the devices listed below, you need to tick the checkbox on the right of the device and then press the Save button!</div>-->
-
-					<div id="hotdesk_devices" class="small-table">
+					<h3>{{ i18n.callflows.user.hotdesk.devices }}</h3>
+					<div id="hotdesk_devices" class="hotdesk-table">
+						{{#if field_data.device_list}}
 						<div class="row title">
-							<div class="column">{{ i18n.callflows.user.devices }}&nbsp;&nbsp;<span class="icon medium device"/></div>
-							<!--<div class="column">Log out</div>-->
+							<div class="column first title">{{ i18n.callflows.user.hotdesk.table.device }}</div>
+							<div class="column second title">{{ i18n.callflows.user.hotdesk.table.mac_address }}</div>
+							<div class="column third title">{{ i18n.callflows.user.hotdesk.table.status }}</div>
 						</div>
 						<div class="rows">
-							{{#if field_data.device_list}}
-								{{#each field_data.device_list}}
-									<div id="row_hotdesk_{{@key}}" data-id="{{@key}}">
-										<div class="column">{{name}}</div>
-										<!-- <div class="column"><input type="checkbox" name="hotdesk.log_out[]" value="{{@key}}"></input></a></div> -->
-									</div>
-								{{/each}}
-							{{else}}
-								<div id="row_no_data">
-									<div class="column merged">{{ i18n.callflows.user.this_user_is_not_logged }}</div>
+							{{#each field_data.device_list}}
+								<div class="row" id="{{@key}}" data-id="{{@key}}">
+									<div class="column first">{{name}}</div>
+									<div class="column second">{{mac_address}}</div>
+									<div class="column third">{{registered}}</div>
 								</div>
-							{{/if}}
+							{{/each}}
 						</div>
+						{{else}}
+							<div id="row_no_data">
+								<div class="column merged">{{ i18n.callflows.user.hotdesk.not_hotdesking }}</div>
+							</div>
+						{{/if}}
 					</div>
 				{{/if}}
 			</div>
