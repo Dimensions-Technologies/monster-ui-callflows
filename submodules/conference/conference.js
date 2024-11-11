@@ -33,6 +33,7 @@ define(function(require) {
 				'conference[id=*]': {
 					name: self.i18n.active().callflows.conference.conference,
 					icon: 'conference',
+					google_icon: 'diversity_3',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'conference',
 					tip: self.i18n.active().callflows.conference.conference_tip,
@@ -144,6 +145,7 @@ define(function(require) {
 				'conference[]': {
 					name: self.i18n.active().callflows.conference.conference_service,
 					icon: 'conference',
+					google_icon: 'diversity_3',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'conference',
 					tip: self.i18n.active().callflows.conference.conference_service_tip,

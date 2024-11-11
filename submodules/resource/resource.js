@@ -24,6 +24,7 @@ define(function(require) {
 				'offnet[]': {
 					name: self.i18n.active().callflows.resource.global_carrier,
 					icon: 'offnet',
+					google_icon: 'cell_tower',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'offnet',
 					tip: self.i18n.active().callflows.resource.global_carrier_tip,
@@ -50,6 +51,7 @@ define(function(require) {
 				'resources[]': {
 					name: self.i18n.active().callflows.resource.account_carrier,
 					icon: 'resource',
+					google_icon: 'cell_tower',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'resources',
 					tip: self.i18n.active().callflows.resource.account_carrier_tip,

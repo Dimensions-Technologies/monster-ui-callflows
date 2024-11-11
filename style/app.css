@@ -369,9 +369,25 @@
 
 #ws_callflow .div_icon .module_name,
 .callflow-preview .div_icon .module_name {
-	text-transform: uppercase;
+	text-transform: none;
 	text-align: center;
 	padding-left: 4px;
+}
+
+#ws_callflow .div_icon .module_name.google_icons {
+	text-transform: none;
+	text-align: center;
+	padding-left: 4px;
+	line-height: 20px;
+}
+
+#ws_callflow .div_icon .module_name.google_icons.br {
+    margin-top: -2px !important;
+	line-height: 14px !important;
+}
+
+#ws_callflow .div_icon .material-symbols-icon-medium.icon-adjust {
+	margin-top: -3px;
 }
 
 #ws_callflow .details,
@@ -650,7 +666,15 @@
 #ws_callflow .tool_name,
 .callflow-preview .tool_name {
 	font-size: 11px;
-	line-height: 11px;
+	line-height: 12px;
+	margin-top: 0px;
+}
+
+#ws_callflow .tool_name.br,
+.callflow-preview .tool_name.br {
+	font-size: 11px;
+	line-height: 12px;
+	margin-top: -4px;
 }
 
 #ws_callflow .tools .category.inactive .content,

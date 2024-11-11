@@ -1,14 +1,23 @@
 <div class="node-options">
-	<div id="{{ node.id }}" class="delete"/>
+	{{#if miscSettings.enableGoogleIcons}}
+		<div id="{{ node.id }}" class="material-symbols-icon-node-delete">clear</div>
+	{{else}}
+		<div id="{{ node.id }}" class="delete"/>
+	{{/if}}
 	<div class="module">
 		<div class="div_icon">
-			<span class="icon {{ callflow.icon }}"/>
-			<span class="module_name">{{{ callflow.name }}}</span>
+			{{#if miscSettings.enableGoogleIcons}}
+				<span class="material-symbols-icon-medium">{{callflow.google_icon}}</span>
+				<span class="module_name google_icons">{{{ callflow.name }}}</span>
+			{{else}}
+				<span class="icon {{ callflow.icon }}"/>
+				<span class="module_name">{{{ callflow.name }}}</span>
+			{{/if}}
 		</div>
 		{{#compare callflow.name '===' "Callflow"}}
-		<div class="details"><a href="#">{{ node.caption }}</a></div>
+			<div class="details"><a href="#">{{ node.caption }}</a></div>
 		{{else}}
-		<div class="details">{{ node.caption }}</div>
+			<div class="details">{{ node.caption }}</div>
 		{{/compare}}
 	</div>
 	<div class="clear"/>

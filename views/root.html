@@ -1,7 +1,10 @@
 <div class="root">
 	<div class="top_bar">
-		<!-- <span class="name">{{ name }}</span><span class="edit_icon"/> -->
-		<span class="name">{{ name }}</span><span class="edit_icon" title="Edit callflow name"/>
+		{{#if miscSettings.enableGoogleIcons}}
+			<span class="name">{{ name }}</span><span class="material-symbols-icon-callflow-edit">edit_document</span>
+		{{else}}
+			<span class="name">{{ name }}</span><span class="edit_icon" title="Edit callflow name"/>
+		{{/if}}
 		<div class="tooltip"/>
 	</div>
 	<div class="content"></div>

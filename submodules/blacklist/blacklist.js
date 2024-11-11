@@ -71,7 +71,8 @@ define(function(require) {
 						$listNumbers.append($(self.getTemplate({
 							name: 'addNumber',
 							data: {
-								number: number
+								number: number,
+								miscSettings: miscSettings
 							},
 							submodule: 'blacklist'
 						})));
@@ -186,7 +187,8 @@ define(function(require) {
 							.prepend($(self.getTemplate({
 								name: 'addNumber',
 								data: {
-									number: number
+									number: number,
+									miscSettings: miscSettings
 								},
 								submodule: 'blacklist'
 							})));
@@ -216,7 +218,7 @@ define(function(require) {
 				}
 			});
 
-			$(template).delegate('.delete-number', 'click', function(e) {
+			$(template).delegate('.delete-number, .material-symbols-icon-blocklist-delete', 'click', function(e) {
 				$(this).parents('.number-wrapper').remove();
 			});
 

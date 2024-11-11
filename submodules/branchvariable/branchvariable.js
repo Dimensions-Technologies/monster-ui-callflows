@@ -21,6 +21,7 @@ define(function(require) {
 			var actions = {
 				'branch_variable[]': _.merge({
 					icon: 'arrow_sign',
+					google_icon: 'filter_arrow_right', 
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'branch_variable',
 					isUsable: 'true',

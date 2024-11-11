@@ -6,23 +6,111 @@
     src: url(../style/MaterialSymbolsOutlined.woff2) format('woff2');
 }
 
-/* small icon size */
-.material-symbols-small {
-    --font-size: 24px;
-}
-  
-/* medium icon size */
-.material-symbols-medium {
-    --font-size: 24px;
-}
-
-/* material symbols settings */
-.material-symbols-outlined {
+/* callflow toolbox search */
+#ws_cf_tools .material-symbols-icon-search-small {
     font-family: 'Material Symbols Outlined';
     font-weight: normal;
     font-style: normal;
-    font-size: var(--font-size);
+    font-size: 20px;
+    position: absolute;
+    margin: 2px 0 0 8px;
+}
+
+/* callflow header search */
+.entity-header .material-symbols-icon-search-small,
+.left-bar-container .material-symbols-icon-search-small {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    position: absolute;
+    margin: 4px 0 0 6px;
+}
+
+/* callflow root edit icon */
+.material-symbols-icon-callflow-edit {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* callflow node delete icon */
+.material-symbols-icon-number-delete {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    position: absolute;    
+    top: 0px;
+    right: 0px;
+    cursor: pointer;
+}
+
+/* blocklist delete icon */
+.material-symbols-icon-blocklist-delete {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ffffff !important;
+}
+
+/* callflow node delete icon */
+.material-symbols-icon-node-delete {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    position: absolute;    
+    top: 0px;
+    right: 0px;
+    cursor: pointer;
+}
+
+/* medium icon size */
+.material-symbols-medium {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
     line-height: 1;
+}
+
+/* medium icon size - used for toolbox */
+.material-symbols-icon-small {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    margin-top: 6px;
+}
+
+
+/* medium icon size - used for callflow */
+.material-symbols-icon-medium {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 38px;
     letter-spacing: normal;
     text-transform: none;
     display: inline-block;
@@ -32,3 +120,51 @@
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
 }
+
+/* callflow designer arrow */
+.material-symbols-callflow-arrow {
+    font-family: 'Material Symbols Outlined';
+    font-weight: 500;
+    font-style: normal;
+    font-size: 50px;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    line-height: 1;
+    transform: rotate(180deg);
+    color: #666666;
+}
+
+/* callflow designer arrow */
+.material-symbols-callflow-arrow-small {
+    font-family: 'Material Symbols Outlined';
+    font-weight: 500;
+    font-style: normal;
+    font-size: 50px;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    line-height: 1;
+    transform: rotate(180deg);
+    color: #666666;
+    padding-bottom: 1px;
+}
+
+/* callflow designer line */
+.material-symbols-callflow-line {
+    background-image: none !important;
+    height: 4px !important;      
+    background-color: #666666;
+    margin-top: -48px !important;
+}
+
