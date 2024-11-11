@@ -830,6 +830,7 @@ define(function(require) {
 				'temporal_route[]': {
 					name: self.i18n.active().callflows.timeofday.time_of_day,
 					icon: 'temporal_route',
+					google_icon: 'schedule',
 					category: self.i18n.active().callflows.timeofday.time_of_day_cat,
 					module: 'temporal_route',
 					data: {},
@@ -965,6 +966,7 @@ define(function(require) {
 				'temporal_route[action=disable]': {
 					name: self.i18n.active().callflows.timeofday.disable_time_of_day,
 					icon: 'temporal_route',
+					google_icon: 'history_toggle_off',
 					category: self.i18n.active().callflows.timeofday.time_of_day_cat,
 					module: 'temporal_route',
 					data: {
@@ -1063,6 +1065,7 @@ define(function(require) {
 				'temporal_route[action=enable]': {
 					name: self.i18n.active().callflows.timeofday.enable_time_of_day,
 					icon: 'temporal_route',
+					google_icon: 'schedule',
 					category: self.i18n.active().callflows.timeofday.time_of_day_cat,
 					module: 'temporal_route',
 					data: {
@@ -1161,6 +1164,7 @@ define(function(require) {
 				'temporal_route[action=reset]': {
 					name: self.i18n.active().callflows.timeofday.reset_time_of_day,
 					icon: 'temporal_route',
+					google_icon: 'history',
 					category: self.i18n.active().callflows.timeofday.time_of_day_cat,
 					module: 'temporal_route',
 					data: {

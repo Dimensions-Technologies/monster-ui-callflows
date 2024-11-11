@@ -10,7 +10,11 @@
 					{{ numbers.[0] }}
 				{{/compare}}
 			{{/compare}}
-			<span class="delete"/>
+			{{#if miscSettings.enableGoogleIcons}}
+				<span class="material-symbols-icon-number-delete">clear</span>
+			{{else}}
+				<span class="delete"/>
+			{{/if}}
 		</div>
 
 		<div class="number_column second" data-number="{{numbers.[1]}}">
@@ -23,7 +27,11 @@
 					{{ numbers.[1] }}
 				{{/compare}}
 			{{/compare}}
-			<span class="delete"/>
+			{{#if miscSettings.enableGoogleIcons}}
+				<span class="material-symbols-icon-number-delete">clear</span>
+			{{else}}
+				<span class="delete"/>
+			{{/if}}
 		</div>
 	{{else}}
 		{{#if numbers.[0]}}
@@ -37,7 +45,11 @@
 						{{ numbers.[0] }}
 					{{/compare}}
 				{{/compare}}
-				<span class="delete"/>
+				{{#if miscSettings.enableGoogleIcons}}
+					<span class="material-symbols-icon-number-delete">clear</span>
+				{{else}}
+					<span class="delete"/>
+				{{/if}}
 			</div>
 			<div class="number_column empty second">{{ i18n.oldCallflows.click_to_add_number }}</div>
 		{{else}}

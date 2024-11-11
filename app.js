@@ -2082,7 +2082,8 @@ define(function(require) {
 							node_html = $(self.getTemplate({
 								name: 'root',
 								data: {
-									name: flow.name || 'Callflow'
+									name: flow.name || 'Callflow',
+									miscSettings: miscSettings
 								}
 							}));
 
@@ -2093,7 +2094,8 @@ define(function(require) {
 									row = $(self.getTemplate({
 										name: 'rowNumber',
 										data: {
-											numbers: numbers
+											numbers: numbers,
+											miscSettings: miscSettings
 										}
 									}));
 
@@ -2106,11 +2108,21 @@ define(function(require) {
 								name: 'node',
 								data: {
 									node: node,
-									callflow: self.actions[node.actionName]
+									callflow: self.actions[node.actionName],
+									miscSettings: miscSettings
 								}
 							}));
 						}
 						$(this).append(node_html);
+
+						// check for <br> tags in .module_name and add class if present
+						$node.find('.module_name').each(function() {
+							if ($(this).html().includes('<br>') && !$(this).hasClass('br')) {
+								$(this).addClass('br');
+								$(this).siblings('.material-symbols-icon-medium').addClass('icon-adjust');
+							}
+						});
+
 					});
 				}
 			});
@@ -2139,11 +2151,12 @@ define(function(require) {
 					node_html = $(self.getTemplate({
 						name: 'root',
 						data: {
-							name: self.flow.name || 'Callflow'
+							name: self.flow.name || 'Callflow',
+							miscSettings: miscSettings
 						}
 					}));
 
-					$('.edit_icon', node_html).click(function() {
+					$('.edit_icon, .material-symbols-icon-callflow-edit', node_html).click(function() {
 						self.flow = $.extend(true, { contact_list: { exclude: false } }, self.flow);
 
 						var dialogTemplate = $(self.getTemplate({
@@ -2189,7 +2202,8 @@ define(function(require) {
 										return _.startsWith('+', number)
 											? monster.util.formatPhoneNumber(number)
 											: number;
-									})
+									}),
+									miscSettings: miscSettings
 								}
 							}));
 
@@ -2301,7 +2315,7 @@ define(function(require) {
 						});
 					});
 
-					$('.number_column .delete', node_html).click(function() {
+					$('.number_column .delete, .number_column .material-symbols-icon-number-delete', node_html).click(function() {
 						var number = $(this).parent('.number_column').data('number') + '',
 							index = $.inArray(number, self.flow.numbers);
 
@@ -2316,9 +2330,18 @@ define(function(require) {
 						name: 'node',
 						data: {
 							node: node,
-							callflow: self.actions[node.actionName]
+							callflow: self.actions[node.actionName],
+							miscSettings: miscSettings
 						}
 					}));
+
+					// check for <br> tags in .module_name and add class if present
+					node_html.find('.module_name').each(function() {
+						if ($(this).html().includes('<br>') && !$(this).hasClass('br')) {
+							$(this).addClass('br');
+							$(this).siblings('.material-symbols-icon-medium').addClass('icon-adjust');
+						}
+					});
 
 					// If an API request takes some time, the user can try to re-click on the element, we do not want to let that re-fire a request to the back-end.
 					// So we set a 500ms debounce wait that will prevent any other interaction with the callflow element.
@@ -2595,7 +2618,7 @@ define(function(require) {
 			});		
 
 			// delete a callflow action
-			$('.node-options .delete', layout).click(function() {
+			$('.node-options .delete, .node-options .material-symbols-icon-node-delete', layout).click(function() {
 
 				var validActionNames = [
 					'menu[id=*]', 
@@ -2670,7 +2693,8 @@ define(function(require) {
 					name: 'branch',
 					data: {
 						node: branch,
-						display_key: branch.parent && ('key_caption' in self.actions[branch.parent.actionName])
+						display_key: branch.parent && ('key_caption' in self.actions[branch.parent.actionName]),
+						miscSettings: miscSettings
 					}
 				})),
 				children;
@@ -2901,7 +2925,10 @@ define(function(require) {
 
 			tools = $(self.getTemplate({
 				name: 'tools',
-				data: dataTemplate
+				data: {
+					...dataTemplate,
+					miscSettings: miscSettings
+				}
 			}));
 
 			// set the basic drawer to open
@@ -2921,6 +2948,13 @@ define(function(require) {
 
 			var help_box = $('.callflow_helpbox_wrapper', '#callflow-view').first(),
 				$allActions = tools.find('.tool');
+
+			// Check for <br> tags in .tool_name and add class if present
+			$allActions.find('.tool_name').each(function() {
+				if ($(this).html().includes('<br>')) {
+					$(this).addClass('br');
+				}
+			});	
 
 			tools.find('.search-query').on('keyup', function() {
 				// debounce executes a function after a delay if it hasn't been called again

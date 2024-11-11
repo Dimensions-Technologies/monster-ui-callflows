@@ -33,6 +33,7 @@ define(function(require) {
 				'faxbox[id=*]': {
 					name: self.i18n.active().callflows.faxbox.faxboxes_label,
 					icon: 'printer2',
+					google_icon: 'fax',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'faxbox',
 					tip: self.i18n.active().callflows.faxbox.faxbox_tip,

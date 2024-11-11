@@ -24,6 +24,7 @@ define(function(require) {
 				'qubicle[id=*]': {
 					name: self.i18n.active().callflows.qubicle.qubicle,
 					icon: 'support',
+					google_icon: 'support_agent',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'qubicle',
 					tip: self.i18n.active().callflows.qubicle.qubicle_tip,
