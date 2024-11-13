@@ -809,6 +809,7 @@
 			"caller_id": "Caller ID",
 			"options": "Options",
 			"call_forward": "Call Forward",
+			"call_forward_options": "Call Forward Settings",
 			"password_management": "Password Management",
 			"hot_desking": "Hot Desking",
 			"restrictions": "Call Restrictions",

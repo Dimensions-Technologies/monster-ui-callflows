@@ -460,3 +460,7 @@
 	color: #e6e6e6;
 	font-size: 13px;
 }
+
+#call_forward_direct_calls_only {
+	margin-bottom: 20px;
+}
