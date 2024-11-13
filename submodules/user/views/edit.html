@@ -28,7 +28,9 @@
 			<li><a href="#call_routing">{{ i18n.callflows.user.call_routing }}</a></li>
 		{{/if}}
 		<li><a href="#options">{{ i18n.callflows.user.options }}</a></li>
-		<li><a href="#call_forward">{{ i18n.callflows.user.call_forward }}</a></li>
+		{{#unless miscSettings.userShowCallRoutingTab}}
+			<li><a href="#call_forward">{{ i18n.callflows.user.call_forward }}</a></li>
+		{{/unless}}
 		{{#unless miscSettings.hideUserPasswordManagement}}
 			<li><a href="#password_management">{{ i18n.callflows.user.password_management }}</a></li>
 		{{/unless}}
@@ -478,6 +480,129 @@
 			{{#if miscSettings.userShowCallRoutingTab}}
 				<div id="call_routing">
 
+					<h3>{{ i18n.callflows.user.call_forward_options }}</h3>
+
+					<div id="call_forward">
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.enable_call_forward_data_content }}">
+												{{#if data.call_forward.enabled}}
+													<input type="checkbox" id="call_forward_enabled" name="call_forward.enabled" checked="checked" rel="popover" data-content=""/>
+												{{else}}
+													<input type="checkbox" id="call_forward_enabled" name="call_forward.enabled" rel="popover" data-content=""/>
+												{{/if}}
+												<span>{{ i18n.callflows.user.enable_call_forward }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+		
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.failover_callforward_content }}">
+												<input type="checkbox" id="call_failover" name="call_failover.enabled"{{#if data.call_failover.enabled}} checked="checked"{{/if}}/>
+												<span>{{ i18n.callflows.user.failover_callforward }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+		
+						<div class="clearfix">
+							<label for="call_forward_number">{{ i18n.callflows.user.redirect_calls_to }}</label>
+							<div class="input">
+								<input class="span4" id="call_forward_number" name="call_forward.number" type="text" placeholder="+1415555555" value="{{data.call_forward.number}}" rel="popover" data-content="{{ i18n.callflows.user.redirect_calls_to_data_content }}"/>
+							</div>
+						</div>
+		
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.bypass_users_phones_data_content }}">
+												{{#if data.call_forward.substitute}}
+													<input type="checkbox" id="call_forward_substitute" name="call_forward.substitute" checked="checked" />
+												{{else}}
+													<input type="checkbox" id="call_forward_substitute" name="call_forward.substitute"/>
+												{{/if}}
+												<span>{{ i18n.callflows.user.bypass_users_phones }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+		
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.require_key_press_data_content }}">
+												{{#if data.call_forward.require_keypress}}
+													<input type="checkbox" id="call_forward_require_keypress" name="call_forward.require_keypress" checked="checked"/>
+												{{else}}
+													<input type="checkbox" id="call_forward_require_keypress" name="call_forward.require_keypress" />
+												{{/if}}
+												<span>{{ i18n.callflows.user.require_key_press }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+		
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.keep_caller_id_data_content }}">
+												{{#if data.call_forward.keep_caller_id}}
+													<input type="checkbox" id="call_forward_keep_caller_id" name="call_forward.keep_caller_id" checked="checked" />
+												{{else}}
+													<input type="checkbox" id="call_forward_keep_caller_id" name="call_forward.keep_caller_id"/>
+												{{/if}}
+												<span>{{ i18n.callflows.user.keep_caller_id }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+		
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.direct_calls_only_data_content }}">
+												{{#if data.call_forward.direct_calls_only}}
+													<input type="checkbox" id="call_forward_direct_calls_only" name="call_forward.direct_calls_only" checked="checked" />
+												{{else}}
+													<input type="checkbox" id="call_forward_direct_calls_only" name="call_forward.direct_calls_only" />
+												{{/if}}
+												<span>{{ i18n.callflows.user.direct_calls_only }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<hr />
+
 					<h3>{{ i18n.callflows.user.voicemail_options }}</h3>
 
 					<div class="clearfix">
@@ -687,125 +812,126 @@
 
 			</div>
 			
+			{{#unless miscSettings.userShowCallRoutingTab}}
+				<div id="call_forward">
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.enable_call_forward_data_content }}">
+											{{#if data.call_forward.enabled}}
+												<input type="checkbox" id="call_forward_enabled" name="call_forward.enabled" checked="checked" rel="popover" data-content=""/>
+											{{else}}
+												<input type="checkbox" id="call_forward_enabled" name="call_forward.enabled" rel="popover" data-content=""/>
+											{{/if}}
+											<span>{{ i18n.callflows.user.enable_call_forward }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
 
-			<div id="call_forward">
-				<div class="clearfix">
-					<div class="input">
-						<ul class="inputs-list">
-							<li>
-								<label>
-									<span rel="popover" data-content="{{ i18n.callflows.user.enable_call_forward_data_content }}">
-										{{#if data.call_forward.enabled}}
-											<input type="checkbox" id="call_forward_enabled" name="call_forward.enabled" checked="checked" rel="popover" data-content=""/>
-										{{else}}
-											<input type="checkbox" id="call_forward_enabled" name="call_forward.enabled" rel="popover" data-content=""/>
-										{{/if}}
-										<span>{{ i18n.callflows.user.enable_call_forward }}</span>
-									</span>
-								</label>
-							</li>
-						</ul>
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.failover_callforward_content }}">
+											<input type="checkbox" id="call_failover" name="call_failover.enabled"{{#if data.call_failover.enabled}} checked="checked"{{/if}}/>
+											<span>{{ i18n.callflows.user.failover_callforward }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="clearfix">
+						<label for="call_forward_number">{{ i18n.callflows.user.redirect_calls_to }}</label>
+						<div class="input">
+							<input class="span4" id="call_forward_number" name="call_forward.number" type="text" placeholder="+1415555555" value="{{data.call_forward.number}}" rel="popover" data-content="{{ i18n.callflows.user.redirect_calls_to_data_content }}"/>
+						</div>
+					</div>
+
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.bypass_users_phones_data_content }}">
+											{{#if data.call_forward.substitute}}
+												<input type="checkbox" id="call_forward_substitute" name="call_forward.substitute" checked="checked" />
+											{{else}}
+												<input type="checkbox" id="call_forward_substitute" name="call_forward.substitute"/>
+											{{/if}}
+											<span>{{ i18n.callflows.user.bypass_users_phones }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.require_key_press_data_content }}">
+											{{#if data.call_forward.require_keypress}}
+												<input type="checkbox" id="call_forward_require_keypress" name="call_forward.require_keypress" checked="checked"/>
+											{{else}}
+												<input type="checkbox" id="call_forward_require_keypress" name="call_forward.require_keypress" />
+											{{/if}}
+											<span>{{ i18n.callflows.user.require_key_press }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.keep_caller_id_data_content }}">
+											{{#if data.call_forward.keep_caller_id}}
+												<input type="checkbox" id="call_forward_keep_caller_id" name="call_forward.keep_caller_id" checked="checked" />
+											{{else}}
+												<input type="checkbox" id="call_forward_keep_caller_id" name="call_forward.keep_caller_id"/>
+											{{/if}}
+											<span>{{ i18n.callflows.user.keep_caller_id }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.direct_calls_only_data_content }}">
+											{{#if data.call_forward.direct_calls_only}}
+												<input type="checkbox" id="call_forward_direct_calls_only" name="call_forward.direct_calls_only" checked="checked" />
+											{{else}}
+												<input type="checkbox" id="call_forward_direct_calls_only" name="call_forward.direct_calls_only" />
+											{{/if}}
+											<span>{{ i18n.callflows.user.direct_calls_only }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
 					</div>
 				</div>
-
-				<div class="clearfix">
-					<div class="input">
-						<ul class="inputs-list">
-							<li>
-								<label>
-									<span rel="popover" data-content="{{ i18n.callflows.user.failover_callforward_content }}">
-										<input type="checkbox" id="call_failover" name="call_failover.enabled"{{#if data.call_failover.enabled}} checked="checked"{{/if}}/>
-										<span>{{ i18n.callflows.user.failover_callforward }}</span>
-									</span>
-								</label>
-							</li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="clearfix">
-					<label for="call_forward_number">{{ i18n.callflows.user.redirect_calls_to }}</label>
-					<div class="input">
-						<input class="span4" id="call_forward_number" name="call_forward.number" type="text" placeholder="+1415555555" value="{{data.call_forward.number}}" rel="popover" data-content="{{ i18n.callflows.user.redirect_calls_to_data_content }}"/>
-					</div>
-				</div>
-
-				<div class="clearfix">
-					<div class="input">
-						<ul class="inputs-list">
-							<li>
-								<label>
-									<span rel="popover" data-content="{{ i18n.callflows.user.bypass_users_phones_data_content }}">
-										{{#if data.call_forward.substitute}}
-											<input type="checkbox" id="call_forward_substitute" name="call_forward.substitute" checked="checked" />
-										{{else}}
-											<input type="checkbox" id="call_forward_substitute" name="call_forward.substitute"/>
-										{{/if}}
-										<span>{{ i18n.callflows.user.bypass_users_phones }}</span>
-									</span>
-								</label>
-							</li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="clearfix">
-					<div class="input">
-						<ul class="inputs-list">
-							<li>
-								<label>
-									<span rel="popover" data-content="{{ i18n.callflows.user.require_key_press_data_content }}">
-										{{#if data.call_forward.require_keypress}}
-											<input type="checkbox" id="call_forward_require_keypress" name="call_forward.require_keypress" checked="checked"/>
-										{{else}}
-											<input type="checkbox" id="call_forward_require_keypress" name="call_forward.require_keypress" />
-										{{/if}}
-										<span>{{ i18n.callflows.user.require_key_press }}</span>
-									</span>
-								</label>
-							</li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="clearfix">
-					<div class="input">
-						<ul class="inputs-list">
-							<li>
-								<label>
-									<span rel="popover" data-content="{{ i18n.callflows.user.keep_caller_id_data_content }}">
-										{{#if data.call_forward.keep_caller_id}}
-											<input type="checkbox" id="call_forward_keep_caller_id" name="call_forward.keep_caller_id" checked="checked" />
-										{{else}}
-											<input type="checkbox" id="call_forward_keep_caller_id" name="call_forward.keep_caller_id"/>
-										{{/if}}
-										<span>{{ i18n.callflows.user.keep_caller_id }}</span>
-									</span>
-								</label>
-							</li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="clearfix">
-					<div class="input">
-						<ul class="inputs-list">
-							<li>
-								<label>
-									<span rel="popover" data-content="{{ i18n.callflows.user.direct_calls_only_data_content }}">
-										{{#if data.call_forward.direct_calls_only}}
-											<input type="checkbox" id="call_forward_direct_calls_only" name="call_forward.direct_calls_only" checked="checked" />
-										{{else}}
-											<input type="checkbox" id="call_forward_direct_calls_only" name="call_forward.direct_calls_only" />
-										{{/if}}
-										<span>{{ i18n.callflows.user.direct_calls_only }}</span>
-									</span>
-								</label>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
+			{{/unless}}
 
 			{{#unless miscSettings.hideUserPasswordManagement}}
 				<div id="password_management">
