@@ -43,6 +43,17 @@ define(function(require) {
 
 			self.groupsRenderEndpointList(data, groups_html);
 
+			// after rendering the rows apply odd/even classes
+			self.groupsRenderTable(groups_html);
+
+			$('#tab_users > .rows', groups_html).sortable({
+				handle: '.column.first',
+				update: function(event, ui) {
+					// reapply odd/even classes after sorting
+					self.groupsRenderTable(groups_html);
+				}
+			});
+			
 			$('.group-save', groups_html).click(function(ev) {
 				saveButtonEvents(ev);
 			});
@@ -155,12 +166,15 @@ define(function(require) {
 
 			$('#select_user_id', groups_html).change(function() {
 				add_user();
+				self.groupsRenderTable(groups_html);
 			});
 			$('#select_device_id', groups_html).change(function() {
 				add_device();
+				self.groupsRenderTable(groups_html);
 			});
 
 			groups_html.find('#group-form').on('click', '.action_endpoint.delete', function() {
+
 				var endpoint_id = $(this).data('id');
 				//removes it from the grid
 				$('#row_endpoint_' + endpoint_id, groups_html).remove();
@@ -185,12 +199,18 @@ define(function(require) {
 				});
 
 				data.data.endpoints = new_list;
+
+				// reapply odd/even classes after the deletion
+				self.groupsRenderTable(groups_html);
+
 			});
 
 			(target)
 				.empty()
 				.append(groups_html);
 		},
+
+		
 		
 
 		
@@ -281,7 +301,10 @@ define(function(require) {
 					$('.rows', parent)
 						.append($(self.getTemplate({
 							name: 'endpoint_row',
-							data: item,
+							data: {
+								...item,
+								miscSettings: miscSettings
+							},
 							submodule: 'groups'
 						})));
 					$('#option_endpoint_' + item.endpoint_id, parent).hide();
@@ -2461,6 +2484,7 @@ define(function(require) {
 					filters: deviceFilters
 				}, args.data),
 				success: function(data, status) {
+					data.data.sort((a, b) => a.name.localeCompare(b.name));
 					args.hasOwnProperty('success') && args.success(data.data);
 				},
 				error: function(parsedError) {
@@ -2492,7 +2516,19 @@ define(function(require) {
 			if (!data.id) {
 				$('.delete', '.entity-header-buttons').addClass('disabled');
 			}
+		},
+
+		groupsRenderTable: function(groups_html) {
+			$('#tab_users > .rows .row', groups_html).each(function(index, element) {
+				$(element).removeClass('row-odd row-even');
+				if (index % 2 === 0) {
+					$(element).addClass('row-even');
+				} else {
+					$(element).addClass('row-odd');
+				}
+			})
 		}
+
 	};
 
 	return app;
