@@ -15,9 +15,11 @@
 		</div>
 	</div>
 	<div>
-		<ul class="tabs" data-tabs="tabs">
-			<li class="active"><a href="#basic">{{ i18n.callflows.timeofday.basic }}</a></li>
-		</ul>
+		{{#unless miscSettings.hideBasicTabButton}}
+			<ul class="tabs" data-tabs="tabs">
+				<li class="active"><a href="#basic">{{ i18n.callflows.timeofday.basic }}</a></li>
+			</ul>
+		{{/unless}}
 		<form action="#" id="timeofday-form">
 			<div class="pill-content">
 				<div class="active basic_view" id="basic">

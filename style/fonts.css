@@ -58,6 +58,16 @@
     color: #ffffff !important;
 }
 
+/* blocklist delete icon */
+.material-symbols-icon-groups-delete {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    cursor: pointer;
+    color: #000000 !important;
+}
+
 /* callflow node delete icon */
 .material-symbols-icon-node-delete {
     font-family: 'Material Symbols Outlined';

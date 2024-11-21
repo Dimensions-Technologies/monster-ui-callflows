@@ -859,7 +859,6 @@ define(function(require) {
 						return '*'+number;
 					}
 				},
-
 				'sound_test_service': {
 					name: 'Sound Test Service',
 					icon: 'phone',
