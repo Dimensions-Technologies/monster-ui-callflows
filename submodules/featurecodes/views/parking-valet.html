@@ -1,23 +1,26 @@
 <div id="parking_settings_popup" class="dialog_popup callflows-port">
-	<div class="info-settings">
-		{{#monsterText 'info'}}
-			{{ i18n.callflows.featureCodes.infoSettings }}
-		{{/monsterText}}
-	</div>
+	
+	{{#unless miscSettings.enableParkDefaultTimeout}}
+		<div class="info-settings">
+			{{#monsterText 'info'}}
+				{{ i18n.callflows.featureCodes.infoSettings }}
+			{{/monsterText}}
+		</div>
+	{{/unless}}
 
 	<form id="form_valet" name="form" class="form-horizontal" method="post" action="#">
 		<div class="form_content">
 			<div class="control-group">
 				<label class="control-label">{{ i18n.callflows.featureCodes.parkingValetPopup.ringBackTimeout.label }}<i class="help-popover fa fa-question-circle" data-original-title="{{ i18n.callflows.featureCodes.parkingValetPopup.ringBackTimeout.tooltip}}" data-placement="right" data-toggle="tooltip"></i></label>
 				<div class="controls">
-					<input type="text" name="default_ringback_timeout" value="{{ default_ringback_timeout }}"/>
+					<input type="text" id="default_ringback_timeout" name="default_ringback_timeout" value="{{#if default_ringback_timeout}}{{default_ringback_timeout}}{{else}}{{#if miscSettings.enableParkDefaultTimeout}}120{{/if}}{{/if}}" />
 				</div>
 			</div>
 
 			<div class="control-group">
 				<label class="control-label">{{ i18n.callflows.featureCodes.parkingValetPopup.callbackTimeout.label }}<i class="help-popover fa fa-question-circle" data-original-title="{{ i18n.callflows.featureCodes.parkingValetPopup.callbackTimeout.tooltip}}" data-placement="right" data-toggle="tooltip"></i></label>
 				<div class="controls">
-					<input type="text" name="default_callback_timeout" value="{{ default_callback_timeout }}"/>
+					<input type="text" id="default_callback_timeout" name="default_callback_timeout" value="{{#if default_callback_timeout}}{{default_callback_timeout}}{{else}}{{#if miscSettings.enableParkDefaultTimeout}}30{{/if}}{{/if}}" />
 				</div>
 			</div>
 	</form>
