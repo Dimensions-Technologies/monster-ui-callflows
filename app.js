@@ -19,7 +19,8 @@ define(function(require) {
 		afterBridgeTransfer = {},
 		callflowFlags = [],
 		callTags = [],
-		contactDirectories = [];
+		contactDirectories = [],
+		hideFeatureCode = {};
 
 	var appSubmodules = [
 		'afterbridge',
@@ -230,6 +231,17 @@ define(function(require) {
 							if (data.dimension.dt_callflows.hasOwnProperty('afterBridgeTransfer')) {
 								afterBridgeTransfer = data.dimension.dt_callflows.afterBridgeTransfer
 							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('hideFeatureCode')) {															
+								// support for original hideFeatureCode format
+								if (Array.isArray(data.dimension.dt_callflows.hideFeatureCode)) {
+									data.dimension.dt_callflows.hideFeatureCode.forEach(function(action) {
+										hideFeatureCode[action] = true;
+									});
+								} else {
+									hideFeatureCode = data.dimension.dt_callflows.hideFeatureCode;
+								}
+							}
 						}
 
 					}
@@ -287,6 +299,7 @@ define(function(require) {
 						console.log('callTags:', callTags);
 						console.log('contactDirectories', contactDirectories);
 						console.log('accountData:', accountData);
+						console.log('hideFeatureCode:', hideFeatureCode);
 					}
 
 					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories });
@@ -632,7 +645,8 @@ define(function(require) {
 					monster.pub('callflows.featurecode.render', {
 						target: template.find('.callflow-edition'),
 						data: {
-							miscSettings: miscSettings
+							miscSettings: miscSettings,
+							hideFeatureCode: hideFeatureCode
 						}
 					});
 					

@@ -46,3 +46,12 @@
 #parking_settings_popup label.monster-invalid {
 	margin-top: 0;
 }
+
+#featurecode_view .input-disabled {
+	background-color: #eeeeee;
+}
+
+#featurecode_view .control-label {
+    width: 200px;
+	padding-right: 20px;
+}
