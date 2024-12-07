@@ -13,7 +13,7 @@ define(function(require) {
 		miscSettings = {},
 		hideDeviceTypes = {},
 		ttsLanguages = {},
-		selectedItemId = null,
+		//selectedItemId = null,
 		deviceAudioCodecs = {},
 		deviceVideoCodecs = {},
 		afterBridgeTransfer = {},
@@ -407,7 +407,7 @@ define(function(require) {
 
 		bindCallflowsEvents: function(template, container) {
 			var self = this,
-				callflowList = template.find('.list-container .list'),
+				callflowList = template.find('.callflow-manager .list-container .list'),
 				isLoading = false,
 				loader = $('<li class="content-centered list-loader"> <i class="fa fa-spinner fa-spin"></i></li>'),
 				searchLink = $(self.getTemplate({
@@ -426,10 +426,8 @@ define(function(require) {
 					.removeClass('listing-mode')
 					.addClass('edition-mode');
 				
-				if (miscSettings.enableSelectedElementColor) {
-					$('.list-element').removeClass('selected-element');
-				}
-
+				$('.list-element').removeClass('selected-element');
+				
 				self.editCallflow();
 			});
 
@@ -438,10 +436,8 @@ define(function(require) {
 				var $this = $(this),
 					callflowId = $this.data('id');
 
-				if (miscSettings.enableSelectedElementColor) {
-					$('.list-element').removeClass('selected-element');
-					$this.addClass('selected-element');
-				}
+				$('.list-element').removeClass('selected-element');
+				$this.addClass('selected-element');
 
 				template.find('.callflow-content')
 					.removeClass('listing-mode')
@@ -481,7 +477,6 @@ define(function(require) {
 			// Search list
 			template.find('.search-query').on('keyup', function() {
 				var search = $(this).val();
-
 				searchLink.find('.search-value').text(search);
 				if (search) {
 					$.each(template.find('.list-element'), function() {
@@ -727,9 +722,7 @@ define(function(require) {
 				var type = template.find('.entity-edition .list-container .list').data('type');
 				editEntity(type);
 
-				if (miscSettings.enableSelectedElementColor) {
-					$('.list-element').removeClass('selected-element');
-				};
+				$('.list-element').removeClass('selected-element');
 
 				/*
 				if (miscSettings.callflowButtonsWithinHeader) {
@@ -745,11 +738,9 @@ define(function(require) {
 					id = $this.data('id'),
 					type = $this.parents('.list').data('type');
 
-				if (miscSettings.enableSelectedElementColor) {
-					$('.list-element').removeClass('selected-element');
-					$this.addClass('selected-element');
-				}
-
+				$('.list-element').removeClass('selected-element');
+				$this.addClass('selected-element');
+				
 				editEntity(type, id);
 			});
 
@@ -812,8 +803,20 @@ define(function(require) {
 					$('.entity-header-buttons').empty();
 				}
 
-				if (miscSettings.enableSelectedElementColor && data != null) {
+				// clear search and bring the selected item into view
+				template.find('.search-query').val('');
+
+				if (data != null) {
 					$('.list-element[data-id="' + data.id + '"]').addClass('selected-element');
+
+					var listItem = document.querySelector('.left-bar-container .list li[data-id="' + data.id + '"]');
+									
+					if (listItem) {
+						listItem.scrollIntoView({
+							behavior: 'auto',
+							block: "center"
+						});
+					}
 				}
 
 				callback && callback();
@@ -1364,6 +1367,7 @@ define(function(require) {
 			var self = this,
 				args = args || {},
 				template = args.template || $('#callflow_container'),
+				selectedItemId = args.selectedItemId || null,
 				callback = args.callback;
 
 			self.listData({
@@ -1373,15 +1377,34 @@ define(function(require) {
 						data: { callflows: callflowData.data }
 					}));
 
-					template.find('.list-container .list')
+					template.find('.callflow-manager .list-container .list')
 						.empty()
 						.append(listCallflows)
 						.data('next-key', callflowData.next_start_key || null);
-	
-					if (miscSettings.enableSelectedElementColor) {
+						
+					// clear search and bring the selected item into view
+					template.find('.search-query').val('');
+					
+					if (selectedItemId != null) {
 						$('.list-element[data-id="' + selectedItemId + '"]').addClass('selected-element');
-					}
 
+						var listItem = document.querySelector('.left-bar-container .list li[data-id="' + selectedItemId + '"]');
+									
+						if (listItem) {
+							var listItem = document.querySelector('.left-bar-container .list li[data-id="' + selectedItemId + '"]');
+									
+							if (listItem) {
+								listItem.scrollIntoView({
+									behavior: 'auto',
+									block: "center"
+								});
+							}		listItem.scrollIntoView({
+								behavior: 'auto',
+								block: "center"
+							});
+						}
+					}
+					
 					callback && callback(callflowData.data);
 				},
 				searchValue: args.searchValue
@@ -1617,9 +1640,7 @@ define(function(require) {
 			// copy callflow
 			$('.duplicate', buttons).click(function() {
 
-				if (miscSettings.enableSelectedElementColor) {
-					$('.list-element').removeClass('selected-element');
-				}
+				$('.list-element').removeClass('selected-element');
 
 				delete(self.dataCallflow.id);
 				delete(self.dataCallflow.numbers);
@@ -1654,7 +1675,7 @@ define(function(require) {
             });
 
 			$('.buttons').append(buttons);
-		},
+		},	
 
 		buildFlow: function(json, parent, id, key) {
 			var self = this,
@@ -1693,7 +1714,7 @@ define(function(require) {
 		
 		construct_action: function(json) {
 			var self = this,
-				actionParams = '';
+				actionParams = '';	
 
 			if ('data' in json) {
 				if ('id' in json.data) {
@@ -2072,7 +2093,7 @@ define(function(require) {
 					flow.id = callflow.id;
 					flow.name = callflow.name;
 					flow.contact_list = { exclude: 'contact_list' in callflow ? callflow.contact_list.exclude || false : false };
-					flow.caption_map = callflow.metadata;
+					self.flow.caption_map = callflow.metadata;
 
 					if (callflow.flow.module !== undefined) {
 						flow.root = self.buildFlow(callflow.flow, flow.root, 0, '_');
@@ -2136,6 +2157,7 @@ define(function(require) {
 								$(this).siblings('.material-symbols-icon-medium').addClass('icon-adjust');
 							}
 						});
+						
 
 					});
 				}
@@ -2402,7 +2424,8 @@ define(function(require) {
 				// make names of callflow nodes clickable
 				$('.details a', node_html).click(function(event) {
 					event.stopPropagation();
-					var previewCallflowId = self.flow.nodes[$(node_html).find('.delete').attr('id')].data.data.id,
+					var nodeId = $(node_html).find('.delete').attr('id') || $(node_html).find('.material-symbols-icon-node-delete').attr('id'),
+						previewCallflowId = self.flow.nodes[nodeId].data.data.id,
 						dialogTemplate = $(self.getTemplate({
 							name: 'callflows-callflowElementDetails',
 							data: {
@@ -2412,14 +2435,30 @@ define(function(require) {
 						popup;
 					self.getCallflowPreview({ id: previewCallflowId }, function(callflowPreview) {
 						popup = monster.ui.dialog(dialogTemplate, {
-							position: ['top', 20], // put preview near top of screen to have lots of space for it
 							title: self.i18n.active().oldCallflows.callflow_preview_title,
-							width: '650px'
+							width: '80%',
+							create: function() {
+								$(this).closest('.ui-dialog-content.ui-widget-content').addClass('callflow-preview-dialog');
+							}
 						});
 						popup.find('.callflow-preview-section.callflow').append(callflowPreview);
 						$('#callflow_jump').click(function() {
 							self.editCallflow({ id: previewCallflowId });
 							popup.dialog('close').remove();
+	
+							$('.list-element').removeClass('selected-element');
+							$('li[data-id="' + previewCallflowId + '"]').addClass('selected-element');
+							
+							// bring the selected callflow into view
+							var listItem = document.querySelector('.left-bar-container .list li[data-id="' + previewCallflowId + '"]');
+							
+							if (listItem) {
+								listItem.scrollIntoView({
+									behavior: 'auto',
+									block: "center"
+								});
+							}
+
 						});
 					});
 				});
@@ -3177,6 +3216,8 @@ define(function(require) {
 					delete data_request.dimension.flags;
 					data_request.dimension.flags = callflowFlags;
 				}
+
+				var listData = {};
 				
 				if (self.flow.id) {
 					// if show all callflows is enabled and this is a hidden callflow then retain existing ui_metadata 
@@ -3195,9 +3236,10 @@ define(function(require) {
 								removeMetadataAPI: true
 							},
 							success: function(json) {
-								selectedItemId = json.data.id
-								self.repaintList();
+								listData.selectedItemId = json.data.id
+								self.repaintList(listData);
 								self.editCallflow({ id: json.data.id });
+							
 							}
 						});
 					}
@@ -3211,8 +3253,8 @@ define(function(require) {
 								data: data_request
 							},
 							success: function(json) {
-								selectedItemId = json.data.id
-								self.repaintList();
+								listData.selectedItemId = json.data.id
+								self.repaintList(listData);
 								self.editCallflow({ id: json.data.id });
 							}
 						});
@@ -3226,8 +3268,8 @@ define(function(require) {
 							data: data_request
 						},
 						success: function(json) {
-							selectedItemId = json.data.id
-							self.repaintList();
+							listData.selectedItemId = json.data.id
+							self.repaintList(listData);
 							self.editCallflow({ id: json.data.id });
 						}
 					});

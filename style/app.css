@@ -381,12 +381,14 @@
 	line-height: 20px;
 }
 
-#ws_callflow .div_icon .module_name.google_icons.br {
+#ws_callflow .div_icon .module_name.google_icons.br,
+.dialog_popup.callflow-preview .module_name.google_icons.br {
     margin-top: -2px !important;
 	line-height: 14px !important;
 }
 
-#ws_callflow .div_icon .material-symbols-icon-medium.icon-adjust {
+#ws_callflow .div_icon .material-symbols-icon-medium.icon-adjust,
+.dialog_popup.callflow-preview .material-symbols-icon-medium.icon-adjust {
 	margin-top: -3px;
 }
 
@@ -2259,6 +2261,23 @@
     width: 224px !important;
 }
 
+.player_file #download_link {
+	margin-left: 10px;
+}
+
+.dialog_popup.callflow-preview .material-symbols-icon-node-delete,
+.dialog_popup.callflow-preview .delete {
+	display: none;
+}
+
+.dialog_popup.callflow-preview .div_option {
+	pointer-events: none;
+}
+
+.callflow-preview-dialog {
+	height: 80vh !important;
+}
+
 /* hide monster alert warning triangle and header */
 /*
 .alert-dialog .dialog-content .dialog-header,
@@ -2266,7 +2285,3 @@
 	display: none;
 }
 */
-
-.player_file #download_link {
-	margin-left: 10px;
-}
