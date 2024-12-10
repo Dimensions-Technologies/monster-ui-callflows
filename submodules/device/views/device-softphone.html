@@ -137,6 +137,41 @@
 						</div>
 					</div>
 
+					{{#if dimensionDeviceType.pusherDevice}}
+						<hr />
+
+						<h3>{{ i18n.callflows.device.pusher.pusher_settings }}</h3>
+						
+						<div class="clearfix">
+							<label for="pusher_details_type">{{ i18n.callflows.device.pusher.type }}</label>
+							<div class="input">
+								<input disabled class="span4 input-readonly" id="pusher_details_type" name="pusher_details.type" type="text" value="{{ field_data.pusher_settings.device_type }}" />
+							</div>
+						</div>
+
+						<div class="clearfix">
+							<label for="pusher_details_app_name">{{ i18n.callflows.device.pusher.app_name }}</label>
+							<div class="input">
+								<input disabled class="span4 input-readonly" id="pusher_details_app_name" name="pusher_details.app_name" type="text" value="{{ field_data.pusher_settings.app_name }}" />
+							</div>
+						</div>
+
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list pusher-details-delete">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.device.pusher.delete_help }}">
+												<input type="checkbox" id="pusher_details_delete" name="pusher_details.delete" />
+												<span>{{ i18n.callflows.device.pusher.delete }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+					{{/if}}
+
 					<input type="hidden" value="{{ data.device_type }}" name="device_type"/>
 
 				</div>

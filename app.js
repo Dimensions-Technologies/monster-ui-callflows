@@ -19,7 +19,8 @@ define(function(require) {
 		callflowFlags = [],
 		callTags = [],
 		contactDirectories = [],
-		hideFeatureCode = {};
+		hideFeatureCode = {},
+		pusherApps = {};
 
 	var appSubmodules = [
 		'afterbridge',
@@ -242,6 +243,11 @@ define(function(require) {
 									hideFeatureCode = data.dimension.dt_callflows.hideFeatureCode;
 								}
 							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('pusherApps')) {
+								pusherApps = data.dimension.dt_callflows.pusherApps;
+							}
+
 						}
 
 					}
@@ -300,9 +306,10 @@ define(function(require) {
 						console.log('contactDirectories', contactDirectories);
 						console.log('accountData:', accountData);
 						console.log('hideFeatureCode:', hideFeatureCode);
+						console.log('pusherApps:', pusherApps);
 					}
 
-					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories });
+					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories, pusherApps });
 					self.renderEntityManager(parent);
 
 					// show warning message if emergency caller id has not been set on the account
