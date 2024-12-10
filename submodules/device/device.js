@@ -7,7 +7,8 @@ define(function(require) {
 		miscSettings = {},
 		dimensionDeviceType = {},
 		deviceAudioCodecs = {},
-		deviceVideoCodecs = {};
+		deviceVideoCodecs = {},
+		pusherApps = {};
 
 	var app = {
 		requests: {
@@ -218,6 +219,10 @@ define(function(require) {
 					
 						if (deviceData.dimension.model == 'UCS' || deviceData.dimension.type == 'legacypbx') {
 							dimensionDeviceType['showDeviceSimplifiedSipSettings'] = true;
+						}
+
+						if (deviceData.dimension.model == 'UCM') {
+							dimensionDeviceType['pusherDevice'] = true;
 						}
 
 						if (miscSettings.enableConsoleLogging) {
@@ -604,6 +609,41 @@ define(function(require) {
 				}
 			}
 
+			if (dimensionDeviceType.pusherDevice) {
+				if (dataGlobal.data.hasOwnProperty('push')) {
+
+					var pusher_settings = {},
+						token_type = dataGlobal.data.push['Token-Type'];
+						token_app = dataGlobal.data.push['Token-App'];
+					
+					if (token_type == 'apple') {
+						pusher_settings.device_type = 'Apple'
+					} else if (token_type == 'firebase' || token_type == 'firebase_v1') {
+						pusher_settings.device_type = 'Android'
+					} else {
+						pusher_settings.device_type = 'Unknown'
+					}
+	
+					if (token_app && pusherApps[token_app]) {
+						pusher_settings.app_name = pusherApps[token_app];
+					} else {
+						pusher_settings.app_name = 'Unknown';
+					}
+
+					dataGlobal.field_data.pusher_settings = pusher_settings;
+
+				} else {
+
+					var pusher_settings = {
+						'device_type': 'Not Configured',
+						'app_name': 'Not Configured'
+					}
+
+					dataGlobal.field_data.pusher_settings = pusher_settings;
+
+				}
+			}
+
 			return dataGlobal;
 		},
 
@@ -833,6 +873,11 @@ define(function(require) {
 				} else {
 					$('#ip_block', device_html).hide();
 				}
+
+				if (dimensionDeviceType.pusherDevice && data.field_data?.pusher_settings?.app_name == 'Not Configured') {
+					$('#pusher_details_delete', device_html).prop('disabled', true);
+				}
+
 			} else {
 				device_html = $(self.getTemplate({
 					name: 'general_edit',
@@ -1398,6 +1443,13 @@ define(function(require) {
 
 			if (data.sip.method !== 'ip') {
 				delete data.sip.ip;
+			}		
+
+			if (data.pusher_details) {
+				if(data.pusher_details.delete) {
+					delete data.push
+				}
+				delete data.pusher_details;
 			}
 
 			if (typeof data.outbound_flags === 'string') {
@@ -1875,7 +1927,8 @@ define(function(require) {
 			hideDeviceTypes = args.hideDeviceTypes
 			deviceAudioCodecs = args.deviceAudioCodecs,
 			deviceVideoCodecs = args.deviceVideoCodecs,
-			hideCallflowAction = args.hideCallflowAction;
+			hideCallflowAction = args.hideCallflowAction,
+			pusherApps = args.pusherApps;
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {

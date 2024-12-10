@@ -308,7 +308,14 @@
 			"phone_numbers": "Phone Numbers",
 			"phone_numbers_options": "Assigned Phone Numbers",
 			"phone_numbers_add": "Add Phone Number",
-			"phone_numbers_none": "This device currently has no assigned phone numbers"
+			"phone_numbers_none": "This device currently has no assigned phone numbers",
+			"pusher": {
+				"pusher_settings": "Mobile Push Settings",
+				"type": "Device Type",
+				"app_name": "App Name",
+				"delete": "Clear push notification settings",
+				"delete_help": "This action will remove the push notification settings from the device, preventing push notifications from being delivered until the device registers again"
+			}
 		},
 		"landlineDevice": {
 			"device": "Landline",
