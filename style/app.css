@@ -2084,6 +2084,11 @@
 	padding-right: 70px;
 }
 
+.dialog_popup.callflows-port.callflow-action-form hr {
+    margin-bottom: 15px;
+    border: 0px;
+}
+
 /* callflow name pop up formatting */
 .dialog_popup.edit_name {
 	width: 400px;
@@ -2276,6 +2281,16 @@
 
 .callflow-preview-dialog {
 	height: 80vh !important;
+}
+
+/* sub title for callflow action forms */ 
+.callflow-action-form .form-sub-title {
+	text-align: left;
+    font-size: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    color: #2297FF;
+    border-bottom: 1px solid #c0c0c9;
 }
 
 /* hide monster alert warning triangle and header */

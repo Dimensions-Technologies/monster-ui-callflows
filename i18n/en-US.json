@@ -1354,21 +1354,57 @@
 				"alert": "Invalid Timeout value<br>The Timeout value must be between 5 - 20"
 			}			
 		},
-
+		
 		"__comment": "UI-413: adding eavesdrop to adv. callflows",
 		"__version": "v4.1",
 		"eavesdrop": {
 			"none": "None",
 			"default": "Default",
-			"title": "Eavesdrop",
-			"name": "Eavesdrop",
-			"tip": "Allows you to eavesdrop on a call for a specific user or device.",
-			"endpoint": {
-				"label": "Endpoint"
+			"title": "Targeted Eavesdrop",
+			"subTitle": {
+				"approved": "Approved",
+				"target": "Target"
 			},
-			"approvedEndpoint": {
-				"label": "Approved Endpoint",
-				"help": "You can force the eavesdropper to be a specific user/device/group by selecting an endpoint in this list."
+			"name": "Targeted <br> Eavesdrop",
+			"tip": "Allows you to eavesdrop on a call for a specific device or user",
+			"approvedDevice": {
+				"label": "Device"
+			},
+			"approvedUser": {
+				"label": "User"
+			},
+			"approvedGroup": {
+				"label": "Group"
+			},
+			"targetUser": {
+				"label": "User"
+			},
+			"targetDevice": {
+				"label": "Device"
+			}
+		},
+
+		"eavesdropFeature": {
+			"none": "None",
+			"default": "Default",
+			"title": "Eavesdrop Feature",
+			"subTitle": {
+				"approved": "Approved",
+				"target": "Target"
+			},
+			"name": "Eavesdrop <br> Feature",
+			"tip": "Allows you to eavesdrop on a call for a specific user or group of users",
+			"approvedUser": {
+				"label": "User"
+			},
+			"approvedGroup": {
+				"label": "Group"
+			},
+			"targetUser": {
+				"label": "User"
+			},
+			"targetGroup": {
+				"label": "Group"
 			}
 		},
 

@@ -1,0 +1,108 @@
+<div class="eavesdrop-popup dialog_popup callflows-port callflow-action-form">
+	<form name="form" method="post" action="#">
+		<div class="form_content">
+
+			<div class="form-sub-title">{{ i18n.callflows.eavesdrop.subTitle.approved }}</div>
+			
+            <!-- approved device, user or group -->
+            <div class="popup_field">
+				<label for="endpoint_selector">{{ i18n.callflows.eavesdrop.approvedDevice.label }}</label>
+				<div class="select_wrapper">
+					<select id="approved_device_selector">
+						<option value="null" hidden>{{ i18n.callflows.eavesdrop.none }}</option>
+						{{#select data.approvedDeviceId}}
+							{{#each fieldData}}
+								{{#compare @key "==" "device"}}
+									{{#each this}}
+										<option data-type="{{@../key}}" id="{{ id }}" value="{{ id }}" {{#compare @root.data.selected_id "===" id}} selected{{/compare}}>{{ name }}</option>
+									{{/each}}
+								{{/compare}}
+							{{/each}}
+						{{/select}}
+					</select>
+				</div>
+			</div>
+			
+			<div class="popup_field">
+				<label for="endpoint_selector">{{ i18n.callflows.eavesdrop.approvedUser.label }}</label>
+				<div class="select_wrapper">
+					<select id="approved_user_selector">
+						<option value="null" hidden>{{ i18n.callflows.eavesdrop.none }}</option>
+						{{#select data.approvedUserId}}
+							{{#each fieldData}}
+								{{#compare @key "==" "user"}}
+									{{#each this}}
+										<option data-type="{{@../key}}" id="{{ id }}" value="{{ id }}" {{#compare @root.data.selected_id "===" id}} selected{{/compare}}>{{ name }}</option>
+									{{/each}}
+								{{/compare}}
+							{{/each}}
+						{{/select}}
+					</select>
+				</div>
+			</div>
+
+			<div class="popup_field">
+				<label for="endpoint_selector">{{ i18n.callflows.eavesdrop.approvedGroup.label }}</label>
+				<div class="select_wrapper">
+					<select id="approved_group_selector">
+						<option value="null" hidden>{{ i18n.callflows.eavesdrop.none }}</option>
+						{{#select data.approvedGroupId}}
+							{{#each fieldData}}
+								{{#compare @key "==" "group"}}
+									{{#each this}}
+										<option data-type="{{@../key}}" id="{{ id }}" value="{{ id }}" {{#compare @root.data.selected_id "===" id}} selected{{/compare}}>{{ name }}</option>
+									{{/each}}
+								{{/compare}}
+							{{/each}}
+						{{/select}}
+					</select>
+				</div>
+			</div>
+
+			<hr />
+
+			<div class="form-sub-title">{{ i18n.callflows.eavesdrop.subTitle.target }}</div>
+
+            <!-- target user or group -->
+            <div class="popup_field">
+				<label for="endpoint_selector">{{ i18n.callflows.eavesdrop.targetDevice.label }}</label>
+				<div class="select_wrapper">
+					<select id="target_device_selector">
+						<option value="null" hidden>{{ i18n.callflows.eavesdrop.none }}</option>
+						{{#select data.targetDeviceId}}
+							{{#each fieldData}}
+								{{#compare @key "==" "device"}}
+									{{#each this}}
+										<option data-type="{{@../key}}" id="{{ id }}" value="{{ id }}" {{#compare @root.data.selected_id "===" id}} selected{{/compare}}>{{ name }}</option>
+									{{/each}}
+								{{/compare}}
+							{{/each}}
+						{{/select}}
+					</select>
+				</div>
+			</div>
+			
+			<div class="popup_field">
+				<label for="endpoint_selector">{{ i18n.callflows.eavesdrop.targetUser.label }}</label>
+				<div class="select_wrapper">
+					<select id="target_user_selector">
+						<option value="null" hidden>{{ i18n.callflows.eavesdrop.none }}</option>
+						{{#select data.targetUserId}}
+							{{#each fieldData}}
+								{{#compare @key "==" "user"}}
+									{{#each this}}
+										<option data-type="{{@../key}}" id="{{ id }}" value="{{ id }}" {{#compare @root.data.selected_id "===" id}} selected{{/compare}}>{{ name }}</option>
+									{{/each}}
+								{{/compare}}
+							{{/each}}
+						{{/select}}
+					</select>
+				</div>
+			</div>
+
+		</div>
+	</form>
+	<div class="buttons-center">
+		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>
+	</div>
+</div>
