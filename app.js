@@ -13,7 +13,6 @@ define(function(require) {
 		miscSettings = {},
 		hideDeviceTypes = {},
 		ttsLanguages = {},
-		//selectedItemId = null,
 		deviceAudioCodecs = {},
 		deviceVideoCodecs = {},
 		afterBridgeTransfer = {},
@@ -29,6 +28,7 @@ define(function(require) {
 		'conference',
 		'device',
 		'directory',
+		'eavesdrop',
 		'faxbox',
 		'featurecodes',
 		'groups',
@@ -2501,7 +2501,7 @@ define(function(require) {
 							action = ui.draggable.attr('name');
 							branch = self.branch(action);
 							branch.caption = self.actions[action].caption(branch, self.flow.caption_map);
-				
+
 							// handle callflow actions that support parallel children
 							if (validActionNames.includes(target.actionName)) {
 							
@@ -3186,10 +3186,22 @@ define(function(require) {
 			}
 
 			if (self.flow.numbers && self.flow.numbers.length > 0) {
-				var data_request = {
-					numbers: self.flow.numbers,
-					flow: (self.flow.root.children[0] === undefined) ? {} : self.flow.root.children[0].serialize()
-				};
+
+				var flowNodes = Object.values(self.flow.nodes),
+					hasEavesdropFeature = flowNodes.some(node => node.module === 'eavesdrop_feature'),
+					data_request = {
+						numbers: self.flow.numbers,
+						flow: (self.flow.root.children[0] === undefined) ? {} : self.flow.root.children[0].serialize()
+					};
+
+				// add pattern if node contains eavesdrop feature
+				if (hasEavesdropFeature) {
+					var numbersArray = Array.isArray(self.flow.numbers) ? self.flow.numbers : [self.flow.numbers],
+						flowPatterns = numbersArray.map(number => '^\\' + number + '([0-9*]*)$');
+				
+					data_request.patterns = flowPatterns;
+					delete self.dataCallflow.patterns;
+				}
 
 				if (self.flow.name !== '') {
 					data_request.name = self.flow.name;
