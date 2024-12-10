@@ -627,7 +627,7 @@ define(function(require) {
 					if (token_app && pusherApps[token_app]) {
 						pusher_settings.app_name = pusherApps[token_app];
 					} else {
-						pusher_settings.app_name = 'Unknown';
+						pusher_settings.app_name = token_app;
 					}
 
 					dataGlobal.field_data.pusher_settings = pusher_settings;
