@@ -289,6 +289,15 @@ define(function(require) {
 					
 					}
 
+					// enableConsoleLogging if url variable enableConsoleLogging is true
+					var urlVariables = {};
+					
+					urlVariables = monster.util.getUrlVars();
+					
+					if (urlVariables.enableConsoleLogging === 'true') {
+						miscSettings.enableConsoleLogging = true
+					}
+
 					// log to console if enabled
 					if (miscSettings.enableConsoleLogging) {
 						console.log('hideFromMenu:', hideFromMenu);
