@@ -653,7 +653,7 @@
 .callflow-preview .tools .search-box input {
 	width: 125px;
 	height: 15px;
-	border-radius: 20px;
+	/*border-radius: 20px;*/
 	margin-top: 3px;
 	margin-bottom: 3px;
 	margin-left: 4px;
@@ -1135,8 +1135,9 @@
 }
 
 .callflows-port input[type="file"] {
-	background-color:transparent;
-	padding-top:5px;
+	background-color: transparent;
+	padding-top: 7px;
+	line-height: 0px;
 }
 
 .callflows-port input {
@@ -2173,8 +2174,12 @@
 	text-align: justify;
 }
 
-/* branch variable */
+.media_upload_disclosure {
+	width: 580px;
+	margin-left: 20px;
+}
 
+/* branch variable */
 .dialog_popup.callflows-port.callflow-action-form #scope {
 	width: 280px !important;
 }

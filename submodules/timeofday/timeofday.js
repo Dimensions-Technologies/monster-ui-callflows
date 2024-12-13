@@ -905,6 +905,11 @@ define(function(require) {
 								child_node.key = $('#timeofday_selector', popup_html).val();
 
 								child_node.key_caption = $('#timeofday_selector option:selected', popup_html).text();
+								
+								// trim branch.key_caption if the length exceeds 22 characters
+								if (child_node.key_caption.length > 22) {
+									child_node.key_caption = child_node.key_caption.substring(0, 22) + '...';
+								} 
 
 								popup.dialog('close');
 							});

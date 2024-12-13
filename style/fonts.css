@@ -55,7 +55,7 @@
     font-style: normal;
     font-size: 20px;
     cursor: pointer;
-    color: #ffffff !important;
+    color: #ffffff;
 }
 
 /* blocklist delete icon */
@@ -65,7 +65,7 @@
     font-style: normal;
     font-size: 20px;
     cursor: pointer;
-    color: #000000 !important;
+    color: #000000;
 }
 
 /* callflow node delete icon */
