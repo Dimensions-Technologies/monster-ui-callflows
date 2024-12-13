@@ -606,7 +606,10 @@
 			"silence": "Silence",
 			"shoutcastURLWarning": "WARNING: If the stream selected here attempts to be played, and is unavailable, the call may fail completely. Please make sure the stream you use is available 24/7.",
 			"play_mailbox_media": "Mailbox Media",
-			"play_mailbox_media_tip": "Play a mailbox greeting recorded within a mailbox"
+			"play_mailbox_media_tip": "Play a mailbox greeting recorded within a mailbox",
+			"mediaUploadDisclosure": {
+				"text": "You are responsible for uploading audio files. Please ensure you have the appropriate rights to use them."
+			}
 		},
 		"menu": {
 			"menu": "Menu",

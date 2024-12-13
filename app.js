@@ -1715,6 +1715,12 @@ define(function(require) {
 			
 			if (self.actions.hasOwnProperty(parent.actionName) && self.actions[parent.actionName].hasOwnProperty('key_caption')) {
 				branch.key_caption = self.actions[parent.actionName].key_caption(branch, self.flow.caption_map);
+
+				// trim branch.key_caption if the length exceeds 22 characters
+				if (branch.key_caption.length > 22) {
+					branch.key_caption = branch.key_caption.substring(0, 22) + '...';
+				}
+
 			}
 
 			if (json.hasOwnProperty('children')) {
