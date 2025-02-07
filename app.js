@@ -26,6 +26,7 @@ define(function(require) {
 		'afterbridge',
 		'blacklist',
 		'branchvariable',
+		'callcenter',
 		'conference',
 		'device',
 		'directory',

@@ -1,0 +1,289 @@
+
+<div>
+    <div class="whapp-header clearfix">
+        <!--
+        {{#if data.id }}
+		<h1>{{ i18nApp.editQueue }}</h1>
+        {{else}}
+            <h1>{{ i18nApp.createQueue }}</h1>
+        {{/if}}
+        -->
+    </div>
+</div>
+
+<div>
+	<ul class="tabs" data-tabs="tabs">
+		<li class="active"><a href="#queue_settings">{{ i18n.callflows.acdc.settings.title }}</a></li>
+		<li><a href="#queue_moh">{{ i18n.callflows.acdc.moh.title }}</a></li>
+		<li><a href="#queue_announcements">{{ i18n.callflows.acdc.announcements.title }}</a></li>
+		<li><a href="#queue_agents">{{ i18n.callflows.acdc.agents.title }}</a></li>
+        <!--<li><a href="#queue_advanced_settings">{{ i18n.callflows.acdc.advancedSettings.title }}</a></li>-->
+	</ul>
+	<form id="queue-form" action="#" method="post">
+        <div class="pill-content">
+            <div class="active basic_view" id="queue_settings">
+
+                <!--<h3>{{ i18n.callflows.acdc.settings.general }}</h3>-->
+
+                <div class="clearfix">
+                    <label for="name">Name</label>
+                    <div class="input">
+                        <input id="name" name="name" type="text" data-placement="top" data-toggle="tooltip" value="{{ data.name }}" rel="popover" data-content="{{ i18nApp.name }}" />
+                    </div>
+                </div>
+                
+
+
+                {{#unless fieldReadOnly}}
+                    <div class="clearfix">
+                        <label for="strategy">Ring Strategy</label>
+                        <div class="input strategy">
+                            <select name="strategy" id="strategy" class="medium" >
+                                <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>Round Robin</option>
+                                <option value="most_idle" {{#compare data.strategy "===" "most_idle"}} selected{{/compare}}>Most Idle</option>
+                            </select>
+                            <!--<span class="help-block">{{ i18nApp.strategy }}</span>-->
+                        </div>
+                    </div>
+                {{/unless}}
+
+                {{#if fieldReadOnly}}
+                    <div class="clearfix">
+                        <label for="strategy">Ring Strategy</label>
+                        <div class="input">
+                            <select disabled name="strategy" id="strategy" class="medium input-readonly" >
+                                <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>Round Robin</option>
+                                <option value="most_idle" {{#compare data.strategy "===" "most_idle"}} selected{{/compare}}>Most Idle</option>
+                            </select>
+                            <!--<span class="help-block">{{ i18nApp.strategy }}</span>-->
+                        </div>
+                    </div>
+                {{/if}}
+
+
+
+
+                
+                <div class="clearfix">
+                    <label for="connection_timeout">Queue Timeout</label>
+                    <div class="input">
+                        <input id="connection_timeout" name="connection_timeout" type="text" value="{{#if data.connection_timeout}}{{ data.connection_timeout }}{{else}}3600{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.settings.connectionTimeout }}" />
+                    </div>
+                </div>
+
+                <div class="clearfix">
+                    <label for="max_queue_size">Queue Call Limit</label>
+                    <div class="input">
+                        <input id="max_queue_size" name="max_queue_size" type="text" value="{{#if data.max_queue_size}}{{ data.max_queue_size }}{{else}}0{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.settings.maxQueueSize }}" />
+                    </div>
+                </div>
+                
+                <div class="clearfix">
+                    <label for="enter_when_empty">Enter When Empty</label>
+                    <div class="input">
+                        <select name="enter_when_empty" id="enter_when_empty" class="medium" >
+                            <option value="true" {{#if data.enter_when_empty}} selected{{/if}}>Yes</option>
+                            <option value="false" {{#compare data.enter_when_empty "===" false}} selected{{/compare}}>No</option>
+                        </select>
+                        <!--<span class="help-block">{{ i18nApp.enter_when_empty }}</span>-->
+                    </div>
+                </div>
+                <!--
+                <div class="clearfix">
+                    <label for="caller_exit_key">Caller Exit Key</label>
+                    <div class="input">
+                        <select name="caller_exit_key" id="caller_exit_key" class="medium" >
+                            <option value=""></option>
+                            <option value="1" {{#compare data.caller_exit_key "===" "1"}} selected{{/compare}}>1</option>
+                            <option value="2" {{#compare data.caller_exit_key "===" "2"}} selected{{/compare}}>2</option>
+                            <option value="3" {{#compare data.caller_exit_key "===" "3"}} selected{{/compare}}>3</option>
+                            <option value="4" {{#compare data.caller_exit_key "===" "4"}} selected{{/compare}}>4</option>
+                            <option value="5" {{#compare data.caller_exit_key "===" "5"}} selected{{/compare}}>5</option>
+                            <option value="6" {{#compare data.caller_exit_key "===" "6"}} selected{{/compare}}>6</option>
+                            <option value="7" {{#compare data.caller_exit_key "===" "7"}} selected{{/compare}}>7</option>
+                            <option value="8" {{#compare data.caller_exit_key "===" "8"}} selected{{/compare}}>8</option>
+                            <option value="9" {{#compare data.caller_exit_key "===" "9"}} selected{{/compare}}>9</option>
+                            <option value="0" {{#compare data.caller_exit_key "===" "0"}} selected{{/compare}}>0</option>
+                            <option value="*" {{#compare data.caller_exit_key "===" "*"}} selected{{/compare}}>*</option>
+                            <option value="#" {{#compare data.caller_exit_key "===" "#"}} selected{{/compare}}>#</option>
+                        </select>
+                        <span class="help-block">{{ i18nApp.caller_exit_key }}</span>
+                    </div>
+                </div>
+                -->
+
+            </div>
+
+            <div id="queue_moh">
+                <div class="clearfix">
+                    <label for="moh">Music on Hold</label>
+                    <div class="input">
+                        <select name="moh" id="moh" class="medium">
+                            {{#select data.moh}}
+                            {{#each field_data.media}}
+                            <option	value="{{ id }}">{{ name }}</option>
+                            {{/each}}
+                            {{/select}}
+                        </select>
+                        <div class="edit_create" style="display: inline; margin-left: 20px">
+                            <a style="margin-right: 15px;" class="inline_action_media" data-action="edit" href="#">{{ i18n.callflows.device.edit }}</a>
+                            <a class="inline_action_media" data-action="create" href="#">{{ i18n.callflows.device.create }}</a>
+                        </div>
+                        <!--<span class="help-block">{{ i18nApp.moh }}</span>-->
+                    </div>
+                </div>
+            </div>
+
+            <div id="queue_announcements">
+                <!--
+                <div class="clearfix">
+                    <label for="announce">Announcement</label>
+                    <div class="input">
+                        <select name="announce" id="announce" class="medium">
+                            {{#select data.announce}}
+                            {{#each field_data.media}}
+                            <option	value="{{ id }}">{{ name }}</option>
+                            {{/each}}
+                            {{/select}}
+                        </select>
+                        <div class="edit_create" style="display: inline; margin-left: 20px">
+                            <a style="margin-right: 15px;" class="inline_action_media" data-action="edit" href="#">{{ i18n.callflows.device.edit }}</a>
+                            <a class="inline_action_media" data-action="create" href="#">{{ i18n.callflows.device.create }}</a>
+                        </div>
+                        <span class="help-block">{{ i18nApp.announce }}</span>
+                    </div>
+                </div>
+                -->
+                <div class="clearfix">
+                    <label for="announcements_interval">Announcement Interval</label>
+                    <div class="input">
+                        <input id="announcements_interval" name="announcements.interval" type="text" value="{{#if data.announcements.interval}}{{ data.announcements.interval }}{{else}}20{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.announcements.intervalHelp }}" />
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <label for="position_announcements">Position in Queue</label>
+                    <div class="input">
+                        <select name="announcements.position_announcements_enabled" id="position_announcements" class="medium" >
+                            <option value="false" {{#compare data.announcements.position_announcements_enabled "===" false}} selected{{/compare}}>No</option>
+                            <option value="true" {{#if data.announcements.position_announcements_enabled}} selected{{/if}}>Yes</option>
+                            
+                        </select>
+                        <!--<span class="help-block">{{ i18nApp.enter_when_empty }}</span>-->
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <label for="wait_time_announcements">Estimated Wait Time</label>
+                    <div class="input">
+                        <select name="announcements.wait_time_announcements_enabled" id="wait_time_announcements" class="medium" >
+                            <option value="false" {{#compare data.announcements.wait_time_announcements_enabled "===" false}} selected{{/compare}}>No</option>
+                            <option value="true" {{#if data.announcements.wait_time_announcements_enabled}} selected{{/if}}>Yes</option>
+                        </select>
+                        <!--<span class="help-block">{{ i18nApp.enter_when_empty }}</span>-->
+                    </div>
+                </div>
+            </div>
+
+            <div id="queue_agents">
+                <h3>{{ i18n.callflows.acdc.agents.agentList }}</h3>
+                <div class="table-and-dropdown">
+                    <table class="users-table table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{{ i18n.callflows.acdc.agents.agents }}</th>
+                                <th>{{ i18n.callflows.acdc.agents.agentsState }}</th>
+                                <th>{{ i18n.callflows.acdc.agents.actions }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="js-user-table-body"></tbody>
+                    </table>
+                    <div class="add-user-panel callflow-panel">
+                        <div class="callflow-panel_body">
+                            <h3>{{ i18n.callflows.acdc.agents.availableUsers }}</h3>
+                            <div class="callflow-panel_body_item user-dropdown">
+                                <select name="user_id" id="users-list">
+                                    <option id="empty_option_user" value="empty_option_user">-- {{ i18n.callflows.acdc.agents.selectUser }} --</option>
+                                    {{#each field_data.users}}
+                                        <option value="{{ id }}" id="option_user_{{ id }}">{{ first_name }} {{ last_name }}</option>
+                                    {{/each}}
+                                </select>
+                                <a class="monster-button monster-button-success add-user" href="" data-queue_id="{{ data.id }}">
+                                    <i class="fa fa-plus"></i>
+                                    {{ i18n.callflows.acdc.agents.addUser }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>{{ i18n.callflows.acdc.agents.agentSettings }}</h3>
+                <!--
+                <div class="clearfix">
+                    <label for="ring_simultaneously">Agents to Ring Simultaneously</label>
+                    <div class="input">
+                        <input id="ring_simultaneously" class="span1" name="ring_simultaneously" type="number" value="{{ data.ring_simultaneously }}" rel="popover" data-content="{{ i18nApp.ring_simultaneously }}" />
+                    </div>
+                </div>
+                -->
+                <div class="clearfix">
+                    <label for="agent_ring_timeout">Agent Connect Timeout</label>
+                    <div class="input">
+                        <input id="agent_ring_timeout" name="agent_ring_timeout" type="text" value="{{#if data.agent_ring_timeout}}{{ data.agent_ring_timeout }}{{else}}20{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.agents.agentTimeout }}" />
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <label for="agent_wrapup_time">Agent Wrap-up Time</label>
+                    <div class="input">
+                        <input id="agent_wrapup_time" name="agent_wrapup_time" type="text" value="{{#if data.agent_wrapup_time}}{{ data.agent_wrapup_time }}{{else}}0{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.agents.agentWrapup }}" />
+                    </div>
+                </div>
+            </div>
+
+            <div id="queue_advanced_settings">
+                <div class="clearfix">
+                    <label for="record_caller">Record Caller</label>
+                    <div class="input">
+                        <select name="record_caller" id="record_caller" class="medium" >
+                            <option value=""></option>
+                            <option value="true" {{#if data.record_caller}} selected{{/if}}>Yes</option>
+                            <option value="false" {{#compare data.record_caller "===" false}} selected{{/compare}}>No</option>
+                        </select>
+                        <!--<span class="help-block">{{ i18nApp.record_caller }}</span>-->
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <label for="recording_url">Recording URL</label>
+                    <div class="input">
+                        <input id="recording_url" name="recording_url" type="text" value="{{ data.recording_url }}" rel="popover" data-content="{{ i18nApp.recording_url }}" />
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <label for="cdr_url">CDR URL</label>
+                    <div class="input">
+                        <input id="cdr_url" name="cdr_url" type="text" value="{{ data.cdr_url }}" rel="popover" data-content="{{ i18nApp.cdr_url }}" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="buttons-right">
+		{{#unless miscSettings.callflowButtonsWithinHeader}}
+			{{#if data.id}}
+				<button class="monster-button monster-button-danger queue-delete">{{ i18n.callflows.acdc.delete }}</button>	
+			{{/if}}
+            <button class="monster-button monster-button-success queue-save">{{ i18n.callflows.acdc.save }}</button>
+        {{/unless}}
+        {{#if miscSettings.callflowButtonsWithinHeader}}
+            {{#if data.id}}
+                {{#if miscSettings.popupEdit}}
+                    {{#unless hideAdd.menu}}
+                        <button class="monster-button monster-button-danger queue-delete">{{ i18n.callflows.acdc.delete }}</button>
+                    {{/unless}}
+                {{/if}}
+            {{/if}}
+            {{#if miscSettings.popupEdit}}
+                <button class="monster-button monster-button-success queue-save">{{ i18n.callflows.acdc.save }}</button>
+            {{/if}}
+        {{/if}}
+	</div>
+
+</div>

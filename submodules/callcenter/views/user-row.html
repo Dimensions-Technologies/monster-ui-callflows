@@ -1,0 +1,20 @@
+{{#if user_id}}
+	<tr class="js-user-table-item" id="row_user_{{ user_id }}" data-id="{{ user_id }}">
+		<td>{{ user_name }}</td>
+		<td>{{ agent_status }}</td>
+		<td>
+			<!--
+			<a class="js-edit-user link-icon" data-id="{{ user_id }}">
+				<i class="fa fa-pencil"></i>
+			</a>
+			-->
+			<a class="js-delete-user link-icon" data-id="{{ user_id }}">
+				<i class="fa fa-trash"></i>
+			</a>
+		</td>
+	</tr>
+{{else}}
+	<tr class="js-user-table-item" id="row_no_data">
+		<td colspan="3" >{{ i18n.callflows.acdc.agents.noAgents }}</td>
+	</tr>
+{{/if}}
