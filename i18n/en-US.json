@@ -1229,6 +1229,8 @@
 			"agent_ready": "Set Agent Ready",
 			"agent_away": "Set Agent Away",
 			"agent_logout": "Agent Logout",
+			"agent_pause": "Agent Pause",
+			"agent_resume": "Agent Resume",
 			"voicemail_cat": "Voicemail",
 			"caller_id_cat": "Caller ID"
 		},
