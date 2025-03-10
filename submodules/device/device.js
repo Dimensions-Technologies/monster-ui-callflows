@@ -423,16 +423,26 @@ define(function(require) {
 							});
 						},
 						media_list: function(callback) {
+
+							var mediaFilters = {
+								paginate: false
+							};
+				
+							if (miscSettings.hideMailboxMedia) {
+								mediaFilters['filter_not_media_source'] = 'recording';
+							}
+
 							self.callApi({
 								resource: 'media.list',
 								data: {
 									accountId: self.accountId,
-									filters: {
-										paginate: false
-									}
+									filters: mediaFilters
 								},
 								success: function(_data, status) {
-									_data.data.unshift(
+
+									var mediaList = _.sortBy(_data.data, function(item) { return item.name.toLowerCase(); });
+
+									mediaList.unshift(
 										{
 											id: '',
 											name: self.i18n.active().callflows.device.default_music
@@ -447,8 +457,7 @@ define(function(require) {
 										}
 									);
 
-									defaults.field_data.music_on_hold = _data.data;
-
+									defaults.field_data.music_on_hold = mediaList;
 									callback(null, _data);
 								}
 							});
