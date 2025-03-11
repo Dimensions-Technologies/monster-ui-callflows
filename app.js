@@ -1306,16 +1306,24 @@ define(function(require) {
 					});
 				},
 				mediaList: function(parallelCallback) {
+
+					var mediaFilters = {
+						paginate: false
+					};
+		
+					if (miscSettings.hideMailboxMedia) {
+						mediaFilters['filter_not_media_source'] = 'recording';
+					}
+
 					self.callApi({
 						resource: 'media.list',
 						data: {
 							accountId: self.accountId,
-							filters: {
-								paginate: false
-							}
+							filters: mediaFilters
 						},
 						success: function(data, status) {
-							parallelCallback && parallelCallback(null, data.data);
+							var mediaList = _.sortBy(data.data, function(item) { return item.name.toLowerCase(); });
+							parallelCallback && parallelCallback(null, mediaList);
 						}
 					});
 				},
