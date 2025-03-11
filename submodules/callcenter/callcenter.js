@@ -158,6 +158,17 @@ define(function(require) {
 								});
 							});
 
+							// add search to dropdown
+							popup_html.find('#queue_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
 								var selectedValue = $('#queue_selector', popup_html).val();

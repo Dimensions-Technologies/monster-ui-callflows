@@ -38,8 +38,9 @@
 
 							<label for="name">{{ @root.i18n.callflows.groups.user }}</label>
 							<div class="input">
-								<select name="extra.select_user_id" id="select_user_id">
-									<option id="empty_option_user" value="empty_option_user">{{ @root.i18n.callflows.groups.select_user }}</option>
+								<select name="extra.select_user_id" id="select_user_id" data-placeholder="Select a user...">
+									<!--<option id="empty_option_user" value="empty_option_user">{{ @root.i18n.callflows.groups.select_user }}</option>-->
+									<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 									{{#each field_data.users}}
 										<option value="{{id}}" id="option_endpoint_{{id}}">{{first_name}} {{last_name}}</option>
 									{{/each}}
@@ -48,8 +49,9 @@
 								
 							<label for="name">{{ @root.i18n.callflows.groups.device }}</label>
 							<div class="input">
-								<select name="extra.select_device_id" id="select_device_id">
-									<option id="empty_option_device" value="empty_option_device">{{ @root.i18n.callflows.groups.select_device }}</option>
+								<select name="extra.select_device_id" id="select_device_id" data-placeholder="Select a device...">
+									<!--<option id="empty_option_device" value="empty_option_device">{{ @root.i18n.callflows.groups.select_device }}</option>-->
+									<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 									{{#each field_data.devices}}
 										<option value="{{id}}" id="option_endpoint_{{id}}">{{name}}</option>
 									{{/each}}

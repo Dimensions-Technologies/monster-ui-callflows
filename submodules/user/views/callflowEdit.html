@@ -5,8 +5,8 @@
 			<div class="popup_field">
 				<!--<label for="user_selector">{{ i18n.callflows.user.which_user }}</label>-->
 				<div class="select_wrapper">
-					<select id="user_selector">
-					<option value="null" hidden>Select a user</option>
+					<select id="user_selector" data-placeholder="Select a user...">
+					<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 					{{#select objects.selected}}
 						{{#each objects.items}}
 							<option value="{{id}}">{{name}}</option>

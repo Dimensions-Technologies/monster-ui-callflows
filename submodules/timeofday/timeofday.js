@@ -874,6 +874,17 @@ define(function(require) {
 								submodule: 'timeofday'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#timeofday_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							$('.inline_action', popup_html).click(function(ev) {
 								var _data = ($(this).data('action') === 'edit') ? { id: $('#timeofday_selector', popup_html).val() } : {},
 									isRule = $('#timeofday_selector option:selected').parents('optgroup').data('type') === 'rules',
@@ -940,6 +951,17 @@ define(function(require) {
 						}));
 
 						timezone.populateDropdown($('#timezone_selector', popup_html), node.getMetadata('timezone') || 'inherit', { inherit: self.i18n.active().defaultTimezone });
+
+						// add search to dropdown
+						popup_html.find('#timezone_selector').chosen({
+							width: '100%',
+							disable_search_threshold: 0,
+							search_contains: true
+						}).on('chosen:showing_dropdown', function() {
+							popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+						});
+
+						popup_html.find('.select_wrapper').addClass('dialog_popup');
 
 						$('#add', popup_html).click(function() {
 							var timezone = $('#timezone_selector', popup_html).val();

@@ -5,8 +5,8 @@
 			<div class="popup_field">
 				<!--<label for="device_selector">{{ i18n.callflows.softphoneDevice.which_device }}</label>-->
 				<div class="select_wrapper">
-					<select id="device_selector">
-						<option value="null" hidden>Select a softphone</option>
+					<select id="device_selector" data-placeholder="Select a softphone...">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select objects.selected}}
 							{{#each objects.items}}
 								<option value="{{ this.id }}">{{ this.name }}</option>

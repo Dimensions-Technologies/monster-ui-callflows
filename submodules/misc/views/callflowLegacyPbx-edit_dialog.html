@@ -5,8 +5,8 @@
 			<div class="popup_field">
 				<!--<label for="object-selector">{{ i18n.callflows.legacyPbxCallflow.which_callflow }}</label>-->
 				<div class="select_wrapper">
-					<select id="object-selector">
-						<option value="null" hidden>Select a pbx</option>
+					<select id="object-selector" data-placeholder="Select a pbx...">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select objects.selected}}
 							{{#each objects.items}}
 									<option value="{{ id }}">{{ name }}</option>

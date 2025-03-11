@@ -5,8 +5,8 @@
             <div class="popup_field">
                 <!--<label for="vmbox_selector">{{ i18n.callflows.vmbox.which_voicemail_box }}</label>-->
                 <div class="select_wrapper">
-                    <select id="vmbox_selector">
-                        <option value="null" hidden>Select a voicemail</option>
+                    <select id="vmbox_selector" data-placeholder="Select a voicemail...">
+                        <option value="null"></option>  <!-- Empty option for Chosen placeholder -->
                     	{{#select selected}}
 							{{#each items}}
 								<option value="{{ this.id }}">{{ this.name }}</option>

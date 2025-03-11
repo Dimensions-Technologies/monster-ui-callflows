@@ -6,8 +6,8 @@
 				<div class="popup_field">
 					<!--<label for="faxbox_selector">{{ i18n.callflows.faxbox.which_faxbox }}</label>-->
 					<div class="select_wrapper">
-						<select id="faxbox_selector">
-						<option value="null" hidden>Select a faxbox</option>
+						<select id="faxbox_selector" data-placeholder="Select a faxbox...">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select selected}}
 							{{#each items}}
 								<option value="{{id}}">{{name}}</option>

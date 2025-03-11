@@ -62,6 +62,20 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
+			// add search to dropdown
+			groups_html.find('#select_user_id').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
+			// add search to dropdown
+			groups_html.find('#select_device_id').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
@@ -113,7 +127,7 @@ define(function(require) {
 			var add_user = function() {
 					var $user = $('#select_user_id', groups_html);
 
-					if ($user.val() !== 'empty_option_user') {
+					if ($user.val() !== 'null') {
 						var user_id = $user.val();
 
 						$.each(data.field_data.users, function(k, v) {
@@ -131,7 +145,8 @@ define(function(require) {
 								});
 
 								self.groupsRenderEndpointList(data, groups_html);
-								$user.val('empty_option_user');
+								//$user.val('empty_option_user');
+								$user.val('null').trigger("chosen:updated");
 							}
 						});
 					}
@@ -139,7 +154,7 @@ define(function(require) {
 				add_device = function() {
 					var $device = $('#select_device_id', groups_html);
 
-					if ($device.val() !== 'empty_option_device') {
+					if ($device.val() !== 'null') {
 						var device_id = $device.val();
 
 						$.each(data.field_data.devices, function(k, v) {
@@ -157,8 +172,8 @@ define(function(require) {
 								});
 
 								self.groupsRenderEndpointList(data, groups_html);
-
-								$device.val('empty_option_device');
+								//$device.val('empty_option_device');
+								$device.val('null').trigger("chosen:updated");
 							}
 						});
 					}
@@ -173,6 +188,7 @@ define(function(require) {
 				self.groupsRenderTable(groups_html);
 			});
 
+			/*
 			groups_html.find('#group-form').on('click', '.action_endpoint.delete', function() {
 
 				var endpoint_id = $(this).data('id');
@@ -189,7 +205,6 @@ define(function(require) {
 						})));
 				}
 
-				/* TODO For some reason splice doesn't work and I don't have time to make it better for now */
 				var new_list = [];
 
 				$.each(data.data.endpoints, function(k, v) {
@@ -204,15 +219,42 @@ define(function(require) {
 				self.groupsRenderTable(groups_html);
 
 			});
+			*/
 
+			groups_html.find('#group-form').on('click', '.action_endpoint.delete', function() {
+
+				var endpoint_id = $(this).data('id');
+			
+				// Removes it from the grid
+				$('#row_endpoint_' + endpoint_id, groups_html).remove();
+			
+				// Re-add it to the dropdown
+				$('#option_endpoint_' + endpoint_id, groups_html).prop('disabled', false).show();
+				$('#select_user_id', groups_html).trigger("chosen:updated");
+				$('#select_device_id', groups_html).trigger("chosen:updated");
+			
+				// If grid empty, add no data line
+				if ($('.rows .row', groups_html).length === 0) {
+					$('.rows', groups_html)
+						.append($(self.getTemplate({
+							name: 'endpoint_row',
+							submodule: 'groups'
+						})));
+				}
+			
+				// Remove from the data array
+				var new_list = data.data.endpoints.filter(v => v.endpoint_id !== endpoint_id);
+				data.data.endpoints = new_list;
+			
+				// Reapply odd/even classes after the deletion
+				self.groupsRenderTable(groups_html);
+			
+			});
+			
 			(target)
 				.empty()
 				.append(groups_html);
 		},
-
-		
-		
-
 		
 		// Added for the subscribed event to avoid refactoring mediaEdit
 		_groupsEdit: function(args) {
@@ -690,6 +732,17 @@ define(function(require) {
 									submodule: 'groups'
 								}));
 
+								// add search to dropdown
+								popup_html.find('#object-selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
 									var selectedValue = $('#object-selector', popup_html).val();
@@ -808,6 +861,17 @@ define(function(require) {
 									},
 									submodule: 'groups'
 								}));
+
+								// add search to dropdown
+								popup_html.find('#object-selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
