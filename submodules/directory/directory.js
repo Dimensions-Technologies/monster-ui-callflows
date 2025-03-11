@@ -46,7 +46,6 @@ define(function(require) {
 
 			self.winkstartTabs(directory_html);
 
-
 			$('.directory-save', directory_html).click(function(ev) {
 				saveButtonEvents(ev);
 			});
@@ -55,6 +54,21 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
+			// add search to default visible dropdowns
+			const chosenSelectors = [
+				'#select_user_id',
+				'#callflow_type',
+				'#callflow_id'
+			];
+			
+			chosenSelectors.forEach(selector => {
+				directory_html.find(selector).chosen({
+					width: '224px',
+					disable_search_threshold: selector === '#callflow_type' ? 10 : 0, // hide search for #callflow_type
+					search_contains: true
+				});
+			});
+			
 			function saveButtonEvents(ev) {
 
 				ev.preventDefault();
@@ -117,14 +131,18 @@ define(function(require) {
 					$userCallflow = $('#userCallflow_id', directory_html),
 					$phoneOnlyCallflow = $('#phoneOnlyCallflow_id', directory_html),
 					$callCentreCallflow = $('#callCentreCallflow_id', directory_html);
-
+			
+				var selectedUser = $user.val() !== "null",
+					selectedCallflow = $callflow.val() !== "null",
+					selectedUserCallflow = $userCallflow.val() !== "null",
+					selectedPhoneOnlyCallflow = $phoneOnlyCallflow.val() !== "null",
+					selectedCallCentreCallflow = $callCentreCallflow.val() !== "null";
+			
 				if (miscSettings.enableDirectoryCallflowFilter) {
-
-					if ($user.val() !== 'empty_option_user' && $callflow.val() !== 'empty_option_callflow' || $user.val() !== 'empty_option_user' && $userCallflow.val() !== 'empty_option_callflow' || $user.val() !== 'empty_option_user' && $phoneOnlyCallflow.val() !== 'empty_option_callflow' || $user.val() !== 'empty_option_user' && $callCentreCallflow.val() !== 'empty_option_callflow') {
-									
+					if (selectedUser && (selectedCallflow || selectedUserCallflow || selectedPhoneOnlyCallflow || selectedCallCentreCallflow)) {
 						var selectedType = $callflowType.val(),
 							callflowId;
-
+			
 						switch (selectedType) {
 							case "callflow":
 								callflowId = $callflow.val();
@@ -139,7 +157,7 @@ define(function(require) {
 								callflowId = $callCentreCallflow.val();
 								break;
 						}
-		
+			
 						var user_id = $user.val(),
 							user_data = {
 								user_id: user_id,
@@ -152,11 +170,11 @@ define(function(require) {
 									return window.translate.directory[param];
 								}
 							};
-	
-						if ($('#row_no_data', directory_html).size() > 0) {
+			
+						if ($('#row_no_data', directory_html).length > 0) {
 							$('#row_no_data', directory_html).remove();
 						}
-
+			
 						$('.rows', directory_html)
 							.prepend($(self.getTemplate({
 								name: 'userRow',
@@ -166,37 +184,39 @@ define(function(require) {
 								},
 								submodule: 'directory'
 							})));
-
+			
 						$('#option_user_' + user_id, directory_html).hide();
-	
-						$user.val('empty_option_user');
-						$callflowType.val('null');
-						$callflow.val('empty_option_callflow');
+			
+						// Destroy Chosen before resetting
+						if ($callflow.data('chosen')) $callflow.chosen("destroy").removeAttr("data-chosen");
+						if ($userCallflow.data('chosen')) $userCallflow.chosen("destroy").removeAttr("data-chosen");
+						if ($phoneOnlyCallflow.data('chosen')) $phoneOnlyCallflow.chosen("destroy").removeAttr("data-chosen");
+						if ($callCentreCallflow.data('chosen')) $callCentreCallflow.chosen("destroy").removeAttr("data-chosen");
 
-						$callflowType.val('null');
-						$('#callflow_type', directory_html).prop('disabled', true);
-						$('#callflow_type', directory_html).addClass('input-readonly');
+						// Reset values
+						$user.val('null').trigger("chosen:updated");
+						$callflowType.val('null').trigger("chosen:updated");
+						$callflow.val('null');
+						$userCallflow.val('null');
+						$phoneOnlyCallflow.val('null');
+						$callCentreCallflow.val('null');
 
-						$('#userCallflow_id', directory_html).hide();
-						$userCallflow.val('empty_option_callflow');
-						$('#phoneOnlyCallflow_id', directory_html).hide();
-						$phoneOnlyCallflow.val('empty_option_callflow');
-						$('#callCentreCallflow_id', directory_html).hide();
-						$callCentreCallflow.val('empty_option_callflow');
+						// Reinitialize Chosen on the visible dropdown
+						$('#callflow_id, #userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id', directory_html)
+							.filter(':visible')
+							.prop('disabled', true)
+							.chosen({ width: '224px', search_contains: true });
 
-						$('#callflow_id', directory_html).show();
-						$callflow.val('empty_option_callflow');
-						$('#callflow_id', directory_html).prop('disabled', true);
-						$('#callflow_id', directory_html).addClass('input-readonly');
-
+						// Disable callflow selectors initially
+						$('#callflow_type', directory_html).prop('disabled', true).addClass('input-readonly').trigger("chosen:updated");
 						$('.add_user_div', directory_html).prop('disabled', true);
-
+			
 					} else {
 						monster.ui.alert('warning', self.i18n.active().callflows.directory.noDataSelected);
 					}
-
 				} else {
-					if ($user.val() !== 'empty_option_user' && $callflow.val() !== 'empty_option_callflow') {
+					if (selectedUser && selectedCallflow) {
+
 						var user_id = $user.val(),
 							user_data = {
 								user_id: user_id,
@@ -209,11 +229,11 @@ define(function(require) {
 									return window.translate.directory[param];
 								}
 							};
-	
-						if ($('#row_no_data', directory_html).size() > 0) {
+			
+						if ($('#row_no_data', directory_html).length > 0) {
 							$('#row_no_data', directory_html).remove();
 						}
-	
+			
 						$('.rows', directory_html)
 							.prepend($(self.getTemplate({
 								name: 'userRow',
@@ -223,10 +243,13 @@ define(function(require) {
 								},
 								submodule: 'directory'
 							})));
+			
 						$('#option_user_' + user_id, directory_html).hide();
-	
-						$user.val('empty_option_user');
-						$callflow.val('empty_option_callflow');
+			
+						// Reset values after adding user
+						$user.val('null').trigger("chosen:updated");
+						$callflow.val('null').trigger("chosen:updated");
+						
 					} else {
 						monster.ui.alert('warning', self.i18n.active().callflows.directory.noDataSelected);
 					}
@@ -235,86 +258,102 @@ define(function(require) {
 
 			$(directory_html).delegate('.action_user.delete', 'click', function() {
 				var user_id = $(this).data('id');
-				//removes it from the grid
+			
+				// Remove user from the grid
 				$('#row_user_' + user_id, directory_html).remove();
-				//re-add it to the dropdown
-				$('#option_user_' + user_id, directory_html).show();
-				//if grid empty, add no data line
-				if ($('.rows .row', directory_html).size() === 0) {
-					$('.rows', directory_html)
-						.append($(self.getTemplate({
-							name: 'userRow',
-							submodule: 'directory'
-						})));
+			
+				// Re-add user to the dropdown
+				var $option = $('#option_user_' + user_id, directory_html);
+				if ($option.length) {
+					$option.show().prop('disabled', false); // Ensure it's visible and selectable
+				}
+			
+				// Force Chosen to recognize the updated dropdown
+				$('#select_user_id', directory_html).trigger("chosen:updated");
+			
+				// If grid is empty, add the "no data" line
+				if ($('.rows .row', directory_html).length === 0) {
+					$('.rows', directory_html).append($(self.getTemplate({
+						name: 'userRow',
+						submodule: 'directory'
+					})));
 				}
 			});
-
-
+			
 			if (miscSettings.enableDirectoryCallflowFilter) {
 
-				$('#callflow_type', directory_html).prop('disabled', true);
-				$('#callflow_type', directory_html).addClass('input-readonly');
-
-				$('#callflow_id', directory_html).prop('disabled', true);
-				$('#callflow_id', directory_html).addClass('input-readonly');
-
+				// Initial state
+				$('#callflow_type', directory_html).prop('disabled', true).addClass('input-readonly').val('null').trigger("chosen:updated");
+				$('#callflow_id', directory_html).prop('disabled', true).addClass('input-readonly').val('null').trigger("chosen:updated");
 				$('.add_user_div', directory_html).prop('disabled', true);
+			
+				$('#userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id', directory_html)
+					.hide() // Hide the original <select>
+					.trigger("chosen:updated"); // Update Chosen.js UI
 
-				$('#userCallflow_id', directory_html).hide();
-				$('#phoneOnlyCallflow_id', directory_html).hide();
-				$('#callCentreCallflow_id', directory_html).hide();
+				// hide the Chosen.js containers
+				$('#userCallflow_id_chosen, #phoneOnlyCallflow_id_chosen, #callCentreCallflow_id_chosen', directory_html).hide();
 
-				$(directory_html).find('#select_user_id').on('change', function() {				
-					var selectedType = this.value;
-					
-					if (selectedType != null) {
-						$('#callflow_type', directory_html).prop('disabled', false);
-						$('#callflow_type', directory_html).removeClass('input-readonly');
+				// Enable callflow type selection when user is selected
+				$('#select_user_id', directory_html).on('change', function() {
+					if ($(this).val() !== "null") {
+						$('#callflow_type', directory_html).prop('disabled', false).removeClass('input-readonly').trigger("chosen:updated");
+					} else {
+						$('#callflow_type', directory_html).prop('disabled', true).addClass('input-readonly').val('null').trigger("chosen:updated");
 					}
-
 				});
 			
-				$(directory_html).find('#callflow_type').on('change', function() {				
-					var selectedType = this.value;
-					
-					$('#callflow_id', directory_html).prop('disabled', false);
-					$('#callflow_id', directory_html).removeClass('input-readonly');
+				// Show correct callflow dropdown based on selected type
+				$('#callflow_type', directory_html).on('change', function() {
+					var selectedType = $(this).val();
 
-					$('#callflow_id', directory_html).hide();
-					$('#userCallflow_id', directory_html).hide();
-					$('#phoneOnlyCallflow_id', directory_html).hide();
-					$('#callCentreCallflow_id', directory_html).hide();
-
-					$('.add_user_div', directory_html).prop('disabled', true);
+					// Hide all callflow dropdowns and properly destroy Chosen instances
+					$('#callflow_id, #userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id', directory_html).each(function() {
+						if ($(this).data('chosen')) {
+							$(this).chosen("destroy").removeAttr("data-chosen"); // Destroy Chosen properly
+						}
+						$(this).hide().val('null'); // Hide dropdown and reset value
+					});
 				
+					// Determine the correct field based on selected type
+					var selectedField;
 					switch (selectedType) {
 						case "callflow":
-							$('#callflow_id', directory_html).show();
+							selectedField = $('#callflow_id', directory_html);
 							break;
 						case "userCallflow":
-							$('#userCallflow_id', directory_html).show();
+							selectedField = $('#userCallflow_id', directory_html);
 							break;
 						case "phoneOnlyCallflow":
-							$('#phoneOnlyCallflow_id', directory_html).show();
+							selectedField = $('#phoneOnlyCallflow_id', directory_html);
 							break;
 						case "callCentreCallflow":
-							$('#callCentreCallflow_id', directory_html).show();
+							selectedField = $('#callCentreCallflow_id', directory_html);
 							break;
+						default:
+							selectedField = null;
+					}
+				
+					// Show only the selected field and initialize Chosen properly
+					if (selectedField) {
+						selectedField.show()
+							.prop('disabled', false) // Ensure it's enabled
+							.chosen({ width: '224px', search_contains: true });
 					}
 
 				});
-
-				$(directory_html).find('#callflow_id, #userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id').on('change', function() {				
-					var selectedType = this.value;
-
-					if (selectedType != null) {
+				
+				// Enable Add button when a callflow is selected
+				$('#callflow_id, #userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id', directory_html).on('change', function() {
+					if ($(this).val() !== "null") {
 						$('.add_user_div', directory_html).prop('disabled', false);
+					} else {
+						$('.add_user_div', directory_html).prop('disabled', true);
 					}
-
 				});
 			
 			}
-
+			
 			if (miscSettings.enableDirectoryCallflowFilter) {
 				$('.rows .row:not(#row_no_data)', directory_html).each(function() {
 					var userCallflowId = $('#user_callflow_id', $(this));

@@ -1776,6 +1776,11 @@
 #callflow_container .account-settings-container .upload-toggle {
 	margin-left: 10px;
 }
+
+#callflow_container .account-settings-container .control-label {
+	margin-top: 4px;
+}
+
 #callflow_container .account-settings-container .upload-div {
 	display: none;
 	margin-top: 20px;
@@ -2254,22 +2259,43 @@
 }
 
 /* align dropdown field width with input fields */
+#account_settings_form #account_settings_misc .input select,
+#account_settings_form #account_settings_misc .chosen-container-single, 
+#account_settings_form #account_settings_misc .chosen-drop,
 .callflows-port #conference_form .input select,
+.callflows-port #conference_form .chosen-container-single, 
+.callflows-port #conference_form .chosen-drop,
 .callflows-port #device-form .input select,
 .callflows-port #device-form .chosen-container-single, 
 .callflows-port #device-form .chosen-drop,
 .callflows-port #directory-form .input select,
+.callflows-port #directory-form .chosen-container-single, 
+.callflows-port #directory-form .chosen-drop,
 .callflows-port #faxbox_form .input select,
 .callflows-port #faxbox_form .chosen-container-single, 
 .callflows-port #faxbox_form .chosen-drop,
 .callflows-port #media-form .input select,
 .callflows-port #menu-form .input select,
+.callflows-port #menu-form .chosen-container-single, 
+.callflows-port #menu-form .chosen-drop,
 .callflows-port #user-form .input select,
 .callflows-port #user-form .chosen-container-single, 
 .callflows-port #user-form .chosen-drop,
 .callflows-port #vmbox-form .input select,
-.callflows-port #group-form .input select {
+.callflows-port #vmbox-form .chosen-container-single, 
+.callflows-port #vmbox-form .chosen-drop,
+.callflows-port #group-form .input select,
+.callflows-port #group-form .chosen-container-single, 
+.callflows-port #group-form .chosen-drop {
     width: 224px !important;
+}
+
+.callflows-port #user-form .chosen-container,
+.callflows-port #device-form .chosen-container,
+.callflows-port #menu-form .chosen-container,
+.callflows-port #vmbox-form .chosen-container,
+.callflows-port #conference_form .chosen-container {
+	margin-bottom: 8px;
 }
 
 .player_file #download_link {
@@ -2297,6 +2323,36 @@
     padding-bottom: 15px;
     color: #2297FF;
     border-bottom: 1px solid #c0c0c9;
+}
+
+/* callflow action popup search */
+.select_wrapper.dialog_popup,
+.select_wrapper.dialog_popup .chosen-drop {
+	width: 300px !important;
+}
+
+.select_wrapper.dialog_popup .chosen-single,
+.select_wrapper.dialog_popup .chosen-results li {
+	text-align: left !important;
+}
+
+.select_wrapper.dialog_popup .chosen-results {
+	max-height: 400px !important;
+}
+
+/* eavsdrop callflow action popup search */
+.select_wrapper.eavesdrop_dialog_popup,
+.select_wrapper.eavesdrop_dialog_popup .chosen-drop {
+	width: 230px !important;
+}
+
+.select_wrapper.eavesdrop_dialog_popup .chosen-single,
+.select_wrapper.eavesdrop_dialog_popup .chosen-results li {
+	text-align: left !important;
+}
+
+.select_wrapper.eavesdrop_dialog_popup .chosen-results {
+	max-height: 400px !important;
 }
 
 /* hide monster alert warning triangle and header */

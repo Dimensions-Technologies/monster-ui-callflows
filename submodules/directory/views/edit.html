@@ -39,24 +39,23 @@
 
 								<label>{{ i18n.callflows.directory.user }}</label>
 								<div class="input user-callflow-select">
-									<select name="select_user_id" id="select_user_id">
-										<!--<option id="empty_option_user" value="empty_option_user">{{ i18n.callflows.directory.select_user }}</option>-->
-										<option id="empty_option_user" value="empty_option_user" hidden>Select a user</option>
+									<select name="select_user_id" id="select_user_id" data-placeholder="Select a user...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										{{#each field_data.users}}
 											<option value="{{ id }}" id="option_user_{{ id }}">{{ first_name }} {{ last_name }}</option>
 										{{/each}}
 									</select>
 									
-									<select name="callflow_type" id="callflow_type">
-										<option value="null" hidden>Select a callflow type</option>
+									<select name="callflow_type" id="callflow_type" data-placeholder="Select a callflow type...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										<option value="callflow">Callflow</option>
 										<option value="userCallflow">User Callflow</option>
 										<option value="phoneOnlyCallflow">Phone Only Device</option>
 										<option value="callCentreCallflow">Call Center Queue</option>
 									</select>
 									
-									<select name="callflow_id" id="callflow_id">
-										<option id="empty_option_callflow" value="empty_option_callflow" hidden>Select a callflow</option>
+									<select name="callflow_id" id="callflow_id" data-placeholder="Select a callflow...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										{{#each field_data.callflows}}
 											<option value="{{ id }}" id="option_callflow_{{ id }}">
 												&nbsp;
@@ -69,8 +68,8 @@
 										{{/each}}
 									</select>
 
-									<select name="callflow_id" id="userCallflow_id">
-										<option id="empty_option_callflow" value="empty_option_callflow" hidden>Select a callflow</option>
+									<select name="callflow_id" id="userCallflow_id" data-placeholder="Select a callflow...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										{{#each field_data.userCallflows}}
 											<option value="{{ id }}" id="option_callflow_{{ id }}">
 												&nbsp;
@@ -83,8 +82,8 @@
 										{{/each}}
 									</select>
 
-									<select name="callflow_id" id="phoneOnlyCallflow_id">
-										<option id="empty_option_callflow" value="empty_option_callflow" hidden>Select a callflow</option>
+									<select name="callflow_id" id="phoneOnlyCallflow_id" data-placeholder="Select a callflow...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										{{#each field_data.phoneOnlyCallflows}}
 											<option value="{{ id }}" id="option_callflow_{{ id }}">
 												&nbsp;
@@ -97,8 +96,8 @@
 										{{/each}}
 									</select>
 
-									<select name="callflow_id" id="callCentreCallflow_id">
-										<option id="empty_option_callflow" value="empty_option_callflow" hidden>Select a callflow</option>
+									<select name="callflow_id" id="callCentreCallflow_id" data-placeholder="Select a callflow...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										{{#each field_data.callCentreCallflows}}
 											<option value="{{ id }}" id="option_callflow_{{ id }}">
 												&nbsp;
@@ -116,15 +115,15 @@
 							{{else}}
 								<label>{{ i18n.callflows.directory.user }}</label>
 								<div class="input user-callflow-select">
-									<select name="select_user_id" id="select_user_id">
-										<option id="empty_option_user" value="empty_option_user">{{ i18n.callflows.directory.select_user }}</option>
+									<select name="select_user_id" id="select_user_id" data-placeholder="Select a user...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										{{#each field_data.users}}
 											<option value="{{ id }}" id="option_user_{{ id }}">{{ first_name }} {{ last_name }}</option>
 										{{/each}}
 									</select>
 									<label>{{ i18n.callflows.directory.callflow }}</label>
-									<select name="callflow_id" id="callflow_id">
-										<option id="empty_option_callflow" value="empty_option_callflow">{{ i18n.callflows.directory.select_callflow }}</option>
+									<select name="callflow_id" id="callflow_id" data-placeholder="Select a callflow...">
+										<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 										{{#each field_data.callflows}}
 											<option value="{{ id }}" id="option_callflow_{{ id }}">
 												&nbsp;

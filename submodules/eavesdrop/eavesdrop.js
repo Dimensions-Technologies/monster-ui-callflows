@@ -75,6 +75,17 @@ define(function(require) {
 								submodule: 'eavesdrop'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#approved_device_selector, #approved_user_selector, #approved_group_selector, #target_device_selector, #target_user_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('eavesdrop_dialog_popup');
+
                             // enable or disable the save button based on the dropdown value
                             function toggleSaveButton() {
                                 var approvedDeviceValue = $('#approved_device_selector', popup_html).val(), 
@@ -99,68 +110,93 @@ define(function(require) {
                             $('#target_user_selector', popup_html).change(toggleSaveButton);
 
 							function approvedDeviceChanged() {
-                                var deviceValue = $('#approved_device_selector', popup_html).val(),
+								var deviceValue = $('#approved_device_selector', popup_html).val(),
 									userValue = $('#approved_user_selector', popup_html).val(),
-                                    groupValue = $('#approved_group_selector', popup_html).val();
-
-                                if (deviceValue != 'null' && userValue != 'null' || deviceValue != 'null' && groupValue != 'null') {
-                                    $('#approved_user_selector', popup_html).val('null');
-									$('#approved_group_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#approved_device_selector', popup_html).change(approvedDeviceChanged);
-
-                            function approvedUserChanged() {
-                                var deviceValue = $('#approved_device_selector', popup_html).val(),
+									groupValue = $('#approved_group_selector', popup_html).val();
+							
+								if ((deviceValue != 'null' && userValue != 'null') || (deviceValue != 'null' && groupValue != 'null')) {
+									$('#approved_user_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+							
+									$('#approved_group_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#approved_device_selector', popup_html).change(approvedDeviceChanged);
+							
+							function approvedUserChanged() {
+								var deviceValue = $('#approved_device_selector', popup_html).val(),
 									userValue = $('#approved_user_selector', popup_html).val(),
-                                    groupValue = $('#approved_group_selector', popup_html).val();
-
-                                if (userValue != 'null' && deviceValue != 'null' || userValue != 'null' && groupValue != 'null') {
-                                    $('#approved_device_selector', popup_html).val('null');
-									$('#approved_group_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#approved_user_selector', popup_html).change(approvedUserChanged);
-
-                            function approvedGroupChanged() {
-                                var deviceValue = $('#approved_device_selector', popup_html).val(),
+									groupValue = $('#approved_group_selector', popup_html).val();
+							
+								if ((userValue != 'null' && deviceValue != 'null') || (userValue != 'null' && groupValue != 'null')) {
+									$('#approved_device_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+							
+									$('#approved_group_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#approved_user_selector', popup_html).change(approvedUserChanged);
+							
+							function approvedGroupChanged() {
+								var deviceValue = $('#approved_device_selector', popup_html).val(),
 									userValue = $('#approved_user_selector', popup_html).val(),
-                                    groupValue = $('#approved_group_selector', popup_html).val();
-                                    
-
-                                if (groupValue != 'null' && deviceValue != 'null' || groupValue != 'null' && userValue != 'null') {
-                                    $('#approved_device_selector', popup_html).val('null');
-									$('#approved_user_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#approved_group_selector', popup_html).change(approvedGroupChanged);
-
+									groupValue = $('#approved_group_selector', popup_html).val();
+							
+								if ((groupValue != 'null' && deviceValue != 'null') || (groupValue != 'null' && userValue != 'null')) {
+									$('#approved_device_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+							
+									$('#approved_user_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#approved_group_selector', popup_html).change(approvedGroupChanged);
+							
 							function targetDeviceChanged() {
-                                var deviceValue = $('#target_device_selector', popup_html).val(), 
-                                    userValue = $('#target_user_selector', popup_html).val();
-                                    
-
-                                if (deviceValue != 'null' && userValue != 'null') {
-                                    $('#target_user_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#target_device_selector', popup_html).change(targetDeviceChanged);
-
-                            function targetUserChanged() {
-                                var userValue = $('#target_user_selector', popup_html).val(),
-                                    deviceValue = $('#target_device_selector', popup_html).val();
-
-                                if (userValue != 'null' && deviceValue != 'null') {
-                                    $('#target_device_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#target_user_selector', popup_html).change(targetUserChanged);
-
+								var deviceValue = $('#target_device_selector', popup_html).val(),
+									userValue = $('#target_user_selector', popup_html).val();
+							
+								if (deviceValue != 'null' && userValue != 'null') {
+									$('#target_user_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#target_device_selector', popup_html).change(targetDeviceChanged);
+							
+							function targetUserChanged() {
+								var userValue = $('#target_user_selector', popup_html).val(),
+									deviceValue = $('#target_device_selector', popup_html).val();
+							
+								if (userValue != 'null' && deviceValue != 'null') {
+									$('#target_device_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#target_user_selector', popup_html).change(targetUserChanged);
+							
 							$('#add', popup_html).click(function() {
 
                                 var setData = function(field, value) {
@@ -180,11 +216,11 @@ define(function(require) {
 								var deviceCaption = $('#target_device_selector option:selected', popup_html).text(),
 									userCaption = $('#target_user_selector option:selected', popup_html).text();
 
-								if (deviceCaption !== "None" ) {
+								if (deviceCaption !== "" ) {
 									node.caption = deviceCaption;
 								}
 								
-								if (userCaption !== "None") {
+								if (userCaption !== "") {
 									node.caption = userCaption;
 								}
                                
@@ -252,6 +288,17 @@ define(function(require) {
 								submodule: 'eavesdrop'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#approved_user_selector, #approved_group_selector, #target_user_selector, #target_group_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('eavesdrop_dialog_popup');
+							
                             // enable or disable the save button based on the dropdown value
                             function toggleSaveButton() {
                                 var approvedUserValue = $('#approved_user_selector', popup_html).val(),
@@ -273,52 +320,61 @@ define(function(require) {
                             $('#target_user_selector', popup_html).change(toggleSaveButton);
                             $('#target_group_selector', popup_html).change(toggleSaveButton);
 
-                            function approvedUserChanged() {
-                                var userValue = $('#approved_user_selector', popup_html).val(),
-                                    groupValue = $('#approved_group_selector', popup_html).val();
+							function approvedUserChanged() {
+								var userValue = $('#approved_user_selector', popup_html).val(),
+									groupValue = $('#approved_group_selector', popup_html).val();
+							
+								if (userValue != 'null' && groupValue != 'null') {
+									$('#approved_group_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#approved_user_selector', popup_html).change(approvedUserChanged);
+							
+							function approvedGroupChanged() {
+								var groupValue = $('#approved_group_selector', popup_html).val(),
+									userValue = $('#approved_user_selector', popup_html).val();
+							
+								if (groupValue != 'null' && userValue != 'null') {
+									$('#approved_user_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#approved_group_selector', popup_html).change(approvedGroupChanged);
 
-                                if (userValue != 'null' && groupValue != 'null') {
-                                    $('#approved_group_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#approved_user_selector', popup_html).change(approvedUserChanged);
-
-                            function approvedGroupChanged() {
-                                var groupValue = $('#approved_group_selector', popup_html).val(), 
-                                    userValue = $('#approved_user_selector', popup_html).val();
-                                    
-
-                                if (groupValue != 'null' && userValue != 'null') {
-                                    $('#approved_user_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#approved_group_selector', popup_html).change(approvedGroupChanged);
-
-                            function targetUserChanged() {
-                                var userValue = $('#target_user_selector', popup_html).val(),
-                                    groupValue = $('#target_group_selector', popup_html).val();
-
-                                if (userValue != 'null' && groupValue != 'null') {
-                                    $('#target_group_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#target_user_selector', popup_html).change(targetUserChanged);
-
-                            function targetGroupChanged() {
-                                var groupValue = $('#target_group_selector', popup_html).val(), 
-                                    userValue = $('#target_user_selector', popup_html).val();
-                                    
-
-                                if (groupValue != 'null' && userValue != 'null') {
-                                    $('#target_user_selector', popup_html).val('null');
-                                }
-                            }
-
-                            $('#target_group_selector', popup_html).change(targetGroupChanged);
-
+							function targetUserChanged() {
+								var userValue = $('#target_user_selector', popup_html).val(),
+									groupValue = $('#target_group_selector', popup_html).val();
+							
+								if (userValue != 'null' && groupValue != 'null') {
+									$('#target_group_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#target_user_selector', popup_html).change(targetUserChanged);
+							
+							function targetGroupChanged() {
+								var groupValue = $('#target_group_selector', popup_html).val(),
+									userValue = $('#target_user_selector', popup_html).val();
+							
+								if (groupValue != 'null' && userValue != 'null') {
+									$('#target_user_selector', popup_html)
+										.val('null')
+										.trigger('chosen:updated')
+										.trigger('change');
+								}
+							}
+							
+							$('#target_group_selector', popup_html).change(targetGroupChanged);
 
 							$('#add', popup_html).click(function() {
 
@@ -342,11 +398,11 @@ define(function(require) {
 								var userCaption = $('#target_user_selector option:selected', popup_html).text(),
 									groupCaption = $('#target_group_selector option:selected', popup_html).text();
 
-								if (userCaption !== "None" ) {
+								if (userCaption !== "" ) {
 									node.caption = userCaption;
 								}
 								
-								if (groupCaption !== "None") {
+								if (groupCaption !== "") {
 									node.caption = groupCaption;
 								}
 							

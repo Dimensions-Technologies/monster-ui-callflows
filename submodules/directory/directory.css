@@ -196,3 +196,8 @@
 	color: red;
 	text-indent: 3px;
 }
+
+.callflows-port #directory-form #basic .user-callflow-select .chosen-container {
+    margin-bottom: 10px;
+	margin-right: 20px;
+}

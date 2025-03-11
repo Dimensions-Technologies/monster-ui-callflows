@@ -873,6 +873,20 @@ define(function(require) {
 					monster.ui.mask($this, $this.data('mask'));
 				});
 
+				// add search to dropdown
+				device_html.find('#owner_id').chosen({
+					width: '224px',
+					disable_search_threshold: 0,
+					search_contains: true
+				})
+
+				// add search to dropdown
+				device_html.find('#music_on_hold_media_id').chosen({
+					width: '224px',
+					disable_search_threshold: 0,
+					search_contains: true
+				})
+
 				if (!$('#music_on_hold_media_id', device_html).val()) {
 					$('#edit_link_media', device_html).hide();
 				}
@@ -2027,6 +2041,17 @@ define(function(require) {
 								submodule: 'device'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
 								var selectedValue = $('#device_selector', popup_html).val();
@@ -2217,6 +2242,17 @@ define(function(require) {
 								submodule: 'device'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
 								var selectedValue = $('#device_selector', popup_html).val();
@@ -2346,6 +2382,17 @@ define(function(require) {
 								},
 								submodule: 'device'
 							}));
+
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
 
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
@@ -2477,6 +2524,17 @@ define(function(require) {
 								submodule: 'device'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
 								var selectedValue = $('#device_selector', popup_html).val();
@@ -2606,6 +2664,17 @@ define(function(require) {
 								},
 								submodule: 'device'
 							}));
+
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
 
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
@@ -2737,6 +2806,17 @@ define(function(require) {
 								submodule: 'device'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
 								var selectedValue = $('#device_selector', popup_html).val();
@@ -2867,6 +2947,17 @@ define(function(require) {
 								submodule: 'device'
 							}));
 
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
 								var selectedValue = $('#device_selector', popup_html).val();
@@ -2996,6 +3087,17 @@ define(function(require) {
 								},
 								submodule: 'device'
 							}));
+
+							// add search to dropdown
+							popup_html.find('#device_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
 
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {

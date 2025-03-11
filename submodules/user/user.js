@@ -113,6 +113,17 @@ define(function(require) {
 								});
 							});
 
+							// add search to dropdown
+							popup_html.find('#user_selector').chosen({
+								width: '100%',
+								disable_search_threshold: 0,
+								search_contains: true
+							}).on('chosen:showing_dropdown', function() {
+								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+							});
+
+							popup_html.find('.select_wrapper').addClass('dialog_popup');
+
 							// enable or disable the save button based on the dropdown value
 							function toggleSaveButton() {
 								var selectedValue = $('#user_selector', popup_html).val();
@@ -1626,6 +1637,20 @@ define(function(require) {
 					}
 				});
 			});
+
+			// add search to dropdown
+			user_html.find('#timezone').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
+			// add search to dropdown
+			user_html.find('#music_on_hold_media_id').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
 
 			user_html.find('#pwd_mngt_pwd1').on('keyup', function(event) {
 				event.preventDefault();

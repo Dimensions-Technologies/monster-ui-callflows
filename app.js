@@ -949,7 +949,14 @@ define(function(require) {
 							})
 						});
 					});
-		
+
+					// add search to dropdown
+					template.find('#music_on_hold_media_id').chosen({
+						width: '224px',
+						disable_search_threshold: 0,
+						search_contains: true
+					})
+
 					monster.ui.tooltips(template);
 		
 					// Setup input fields

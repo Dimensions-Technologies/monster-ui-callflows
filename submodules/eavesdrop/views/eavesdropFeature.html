@@ -8,8 +8,8 @@
             <div class="popup_field">
 				<label for="endpoint_selector">{{ i18n.callflows.eavesdropFeature.approvedUser.label }}</label>
 				<div class="select_wrapper">
-					<select id="approved_user_selector">
-						<option value="null" hidden>{{ i18n.callflows.eavesdropFeature.none }}</option>
+					<select id="approved_user_selector" data-placeholder="None">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select data.approvedUserId}}
 							{{#each fieldData}}
 								{{#compare @key "==" "user"}}
@@ -26,8 +26,8 @@
 			<div class="popup_field">
 				<label for="endpoint_selector">{{ i18n.callflows.eavesdropFeature.approvedGroup.label }}</label>
 				<div class="select_wrapper">
-					<select id="approved_group_selector">
-						<option value="null" hidden>{{ i18n.callflows.eavesdropFeature.none }}</option>
+					<select id="approved_group_selector" data-placeholder="None">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select data.approvedGroupId}}
 							{{#each fieldData}}
 								{{#compare @key "==" "group"}}
@@ -49,8 +49,8 @@
             <div class="popup_field">
 				<label for="endpoint_selector">{{ i18n.callflows.eavesdropFeature.targetUser.label }}</label>
 				<div class="select_wrapper">
-					<select id="target_user_selector">
-						<option value="null" hidden>{{ i18n.callflows.eavesdropFeature.none }}</option>
+					<select id="target_user_selector" data-placeholder="None">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select data.targetUserId}}
 							{{#each fieldData}}
 								{{#compare @key "==" "user"}}
@@ -67,8 +67,8 @@
             <div class="popup_field">
 				<label for="endpoint_selector">{{ i18n.callflows.eavesdropFeature.targetGroup.label }}</label>
 				<div class="select_wrapper">
-					<select id="target_group_selector">
-						<option value="null" hidden>{{ i18n.callflows.eavesdropFeature.none }}</option>
+					<select id="target_group_selector" data-placeholder="None">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select data.targetGroupId}}
 							{{#each fieldData}}
 								{{#compare @key "==" "group"}}
