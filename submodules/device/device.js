@@ -732,7 +732,7 @@ define(function(require) {
 			}
 
 			var self = this,
-				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled,
+				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled || miscSettings.enableCallerIdDropdown,
 				cidSelectors = [
 					'external',
 					'emergency',
