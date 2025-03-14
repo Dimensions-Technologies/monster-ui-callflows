@@ -819,7 +819,7 @@ define(function(require) {
 				},
 				tabsWithCidSelectors = _.keys(cidSelectorsPerTab),
 				selectorsWithReflectedValue = _.spread(_.intersection)(_.map(cidSelectorsPerTab)),
-				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled,
+				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled || miscSettings.enableCallerIdDropdown,
 				allowAddingExternalCallerId;
 
 				if (miscSettings.preventAddingExternalCallerId) {
