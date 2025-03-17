@@ -898,8 +898,9 @@ define(function(require) {
 				}
 		
 				self.loadAccountSettingsData(function(accountSettingsData) {
-					
-					var currentRestrictions = {};
+
+					var currentRestrictions = {},
+						emergencyCallerIdAlertShown;
 					
 					// Get current account call restictions
 					if (accountSettingsData.account.hasOwnProperty('call_restriction')) {
@@ -926,30 +927,130 @@ define(function(require) {
 					var widgetBlacklist = self.renderBlacklists(template, accountSettingsData);
 					var allowAddingExternalCallerId = !miscSettings.preventAddingExternalCallerId;
 		
-					_.forEach(monster.util.getCapability('caller_id.external_numbers').isEnabled ? [
+					_.forEach(monster.util.getCapability('caller_id.external_numbers').isEnabled || miscSettings.enableCallerIdDropdown ? [
 						'external',
 						'emergency',
 						'asserted'
 					] : [], function(type) {
-						var $target = template.find('.caller-id-' + type + '-target');
-		
+						var $target = template.find('.caller-id-' + type + '-target'),
+							selectedNumber = _.get(accountSettingsData.account, ['caller_id', type, 'number']);
+					
+						/*
 						if (!$target.length) {
 							return;
 						}
-						monster.ui.cidNumberSelector($target, {
+						*/
+					
+						var numberList = formattedData.numberList,
+							cidNumbers = formattedData.externalNumbers;
+					
+						if (miscSettings.restrictEmergencyCallerId911 || miscSettings.restrictEmergencyCallerId999) {
+
+							if (type === 'emergency' || type === 'asserted') {
+								numberList = [...formattedData.emergencyCallerIdNumbers];
+								allowAddingExternalCallerId = false;
+								cidNumbers = [];
+							}
+						}
+					
+						var phoneNumbers = { phoneNumbers: numberList.map(num => (typeof num === 'string' ? { number: num } : num)) };
+					
+						if (miscSettings.restrictEmergencyCallerId911 || miscSettings.restrictEmergencyCallerId999) {
+							if (selectedNumber) {
+								var isSelectedInList = _.some(phoneNumbers.phoneNumbers, { number: selectedNumber });
+					
+								if (!isSelectedInList) {
+									phoneNumbers.phoneNumbers.unshift({
+										number: selectedNumber,
+										className: 'invalid-number'
+									});
+					
+									if (miscSettings.enableConsoleLogging) {
+										console.log(selectedNumber + ' is set but missing from dropdown, added to ' + type);
+									}
+								}
+							}
+						}
+					
+						monster.ui.cidNumberSelector($target, _.merge({
 							allowAdd: allowAddingExternalCallerId,
 							noneLabel: self.i18n.active().callflows.accountSettings.callerId.defaultNumber,
 							selectName: 'caller_id.' + type + '.number',
 							selected: _.get(formattedData.account, ['caller_id', type, 'number']),
-							cidNumbers: formattedData.externalNumbers,
-							phoneNumbers: _.map(formattedData.numberList, function(number) {
-								return {
-									number: number
-								};
-							})
-						});
+							cidNumbers: cidNumbers
+						}, phoneNumbers));
+
+						if (miscSettings.restrictEmergencyCallerId911 || miscSettings.restrictEmergencyCallerId999) {
+							$target.find('select[name="caller_id.' + type + '.number"]').on('chosen:showing_dropdown chosen:updated', function() {
+						
+								if (type === 'emergency' || type === 'asserted') {
+									
+									var emergencyNumbersList = _.map(_.keys(accountSettingsData.emergencyCallerIdNumbers), function(number) {
+										return { number: number.replace(/\s+/g, '') };
+									});
+						
+									var $chosenResults = $target.find('.chosen-container .chosen-results li');
+						
+									$chosenResults.each(function() {
+										var $li = $(this),
+											liText = $li.text().trim().replace(/\s+/g, '');
+						
+										if (!/^\+?[0-9]+$/.test(liText)) {
+											return;
+										}
+						
+										if (!_.some(emergencyNumbersList, { number: liText })) {
+											$li.addClass('invalid-number');
+											if ($li.find('.fa-exclamation-circle').length === 0) {
+												$li.append(' <i class="no-address fa fa-exclamation-triangle" aria-hidden="true"></i> <span class="no-address-text"> No Address Set</span>');
+											}
+										}
+									});
+								}
+							});
+						}
+
 					});
 
+					if (miscSettings.restrictEmergencyCallerId911 || miscSettings.restrictEmergencyCallerId999) {
+						function invalidEmergencyCallerId() {
+	
+							template.find('select[name^="caller_id."]').each(function() {
+								var $select = $(this),
+									selectName = $select.attr('name'),
+									selectedValue = $select.val(),
+									$chosenSingle = $select.closest('.monster-cid-number-selector-wrapper')
+														.find('.chosen-container .chosen-single'),
+									emergencyNumbersList = _.keys(accountSettingsData.emergencyCallerIdNumbers);
+								
+								if (selectName.includes('caller_id.emergency') || selectName.includes('caller_id.asserted')) {
+
+									if (selectedValue && !emergencyNumbersList.includes(selectedValue)) {
+										$chosenSingle.addClass('invalid-number');
+										if (!emergencyCallerIdAlertShown) {
+											if (miscSettings.checkEmergencyAddress911 && miscSettings.restrictEmergencyCallerId911) {
+												monster.ui.alert('warning', self.i18n.active().callflows.e911.emergencyCallerIdAddressNotSet);
+											}
+											if (miscSettings.checkEmergencyAddress999 && miscSettings.restrictEmergencyCallerId999) {
+												monster.ui.alert('warning', self.i18n.active().callflows.uk999.emergencyCallerIdAddressNotSet);
+											}
+											emergencyCallerIdAlertShown = true;
+										}
+									} else {
+										$chosenSingle.removeClass('invalid-number');
+									}
+									
+								}
+									
+							});
+	
+						}
+	
+						invalidEmergencyCallerId();
+	
+						template.find('select[name^="caller_id."]').change(invalidEmergencyCallerId);
+					}
+					
 					// add search to dropdown
 					template.find('#music_on_hold_media_id').chosen({
 						width: '224px',
@@ -1018,11 +1119,12 @@ define(function(require) {
 						_.toLower
 					))
 					.value(),
-				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled;
+				hasExternalCallerId = monster.util.getCapability('caller_id.external_numbers').isEnabled || miscSettings.enableCallerIdDropdown;
 
 			return _.merge({
 				hasExternalCallerId: hasExternalCallerId,
 				numberList: _.keys(data.numberList),
+				emergencyCallerIdNumbers: _.keys(data.emergencyCallerIdNumbers),
 				extra: {
 					isShoutcast: isShoutcast,
 					preflowCallflows: preflowCallflows
@@ -1279,6 +1381,7 @@ define(function(require) {
 
 		loadAccountSettingsData: function(callback) {
 			var self = this;
+			
 			monster.parallel(_.merge({
 				account: function(parallelCallback) {
 					self.callApi({
@@ -1306,15 +1409,12 @@ define(function(require) {
 					});
 				},
 				mediaList: function(parallelCallback) {
-
-					var mediaFilters = {
-						paginate: false
-					};
-		
+					var mediaFilters = { paginate: false };
+			
 					if (miscSettings.hideMailboxMedia) {
 						mediaFilters['filter_not_media_source'] = 'recording';
 					}
-
+			
 					self.callApi({
 						resource: 'media.list',
 						data: {
@@ -1355,7 +1455,34 @@ define(function(require) {
 						}
 					});
 				}
-			}, monster.util.getCapability('caller_id.external_numbers').isEnabled && {
+			}, 
+			
+			(miscSettings.restrictEmergencyCallerId911 || miscSettings.restrictEmergencyCallerId999) && {
+				emergencyCallerIdNumbers: function(parallelCallback) {
+					var filters = { paginate: false };
+			
+					if (miscSettings.restrictEmergencyCallerId911) {
+						filters.has_key = 'e911';
+					}
+					
+					if (miscSettings.restrictEmergencyCallerId999) {
+						filters.has_key = 'dimension.uk_999';
+					}
+			
+					self.callApi({
+						resource: 'numbers.list',
+						data: {
+							accountId: self.accountId,
+							filters: filters
+						},
+						success: function(data, status) {
+							parallelCallback && parallelCallback(null, data.data.numbers);
+						}
+					});
+				}
+			},
+			
+			monster.util.getCapability('caller_id.external_numbers').isEnabled && {
 				externalNumbers: function(next) {
 					self.callApi({
 						resource: 'externalNumbers.list',
@@ -1372,6 +1499,7 @@ define(function(require) {
 			}), function(err, results) {
 				callback && callback(results);
 			});
+			
 		},
 
 		hackResize: function(container) {

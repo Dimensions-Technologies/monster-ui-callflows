@@ -2355,6 +2355,47 @@
 	max-height: 400px !important;
 }
 
+/* invalid number formatting for selected value */
+.invalid-number {
+    color: red !important;
+}
+
+.chosen-container-single .chosen-single.invalid-number span {
+    color: red !important;
+}
+
+/* invalid number formatting in caller id dropdown  */
+#user-form .chosen-container .chosen-results li.invalid-number.highlighted,
+#device-form .chosen-container .chosen-results li.invalid-number.highlighted,
+#account_settings_form .chosen-container .chosen-results li.invalid-number.highlighted {
+    color: #ffffff !important;
+}
+
+#user-form .no-address.fa.fa-exclamation-triangle,
+#device-form .no-address.fa.fa-exclamation-triangle,
+#account_settings_form .no-address.fa.fa-exclamation-triangle {
+	color: red;
+	padding-left: 5px;
+}
+
+#user-form .highlighted .no-address.fa.fa-exclamation-triangle,
+#device-form .highlighted .no-address.fa.fa-exclamation-triangle,
+#account_settings_form .highlighted .no-address.fa.fa-exclamation-triangle {
+	color: #ffffff;
+}
+
+#user-form .no-address-text,
+#device-form .no-address-text,
+#account_settings_form .no-address-text {
+	color: red;
+}
+
+#user-form .highlighted .no-address-text,
+#device-form .highlighted .no-address-text,
+#account_settings_form .highlighted .no-address-text {
+	color: #ffffff;
+}
+
 /* hide monster alert warning triangle and header */
 /*
 .alert-dialog .dialog-content .dialog-header,
