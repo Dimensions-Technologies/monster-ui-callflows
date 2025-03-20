@@ -710,70 +710,91 @@ define(function(require) {
 									}
 								});
 
-								/*
-								$.each(data.data, function() {
-									if (!this.featurecode && this.id !== self.flow.id) {
-										this.name = this.name ? this.name : ((this.numbers) ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
+								var selectedId = node.getMetadata('callflow_id') || '',
+									selectedItem = _.find(_data, { id: selectedId });
 
-										_data.push(this);
-									}
-								});
-								*/
-
-								popup_html = $(self.getTemplate({
-									name: 'ring_group_login_dialog',
-									data: {
-										objects: {
-											type: 'callflow',
-											items: _.sortBy(_data, 'name'),
-											selected: node.getMetadata('callflow_id') || ''
+								if (!selectedItem && selectedId) {
+									self.checkItemExists({
+										selectedId: selectedId,
+										itemList: _data,
+										resource: 'callflow',
+										resourceId: 'callflowId',
+										callback: function(itemNotFound) { 
+											renderPopup(itemNotFound);
 										}
-									},
-									submodule: 'groups'
-								}));
-
-								// add search to dropdown
-								popup_html.find('#object-selector').chosen({
-									width: '100%',
-									disable_search_threshold: 0,
-									search_contains: true
-								}).on('chosen:showing_dropdown', function() {
-									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-								});
-
-								popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-								// enable or disable the save button based on the dropdown value
-								function toggleSaveButton() {
-									var selectedValue = $('#object-selector', popup_html).val();
-									
-									if (selectedValue == 'null') {
-										$('#add', popup_html).prop('disabled', true);
-									} else {
-										$('#add', popup_html).prop('disabled', false);
-									}
+									});
+								} else {
+									renderPopup(false);
 								}
 
-								toggleSaveButton();
+								function renderPopup(itemNotFound) {
+									popup_html = $(self.getTemplate({
+										name: 'ring_group_login_dialog',
+										data: {
+											objects: {
+												type: 'callflow',
+												items: _.sortBy(_data, 'name'),
+												selected: node.getMetadata('callflow_id') || ''
+											}
+										},
+										submodule: 'groups'
+									}));
 
-								$('#object-selector', popup_html).change(toggleSaveButton);
+									var selector = popup_html.find('#object-selector');
 
-								$('#add', popup_html).click(function() {
-									node.setMetadata('callflow_id', $('#object-selector', popup_html).val());
+									if (itemNotFound) {
+										selector.attr("data-placeholder", "Configured Callflow Not Found").addClass("item-not-found").trigger("chosen:updated");
+									}
 
-									node.caption = $('#object-selector option:selected', popup_html).text();
+									selector.on("change", function() {
+										if ($(this).val() !== null) {
+											$(this).removeClass("item-not-found");
+										}
+									});
 
-									popup.dialog('close');
-								});
+									// add search to dropdown
+									popup_html.find('#object-selector').chosen({
+										width: '100%',
+										disable_search_threshold: 0,
+										search_contains: true
+									}).on('chosen:showing_dropdown', function() {
+										popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+									});
 
-								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().callflows.ringGroupToggle.loginPopupTitle,
-									beforeClose: function() {
-										if (typeof callback === 'function') {
-											callback();
+									popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+									// enable or disable the save button based on the dropdown value
+									function toggleSaveButton() {
+										var selectedValue = $('#object-selector', popup_html).val();
+										
+										if (selectedValue == 'null') {
+											$('#add', popup_html).prop('disabled', true);
+										} else {
+											$('#add', popup_html).prop('disabled', false);
 										}
 									}
-								});
+
+									toggleSaveButton();
+
+									$('#object-selector', popup_html).change(toggleSaveButton);
+
+									$('#add', popup_html).click(function() {
+										node.setMetadata('callflow_id', $('#object-selector', popup_html).val());
+
+										node.caption = $('#object-selector option:selected', popup_html).text();
+
+										popup.dialog('close');
+									});
+
+									popup = monster.ui.dialog(popup_html, {
+										title: self.i18n.active().callflows.ringGroupToggle.loginPopupTitle,
+										beforeClose: function() {
+											if (typeof callback === 'function') {
+												callback();
+											}
+										}
+									});
+								}
 							}
 						});
 					}
@@ -840,70 +861,91 @@ define(function(require) {
 									}
 								});
 
-								/*
-								$.each(data.data, function() {
-									if (!this.featurecode && this.id !== self.flow.id) {
-										this.name = this.name ? this.name : ((this.numbers) ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers);
+								var selectedId = node.getMetadata('callflow_id') || '',
+									selectedItem = _.find(_data, { id: selectedId });
 
-										_data.push(this);
-									}
-								});
-								*/
-
-								popup_html = $(self.getTemplate({
-									name: 'ring_group_logout_dialog',
-									data: {
-										objects: {
-											type: 'callflow',
-											items: _.sortBy(_data, 'name'),
-											selected: node.getMetadata('callflow_id') || ''
+								if (!selectedItem && selectedId) {
+									self.checkItemExists({
+										selectedId: selectedId,
+										itemList: _data,
+										resource: 'callflow',
+										resourceId: 'callflowId',
+										callback: function(itemNotFound) { 
+											renderPopup(itemNotFound);
 										}
-									},
-									submodule: 'groups'
-								}));
-
-								// add search to dropdown
-								popup_html.find('#object-selector').chosen({
-									width: '100%',
-									disable_search_threshold: 0,
-									search_contains: true
-								}).on('chosen:showing_dropdown', function() {
-									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-								});
-
-								popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-								// enable or disable the save button based on the dropdown value
-								function toggleSaveButton() {
-									var selectedValue = $('#object-selector', popup_html).val();
-									
-									if (selectedValue == 'null') {
-										$('#add', popup_html).prop('disabled', true);
-									} else {
-										$('#add', popup_html).prop('disabled', false);
-									}
+									});
+								} else {
+									renderPopup(false);
 								}
 
-								toggleSaveButton();
+								function renderPopup(itemNotFound) {
+									popup_html = $(self.getTemplate({
+										name: 'ring_group_logout_dialog',
+										data: {
+											objects: {
+												type: 'callflow',
+												items: _.sortBy(_data, 'name'),
+												selected: node.getMetadata('callflow_id') || ''
+											}
+										},
+										submodule: 'groups'
+									}));
 
-								$('#object-selector', popup_html).change(toggleSaveButton);
+									var selector = popup_html.find('#object-selector');
 
-								$('#add', popup_html).click(function() {
-									node.setMetadata('callflow_id', $('#object-selector', popup_html).val());
+									if (itemNotFound) {
+										selector.attr("data-placeholder", "Configured Callflow Not Found").addClass("item-not-found").trigger("chosen:updated");
+									}
 
-									node.caption = $('#object-selector option:selected', popup_html).text();
+									selector.on("change", function() {
+										if ($(this).val() !== null) {
+											$(this).removeClass("item-not-found");
+										}
+									});
 
-									popup.dialog('close');
-								});
+									// add search to dropdown
+									popup_html.find('#object-selector').chosen({
+										width: '100%',
+										disable_search_threshold: 0,
+										search_contains: true
+									}).on('chosen:showing_dropdown', function() {
+										popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+									});
 
-								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().callflows.ringGroupToggle.logoutPopupTitle,
-									beforeClose: function() {
-										if (typeof callback === 'function') {
-											callback();
+									popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+									// enable or disable the save button based on the dropdown value
+									function toggleSaveButton() {
+										var selectedValue = $('#object-selector', popup_html).val();
+										
+										if (selectedValue == 'null') {
+											$('#add', popup_html).prop('disabled', true);
+										} else {
+											$('#add', popup_html).prop('disabled', false);
 										}
 									}
-								});
+
+									toggleSaveButton();
+
+									$('#object-selector', popup_html).change(toggleSaveButton);
+
+									$('#add', popup_html).click(function() {
+										node.setMetadata('callflow_id', $('#object-selector', popup_html).val());
+
+										node.caption = $('#object-selector option:selected', popup_html).text();
+
+										popup.dialog('close');
+									});
+
+									popup = monster.ui.dialog(popup_html, {
+										title: self.i18n.active().callflows.ringGroupToggle.logoutPopupTitle,
+										beforeClose: function() {
+											if (typeof callback === 'function') {
+												callback();
+											}
+										}
+									});
+								}
 							}
 						});
 					}

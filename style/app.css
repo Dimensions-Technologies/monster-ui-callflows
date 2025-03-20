@@ -140,6 +140,7 @@
 	cursor: -moz-grab;
 	cursor: -webkit-grab;
 	cursor: grab;
+	margin: 0px 4px;
 }
 
 #ws_callflow .callflow .node.disabled,
@@ -2331,6 +2332,20 @@
 	width: 300px !important;
 }
 
+/* callflow action popup search */
+.select_wrapper.dialog_popup_small,
+.select_wrapper.dialog_popup_small .chosen-drop {
+	width: 220px !important;
+}
+
+.select_wrapper.dialog_popup_small input.chosen-search-input {
+	width: 210px !important;
+}
+
+.select_wrapper.dialog_popup_small .chosen-container .chosen-results {
+    text-align: left !important;
+}
+
 .select_wrapper.dialog_popup .chosen-single,
 .select_wrapper.dialog_popup .chosen-results li {
 	text-align: left !important;
@@ -2395,6 +2410,16 @@
 #account_settings_form .highlighted .no-address-text {
 	color: #ffffff;
 }
+
+.item-not-found + .chosen-container-single .chosen-single.chosen-default span {
+    color: red;
+}
+
+/*
+#ws_callflow .callflow .node:not([id="0"]):hover {
+    transform: scale(1.02);
+}
+*/
 
 /* hide monster alert warning triangle and header */
 /*

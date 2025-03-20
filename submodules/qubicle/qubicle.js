@@ -51,59 +51,90 @@ define(function(require) {
 					},
 					edit: function(node, callback) {
 						self.qubicleList(function(data) {
-							var popup_html = $(self.getTemplate({
-									name: 'callflowEdit',
-									data: {
-										items: _.sortBy(data, 'name'),
-										selected: node.getMetadata('id') || ''
-									},
-									submodule: 'qubicle'
-								})),
-								popup;
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(data, { id: selectedId });
 
-							// add search to dropdown
-							popup_html.find('#queue_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
-
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#queue_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-								}
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: data,
+									resource: 'qubicleQueues',
+									resourceId: 'queueId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
 							}
 
-							toggleSaveButton();
+							function renderPopup(itemNotFound) {
+								var popup_html = $(self.getTemplate({
+										name: 'callflowEdit',
+										data: {
+											items: _.sortBy(data, 'name'),
+											selected: node.getMetadata('id') || ''
+										},
+										submodule: 'qubicle'
+									})),
+									popup;
 
-							$('#queue_selector', popup_html).change(toggleSaveButton);
+								var selector = popup_html.find('#queue_selector');
 
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#queue_selector', popup_html).val());
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Queue Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
 
-								node.caption = $('#queue_selector option:selected', popup_html).text();
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
 
-								popup.dialog('close');
-							});
+								// add search to dropdown
+								popup_html.find('#queue_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.qubicle.qubicle,
-								minHeight: '0',
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#queue_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
 									}
 								}
-							});
+
+								toggleSaveButton();
+
+								$('#queue_selector', popup_html).change(toggleSaveButton);
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#queue_selector', popup_html).val());
+
+									node.caption = $('#queue_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.qubicle.qubicle,
+									minHeight: '0',
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
 						});
 					}
 				}

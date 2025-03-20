@@ -2243,7 +2243,8 @@ define(function(require) {
 				resource: 'callflow.get',
 				data: {
 					accountId: self.accountId,
-					callflowId: data.id
+					callflowId: data.id,
+					generateError: false
 				},
 				success: function(callflow) {
 					var callflow = callflow.data,
@@ -2326,6 +2327,14 @@ define(function(require) {
 						
 
 					});
+				}, 
+				error: function(data) {
+					console.log('data', data);
+					if (data.error === "404") {
+						monster.ui.alert('error', self.i18n.active().callflows.previewError404, null, { title: 'Preview Error' });
+					} else {
+						monster.ui.alert('error', self.i18n.active().callflows.previewError, null, { title: 'Preview Error' });
+					}
 				}
 			});
 		},
@@ -3611,12 +3620,49 @@ define(function(require) {
 
 				}
 			});
-		}
-					
-		
-		
+		},
 
-		
+		checkItemExists: function(data) {
+
+			var self = this,
+				resourceGet = data.resource + '.get',
+				resourceId = data.resourceId,
+				itemList = data.itemList,
+				selectedId = data.selectedId,
+				callback = data.callback,
+				node = data.node || undefined;
+				
+			self.callApi({
+				resource: resourceGet,
+				data: {
+					accountId: self.accountId,
+					[resourceId]: selectedId,
+					generateError: false
+				},
+				success: function(data) {
+					var response = data.data,
+						responseData = {
+							id: response.id,
+							name: response.name
+						},
+						exists = _.find(itemList, { id: responseData.id });
+					
+					if (!exists) {
+						if (resourceId == 'userId') {
+							responseData.name = response.first_name + ' ' + response.last_name;
+						}
+
+						itemList = itemList || [];
+						itemList.push(responseData);
+					}
+					callback(false);
+				},
+				error: function() {
+					callback(true);
+				}
+			});
+
+		}	
 
 	};
 

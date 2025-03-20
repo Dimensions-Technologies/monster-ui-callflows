@@ -990,69 +990,111 @@ define(function(require) {
 						self.directoryList(function(directories) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowEdit',
-								data: {
-									items: _.sortBy(directories, 'name'),
-									selected: node.getMetadata('id') || ''
-								},
-								submodule: 'directory'
-							}));
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(directories, { id: selectedId });
 
-							if ($('#directory_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#directory_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.directoryPopupEdit({
-									data: _data,
-									callback: function(_data) {
-										node.setMetadata('id', _data.id || 'null');
-
-										node.caption = _data.name || '';
-
-										popup.dialog('close');
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: directories,
+									resource: 'directory',
+									resourceId: 'directoryId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
 									}
 								});
-							});
-
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#directory_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
-									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
-								}
+							} else {
+								renderPopup(false);
 							}
 
-							toggleSaveButton();
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowEdit',
+									data: {
+										items: _.sortBy(directories, 'name'),
+										selected: node.getMetadata('id') || ''
+									},
+									submodule: 'directory'
+								}));
 
-							$('#directory_selector', popup_html).change(toggleSaveButton);
+								if ($('#directory_selector option:selected', popup_html).val() === undefined) {
+									$('#edit_link', popup_html).hide();
+								}
 
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#directory_selector', popup).val());
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#directory_selector', popup_html).val() } : {};
 
-								node.caption = $('#directory_selector option:selected', popup).text();
+									ev.preventDefault();
 
-								popup.dialog('close');
-							});
+									self.directoryPopupEdit({
+										data: _data,
+										callback: function(_data) {
+											node.setMetadata('id', _data.id || 'null');
 
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.directory.directory_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+											node.caption = _data.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								var selector = popup_html.find('#directory_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Directory Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
+
+								// add search to dropdown
+								popup_html.find('#directory_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#directory_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
 									}
 								}
-							});
+
+								toggleSaveButton();
+
+								$('#directory_selector', popup_html).change(toggleSaveButton);
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#directory_selector', popup).val());
+
+									node.caption = $('#directory_selector option:selected', popup).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.directory.directory_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
 						});
 					},
 					listEntities: function(callback) {

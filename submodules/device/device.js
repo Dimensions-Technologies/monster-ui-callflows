@@ -2166,108 +2166,140 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.device.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.device.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
+
 					},
 					listEntities: function(callback) {
 						var getDeviceWithTemplate = function(device) {
@@ -2367,107 +2399,138 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowCellphoneEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowCellphoneEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.cellphoneDevice.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.cellphoneDevice.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
 					},
 					editEntity: 'callflows.device.edit'
@@ -2508,107 +2571,138 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowSmartphoneEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowSmartphoneEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.smartphoneDevice.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.smartphoneDevice.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
 					},
 					editEntity: 'callflows.device.edit'
@@ -2649,107 +2743,138 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowLandlineEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowLandlineEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.landlineDevice.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.landlineDevice.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
 					},
 					editEntity: 'callflows.device.edit'
@@ -2790,107 +2915,138 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowSoftphoneEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowSoftphoneEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.softphoneDevice.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.softphoneDevice.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
 					},
 					editEntity: 'callflows.device.edit'
@@ -2931,107 +3087,138 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowFaxEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowFaxEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.faxDevice.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.faxDevice.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
 					},
 					editEntity: 'callflows.device.edit'
@@ -3072,107 +3259,138 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowAtaEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowAtaEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.ataDevice.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.ataDevice.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
 					},
 					editEntity: 'callflows.device.edit'
@@ -3213,107 +3431,138 @@ define(function(require) {
 						self.deviceList(function(devices) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowSipUriEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(devices, { id: selectedId });
+
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: devices,
+									resource: 'device',
+									resourceId: 'deviceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowSipUriEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(devices, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(devices, 'name'),
-										selected: node.getMetadata('id') || ''
+									submodule: 'device'
+								}));
+
+								var selector = popup_html.find('#device_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Device Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
-								},
-								submodule: 'device'
-							}));
+								});
 
-							// add search to dropdown
-							popup_html.find('#device_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+								// add search to dropdown
+								popup_html.find('#device_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#device_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#device_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#device_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								if ($('#device_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
 
-							$('#device_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.devicePopupEdit({
+										data: _data,
+										callback: function(device) {
+											node.setMetadata('id', device.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = device.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#device_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#device_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.sipUriDevice.device_title,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								
 								});
 							}
-
-							if ($('#device_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#device_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.devicePopupEdit({
-									data: _data,
-									callback: function(device) {
-										node.setMetadata('id', device.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-										node.caption = device.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#device_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#device_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#device_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.sipUriDevice.device_title,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						}, deviceType);
 					},
 					editEntity: 'callflows.device.edit'

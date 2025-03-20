@@ -865,74 +865,127 @@ define(function(require) {
 
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowKey',
-								data: {
-									items: formattedData,
-									selected: child_node.key
-								},
-								submodule: 'timeofday'
-							}));
+							var selectedId = child_node.key || '',
+								selectedItem = _.find(formattedData.rules, { id: selectedId });
 
-							// add search to dropdown
-							popup_html.find('#timeofday_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
-
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#timeofday_selector', popup_html).val() } : {},
-									isRule = $('#timeofday_selector option:selected').parents('optgroup').data('type') === 'rules',
-									methodToCall = $(this).data('action') === 'edit' ? (isRule ? 'timeofdayPopupEdit' : 'temporalsetPopupEdit') : 'timeofdayPopupEdit';
-
-								ev.preventDefault();
-
-								self[methodToCall]({
-									data: _data,
-									callback: function(timeofday) {
-										child_node.key = timeofday.id || 'null';
-
-										child_node.key_caption = timeofday.name || '';
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							if ($('#timeofday_selector option:selected', popup_html).val() === '_') {
-								$('#edit_link', popup_html).hide();
+							if (!selectedItem) {
+								selectedItem = _.find(formattedData.sets, { id: selectedId });
 							}
 
-							$('#timeofday_selector', popup_html).change(function() {
-								$('#timeofday_selector option:selected', popup_html).val() === '_' ? $('#edit_link', popup_html).hide() : $('#edit_link', popup_html).show();
-							});
+							if (!selectedItem && selectedId) {
+								monster.parallel({
+									'rules': function(callback) {
+										self.checkItemExists({
+											selectedId: selectedId,
+											itemList: formattedData.rules,
+											resource: 'temporalRule',
+											resourceId: 'ruleId',
+											callback: function(itemNotFound) {
+												callback(null, { itemNotFound });
+											}
+										});
+									},
+									'sets': function(callback) {
+										self.checkItemExists({
+											selectedId: selectedId,
+											itemList: formattedData.rules,
+											resource: 'temporalSet',
+											resourceId: 'setId',
+											callback: function(itemNotFound) {
+												callback(null, { itemNotFound });
+											}
+										});
+									},
+								}, function(error, results) {
+									var itemNotFound = results.rules.itemNotFound || results.sets.itemNotFound;
+									renderPopup(itemNotFound);
+								});
+							} else {
+								renderPopup(false);
+							}
 
-							$('#add', popup_html).click(function() {
-								child_node.key = $('#timeofday_selector', popup_html).val();
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowKey',
+									data: {
+										items: formattedData,
+										selected: child_node.key
+									},
+									submodule: 'timeofday'
+								}));
 
-								child_node.key_caption = $('#timeofday_selector option:selected', popup_html).text();
-								
-								// trim branch.key_caption if the length exceeds 22 characters
-								if (child_node.key_caption.length > 22) {
-									child_node.key_caption = child_node.key_caption.substring(0, 22) + '...';
-								} 
+								var selector = popup_html.find('#timeofday_selector');
 
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.timeofday.time_of_day,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Time of Day Not Found").addClass("item-not-found").trigger("chosen:updated");
 								}
-							});
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
+
+								// add search to dropdown
+								popup_html.find('#timeofday_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#timeofday_selector', popup_html).val() } : {},
+										isRule = $('#timeofday_selector option:selected').parents('optgroup').data('type') === 'rules',
+										methodToCall = $(this).data('action') === 'edit' ? (isRule ? 'timeofdayPopupEdit' : 'temporalsetPopupEdit') : 'timeofdayPopupEdit';
+
+									ev.preventDefault();
+
+									self[methodToCall]({
+										data: _data,
+										callback: function(timeofday) {
+											child_node.key = timeofday.id || 'null';
+
+											child_node.key_caption = timeofday.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								if ($('#timeofday_selector option:selected', popup_html).val() === '_') {
+									$('#edit_link', popup_html).hide();
+								}
+
+								$('#timeofday_selector', popup_html).change(function() {
+									$('#timeofday_selector option:selected', popup_html).val() === '_' ? $('#edit_link', popup_html).hide() : $('#edit_link', popup_html).show();
+								});
+
+								$('#add', popup_html).click(function() {
+									child_node.key = $('#timeofday_selector', popup_html).val();
+
+									child_node.key_caption = $('#timeofday_selector option:selected', popup_html).text();
+									
+									// trim branch.key_caption if the length exceeds 22 characters
+									if (child_node.key_caption.length > 22) {
+										child_node.key_caption = child_node.key_caption.substring(0, 22) + '...';
+									} 
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.timeofday.time_of_day,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
 						});
 					},
 					caption: function(node) {
