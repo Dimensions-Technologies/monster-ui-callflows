@@ -62,82 +62,113 @@ define(function(require) {
 						var _this = this;
 
 						self.faxboxList(function(data, status) {
-							var popup_html = $(self.getTemplate({
-									name: 'callflowEdit',
-									data: {
-										items: _.sortBy(data, 'name'),
-										selected: node.getMetadata('id') || ''
-									},
-									submodule: 'faxbox'
-								})),
-								popup;
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(data, { id: selectedId });
 
-							if ($('#faxbox_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#faxbox_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.faxboxPopupEdit({
-									data: _data,
-									callback: function(_data) {
-										node.setMetadata('id', _data.id || 'null');
-
-										node.caption = _data.name || '';
-
-										popup.dialog('close');
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: data,
+									resource: 'faxbox',
+									resourceId: 'faxboxId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
 									}
 								});
-							});
-
-							// add search to dropdown
-							popup_html.find('#faxbox_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
-
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#faxbox_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
-									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
-								}
+							} else {
+								renderPopup(false);
 							}
+							
+							function renderPopup(itemNotFound) {
+								var popup_html = $(self.getTemplate({
+										name: 'callflowEdit',
+										data: {
+											items: _.sortBy(data, 'name'),
+											selected: node.getMetadata('id') || ''
+										},
+										submodule: 'faxbox'
+									})),
+									popup;
 
-							toggleSaveButton();
+								if ($('#faxbox_selector option:selected', popup_html).val() === undefined) {
+									$('#edit_link', popup_html).hide();
+								}
 
-							$('#faxbox_selector', popup_html).change(toggleSaveButton);
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#faxbox_selector', popup_html).val() } : {};
 
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#faxbox_selector', popup_html).val());
+									ev.preventDefault();
 
-								node.caption = $('#faxbox_selector option:selected', popup_html).text();
+									self.faxboxPopupEdit({
+										data: _data,
+										callback: function(_data) {
+											node.setMetadata('id', _data.id || 'null');
 
-								popup.dialog('close');
-							});
+											node.caption = _data.name || '';
 
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.faxbox.faxboxes_label,
-								minHeight: '0',
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+											popup.dialog('close');
+										}
+									});
+								});
+
+								var selector = popup_html.find('#faxbox_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Faxbox Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
+
+								// add search to dropdown
+								popup_html.find('#faxbox_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#faxbox_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
 									}
 								}
-							});
+
+								toggleSaveButton();
+
+								$('#faxbox_selector', popup_html).change(toggleSaveButton);
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#faxbox_selector', popup_html).val());
+
+									node.caption = $('#faxbox_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.faxbox.faxboxes_label,
+									minHeight: '0',
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
 						});
 					},
 					listEntities: function(callback) {

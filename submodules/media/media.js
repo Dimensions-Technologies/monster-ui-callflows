@@ -520,108 +520,141 @@ define(function(require) {
 							var popup, popup_html,
 								mediaId = node.getMetadata('id') || '',
 								isSilence = !mediaId || (mediaId && mediaId === 'silence_stream://300000'), // because silence is the default choice, we test for !mediaId
-								isShoutcast = mediaId.indexOf('://') >= 0 && mediaId !== 'silence_stream://300000';
+								isShoutcast = mediaId.indexOf('://') >= 0 && mediaId !== 'silence_stream://300000',
+								selectedItem = _.find(medias, { id: mediaId });
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowEdit',
-								data: {
-									items: medias,
-									selected: isShoutcast ? 'shoutcast' : mediaId,
-									isShoutcast: isShoutcast,
-									shoutcastValue: mediaId,
-									isEditable: !isShoutcast && !isSilence
-								},
-								submodule: 'media'
-							}));
 
-							// add search to dropdown
-							popup_html.find('#media_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(medias, { id: selectedId });
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-							
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#media_selector', popup_html).val(),
-									streamUrl = $('.shoutcast-url-input', popup_html).val();
-
-								if (selectedValue == 'null' || selectedValue == 'shoutcast' && streamUrl == '') {
-									$('#add', popup_html).prop('disabled', true);
-									$('#edit_link', popup_html).hide();
-								} else if (selectedValue == 'silence_stream://300000') {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).hide();
-								} else if (selectedValue == 'shoutcast' && streamUrl != '') {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
-								}
-							}
-
-							toggleSaveButton();
-
-							$('#media_selector', popup_html).change(toggleSaveButton);
-							$('.shoutcast-url-input', popup_html).change(toggleSaveButton);
-
-							if ($('#media_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#media_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.mediaPopupEdit({
-									data: _data,
-									callback: function(media) {
-										node.setMetadata('id', media.id || 'null');
-										node.caption = media.name || '';
-
-										popup.dialog('close');
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: medias,
+									resource: 'media',
+									resourceId: 'mediaId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
 									}
 								});
-							});
+							} else {
+								renderPopup(false);
+							}
+						
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowEdit',
+									data: {
+										items: medias,
+										selected: isShoutcast ? 'shoutcast' : mediaId,
+										isShoutcast: isShoutcast,
+										shoutcastValue: mediaId,
+										isEditable: !isShoutcast && !isSilence
+									},
+									submodule: 'media'
+								}));
 
-							popup_html.find('#media_selector').on('change', function() {
-								var val = $(this).val(),
-									isSilence = val && val === 'silence_stream://300000',
-									isShoutcast = val === 'shoutcast',
-									isEditable = !isShoutcast && !isSilence;
+								var selector = popup_html.find('#media_selector');
 
-								popup_html.find('#edit_link').toggleClass('active', isEditable);
-								popup_html.find('.shoutcast-div').toggleClass('active', isShoutcast).find('input').val('');
-							});
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Media Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
 
-							$('#add', popup_html).click(function() {
-								var mediaValue = $('#media_selector', popup_html).val(),
-									shoutcastValue = $('.shoutcast-url-input', popup_html).val();
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
 
-								node.caption = mediaValue === 'shoutcast' ? shoutcastValue : $('#media_selector option:selected', popup_html).text();
-								mediaValue = mediaValue === 'shoutcast' ? shoutcastValue : mediaValue;
-								node.setMetadata('id', mediaValue);
+								// add search to dropdown
+								popup_html.find('#media_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-								popup.dialog('close');
-							});
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
+								
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#media_selector', popup_html).val(),
+										streamUrl = $('.shoutcast-url-input', popup_html).val();
 
-							monster.ui.tooltips(popup_html);
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.media.media,
-								minHeight: '0',
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+									if (selectedValue == 'null' || selectedValue == 'shoutcast' && streamUrl == '') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else if (selectedValue == 'silence_stream://300000') {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).hide();
+									} else if (selectedValue == 'shoutcast' && streamUrl != '') {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
 									}
 								}
-							});
+
+								toggleSaveButton();
+
+								$('#media_selector', popup_html).change(toggleSaveButton);
+								$('.shoutcast-url-input', popup_html).change(toggleSaveButton);
+
+								if ($('#media_selector option:selected', popup_html).val() === undefined) {
+									$('#edit_link', popup_html).hide();
+								}
+
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#media_selector', popup_html).val() } : {};
+
+									ev.preventDefault();
+
+									self.mediaPopupEdit({
+										data: _data,
+										callback: function(media) {
+											node.setMetadata('id', media.id || 'null');
+											node.caption = media.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								popup_html.find('#media_selector').on('change', function() {
+									var val = $(this).val(),
+										isSilence = val && val === 'silence_stream://300000',
+										isShoutcast = val === 'shoutcast',
+										isEditable = !isShoutcast && !isSilence;
+
+									popup_html.find('#edit_link').toggleClass('active', isEditable);
+									popup_html.find('.shoutcast-div').toggleClass('active', isShoutcast).find('input').val('');
+								});
+
+								$('#add', popup_html).click(function() {
+									var mediaValue = $('#media_selector', popup_html).val(),
+										shoutcastValue = $('.shoutcast-url-input', popup_html).val();
+
+									node.caption = mediaValue === 'shoutcast' ? shoutcastValue : $('#media_selector option:selected', popup_html).text();
+									mediaValue = mediaValue === 'shoutcast' ? shoutcastValue : mediaValue;
+									node.setMetadata('id', mediaValue);
+
+									popup.dialog('close');
+								});
+
+								monster.ui.tooltips(popup_html);
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.media.media,
+									minHeight: '0',
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
 						}, mediaAction);
 					},
 					listEntities: function(callback) {
@@ -692,101 +725,132 @@ define(function(require) {
 								isSilence = !mediaId || (mediaId && mediaId === 'silence_stream://300000'), // because silence is the default choice, we test for !mediaId
 								isShoutcast = mediaId.indexOf('://') >= 0 && mediaId !== 'silence_stream://300000';
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowEdit',
-								data: {
-									items: medias,
-									selected: isShoutcast ? 'shoutcast' : mediaId,
-									isShoutcast: isShoutcast,
-									shoutcastValue: mediaId,
-									isEditable: !isShoutcast && !isSilence
-								},
-								submodule: 'media'
-							}));
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(medias, { id: selectedId });
 
-							// add search to dropdown
-							popup_html.find('#media_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
-
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#media_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
-									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
-								}
-							}
-
-							toggleSaveButton();
-
-							$('#media_selector', popup_html).change(toggleSaveButton);
-
-							if ($('#media_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							// hide the add button as we can't add something that is recorded through the handset
-							popup_html.find('a.inline_action[data-action="create"]').hide();
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#media_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.mediaPopupEdit({
-									data: _data,
-									callback: function(media) {
-										node.setMetadata('id', media.id || 'null');
-										node.caption = media.name || '';
-
-										popup.dialog('close');
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: medias,
+									resource: 'media',
+									resourceId: 'mediaId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
 									}
 								});
-							});
+							} else {
+								renderPopup(false);
+							}
 
-							popup_html.find('#media_selector').on('change', function() {
-								var val = $(this).val(),
-									isSilence = val && val === 'silence_stream://300000',
-									isShoutcast = val === 'shoutcast',
-									isEditable = !isShoutcast && !isSilence;
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowEdit',
+									data: {
+										items: medias,
+										selected: isShoutcast ? 'shoutcast' : mediaId,
+										isShoutcast: isShoutcast,
+										shoutcastValue: mediaId,
+										isEditable: !isShoutcast && !isSilence
+									},
+									submodule: 'media'
+								}));
 
-								popup_html.find('#edit_link').toggleClass('active', isEditable);
-								popup_html.find('.shoutcast-div').toggleClass('active', isShoutcast).find('input').val('');
-							});
+								var selector = popup_html.find('#media_selector');
 
-							$('#add', popup_html).click(function() {
-								var mediaValue = $('#media_selector', popup_html).val(),
-									shoutcastValue = $('.shoutcast-url-input', popup_html).val();
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Media Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
 
-								node.caption = mediaValue === 'shoutcast' ? shoutcastValue : $('#media_selector option:selected', popup_html).text();
-								mediaValue = mediaValue === 'shoutcast' ? shoutcastValue : mediaValue;
-								node.setMetadata('id', mediaValue);
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
 
-								popup.dialog('close');
-							});
+								// add search to dropdown
+								popup_html.find('#media_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							monster.ui.tooltips(popup_html);
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.media.media,
-								minHeight: '0',
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#media_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
 									}
 								}
-							});
+
+								toggleSaveButton();
+
+								$('#media_selector', popup_html).change(toggleSaveButton);
+
+								if ($('#media_selector option:selected', popup_html).val() === undefined) {
+									$('#edit_link', popup_html).hide();
+								}
+
+								// hide the add button as we can't add something that is recorded through the handset
+								popup_html.find('a.inline_action[data-action="create"]').hide();
+
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#media_selector', popup_html).val() } : {};
+
+									ev.preventDefault();
+
+									self.mediaPopupEdit({
+										data: _data,
+										callback: function(media) {
+											node.setMetadata('id', media.id || 'null');
+											node.caption = media.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								popup_html.find('#media_selector').on('change', function() {
+									var val = $(this).val(),
+										isSilence = val && val === 'silence_stream://300000',
+										isShoutcast = val === 'shoutcast',
+										isEditable = !isShoutcast && !isSilence;
+
+									popup_html.find('#edit_link').toggleClass('active', isEditable);
+									popup_html.find('.shoutcast-div').toggleClass('active', isShoutcast).find('input').val('');
+								});
+
+								$('#add', popup_html).click(function() {
+									var mediaValue = $('#media_selector', popup_html).val(),
+										shoutcastValue = $('.shoutcast-url-input', popup_html).val();
+
+									node.caption = mediaValue === 'shoutcast' ? shoutcastValue : $('#media_selector option:selected', popup_html).text();
+									mediaValue = mediaValue === 'shoutcast' ? shoutcastValue : mediaValue;
+									node.setMetadata('id', mediaValue);
+
+									popup.dialog('close');
+								});
+
+								monster.ui.tooltips(popup_html);
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.media.media,
+									minHeight: '0',
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+							}
 						}, mediaAction);
 					},		
 					/* commented out so the custom action is not rendered within the menu - can add back in at a later date		

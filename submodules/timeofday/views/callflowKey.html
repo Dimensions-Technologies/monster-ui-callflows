@@ -5,7 +5,8 @@
 			<div class="popup_field">
 				<!--<label for="timeofday_selector">{{ i18n.callflows.timeofday.which_time_of_day }}</label>-->
 				<div class="select_wrapper">
-					<select id="timeofday_selector">
+					<select id="timeofday_selector" data-placeholder="Select a set or rule...">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select selected}}
 							{{#each items}}
 								<optgroup data-type="{{ @key }}" label="{{ tryI18n @root.i18n.callflows.timeofday.types @key }}">

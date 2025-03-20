@@ -68,111 +68,142 @@ define(function(require) {
 						self.userList(function(users) {
 							var popup, popup_html;
 
-							$.each(users, function() {
-								this.name = this.first_name + ' ' + this.last_name;
-							});
+							var selectedId = node.getMetadata('id') || '',
+									selectedItem = _.find(users, { id: selectedId });
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowEdit',
-								data: {
-									hideFromCallflowAction: args.hideFromCallflowAction,
-									hideAdd: args.hideAdd,
-									can_call_self: node.getMetadata('can_call_self') || false,
-									parameter: {
-										name: 'timeout (s)',
-										value: node.getMetadata('timeout') || '20'
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: users,
+									resource: 'user',
+									resourceId: 'userId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
+
+							function renderPopup(itemNotFound) {
+								$.each(users, function() {
+									this.name = this.first_name + ' ' + this.last_name;
+								});
+
+								popup_html = $(self.getTemplate({
+									name: 'callflowEdit',
+									data: {
+										hideFromCallflowAction: args.hideFromCallflowAction,
+										hideAdd: args.hideAdd,
+										can_call_self: node.getMetadata('can_call_self') || false,
+										parameter: {
+											name: 'timeout (s)',
+											value: node.getMetadata('timeout') || '20'
+										},
+										objects: {
+											items: _.sortBy(users, 'name'),
+											selected: node.getMetadata('id') || ''
+										}
 									},
-									objects: {
-										items: _.sortBy(users, 'name'),
-										selected: node.getMetadata('id') || ''
-									}
-								},
-								submodule: 'user'
-							}));
+									submodule: 'user'
+								}));
 
-							if ($('#user_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#user_selector', popup_html).val() } : {};
-
-								ev.preventDefault();
-
-								self.userPopupEdit({
-									data: _data,
-									callback: function(_data) {
-										node.setMetadata('id', _data.id || 'null');
-										node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-										node.setMetadata('can_call_self', $('#user_can_call_self', popup_html).is(':checked'));
-
-										node.caption = (_data.first_name || '') + ' ' + (_data.last_name || '');
-
-										popup.dialog('close');
-									}
-								});
-							});
-
-							// add search to dropdown
-							popup_html.find('#user_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
-
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#user_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
+								if ($('#user_selector option:selected', popup_html).val() === undefined) {
 									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
 								}
-							}
 
-							toggleSaveButton();
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#user_selector', popup_html).val() } : {};
 
-							$('#user_selector', popup_html).change(toggleSaveButton);
+									ev.preventDefault();
 
-							if (miscSettings.deviceValidateRingTimeout) {
-								// alert for invalid device timeout value
-								$('#parameter_input', popup_html).change(function() {
-								
-									ringTimeout = $('#parameter_input', popup_html).val();
+									self.userPopupEdit({
+										data: _data,
+										callback: function(_data) {
+											node.setMetadata('id', _data.id || 'null');
+											node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+											node.setMetadata('can_call_self', $('#user_can_call_self', popup_html).is(':checked'));
 
-									if (ringTimeout < 10 || ringTimeout > 120) {
-										$('#parameter_input', popup_html).val(20);
-										monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+											node.caption = (_data.first_name || '') + ' ' + (_data.last_name || '');
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								var selector = popup_html.find('#user_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured User Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
 									}
+								});
+
+								// add search to dropdown
+								popup_html.find('#user_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 								
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#user_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
+
+								toggleSaveButton();
+
+								$('#user_selector', popup_html).change(toggleSaveButton);
+
+								if (miscSettings.deviceValidateRingTimeout) {
+									// alert for invalid device timeout value
+									$('#parameter_input', popup_html).change(function() {
+									
+										ringTimeout = $('#parameter_input', popup_html).val();
+
+										if (ringTimeout < 10 || ringTimeout > 120) {
+											$('#parameter_input', popup_html).val(20);
+											monster.ui.alert('warning', self.i18n.active().oldCallflows.device_timeout_invalid);
+										}
+									
+									});
+								}
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#user_selector', popup_html).val());
+									node.setMetadata('timeout', $('#parameter_input', popup_html).val());
+									node.setMetadata('can_call_self', $('#user_can_call_self', popup_html).is(':checked'));
+
+									node.caption = $('#user_selector option:selected', popup_html).text();
+
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.user.select_user,
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
 								});
 							}
-
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#user_selector', popup_html).val());
-								node.setMetadata('timeout', $('#parameter_input', popup_html).val());
-								node.setMetadata('can_call_self', $('#user_can_call_self', popup_html).is(':checked'));
-
-								node.caption = $('#user_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.user.select_user,
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
-									}
-								}
-							});
 						});
 					},
 					listEntities: function(callback) {

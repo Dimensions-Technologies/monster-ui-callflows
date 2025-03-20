@@ -118,90 +118,121 @@ define(function(require) {
 						self.getQueuesList(function(queues) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowEdit',
-								data: {
-									i18n: self.i18n.active(),
-									objects: {
-										items: queues,
-										selected: node.getMetadata('id') || '',
-										priority: node.getMetadata('priority') || '',
-									}
-								},
-								submodule: 'callcenter'
-							}));
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(queues, { id: selectedId });	
 
-							if ($('#queue_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
-
-							$('.inline_action', popup_html).click(function(ev) {
-								ev.preventDefault();
-
-								var _data = {};
-								if ($(this).data('action') === 'edit') {
-									_data = {
-										id: $('#queue_selector', popup_html).val(),
-										priority: $('#queue_priority', popup_html).val()
-									}
-								}
-
-								self.queuePopupEdit({
-									data: _data,
-									callback: function(_data) {
-										node.setMetadata('id', _data.id || 'null');
-										_data.priority && node.setMetadata('priority', _data.priority);
-										node.caption = _data.name || '';
-
-										popup.dialog('close');
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: queues,
+									resource: 'callcenter.queues',
+									resourceId: 'queuesId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
 									}
 								});
-							});
-
-							// add search to dropdown
-							popup_html.find('#queue_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
-
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#queue_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-								}
+							} else {
+								renderPopup(false);
 							}
 
-							toggleSaveButton();
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowEdit',
+									data: {
+										i18n: self.i18n.active(),
+										objects: {
+											items: queues,
+											selected: node.getMetadata('id') || '',
+											priority: node.getMetadata('priority') || '',
+										}
+									},
+									submodule: 'callcenter'
+								}));
 
-							$('#queue_selector', popup_html).change(toggleSaveButton);
+								if ($('#queue_selector option:selected', popup_html).val() === undefined) {
+									$('#edit_link', popup_html).hide();
+								}
 
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#queue_selector', popup).val());
-								node.setMetadata('priority', parseInt($('#queue_priority', popup).val()));
-								node.caption = $('#queue_selector option:selected', popup).text();
-								popup.dialog('close');
-							});
+								$('.inline_action', popup_html).click(function(ev) {
+									ev.preventDefault();
 
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.acdc.callflowActions.queueTitle,
-								minHeight: '0',
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+									var _data = {};
+									if ($(this).data('action') === 'edit') {
+										_data = {
+											id: $('#queue_selector', popup_html).val(),
+											priority: $('#queue_priority', popup_html).val()
+										}
+									}
+
+									self.queuePopupEdit({
+										data: _data,
+										callback: function(_data) {
+											node.setMetadata('id', _data.id || 'null');
+											_data.priority && node.setMetadata('priority', _data.priority);
+											node.caption = _data.name || '';
+
+											popup.dialog('close');
+										}
+									});
+								});
+
+								var selector = popup_html.find('#queue_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Queue Not Found").addClass("item-not-found").trigger("chosen:updated");
+								}
+
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
+
+								// add search to dropdown
+								popup_html.find('#queue_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#queue_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+									} else {
+										$('#add', popup_html).prop('disabled', false);
 									}
 								}
-							});
 
-							monster.ui.tooltips(popup);
+								toggleSaveButton();
+
+								$('#queue_selector', popup_html).change(toggleSaveButton);
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#queue_selector', popup).val());
+									node.setMetadata('priority', parseInt($('#queue_priority', popup).val()));
+									node.caption = $('#queue_selector option:selected', popup).text();
+									popup.dialog('close');
+								});
+
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.acdc.callflowActions.queueTitle,
+									minHeight: '0',
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
+									}
+								});
+
+								monster.ui.tooltips(popup);
+							}
 						});
 					},
 					listEntities: function(callback) {

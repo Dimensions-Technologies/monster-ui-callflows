@@ -18,12 +18,16 @@
 			<div class="popup_field">
 				<label for="media_selector">{{ i18n.oldCallflows.media }}</label>
 				<div class="select_wrapper input" style="margin-left: 30px;">
-					<select id="media_selector">
+					<select id="media_selector" data-placeholder="- No Media -">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
+						<option value="null">- {{ i18n.oldCallflows.no_media }} -</option>
+						<!--
 						{{#if response_data.selected_media}}
 							<option value="null">- {{ i18n.oldCallflows.no_media }} -</option>
 						{{else}}
 							<option value="null" selected>- {{ i18n.oldCallflows.no_media }} -</option>
 						{{/if}}
+						-->
 						{{#select response_data.selected_media}}
 							{{#each response_data.items}}
 								<option class="{{ this.class }}" value="{{ this.id }}">{{ this.name }}</option>
