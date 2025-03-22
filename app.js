@@ -20,7 +20,9 @@ define(function(require) {
 		callTags = [],
 		contactDirectories = [],
 		hideFeatureCode = {},
-		pusherApps = {};
+		pusherApps = {}, 
+		translateX = 0, 
+		translateY = 0;
 
 	var appSubmodules = [
 		'afterbridge',
@@ -418,8 +420,226 @@ define(function(require) {
 						$('#ws_callflow .flowchart', callflowsTemplate).addClass('scrollbar-hidden');
 					}
 
+					// enable zoom control
+					self.setupZoomControls(callflowsTemplate);
+			
+					// enable moving around the callflow workspace
+					self.enableInfinitePanning();
 				}
 			});
+
+		},
+
+		setupZoomControls: function(callflowsTemplate) {
+			this.zoomLevel = 1;
+			const zoomStep = 0.1;
+			const minZoom = 0.5;
+			const maxZoom = 2;
+			const flowContainer = callflowsTemplate.find("#ws_callflow .callflow");
+		
+			if (!flowContainer.length) return;
+		
+			// zoom in control
+			callflowsTemplate.find(".zoom-in-button").click(() => {
+				if (this.zoomLevel < maxZoom) {
+					this.zoomLevel += zoomStep;
+					this.updateZoom(flowContainer);
+				}
+			});
+		
+			// zoom out control
+			callflowsTemplate.find(".zoom-out-button").click(() => {
+				if (this.zoomLevel > minZoom) {
+					this.zoomLevel -= zoomStep;
+					this.updateZoom(flowContainer);
+				}
+			});
+		
+			// reset view control
+			callflowsTemplate.find(".reset-view-button").click(() => {
+				this.resetView();
+			});
+		},
+		
+		resetView: function() {
+			const flowContainer = $("#ws_callflow .callflow");
+			if (!flowContainer.length) return;
+		
+			this.zoomLevel = 1;
+
+			this.updateZoom(flowContainer);
+			this.resetFlowState();
+		},
+		
+		updateZoom: function(flowContainer) {
+			if (!flowContainer || !flowContainer.length) {
+				return;
+			}
+		
+			const wrapper = flowContainer.closest("#ws_callflow");
+		
+			if (!wrapper || !wrapper.length) {
+				return;
+			}
+		
+			// get the current center position of the flow inside its wrapper
+			const rect = flowContainer[0].getBoundingClientRect();
+			const wrapperRect = wrapper[0].getBoundingClientRect();
+		
+			if (!rect || !wrapperRect) {
+				return;
+			}
+		
+			// calculate center position before zoom
+			const centerX = rect.left + rect.width / 2;
+			const centerY = rect.top + rect.height / 2;
+		
+			// apply the new scale transform
+			flowContainer.css({
+				transform: `scale(${this.zoomLevel})`,
+				"transform-origin": "center center",
+				width: `${100 / this.zoomLevel}%`, 
+				height: `${100 / this.zoomLevel}%`
+			});
+		
+			// recalculate new center after zoom
+			const newRect = flowContainer[0].getBoundingClientRect();
+			const newCenterX = newRect.left + newRect.width / 2;
+			const newCenterY = newRect.top + newRect.height / 2;
+		
+			// adjust translation to maintain centering
+			const deltaX = centerX - newCenterX;
+			const deltaY = centerY - newCenterY;
+		
+			flowContainer.css({
+				transform: `translate(${deltaX}px, ${deltaY}px) scale(${this.zoomLevel})`
+			});
+		},		
+
+		enableInfinitePanning: function () {
+			const self = this;
+			const flowWrapper = document.getElementById("ws_cf_wrapper");
+			const flowContainer = document.getElementById("ws_cf_flow");
+		
+			if (!flowWrapper || !flowContainer) return;
+		
+			let isPanning = false;
+			let startX, startY;
+			self.translateX = parseFloat(flowContainer.dataset.translateX) || 0;
+			self.translateY = parseFloat(flowContainer.dataset.translateY) || 0;
+		
+			flowWrapper.addEventListener("mousedown", function (e) {
+				if (e.target.closest(".node") || e.target.closest(".monster-button")) return;
+		
+				document.body.style.userSelect = "none";
+				isPanning = true;
+				startX = e.clientX;
+				startY = e.clientY;
+			});
+		
+			document.addEventListener("mousemove", function (e) {
+				if (!isPanning) return;
+				e.preventDefault();
+		
+				const newTranslateX = self.translateX - (e.clientX - startX);
+				const newTranslateY = self.translateY - (e.clientY - startY);
+		
+				flowContainer.style.transform = `translate(${newTranslateX}px, ${newTranslateY}px)`;
+			});
+		
+			document.addEventListener("mouseup", function () {
+				if (!isPanning) return;
+		
+				isPanning = false;
+				document.body.style.userSelect = "";
+		
+				const matrix = new DOMMatrix(window.getComputedStyle(flowContainer).transform);
+				self.translateX = matrix.m41;
+				self.translateY = matrix.m42;
+		
+				flowContainer.dataset.translateX = self.translateX;
+				flowContainer.dataset.translateY = self.translateY;
+			});
+		
+			// smooth scrolling
+			let scrollVelocityY = 0;
+			let scrollVelocityX = 0;
+			let isScrolling = false;
+		
+			function animateScroll() {
+				if (Math.abs(scrollVelocityY) > 0.1 || Math.abs(scrollVelocityX) > 0.1) {
+					self.translateX -= scrollVelocityX;
+					self.translateY -= scrollVelocityY;
+		
+					scrollVelocityX *= 0.85;
+					scrollVelocityY *= 0.85;
+		
+					flowContainer.style.transform = `translate(${self.translateX}px, ${self.translateY}px)`;
+					flowContainer.dataset.translateX = self.translateX;
+					flowContainer.dataset.translateY = self.translateY;
+		
+					requestAnimationFrame(animateScroll);
+				} else {
+					isScrolling = false;
+				}
+			}
+		
+			flowWrapper.addEventListener("wheel", function (e) {
+				if (e.ctrlKey) return;
+		
+				e.preventDefault();
+		
+				scrollVelocityX += e.deltaX * 0.2;
+				scrollVelocityY += e.deltaY * 0.2;
+		
+				if (!isScrolling) {
+					isScrolling = true;
+					requestAnimationFrame(animateScroll);
+				}
+			});
+		},	
+		
+		resetFlowState: function() {
+			const flowContainer = document.getElementById("ws_cf_flow");
+			const wrapper = document.getElementById("ws_cf_wrapper");
+		
+			if (!flowContainer || !wrapper) return;
+		
+			const wrapperWidth = wrapper.clientWidth;
+			const wrapperHeight = wrapper.clientHeight;
+			const flowWidth = flowContainer.offsetWidth;
+			const flowHeight = flowContainer.offsetHeight;
+		
+			const centerX = (wrapperWidth - flowWidth) / 2;
+			const centerY = (wrapperHeight - flowHeight) / 2;
+		
+			// Set transform
+			flowContainer.style.transform = `translate(${centerX}px, ${centerY}px) scale(1)`;
+		
+			// Save in dataset
+			flowContainer.dataset.translateX = centerX;
+			flowContainer.dataset.translateY = centerY;
+		
+			// Save globally for panning
+			this.translateX = centerX;
+			this.translateY = centerY;
+		
+			flowContainer.style.height = `${wrapperHeight}px`;
+		},
+		
+		syncFlowHeight: function() {
+			const flowchart = document.querySelector(".flowchart");
+			const flowContainer = document.getElementById("ws_cf_flow");
+		
+			if (!flowchart || !flowContainer) return;
+		
+			flowchart.getBoundingClientRect();
+		
+			let flowchartHeight = flowchart.offsetHeight;
+		
+			if (flowchartHeight > 0) {
+				flowContainer.style.height = `${flowchartHeight}px`;
+			}
 		},
 
 		bindCallflowsEvents: function(template, container) {
@@ -453,9 +673,23 @@ define(function(require) {
 				var $this = $(this),
 					callflowId = $this.data('id');
 
+				// rest the callflow view - zoom and location of flow
+				self.resetView();
+
 				$('.list-element').removeClass('selected-element');
 				$this.addClass('selected-element');
 
+				document.addEventListener("DOMContentLoaded", self.syncFlowHeight);
+
+				const observer = new MutationObserver(() => {
+					self.syncFlowHeight();
+				});
+
+				const flowchart = document.querySelector(".flowchart");
+				if (flowchart) {
+					observer.observe(flowchart, { attributes: true, childList: true, subtree: true });
+				}
+				
 				template.find('.callflow-content')
 					.removeClass('listing-mode')
 					.addClass('edition-mode');
@@ -2329,7 +2563,6 @@ define(function(require) {
 					});
 				}, 
 				error: function(data) {
-					console.log('data', data);
 					if (data.error === "404") {
 						monster.ui.alert('error', self.i18n.active().callflows.previewError404, null, { title: 'Preview Error' });
 					} else {
@@ -3220,16 +3453,41 @@ define(function(require) {
 			$('.tool', tools).hover(
 				function() {
 					var $this = $(this);
-					if ($this.attr('help')) {
-						tools.find('.callflow_helpbox_wrapper #help_box').html($this.attr('help'));
-						tools.find('.callflow_helpbox_wrapper').css('top', $this.offset().top).css('left', $('#ws_cf_tools').offset().left - 162).show();
-					}
+
+					$('.tool', tools).hover(
+						function() {
+					
+							var $this = $(this);
+							var tooltip = $('.callflow_helpbox_wrapper');
+					
+							if ($this.attr('help')) {
+
+								var toolbox = $('#ws_cf_tools'),
+									toolboxWidth = toolbox.outerWidth(),
+									leftPosition = '-' + toolboxWidth + 'px'
+					
+								tooltip.html($this.attr('help'));
+								tooltip.css({
+									position: "absolute",
+									top: $this.offset().top - $('#ws_cf_tools').offset().top + "px",
+									left: leftPosition,
+									display: "block"
+								});
+
+								tools.find('.callflow_helpbox_wrapper #help_box').html($this.attr('help'));
+
+							}
+						},
+						function() {
+							$('.callflow_helpbox_wrapper').hide();
+						}
+					);
 				},
 				function() {
 					tools.find('.callflow_helpbox_wrapper').hide();
 				}
 			);
-
+			
 			function action(el) {
 				el.draggable({
 					start: function() {
@@ -3316,6 +3574,33 @@ define(function(require) {
 							$(this).droppable('disable');
 						}	
 
+					} else {
+
+						if (activate) {
+							if ($(this).attr('id') === "0" || $(this).attr('name') === "root") {
+								$(this).addClass('root-active');
+								
+								if (miscSettings.enableCallflowActionAnimation) {
+									$(this).addClass('node-pulse');
+									setTimeout(() => {
+										$(this).removeClass('node-pulse');
+									}, 3000);
+								}
+							} else {
+								$(this).addClass('active');
+
+								if (miscSettings.enableCallflowActionAnimation) {
+									$(this).addClass('node-pulse');
+									setTimeout(() => {
+										$(this).removeClass('node-pulse');
+									}, 3000);
+								}
+							}
+						} else {
+							$(this).addClass('inactive');
+							$(this).droppable('disable');
+						}
+
 					}
 
 				}
@@ -3327,9 +3612,13 @@ define(function(require) {
 		disableDestinations: function() {
 			
 			$('.node').each(function() {
+				$(this).removeClass('root-active');
 				$(this).removeClass('active');
 				$(this).removeClass('inactive');
 				$(this).droppable('enable');
+				if (miscSettings.enableCallflowActionAnimation) {
+					$(this).removeClass('node-pulse');
+				}
 			});
 
 			$('.tool').removeClass('active');
