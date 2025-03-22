@@ -143,6 +143,10 @@
 	margin: 0px 4px;
 }
 
+#ws_callflow .callflow .node:not([id="0"]):hover {
+    transform: scale(1.02);
+}
+
 #ws_callflow .callflow .node.disabled,
 .callflow-preview .callflow .node.disabled {
 	opacity: 0.6;
@@ -562,25 +566,17 @@
 #ws_callflow #callflow_header #pending_change span,
 .callflow-preview #callflow_header #pending_change span {
 	color: #22A5FF;
-	font-weight: lighter;
+	font-weight: normal;
 	font-style: italic;
 }
 
 #ws_callflow #ws_cf_flow,
 .callflow-preview #ws_cf_flow {
-	width: 100%;
-	min-height: 500px;
-	overflow-x: auto;
-	padding-top: 10px;
-	text-align: center;
-}
-
-#ws_callflow .callflow-preview,
-.callflow-preview .callflow-preview {
-	width: 100%;
-	overflow-x: auto;
-	padding-top: 10px;
-	text-align: center;
+    width: auto;
+    height: auto;
+    position: relative;
+    padding-top: 10px;
+    text-align: center;
 }
 
 #ws_callflow span.flow,
@@ -606,7 +602,14 @@
 #ws_callflow .node.active,
 .callflow-preview .node.active {
 	background-color: #fff;
-	border-radius: 2px;
+	border-radius: 10px;
+	border: 3px solid #22A5FF;
+}
+
+#ws_callflow .node.root-active,
+.callflow-preview .node.root-active {
+	background-color: #fff;
+	border-radius: 10px 10px 0px 0px;
 	border: 3px solid #22A5FF;
 }
 
@@ -616,6 +619,17 @@
 	-moz-opacity:0.5;
 	-khtml-opacity: 0.5;
 	opacity: 0.5;
+	border: 3px solid transparent;
+}
+
+@keyframes node-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.node-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 #ws_callflow .children,
@@ -626,8 +640,61 @@
 
 #ws_callflow .flowchart,
 .callflow-preview .flowchart {
-	margin-right: 180px;
 	overflow: auto;
+}
+
+.callflow-content.edition-mode {
+    overflow: hidden !important;
+}
+
+#ws_callflow .button-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 0 auto;
+	margin-right: 10px;
+	padding: 10px 0;
+}
+
+#ws_callflow .button-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+#ws_callflow .button-bar .buttons {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+	margin-left: 355px;
+}
+
+#ws_callflow .button-bar .callflow-zoom {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    margin-left: auto;
+}
+
+
+#ws_callflow .zoom-in-button .fa-search-plus,
+#ws_callflow .zoom-out-button .fa-search-minus {
+	margin-right: 5px;
+}
+
+#ws_callflow .google-icons .zoom-in-button,
+#ws_callflow .google-icons .zoom-out-button {
+	margin-right: 10px;
+}
+
+#ws_callflow .google-icons .zoom-in-button, 
+#ws_callflow .google-icons .zoom-out-button {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
 }
 
 #ws_callflow .tools,
@@ -639,10 +706,24 @@
 
 #ws_callflow .tools #ws_cf_tools,
 .callflow-preview .tools #ws_cf_tools {
+	/*
 	padding-right: 10px;
 	padding-top: 10px;
 	padding-bottom: 30px;
+	float: right;
+	*/
 	width: 175px;
+	position: absolute;
+    top: 60px;
+    right: 0px;
+    z-index: 10;
+	background-color: #fff;
+	border-radius: 6px 0px 0px 0px;
+	padding-right: 10px;
+}
+
+.callflow-content .callflow-view {
+    position: relative;
 }
 
 #ws_callflow .tools .search-box,
@@ -702,7 +783,7 @@
 	font-size: 12px;
 	height: 25px;
 	line-height: 25px;
-	border-radius: 2px 2px 0px 0px;
+	border-radius: 6px 6px 0px 0px;
 	text-align: center;
 	color: #fff;
 	font-weight: bold;
@@ -732,13 +813,15 @@
 
 #callflow_container .callflow_helpbox_wrapper,
 .callflow-preview .callflow_helpbox_wrapper {
-	position: absolute;
 	right: 185px;
 	width: 160px;
-	top: 100px;
-	display: none;
+	background: #333333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
 }
 
+/*
 #callflow_container .callflow_helpbox_wrapper .tip_box,
 .callflow_preview .callflow_helpbox_wrapper .tip_box {
 	background-color: #3D3D3D;
@@ -750,6 +833,7 @@
 	font-size: 10px;
 	line-height: 12px;
 }
+*/
 
 #callflow_container .tooltip,
 .callflow_preview .tooltip {
@@ -761,7 +845,6 @@
 #callflow_container .pulse-box,
 .callflow-preview .pulse-box {
 	-webkit-animation: "pulse-box" 1s ease-in-out 0 infinite alternate;
-
 	animation-name: pulse-box;
 	animation-duration: 1s;
 	animation-timing-function: ease-in-out;
@@ -1705,7 +1788,7 @@
 }
 
 #callflow_container .entity-header {
-	padding: 18px 40px;
+	padding: 18px 10px 10px 40px;
 	height: 71px;
 	box-sizing: border-box;
 	border-bottom: solid 1px #999;
@@ -2415,16 +2498,32 @@
     color: red;
 }
 
-/*
-#ws_callflow .callflow .node:not([id="0"]):hover {
-    transform: scale(1.02);
-}
-*/
-
 /* hide monster alert warning triangle and header */
 /*
 .alert-dialog .dialog-content .dialog-header,
 .ui-dialog.monster-alert .ui-dialog-titlebar .ui-dialog-title {
 	display: none;
+}
+*/
+
+/*
+.ui-dialog {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+}
+*/
+
+/*
+
+.callflow-content, .callflow-view, #ws_cf_tools {
+    overflow: visible !important;
+}
+
+.callflow_helpbox_wrapper {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 */

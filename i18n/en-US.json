@@ -20,6 +20,9 @@
 	},
 	"callflows": {
 		"addCallflow": "Add Callflow",
+		"zoomIn": "Zoom In",
+		"zoomOut": "Zoom Out", 
+		"resetView": "Reset View",
 		"searchDatabase": "Search Database",
 		"buyNumbers": "Buy Numbers",
 		"buyLocal": "Local",
@@ -1778,7 +1781,7 @@
 		"user_name": "User Name",
 		"group_name": "Group Name",
 		"delete": "Delete",
-		"you_have_modified_this_callflow": "You have modified this Callflow, don't forget to save it!",
+		"you_have_modified_this_callflow": "This Callflow has unsaved changes. Click Save to apply them.",
 		"drag_items_below_on_top": "Drag items below on top of other items on the left",
 		"connect_caller_to_another_callflow": "Connect a caller to another callflow...",
 		"which_callflow": "Which callflow?",

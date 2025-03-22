@@ -284,3 +284,7 @@
 	margin-top: 10px !important;
 	margin-bottom: 10px !important;
 }
+
+.dialog_popup.callflows-port.callflow-action-form #pivot_voiceurl_input {
+	margin-left: 80px !important
+}
