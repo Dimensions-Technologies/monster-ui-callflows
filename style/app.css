@@ -370,7 +370,7 @@
 	font-size: 13px;
 	height: 59px;
 	margin-top: 25px;
-	cursor: default;
+	cursor: pointer;
 }
 
 #ws_callflow .div_icon .module_name,
@@ -649,6 +649,7 @@
 }
 
 #ws_callflow .button-bar {
+	position: relative;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -678,6 +679,26 @@
     margin-left: auto;
 }
 
+#ws_callflow .button-bar #pending_change {
+	position: absolute;
+	left: calc(50% - 117px);
+	transform: translateX(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 50%;
+}
+
+#ws_callflow .button-bar #pending_change {	
+	display: none;
+}
+
+#ws_callflow .button-bar #pending_change span {
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	color: red;
+}
 
 #ws_callflow .zoom-in-button .fa-search-plus,
 #ws_callflow .zoom-out-button .fa-search-minus {
@@ -2498,6 +2519,14 @@
 
 .item-not-found + .chosen-container-single .chosen-single.chosen-default span {
     color: red;
+}
+
+#ws_cf_wrapper {
+	cursor: grab;
+}
+
+#ws_cf_wrapper.dragging {
+	cursor: grabbing;
 }
 
 /* hide monster alert warning triangle and header */

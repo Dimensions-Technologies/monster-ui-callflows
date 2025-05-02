@@ -431,6 +431,7 @@ define(function(require) {
 		},
 
 		setupZoomControls: function(callflowsTemplate) {
+
 			this.zoomLevel = 1;
 			const zoomStep = 0.1;
 			const minZoom = 0.5;
@@ -472,51 +473,65 @@ define(function(require) {
 		},
 		
 		updateZoom: function(flowContainer) {
-			if (!flowContainer || !flowContainer.length) {
-				return;
-			}
+			if (!flowContainer || !flowContainer.length) return;
 		
-			const wrapper = flowContainer.closest("#ws_callflow");
-		
-			if (!wrapper || !wrapper.length) {
-				return;
-			}
-		
-			// get the current center position of the flow inside its wrapper
-			const rect = flowContainer[0].getBoundingClientRect();
-			const wrapperRect = wrapper[0].getBoundingClientRect();
-		
-			if (!rect || !wrapperRect) {
-				return;
-			}
-		
-			// calculate center position before zoom
-			const centerX = rect.left + rect.width / 2;
-			const centerY = rect.top + rect.height / 2;
-		
-			// apply the new scale transform
-			flowContainer.css({
-				transform: `scale(${this.zoomLevel})`,
-				"transform-origin": "center center",
-				width: `${100 / this.zoomLevel}%`, 
-				height: `${100 / this.zoomLevel}%`
-			});
-		
-			// recalculate new center after zoom
-			const newRect = flowContainer[0].getBoundingClientRect();
-			const newCenterX = newRect.left + newRect.width / 2;
-			const newCenterY = newRect.top + newRect.height / 2;
-		
-			// adjust translation to maintain centering
-			const deltaX = centerX - newCenterX;
-			const deltaY = centerY - newCenterY;
+			const zoom = this.zoomLevel || 1;
 		
 			flowContainer.css({
-				transform: `translate(${deltaX}px, ${deltaY}px) scale(${this.zoomLevel})`
+				transform: `scale(${zoom})`,
+				transformOrigin: 'top left',
+				width: `${100 / zoom}%`,
+				height: `${100 / zoom}%`
 			});
-		},		
+		},
+
+		calculateAnchorNodes: function() {
+
+			const flowContainer = document.getElementById("ws_cf_flow");
+			if (!flowContainer) return;
+		
+			const nodes = Array.from(flowContainer.querySelectorAll(".node"));
+			let maxBottom = -Infinity;
+			let minLeft = Infinity;
+			let maxRight = -Infinity;
+		
+			let leftmostNode = null;
+			let rightmostNode = null;
+			let lowestNode = null;
+		
+			nodes.forEach((node) => {
+				const top = node.offsetTop;
+				const height = node.offsetHeight;
+				const bottom = top + height;
+		
+				const left = node.offsetLeft;
+				const width = node.offsetWidth;
+				const right = left + width;
+		
+				if (bottom > maxBottom) {
+					maxBottom = bottom;
+					lowestNode = node;
+				}
+				if (left < minLeft) {
+					minLeft = left;
+					leftmostNode = node;
+				}
+				if (right > maxRight) {
+					maxRight = right;
+					rightmostNode = node;
+				}
+			});
+		
+			const self = this;
+			self.lowestNode = lowestNode;
+			self.leftmostNode = leftmostNode;
+			self.rightmostNode = rightmostNode;
+			self.lowestNodeBottomOffset = maxBottom;
+
+		},
 
 		enableInfinitePanning: function () {
+
 			const self = this;
 			const flowWrapper = document.getElementById("ws_cf_wrapper");
 			const flowContainer = document.getElementById("ws_cf_flow");
@@ -525,6 +540,7 @@ define(function(require) {
 		
 			let isPanning = false;
 			let startX, startY;
+			
 			self.translateX = parseFloat(flowContainer.dataset.translateX) || 0;
 			self.translateY = parseFloat(flowContainer.dataset.translateY) || 0;
 		
@@ -535,16 +551,33 @@ define(function(require) {
 				isPanning = true;
 				startX = e.clientX;
 				startY = e.clientY;
+
+				self.startTranslateX = self.translateX;
+				self.startTranslateY = self.translateY;
+
+				self.calculateAnchorNodes();
+				flowWrapper.classList.add("dragging");
+
 			});
 		
 			document.addEventListener("mousemove", function (e) {
 				if (!isPanning) return;
 				e.preventDefault();
-		
-				const newTranslateX = self.translateX - (e.clientX - startX);
-				const newTranslateY = self.translateY - (e.clientY - startY);
-		
-				flowContainer.style.transform = `translate(${newTranslateX}px, ${newTranslateY}px)`;
+			
+				let deltaX = e.clientX - startX;
+				let deltaY = e.clientY - startY;
+			
+				let proposedX = self.startTranslateX + deltaX;
+				let proposedY = self.startTranslateY + deltaY;
+
+				const clamped = self.applyClampedPan(proposedX, proposedY);
+				proposedX = clamped.x;
+				proposedY = clamped.y;
+
+				flowContainer.style.transform = `translate(${proposedX}px, ${proposedY}px)`;
+
+				self.translateX = proposedX;
+				self.translateY = proposedY;
 			});
 		
 			document.addEventListener("mouseup", function () {
@@ -552,10 +585,7 @@ define(function(require) {
 		
 				isPanning = false;
 				document.body.style.userSelect = "";
-		
-				const matrix = new DOMMatrix(window.getComputedStyle(flowContainer).transform);
-				self.translateX = matrix.m41;
-				self.translateY = matrix.m42;
+				flowWrapper.classList.remove("dragging");
 		
 				flowContainer.dataset.translateX = self.translateX;
 				flowContainer.dataset.translateY = self.translateY;
@@ -568,23 +598,29 @@ define(function(require) {
 		
 			function animateScroll() {
 				if (Math.abs(scrollVelocityY) > 0.1 || Math.abs(scrollVelocityX) > 0.1) {
-					self.translateX -= scrollVelocityX;
-					self.translateY -= scrollVelocityY;
-		
+					let proposedX = self.translateX - scrollVelocityX;
+					let proposedY = self.translateY - scrollVelocityY;
+			
+					// apply clamping
+					const clamped = self.applyClampedPan(proposedX, proposedY);
+					self.translateX = clamped.x;
+					self.translateY = clamped.y;
+			
 					scrollVelocityX *= 0.85;
 					scrollVelocityY *= 0.85;
-		
+			
 					flowContainer.style.transform = `translate(${self.translateX}px, ${self.translateY}px)`;
 					flowContainer.dataset.translateX = self.translateX;
 					flowContainer.dataset.translateY = self.translateY;
-		
+			
 					requestAnimationFrame(animateScroll);
 				} else {
 					isScrolling = false;
 				}
 			}
-		
+			
 			flowWrapper.addEventListener("wheel", function (e) {
+
 				if (e.ctrlKey) return;
 		
 				e.preventDefault();
@@ -593,12 +629,66 @@ define(function(require) {
 				scrollVelocityY += e.deltaY * 0.2;
 		
 				if (!isScrolling) {
+					self.calculateAnchorNodes();
 					isScrolling = true;
 					requestAnimationFrame(animateScroll);
 				}
 			});
 		},	
 		
+		applyClampedPan: function(proposedX, proposedY) {
+			const self = this;
+			const zoom = self.zoomLevel;
+			const viewportBottom = window.scrollY + window.innerHeight;
+			const viewportWidth = document.documentElement.clientWidth;
+		
+			// clamp bottom (root node must stay visible)
+			const rootNode = document.getElementById("0");
+			if (rootNode) {
+				const rootRect = rootNode.getBoundingClientRect();
+				const projectedBottom = rootRect.bottom + (proposedY - self.translateY) * zoom + 30;
+				if (projectedBottom > viewportBottom) {
+					const overshoot = projectedBottom - viewportBottom;
+					proposedY -= overshoot / zoom;
+				}
+			}
+		
+			// clamp top (lowest node can't go above screen)
+			if (self.lowestNode) {
+				const rect = self.lowestNode.getBoundingClientRect();
+				const projectedTop = rect.top + (proposedY - self.translateY) * zoom;
+				if (projectedTop < 210) {
+					const overshootY = 210 - projectedTop;
+					proposedY += overshootY / zoom;
+				}
+			}
+		
+			// clamp left (rightmost node can't go off left)
+			if (self.rightmostNode) {
+				const rect = self.rightmostNode.getBoundingClientRect();
+				const projectedLeftEdge = rect.left + (proposedX - self.translateX) * zoom;
+				const bufferLeft = 243;
+				if (projectedLeftEdge < bufferLeft) {
+					const overshootX = bufferLeft - projectedLeftEdge;
+					proposedX += overshootX / zoom;
+				}
+			}
+		
+			// clamp right (leftmost node can't go off right)
+			if (self.leftmostNode) {
+				const rect = self.leftmostNode.getBoundingClientRect();
+				const projectedRightEdge = rect.right + (proposedX - self.translateX) * zoom;
+				const bufferRight = 0;
+				const rightLimit = viewportWidth - bufferRight;
+				if (projectedRightEdge > rightLimit) {
+					const overshootX = projectedRightEdge - rightLimit;
+					proposedX -= overshootX / zoom;
+				}
+			}
+		
+			return { x: proposedX, y: proposedY };
+		},
+
 		resetFlowState: function() {
 			const flowContainer = document.getElementById("ws_cf_flow");
 			const wrapper = document.getElementById("ws_cf_wrapper");
@@ -613,20 +703,20 @@ define(function(require) {
 			const centerX = (wrapperWidth - flowWidth) / 2;
 			const centerY = (wrapperHeight - flowHeight) / 2;
 		
-			// Set transform
+			// set transform
 			flowContainer.style.transform = `translate(${centerX}px, ${centerY}px) scale(1)`;
-		
-			// Save in dataset
+
+			// save in dataset
 			flowContainer.dataset.translateX = centerX;
 			flowContainer.dataset.translateY = centerY;
 		
-			// Save globally for panning
+			// save globally for panning
 			this.translateX = centerX;
 			this.translateY = centerY;
 		
 			flowContainer.style.height = `${wrapperHeight}px`;
 		},
-		
+
 		syncFlowHeight: function() {
 			const flowchart = document.querySelector(".flowchart");
 			const flowContainer = document.getElementById("ws_cf_flow");
@@ -657,7 +747,7 @@ define(function(require) {
 				self.renderCallflows(container);
 			});
 
-			// Add Callflow
+			// add Callflow
 			template.find('.list-add').on('click', function() {
 				template.find('.callflow-content')
 					.removeClass('listing-mode')
@@ -668,13 +758,10 @@ define(function(require) {
 				self.editCallflow();
 			});
 
-			// Edit Callflow
+			// edit Callflow
 			callflowList.on('click', '.list-element', function() {
 				var $this = $(this),
 					callflowId = $this.data('id');
-
-				// rest the callflow view - zoom and location of flow
-				self.resetView();
 
 				$('.list-element').removeClass('selected-element');
 				$this.addClass('selected-element');
@@ -725,7 +812,7 @@ define(function(require) {
 				}
 			});
 
-			// Search list
+			// search list
 			template.find('.search-query').on('keyup', function() {
 				var search = $(this).val();
 				searchLink.find('.search-value').text(search);
@@ -1944,7 +2031,6 @@ define(function(require) {
 					success: function(callflow) {
 						var callflow = callflow.data;
 
-						//self.resetFlow();
 						self.dataCallflow = callflow;
 
 						self.flow.id = callflow.id;
@@ -1962,13 +2048,14 @@ define(function(require) {
 					}
 				});
 			} else {
-				self.resetFlow();
 				self.dataCallflow = {};
 				self.repaintFlow();
 			}
 
 			self.renderButtons(existingCallflow);
 			self.renderTools();
+
+			$('.callflow-zoom').show();
 
 			if (!data) {
 				if (miscSettings.callflowButtonsWithinHeader) {
@@ -2018,6 +2105,7 @@ define(function(require) {
 								$('.buttons').empty();
 								$('#ws_cf_tools').empty();
 								$('#hidden_callflow_warning').hide();
+								$('.callflow-zoom').hide();
 
 								self.repaintList();
 								self.resetFlow();
@@ -2051,6 +2139,7 @@ define(function(require) {
 
 				monster.ui.alert(self.i18n.active().oldCallflows.duplicate_callflow_info);
 				
+				//$('#pending_change', '#ws_callflow').show();
 				$('#pending_change', '#ws_callflow').show();
 				if (miscSettings.callflowButtonsWithinHeader) {
 					$('.delete', '.entity-header').addClass('disabled');
@@ -2146,6 +2235,7 @@ define(function(require) {
 			self.flow.numbers = [];
 			self.flow.caption_map = {};
 			self.formatFlow();	
+			self.resetView();
 		},
 
 		formatFlow: function() {
@@ -2340,7 +2430,6 @@ define(function(require) {
 		},
 
 		repaintFlow: function() {
-			
 			var self = this;
 
 			callflowFlags = [];
@@ -2393,6 +2482,7 @@ define(function(require) {
 		show_pending_change: function(pending_change) {
 			var self = this;
 			if (pending_change) {
+				//$('#pending_change', '#ws_callflow').show();
 				$('#pending_change', '#ws_callflow').show();
 				$('.duplicate', '#ws_callflow').addClass('disabled');
 				if (miscSettings.callflowButtonsWithinHeader) {
@@ -2405,6 +2495,7 @@ define(function(require) {
 					}
 				}
 			} else {
+				//$('#pending_change', '#ws_callflow').hide();
 				$('#pending_change', '#ws_callflow').hide();
 				$('.duplicate', '#ws_callflow').removeClass('disabled');
 				if (!miscSettings.disableButtonAnimation) {
