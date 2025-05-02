@@ -1782,6 +1782,7 @@
 		"group_name": "Group Name",
 		"delete": "Delete",
 		"you_have_modified_this_callflow": "This Callflow has unsaved changes. Click Save to apply them.",
+		"you_have_modified_this_callflow_basic": "This Callflow has unsaved changes.",
 		"drag_items_below_on_top": "Drag items below on top of other items on the left",
 		"connect_caller_to_another_callflow": "Connect a caller to another callflow...",
 		"which_callflow": "Which callflow?",
