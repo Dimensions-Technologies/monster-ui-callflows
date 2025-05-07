@@ -298,6 +298,34 @@ define(function(require) {
 						}
 					}
 
+					// set miscSettings.enableTenantProfileSettings and configure tenantProfileSettings to specify which actions are available based on the tenant profile assigned to the customer
+					if (miscSettings.enableTenantProfileSettings) {
+						if (accountData.hasOwnProperty('dimension') && accountData.dimension.hasOwnProperty('tenant_profile')) {
+							var tenantProfile = accountData.dimension.tenant_profile;
+
+							if (data.dimension.dt_callflows.hasOwnProperty('tenantProfileSettings') && data.dimension.dt_callflows.tenantProfileSettings.hasOwnProperty('hideCallflowAction')) {
+
+								var hideActions = data.dimension.dt_callflows.tenantProfileSettings.hideCallflowAction,
+									profileId = tenantProfile.id;
+
+								if (hideActions.hasOwnProperty(profileId)) {
+									var callflowActions = hideActions[profileId];
+
+									for (var key in callflowActions) {
+										if (callflowActions.hasOwnProperty(key)) {
+											hideCallflowAction[key] = callflowActions[key];
+										}
+									}
+
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Tenant Profile:', tenantProfile);
+										console.log('Tenant Profile Callflow Action Overrides:', callflowActions);
+									}
+								}
+							}
+						}
+					}
+
 					// set miscSettings.hideCallRestictions based on account type if not explicitly set
 					if (miscSettings.hideCallRestictions == undefined) {
 
