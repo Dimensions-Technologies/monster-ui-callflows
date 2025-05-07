@@ -10,6 +10,7 @@ define(function(require) {
 		hideCallflowAction = {},
 		hideFromCallflowAction = {},
 		hideClassifiers = {},
+		billingCodes = {},
 		miscSettings = {},
 		hideDeviceTypes = {},
 		ttsLanguages = {},
@@ -20,7 +21,8 @@ define(function(require) {
 		callTags = [],
 		contactDirectories = [],
 		hideFeatureCode = {},
-		pusherApps = {}, 
+		pusherApps = {},
+		deviceBillingCodeRequired = {},
 		translateX = 0, 
 		translateY = 0;
 
@@ -251,6 +253,21 @@ define(function(require) {
 								pusherApps = data.dimension.dt_callflows.pusherApps;
 							}
 
+							if (data.dimension.dt_callflows.hasOwnProperty('billingCodes')) {
+								if (Array.isArray(data.dimension.dt_callflows.billingCodes)) {
+									billingCodes = data.dimension.dt_callflows.billingCodes
+										.filter(code => code && code.id && code.name)
+										.map(code => ({
+											id: code.id.trim(),
+											name: code.name.trim()
+										}));
+								}
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('deviceBillingCodeRequired')) {															
+								deviceBillingCodeRequired = data.dimension.dt_callflows.deviceBillingCodeRequired;
+							}
+
 						}
 
 					}
@@ -319,9 +336,11 @@ define(function(require) {
 						console.log('accountData:', accountData);
 						console.log('hideFeatureCode:', hideFeatureCode);
 						console.log('pusherApps:', pusherApps);
+						console.log('billingCodes:', billingCodes);
+						console.log('deviceBillingCodeRequired:', deviceBillingCodeRequired);
 					}
 
-					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories, pusherApps });
+					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, billingCodes, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories, pusherApps, deviceBillingCodeRequired });
 					self.renderEntityManager(parent);
 
 					// show warning message if emergency caller id has not been set on the account

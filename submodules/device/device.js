@@ -8,7 +8,9 @@ define(function(require) {
 		dimensionDeviceType = {},
 		deviceAudioCodecs = {},
 		deviceVideoCodecs = {},
-		pusherApps = {};
+		pusherApps = {},
+		billingCodes = {},
+		deviceBillingCodeRequired = {};
 
 	var app = {
 		requests: {
@@ -807,7 +809,8 @@ define(function(require) {
 						miscSettings: miscSettings,
 						dimensionDeviceType: dimensionDeviceType,
 						hasExternalCallerId: hasExternalCallerId,
-						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity
+						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
+						billingCodes: billingCodes
 					}, _.pick(data.extra, [
 						'phoneNumbers'
 					]), data),
@@ -1030,6 +1033,13 @@ define(function(require) {
 					search_contains: true
 				})
 
+				// add search to dropdown
+				device_html.find('#billing_code').chosen({
+					width: '224px',
+					disable_search_threshold: 0,
+					search_contains: true
+				})
+
 				if (!$('#music_on_hold_media_id', device_html).val()) {
 					$('#edit_link_media', device_html).hide();
 				}
@@ -1172,7 +1182,8 @@ define(function(require) {
 				selectors: {
 					audio: audioSelector,
 					video: videoSelector
-				}
+				},
+				dimensionDeviceType: dimensionDeviceType
 			});
 
 			(target)
@@ -1205,7 +1216,8 @@ define(function(require) {
 				callbacks = args.callbacks,
 				device_html = args.template,
 				audioSelector = args.selectors.audio,
-				videoSelector = args.selectors.video;
+				videoSelector = args.selectors.video,
+				dimensionDeviceType = args.dimensionDeviceType;
 
 			if (typeof data.data === 'object' && data.data.device_type) {
 				var deviceForm = device_html.find('#device-form');
@@ -1260,10 +1272,26 @@ define(function(require) {
 					var $this = $(this);
 
 					if (!$this.hasClass('disabled')) {
+
 						$this.addClass('disabled');
 						if (monster.ui.valid(deviceForm)) {
+
 							var form_data = monster.ui.getFormData('device-form'),
-								hasCodecs = $.inArray(form_data.device_type, ['sip_device', 'softphone', 'mobile']) > -1;
+								hasCodecs = $.inArray(form_data.device_type, ['sip_device', 'softphone', 'mobile']) > -1,
+								deviceType = data.data.device_type;
+
+							if (miscSettings.enableBillingCodes) {
+								if (deviceBillingCodeRequired.hasOwnProperty(deviceType) && deviceBillingCodeRequired[deviceType]) {
+									if (!form_data.billing_code) {
+										if (dimensionDeviceType.preventDelete) {
+											monster.ui.alert('warning', self.i18n.active().callflows.device.billing_code.required.message_dimensions_provisioner);
+										} else {
+											monster.ui.alert('warning', self.i18n.active().callflows.device.billing_code.required.message);											
+										}
+										return; // exit early to prevent save
+									}
+								}
+							}
 
 							if (form_data.hasOwnProperty('music_on_hold') && form_data.music_on_hold.media_id === 'shoutcast') {
 								form_data.music_on_hold.media_id = device_html.find('.shoutcast-url-input').val();
@@ -1792,6 +1820,27 @@ define(function(require) {
 				}
 			}
 
+			if (form_data.billing_code) {
+				const selectedCode = form_data.billing_code;
+				const match = billingCodes.find(code => code.id === selectedCode);
+
+				if (match) {
+
+					if (miscSettings.enableConsoleLogging) {
+						console.log('billingCodes: Id', match.id);
+						console.log('billingCodes: Name',match.name);
+					}
+
+					// set dimension_billing property
+					form_data.dimension_billing = {
+						product_name: match.name,
+						product_code: match.id
+					}
+
+				}
+				delete form_data.billing_code;
+			}
+
 			if (form_data.device_type === 'teammate') {
 				form_data.caller_id_options = {
 					outbound_privacy: 'none'
@@ -2094,7 +2143,9 @@ define(function(require) {
 			deviceAudioCodecs = args.deviceAudioCodecs,
 			deviceVideoCodecs = args.deviceVideoCodecs,
 			hideCallflowAction = args.hideCallflowAction,
-			pusherApps = args.pusherApps;
+			pusherApps = args.pusherApps,
+			billingCodes = args.billingCodes,
+			deviceBillingCodeRequired = args.deviceBillingCodeRequired;
 
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
