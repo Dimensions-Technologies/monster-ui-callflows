@@ -1987,10 +1987,15 @@
 	opacity: 0.6;
 }
 
-.input-readonly {
-    opacity: 0.95;
-	pointer-events: none;
-    cursor: default;
+.input-readonly,
+.chosen-disabled {
+    opacity: 0.95 !important;
+	pointer-events: none !important;
+    cursor: default !important;
+}
+
+.chosen-disabled .chosen-single {
+	background-color: #eeeeee;
 }
 
 .no-stop-cursor {

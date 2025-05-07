@@ -320,6 +320,14 @@
 				"app_name": "App Name",
 				"delete": "Clear push notification settings",
 				"delete_help": "This action will remove the push notification settings from the device, preventing push notifications from being delivered until the device registers again"
+			},
+			"billing_code": {
+				"billing_code": "Billing Type",
+				"required": {
+					"title": "Billing Type Required",
+					"message": "Billing Type Required. <br> To save changes, please select a Billing Type for this device.",
+					"message_dimensions_provisioner": "Billing Type Required. <br> Please select a Billing Type for this device within the device provisioning area. Changes have not been saved."
+				}
 			}
 		},
 		"landlineDevice": {

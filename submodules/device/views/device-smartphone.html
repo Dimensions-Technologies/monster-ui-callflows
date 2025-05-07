@@ -64,6 +64,37 @@
 						</div>
 					</div>
 
+					{{#if miscSettings.enableBillingCodes}}
+						<div class="clearfix">
+							<label for="billing_code">{{ i18n.callflows.device.billing_code.billing_code }}</label>
+							{{#unless dimensionDeviceType.preventDelete}}
+								<div class="input">
+									<select class="medium" id="billing_code" name="billing_code">
+										<option value="" disabled selected>{{ i18n.callflows.device.none }}</option>
+										{{#select data.dimension_billing.product_code}}
+											{{#each billingCodes}}
+												<option value="{{id}}">{{name}}</option>
+											{{/each}}
+										{{/select}}	
+									</select>
+								</div>
+							{{/unless}}
+							{{#if dimensionDeviceType.preventDelete}}
+								<div class="input">
+									<select disabled class="medium" id="billing_code" name="billing_code">
+										<option value="" disabled selected>{{ i18n.callflows.device.none }}</option>
+										{{#select data.dimension_billing.product_code}}
+											{{#each billingCodes}}
+												<option value="{{id}}">{{name}}</option>
+											{{/each}}
+										{{/select}}	
+									</select>
+								</div>
+							{{/if}}
+
+						</div>
+					{{/if}}
+
 					<div class="clearfix">
 						<div class="input">
 							<ul class="inputs-list">
