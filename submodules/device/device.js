@@ -216,15 +216,24 @@ define(function(require) {
 
 					if (deviceData.hasOwnProperty('dimension') && deviceData.dimension.hasOwnProperty('type')) {
 						dimensionDeviceType[deviceData.dimension.type] = true;
+						dimensionDeviceType['dimensionsProvisionedDevice'] = true;
 						dimensionDeviceType['preventDelete'] = true;
 						dimensionDeviceType['showDeviceSimplifiedSipSettings'] = false;
-					
+						
 						if (deviceData.dimension.model == 'UCS' || deviceData.dimension.type == 'legacypbx') {
 							dimensionDeviceType['showDeviceSimplifiedSipSettings'] = true;
 						}
 
 						if (deviceData.dimension.model == 'UCM') {
 							dimensionDeviceType['pusherDevice'] = true;
+						}
+
+						if (['UCW', 'UCM', 'UCD', 'UCB'].includes(deviceData.dimension.model)) {
+							dimensionDeviceType['hideDeviceVideoCodecsSoftphone'] = true;
+						}
+
+						if (['legacypbx', 'hotdesk', 'communal'].includes(deviceData.dimension.type)) {
+							defaults.field_data.hide_owner = true;
 						}
 
 						if (miscSettings.enableConsoleLogging) {
