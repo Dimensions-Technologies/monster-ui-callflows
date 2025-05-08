@@ -303,23 +303,56 @@ define(function(require) {
 						if (accountData.hasOwnProperty('dimension') && accountData.dimension.hasOwnProperty('tenant_profile')) {
 							var tenantProfile = accountData.dimension.tenant_profile;
 
-							if (data.dimension.dt_callflows.hasOwnProperty('tenantProfileSettings') && data.dimension.dt_callflows.tenantProfileSettings.hasOwnProperty('hideCallflowAction')) {
+							if (miscSettings.enableConsoleLogging) {
+								console.log('Tenant Profile:', tenantProfile);
+							}
 
-								var hideActions = data.dimension.dt_callflows.tenantProfileSettings.hideCallflowAction,
-									profileId = tenantProfile.id;
-
-								if (hideActions.hasOwnProperty(profileId)) {
-									var callflowActions = hideActions[profileId];
-
+							if (data.dimension.dt_callflows.hasOwnProperty('tenantProfileSettings')) {
+								var profileId = tenantProfile.id,
+									profileSettings = data.dimension.dt_callflows.tenantProfileSettings;
+							
+								// tenant profile callflow action overrides
+								if (profileSettings.hasOwnProperty(profileId) && profileSettings[profileId].hasOwnProperty('hideCallflowAction')) {							
+									var callflowActions = profileSettings[profileId].hideCallflowAction;
+							
 									for (var key in callflowActions) {
 										if (callflowActions.hasOwnProperty(key)) {
 											hideCallflowAction[key] = callflowActions[key];
 										}
 									}
-
+							
 									if (miscSettings.enableConsoleLogging) {
-										console.log('Tenant Profile:', tenantProfile);
 										console.log('Tenant Profile Callflow Action Overrides:', callflowActions);
+									}
+								}
+
+								// tenant profile callflow menu overrides
+								if (profileSettings.hasOwnProperty(profileId) && profileSettings[profileId].hasOwnProperty('hideFromMenu')) {
+									var menuItems = profileSettings[profileId].hideFromMenu;
+
+									for (var key in menuItems) {
+										if (menuItems.hasOwnProperty(key)) {
+											hideFromMenu[key] = menuItems[key];
+										}
+									}
+							
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Tenant Profile Menu Item Overrides:', menuItems);
+									}
+								}
+
+								// tenant profile feature codes overrides
+								if (profileSettings.hasOwnProperty(profileId) && profileSettings[profileId].hasOwnProperty('hideFeatureCode')) {
+									var featureCodes = profileSettings[profileId].hideFeatureCode;
+
+									for (var key in featureCodes) {
+										if (featureCodes.hasOwnProperty(key)) {
+											hideFeatureCode[key] = featureCodes[key];
+										}
+									}
+							
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Tenant Profile Feature Code Overrides:', featureCodes);
 									}
 								}
 							}
