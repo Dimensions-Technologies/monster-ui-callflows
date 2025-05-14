@@ -23,6 +23,10 @@ define(function(require) {
 				'verb': 'POST',
 				'url': 'accounts/{accountId}/queues/{queuesId}'
 			},
+			'callcenter.queues.patch': {
+				'verb': 'PATCH',
+				'url': 'accounts/{accountId}/queues/{queuesId}'
+			},
 			'callcenter.queues.delete': {
 				'verb': 'DELETE',
 				'url': 'accounts/{accountId}/queues/{queuesId}'
@@ -535,7 +539,7 @@ define(function(require) {
 				}
 
 			};
-  
+
 			// conditionally add `agent_status` to the parallel tasks if this is an existing queue
 			if (data && data.id) {
 				parallelTasks.agent_status = function (callback) {
@@ -559,7 +563,7 @@ define(function(require) {
 					});
 				};
 			}
-			  
+
 			// execute the parallel tasks
 			monster.parallel(parallelTasks, function (err, results) {
 				let render_data = defaults;
@@ -707,23 +711,62 @@ define(function(require) {
 
 				if (monster.ui.valid($form)) {
 					var form_data = monster.ui.getFormData($form[0]);
-
 					var agentsList = [];
 
-					$('.js-user-table-item:not(#row_no_data)', queue_html).each(function() {
-						agentsList.push($(this).data('id'));
-					});
+					var existingExtension = data.data?.numbers?.[0] || "";
+					var formExtension = form_data.extension;
 
-					data.field_data.user_list = {
-						old_list: data.data.agents || [],
-						new_list: agentsList
-					};
+					if (formExtension == "") {
+						monster.ui.alert('warning', self.i18n.active().callflows.acdc.extension.extensionNumberRequired);
+						return; // exit early to prevent save
+					}
 
-					self.queueSave(form_data, data, callbacks.save_success, callbacks.save_error);
+					if (existingExtension != formExtension) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									filter_numbers: formExtension,
+									paginate: false
+								}
+							},
+							success: function(_data) {
+								if (_data.data.length > 0) {
+									var callflowName = _data.data[0].name;
+									monster.ui.alert('warning', self.i18n.active().callflows.acdc.extension.extensionNumberExists + callflowName);
+									return; // exit early to prevent save
+								} else {
+									data.field_data.update_callflow = true;
+									processUserListAndSave(form_data, data, queue_html, callbacks);
+								}
+							}
+						});
+					} else {
+						data.field_data.update_callflow = false;
+						processUserListAndSave(form_data, data, queue_html, callbacks);
+					}
+
 				} else {
 					toastr.error(self.i18n.active().callflows.callcenter.formHasErrorsMessage);
 				}
 			};
+
+			function processUserListAndSave(form_data, data, queue_html, callbacks) {
+				const agentsList = [];
+
+				$('.js-user-table-item:not(#row_no_data)', queue_html).each(function () {
+					agentsList.push($(this).data('id'));
+				});
+
+				data.field_data.user_list = {
+					old_list: data.data.agents || [],
+					new_list: agentsList
+				};
+
+				self.queueSave(form_data, data, callbacks.save_success, callbacks.save_error);
+			}
+
 
 			$('.queue-delete', queue_html).click(function(ev) {
 				deleteButtonEvents(ev);
@@ -845,6 +888,21 @@ define(function(require) {
 				}
 			});
 
+			$(queue_html).on('click', '.search-extension-link', function() {
+				monster.pub('common.extensionTools.select', {
+					callback: function(number) {
+						$(queue_html).find('#extension').val(number);
+					}
+				});
+			});
+
+			// add search to dropdown
+			queue_html.find('#moh').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
 			self.winkstartTabs(queue_html);
 			self.winkstartLinkForm(queue_html);
 
@@ -880,24 +938,57 @@ define(function(require) {
 			var self = this;
 
 			if (typeof data.data === 'object' && data.data.id) {
-				monster.request({
-					resource: 'callcenter.queues.delete',
-					data: {
-						accountId: self.accountId,
-						queuesId: data.data.id,
-						generateError: false
-					},
-					success: function(_data, status) {
-						if (typeof success === 'function') {
-							success(_data, status);
+				self.queueCallflowDelete(data, function() {
+					monster.request({
+						resource: 'callcenter.queues.delete',
+						data: {
+							accountId: self.accountId,
+							queuesId: data.data.id,
+							generateError: false
+						},
+						success: function(_data, status) {
+							if (typeof success === 'function') {
+								success(_data, status);
+							}
+						},
+						error: function(_data, status) {
+							if (typeof error === 'function') {
+								error(_data, status);
+							}
 						}
-					},
-					error: function(_data, status) {
-						if (typeof error === 'function') {
-							error(_data, status);
-						}
+					});
+				});				
+			}
+		},
+
+		queueCallflowDelete: function(data, success, error) {
+			var self = this;
+
+			if (Array.isArray(data.data.callflows) && data.data.callflows.length > 0) {
+				const deletePromises = data.data.callflows.map(function(callflowId) {
+					return new Promise(function(resolve, reject) {
+						self.callApi({
+							resource: 'callflow.delete',
+							data: {
+								accountId: self.accountId,
+								callflowId: callflowId
+							},
+							success: function() {
+								resolve();
+							}
+						});
+					});
+				});
+
+				Promise.all(deletePromises).then(function() {
+					if (typeof success === 'function') {
+						success();
 					}
 				});
+			} else {
+				if (typeof success === 'function') {
+					success();
+				}
 			}
 		},
 
@@ -963,11 +1054,13 @@ define(function(require) {
 
 		queueSave: function(form_data, data, success, error) {
 			var self = this,
+				extensionNumber = form_data.extension,
+				updateCallflow = data.field_data.update_callflow,
 				normalized_data = self.normalizeData($.extend(true, {}, data.data, form_data));
 
 			if (typeof data.data === 'object' && data.data.id) {
 				var queueId = data.data.id;
-				self.queueUpdate(queueId, normalized_data, function(queueData) {
+				self.queueUpdate(queueId, normalized_data, extensionNumber, updateCallflow, function(queueData) {
 					self.agentsSave(queueId, data.field_data.user_list.new_list, function(agentsData) {
 						queueData.agents = agentsData.agents;
 						if (typeof (success) === 'function') {
@@ -976,7 +1069,7 @@ define(function(require) {
 					});
 				});
 			} else {
-				self.queueCreate(normalized_data, function(queueData) {
+				self.queueCreate(normalized_data, extensionNumber, function(queueData) {
 					self.agentsSave(queueData.id, data.field_data.user_list.new_list, function(agentsData) {
 						queueData.agents = agentsData.agents;
 						if (typeof (success) === 'function') {
@@ -987,7 +1080,7 @@ define(function(require) {
 			}
 		},
 
-		queueUpdate: function(queueId, data, success, error){
+		queueUpdate: function(queueId, data, extensionNumber, updateCallflow, success, error){
 			var self = this;
 
 			monster.request({
@@ -998,32 +1091,30 @@ define(function(require) {
 					generateError: false,
 					data: data
 				},
-				success: function(data) {
-					if (typeof (success) === 'function' && data.data) {
-						success(data.data);
-					}
-				},
-				error: function(data) {
-					if (typeof (error) === 'function') {
-						error(data);
-					}
-				}
-			});
-		},
-
-		queueCreate: function(data, success, error) {
-			var self = this;
-
-			monster.request({
-				resource: 'callcenter.queues.create',
-				data: {
-					accountId: self.accountId,
-					generateError: false,
-					data: data
-				},
 				success: function(_data) {
-					if (typeof (success) === 'function') {
-						success(_data.data);
+					if (updateCallflow) {
+						self.queueCallflowUpdate(_data.data, extensionNumber, function(callflowData) {
+							monster.request({
+								resource: 'callcenter.queues.patch',
+								data: {
+									accountId: self.accountId,
+									queuesId: _data.data.id,
+									generateError: false,
+									data: {
+										numbers: callflowData.numbers
+									}
+								},
+								success: function() {
+									if (typeof (success) === 'function') {
+										success(_data.data);
+									}
+								},
+							});
+						});
+					} else {
+						if (typeof (success) === 'function') {
+							success(_data.data);
+						}
 					}
 				},
 				error: function(_data) {
@@ -1034,8 +1125,115 @@ define(function(require) {
 			});
 		},
 
+		queueCreate: function(data, extensionNumber, success, error) {
+			var self = this;
+
+			monster.request({
+				resource: 'callcenter.queues.create',
+				data: {
+					accountId: self.accountId,
+					generateError: false,
+					data: data
+				},
+				success: function(_data) {
+					self.queueCallflowCreate(_data.data, extensionNumber, function(callflowData) {
+						monster.request({
+							resource: 'callcenter.queues.patch',
+							data: {
+								accountId: self.accountId,
+								queuesId: _data.data.id,
+								generateError: false,
+								data: {
+									callflows: [
+										callflowData.id
+									],
+									numbers: callflowData.numbers
+								}
+							},
+							success: function() {
+								if (typeof (success) === 'function') {
+									success(_data.data);
+								}
+							},
+						});
+					});
+				},
+				error: function(_data) {
+					if (typeof (error) === 'function') {
+						error(_data);
+					}
+				}
+			});
+		},
+
+		queueCallflowCreate: function(data, extensionNumber, success, error) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.create',
+				data: {
+					accountId: self.accountId,
+					data: {
+						name: data.name,
+						numbers: [ extensionNumber ],
+						flow: {
+							data: {
+								id: data.id,
+								priority: 1
+							},
+							module: 'acdc_member',
+							children: {}
+						},
+						ui_metadata: {
+							origin: 'voip'
+						}
+					},
+					removeMetadataAPI: true
+				},
+				success: function(_data) {
+					if (typeof (success) === 'function') {
+						success(_data.data);
+					}
+				}
+			});
+		},
+
+		queueCallflowUpdate: function(data, extensionNumber, success, error) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.update',
+				data: {
+					accountId: self.accountId,
+					callflowId: data.callflows[0],
+					data: {
+						name: data.name,
+						numbers: [ extensionNumber ],
+						flow: {
+							data: {
+								id: data.id,
+								priority: 1
+							},
+							module: 'acdc_member',
+							children: {}
+						},
+						ui_metadata: {
+							origin: 'voip'
+						}
+					},
+					removeMetadataAPI: true
+				},
+				success: function(_data) {
+					if (typeof (success) === 'function') {
+						success(_data.data);
+					}
+				}
+			});
+		},
+
 		normalizeData: function(form_data) {
 			delete form_data.user_id;
+			delete form_data.extension;
 
 			// remove blank fields and let Kazoo set the defaults
 			$.each(form_data, function(key, value){

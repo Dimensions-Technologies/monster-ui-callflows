@@ -84,10 +84,14 @@
 }
 
 .callflows-port #queue-form a:not(.monster-link):hover {
-    color: #14580e;
+    color: #ffffff;
     text-decoration: none;
 }
 
 .popup_field.queue_priority #queue_priority {
     width: 146px;
+}
+
+.callflows-port #queue-form #queue_moh .chosen-container {
+    padding-bottom: 8px;
 }

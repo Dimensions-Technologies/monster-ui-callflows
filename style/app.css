@@ -2398,7 +2398,10 @@
 .callflows-port #vmbox-form .chosen-drop,
 .callflows-port #group-form .input select,
 .callflows-port #group-form .chosen-container-single, 
-.callflows-port #group-form .chosen-drop {
+.callflows-port #group-form .chosen-drop,
+.callflows-port #queue-form .input select,
+.callflows-port #queue-form .chosen-container-single, 
+.callflows-port #queue-form .chosen-drop {
     width: 224px !important;
 }
 
