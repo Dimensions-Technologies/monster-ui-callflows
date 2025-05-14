@@ -1531,6 +1531,11 @@
 			},
 			"advancedSettings": {
 				"title": "Advanced Settings"
+			},
+			"extension": {
+				"extensionNumber": "Queue extension number",
+				"extensionNumberRequired": "An extension number is required for this queue.",
+				"extensionNumberExists": "This extension number is already used by: <br>"
 			}
 		},
 		"callcenter": {

@@ -1276,7 +1276,7 @@ define(function(require) {
 					if (miscSettings.userListShowExtension) {
 						return entityType === 'user' && entity.presence_id;
 					}
-				};;
+				};
 
 			return _.map(entities, function(entity) {
 				return _.merge({

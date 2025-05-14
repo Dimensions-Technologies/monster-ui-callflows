@@ -28,11 +28,20 @@
                 <div class="clearfix">
                     <label for="name">Name</label>
                     <div class="input">
-                        <input id="name" name="name" type="text" data-placement="top" data-toggle="tooltip" value="{{ data.name }}" rel="popover" data-content="{{ i18nApp.name }}" />
+                        <input class="span4" id="name" name="name" type="text" data-placement="top" data-toggle="tooltip" value="{{ data.name }}" rel="popover" data-content="{{ i18nApp.name }}" />
                     </div>
                 </div>
-                
 
+                <div class="clearfix">
+                    <label for="extension">Extension</label>
+                    <div class="input">
+                        <input class="span4" id="extension" name="extension" type="text" data-placement="top" data-toggle="tooltip" value="{{ lookup data.numbers 0 }}" rel="popover" data-content="{{ i18n.callflows.acdc.extension.extensionNumber }}" />
+                        <div class="edit_create">
+                            <!--<a href="javascript:void(0);" class="number-selection-sidelink search-extension-link">{{ i18n.callflows.findExtension }}</a>-->
+                            <a href="javascript:void(0);" class="number-selection-sidelink search-extension-link">{{ i18n.callflows.findExtension }}</a>
+                        </div>
+                    </div>
+                </div>
 
                 {{#unless fieldReadOnly}}
                     <div class="clearfix">
@@ -62,21 +71,17 @@
                     </div>
                 {{/if}}
 
-
-
-
-                
                 <div class="clearfix">
                     <label for="connection_timeout">Queue Timeout</label>
                     <div class="input">
-                        <input id="connection_timeout" name="connection_timeout" type="text" value="{{#if data.connection_timeout}}{{ data.connection_timeout }}{{else}}3600{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.settings.connectionTimeout }}" />
+                        <input class="span4" id="connection_timeout" name="connection_timeout" type="text" value="{{#if data.connection_timeout}}{{ data.connection_timeout }}{{else}}3600{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.settings.connectionTimeout }}" />
                     </div>
                 </div>
 
                 <div class="clearfix">
                     <label for="max_queue_size">Queue Call Limit</label>
                     <div class="input">
-                        <input id="max_queue_size" name="max_queue_size" type="text" value="{{#if data.max_queue_size}}{{ data.max_queue_size }}{{else}}0{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.settings.maxQueueSize }}" />
+                        <input class="span4" id="max_queue_size" name="max_queue_size" type="text" value="{{#if data.max_queue_size}}{{ data.max_queue_size }}{{else}}0{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.settings.maxQueueSize }}" />
                     </div>
                 </div>
                 
@@ -159,7 +164,7 @@
                 <div class="clearfix">
                     <label for="announcements_interval">Announcement Interval</label>
                     <div class="input">
-                        <input id="announcements_interval" name="announcements.interval" type="text" value="{{#if data.announcements.interval}}{{ data.announcements.interval }}{{else}}20{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.announcements.intervalHelp }}" />
+                        <input class="span4" id="announcements_interval" name="announcements.interval" type="text" value="{{#if data.announcements.interval}}{{ data.announcements.interval }}{{else}}20{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.announcements.intervalHelp }}" />
                     </div>
                 </div>
                 <div class="clearfix">
@@ -228,13 +233,13 @@
                 <div class="clearfix">
                     <label for="agent_ring_timeout">Agent Connect Timeout</label>
                     <div class="input">
-                        <input id="agent_ring_timeout" name="agent_ring_timeout" type="text" value="{{#if data.agent_ring_timeout}}{{ data.agent_ring_timeout }}{{else}}20{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.agents.agentTimeout }}" />
+                        <input class="span4" id="agent_ring_timeout" name="agent_ring_timeout" type="text" value="{{#if data.agent_ring_timeout}}{{ data.agent_ring_timeout }}{{else}}20{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.agents.agentTimeout }}" />
                     </div>
                 </div>
                 <div class="clearfix">
                     <label for="agent_wrapup_time">Agent Wrap-up Time</label>
                     <div class="input">
-                        <input id="agent_wrapup_time" name="agent_wrapup_time" type="text" value="{{#if data.agent_wrapup_time}}{{ data.agent_wrapup_time }}{{else}}0{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.agents.agentWrapup }}" />
+                        <input class="span4" id="agent_wrapup_time" name="agent_wrapup_time" type="text" value="{{#if data.agent_wrapup_time}}{{ data.agent_wrapup_time }}{{else}}0{{/if}}" rel="popover" data-content="{{ i18n.callflows.acdc.agents.agentWrapup }}" />
                     </div>
                 </div>
             </div>
