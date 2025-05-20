@@ -2362,24 +2362,110 @@ define(function(require) {
 
 					},
 					listEntities: function(callback) {
+						
 						var getDeviceWithTemplate = function(device) {
-								var type = device.device_type,
-									dataToTemplate = _.merge({
-										iconCssClass: getIconCssClass(type),
-										statusCssClass: getStatusCssClass(device),
-										type: type
-									}, _.pick(device, [
-										'name'
-									]));
 
-								return _.merge({
-									customEntityTemplate: self.getTemplate({
-										name: 'entity-element',
-										data: dataToTemplate,
-										submodule: 'device'
-									})
-								}, device);
-							},
+							var type = device.device_type,
+								isSipDevice = false,
+								formattedType = formatDeviceType(type) + ' ',
+								enhancedDeviceData = {};
+
+							if (type == 'sip_device' && device.mac_address) {
+								enhancedDeviceData.formattedMac = ' (' + monster.util.formatMacAddress(device.mac_address) + ')';
+								isSipDevice = true;
+							}
+
+							if (device.call_forward && device.call_forward.number) {
+								enhancedDeviceData.forwardingNumber = ' (' + device.call_forward?.number + ')';
+							}
+							
+							/*
+							if (device.dimension && device.presence_id) {
+								enhancedDeviceData.presenceId = ' (' + device.presence_id + ')'
+							}
+							*/
+							
+							/* switch out device name for dimensions terms */
+							if (device.dimension) {
+								if (device.presence_id) {
+									enhancedDeviceData.presenceId = ' (' + device.presence_id + ')'
+								}
+
+								if (device.dimension?.type) {
+									if (device.dimension.type == 'hotdesk') {
+										formattedType = 'Hotdesk Base'
+									}
+									if (device.dimension.type == 'communal') {
+										formattedType = 'Phone Only'	
+									}
+									formattedType = formattedType + ' ';
+								}
+
+								if (device.dimension?.model) {
+									if (device.dimension.model == 'UCB') {
+										formattedType = 'WebRTC Client'
+									}
+									if (device.dimension.model == 'UCM') {
+										formattedType = 'Mobile Client'	
+									}
+									if (device.dimension.model == 'UCD') {
+										formattedType = 'Desktop Client'	
+									}
+									if (device.dimension.model == 'UCW') {
+										formattedType = 'CRM Client'	
+									}
+									formattedType = formattedType + ' ';	
+								}
+							}
+							
+
+							var dataToTemplate = _.merge({
+								iconCssClass: getIconCssClass(type),
+								statusCssClass: getStatusCssClass(device),
+								type: type,
+								isSipDevice: isSipDevice,
+								formattedType: formattedType,
+								enhancedDeviceData: enhancedDeviceData
+							}, _.pick(device, [
+								'name',
+								'mac_address',
+								'device_type',
+								'call_forward',
+								'presence_id'
+							]));
+
+							return _.merge({
+								customEntityTemplate: self.getTemplate({
+									name: 'entity-element',
+									data: dataToTemplate,
+									submodule: 'device'
+								}),
+								formattedType: formattedType,
+								enhancedDeviceData: enhancedDeviceData
+							}, device);
+						},
+
+						formatDeviceType = function(type) {
+							if (!type) return '';
+
+							const typeMap = {
+								sip_device: 'SIP Device',
+								sip_uri: 'SIP URI',
+								softphone: 'Softphone',
+								cellphone: 'Cellphone',
+								smartphone: 'Smartphone',
+								landline: 'Landline',
+								mobile: 'Mobile',
+								teammate: 'Teammate',
+								fax: 'Fax',
+								ata: 'ATA'
+							};
+
+							// Return mapped label or a fallback with formatting
+							return typeMap[type] || type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+						};
+
 							getIconCssClass = function(type) {
 								return _.get({
 									'cellphone': 'phone',
@@ -2411,15 +2497,96 @@ define(function(require) {
 											paginate: false
 										}
 									},
-									success: function(data, status) {
-										callback && callback(null, data.data);
+									success: function(data) {
+										const devices = data.data;
+										callback(null, devices);
 									}
+								});
+							},
+							function(devices, callback) {
+								if (!miscSettings.enableEnhancedListData) {
+									return callback(null, devices); // enhanced filtering is only support on 5.x 
+								}
+
+								monster.parallel({
+									forwarding: function(cb) {
+										self.callApi({
+											resource: 'device.list',
+											data: {
+												accountId: self.accountId,
+												filters: {
+													paginate: false,
+													fields: ["id", "call_forward.number"],
+													filter_any_device_type: ["landline", "cellphone"],
+													has_value: 'call_forward.number'
+												}
+											},
+											success: function(data) {
+												const forwardingMap = {};
+												data.data.forEach(item => {
+													if (item.id && item.call_forward) {
+														forwardingMap[item.id] = item.call_forward;
+													}
+												});
+												cb(null, forwardingMap);
+											}
+										});
+									},
+									dimensions: function(cb) {
+										self.callApi({
+											resource: 'device.list',
+											data: {
+												accountId: self.accountId,
+												filters: {
+													paginate: false,
+													fields: ["id", "dimension", "presence_id"],
+													has_key: 'dimension'
+												}
+											},
+											success: function(data) {
+												const dimensionMap = {};
+												data.data.forEach(item => {
+													if (item.id) {
+														dimensionMap[item.id] = {
+															dimension: item.dimension || {},
+															presence_id: item.hasOwnProperty('presence_id') ? item.presence_id : null
+														};
+													}
+												});
+												cb(null, dimensionMap);
+											}
+										});
+									}
+								},
+								function(err, results) {
+									const forwardingMap = results.forwarding;
+									const dimensionMap = results.dimensions;
+
+									const enhancedDevices = devices.map(device => {
+										const id = device.id;
+
+										if (forwardingMap[id]) {
+											device.call_forward = forwardingMap[id];
+										}
+
+										if (dimensionMap[id]) {
+											device.dimension = dimensionMap[id].dimension;
+											if (dimensionMap[id].presence_id !== null && dimensionMap[id].presence_id !== undefined) {
+												device.presence_id = dimensionMap[id].presence_id;
+											}
+										}
+
+										return device;
+									});
+
+									callback(null, enhancedDevices);
 								});
 							}
 						],
 						function(err, devices) {
 							callback && callback(_.map(devices, getDeviceWithTemplate));
 						});
+
 					},
 					editEntity: 'callflows.device.edit'
 				},

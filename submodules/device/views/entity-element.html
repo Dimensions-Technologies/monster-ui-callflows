@@ -1,7 +1,18 @@
-<div class="title standalone">
+<div class="device-detail">
 	<i data-toggle="tooltip" data-placement="top" data-original-title="{{ tryI18n @root.i18n.callflows.device type }}" class="{{iconCssClass}} {{statusCssClass}}">
 		{{telicon iconCssClass}}
 	</i>
-	{{name}}
-</div>
+	<div class="device-text">
+		<div class="title">{{name}}</div>
+		<div class="description">
+			{{formattedType}}
+			{{#if isSipDevice}}
+				{{enhancedDeviceData.formattedMac}}
+			{{/if}}
+			{{#if call_forward}} 
+				{{enhancedDeviceData.forwardingNumber}}
+			{{/if}}
+			{{enhancedDeviceData.presenceId}}
+		</div>
+	</div>
 </div>

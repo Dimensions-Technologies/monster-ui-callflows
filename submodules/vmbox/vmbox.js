@@ -7,7 +7,12 @@ define(function(require) {
 		miscSettings = {};
 
 	var app = {
-		requests: {},
+		requests: {
+			'messages.list': {
+				url: 'accounts/{accountId}/vmboxes/{vmboxId}/messages',
+				verb: 'GET'
+			}
+		},
 
 		subscribe: {
 			'callflows.fetchActions': 'vmboxDefineActions',
@@ -80,7 +85,8 @@ define(function(require) {
 
 					field_data: {
 						users: [],
-						media: []
+						media: [],
+						messages: []
 					}
 				};
 
@@ -113,6 +119,18 @@ define(function(require) {
 				get_vmbox: function(callback) {
 					if (typeof data === 'object' && data.id) {
 						self.vmboxGet(data.id, function(_data) {
+							callback(null, _data);
+						});
+					} else {
+						callback(null, {});
+					}
+				},
+				get_vmbox_messages: function(callback) {
+					if (typeof data === 'object' && data.id) {
+						self.vmboxMessagesGet(data.id, function(_data) {
+
+							defaults.field_data.messages = _data;
+
 							callback(null, _data);
 						});
 					} else {
@@ -167,6 +185,61 @@ define(function(require) {
 				announcement_only: _.get(data.data, 'announcement_only', false),
 				include_message_on_notify: _.get(data.data, 'include_message_on_notify', true)
 			});
+
+			if (Array.isArray(data.field_data.messages)) {
+				data.field_data.messages = data.field_data.messages
+					.filter(function(message) {
+						// exclude messages in the 'deleted' folder
+						return message.folder !== 'deleted';
+					})
+					.map(function(message) {
+						var formattedTimestamp = monster.util.toFriendlyDate(message.timestamp),
+							formattedDate = monster.util.toFriendlyDate(message.timestamp, 'date'),
+							formattedTime = monster.util.toFriendlyDate(message.timestamp, 'time'),
+							formattedCallerIdNumber = monster.util.formatPhoneNumber(message.caller_id_number), 
+							formattedCallerIdName = message.caller_id_name === message.caller_id_number ? monster.util.formatPhoneNumber(message.caller_id_name) : message.caller_id_name,
+							formattedTo = typeof message.to === 'string' ? monster.util.formatPhoneNumber(message.to.split('@')[0]) : message.to,
+							formattedFolder = typeof message.folder === 'string' ? message.folder.charAt(0).toUpperCase() + message.folder.slice(1) : message.folder,
+							formattedLength = formatLength(message.length);
+
+						return _.merge({}, message, {
+							timestamp: formattedTimestamp,
+							date: formattedDate,
+							time: formattedTime,
+							caller_id_number: formattedCallerIdNumber,
+							caller_id_name: formattedCallerIdName,
+							to: formattedTo,
+							folder: formattedFolder,
+							length: formattedLength
+						});
+					});
+			}
+
+			// format message length from milliseconds to friendly format
+			function formatLength(millisecondsString) {
+				var totalSeconds = Math.floor(parseInt(millisecondsString, 10) / 1000);
+
+				if (isNaN(totalSeconds) || totalSeconds <= 0) {
+					return '0s';
+				}
+
+				var hours = Math.floor(totalSeconds / 3600),
+					minutes = Math.floor((totalSeconds % 3600) / 60),
+					seconds = totalSeconds % 60,
+					parts = [];
+
+				if (hours > 0) {
+					parts.push(hours + 'h');
+				}
+				if (minutes > 0) {
+					parts.push(minutes + 'm');
+				}
+				if (seconds > 0 || parts.length === 0) {
+					parts.push(seconds + 's');
+				}
+
+				return parts.join(' ');
+			}
 
 			return data;
 		},
@@ -768,6 +841,24 @@ define(function(require) {
 				data: {
 					accountId: self.accountId,
 					voicemailId: vmboxId
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			});
+		},
+
+		vmboxMessagesGet: function(vmboxId, callback) {
+			var self = this;
+
+			monster.request({
+				resource: 'messages.list',
+				data: {
+					accountId: self.accountId,
+					vmboxId: vmboxId,
+					filters: {
+						paginate: false
+					}
 				},
 				success: function(data) {
 					callback && callback(data.data);
