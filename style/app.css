@@ -10,6 +10,7 @@
 @import url('../submodules/groups/groups.css');
 @import url('../submodules/featurecodes/featurecodes.css');
 @import url('../submodules/temporalset/temporalset.css');
+@import url('../submodules/vmbox/vmbox.css');
 @import url('../style/fonts.css');
 
 /* style.css */
@@ -1044,8 +1045,8 @@
 
 #callflow_container .list-container .link .title {
 	font-size: 16px;
-	height: 40px;
-	line-height: 40px;
+	height: 38px;
+	line-height: 34px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -1055,10 +1056,52 @@
 	line-height: 60px;
 }
 
+/*
 #callflow_container .list-container .link .description {
 	font-size: 10px;
 	height: 20px;
 	line-height: 10px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+*/
+
+#callflow_container .list-container .link .description {
+	font-size: 12px;
+	height: 22px;
+	line-height: 14px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: flex;
+}
+
+#callflow_container .list-element .device-detail {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+#callflow_container .list-element .device-detail .device-text {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+#callflow_container .list-element .device-detail .title {
+	font-size: 16px;
+	height: 38px;
+	line-height: 34px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#callflow_container .list-element .device-detail .description {
+	font-size: 12px;
+	height: 22px;
+	line-height: 14px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

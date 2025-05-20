@@ -1116,7 +1116,8 @@
 			"emailAsAttachment": {
 				"label": "Attach messages to e-mail",
 				"help": "E-mail not having the message as an attachment"
-			}
+			},
+			"messages": "Messages"
 		},
 		"__comment": "UI-1493: Adding accountSettings to advanced callflows app",
 		"__version": "3.22",

@@ -17,7 +17,8 @@
 	<div>
 		<ul class="tabs">
 			<li class="active"><a href="#basic">{{ i18n.callflows.vmbox.basic }}</a></li>
-			<li><a href="#options"><span class="icon wrench_screw"></span>{{ i18n.callflows.vmbox.options }}</a></li>
+			<li><a href="#options">{{ i18n.callflows.vmbox.options }}</a></li>
+			<li><a href="#messages">{{ i18n.callflows.vmbox.messages }}</a></li>
 		</ul>
 		<form id="vmbox-form" action="" method="post">
 			<div class="pill-content">
@@ -428,6 +429,50 @@
 						</div>
 					</div>
 				</div>
+
+				<div id="messages">
+					<div class="clearfix">
+						<div id="tab_messages">
+							<div class="row title">
+								<div class="column first title">Received</div>
+								<div class="column second title">From</div>
+								<div class="column third title">Target Number</div>
+								<div class="column fourth title">Folder</div>
+								<div class="column fifth title">Duration</div>
+							</div>
+							{{#if field_data.messages.length}}
+								<div class="rows">
+									{{#each field_data.messages}}
+										<div class="row">
+											<div class="column first">
+												<div class="multi-line-div">{{this.date}}</div>
+												<div class="multi-line-div">{{this.time}}</div>
+											</div>
+											<div class="column second">
+												{{#unless (eq this.caller_id_name this.caller_id_number)}}
+													<div class="multi-line-div">{{this.caller_id_name}}</div>
+													<div class="multi-line-div">{{this.caller_id_number}}</div>
+												{{else}}
+													<div class="multi-line-div">{{this.caller_id_number}}</div>
+												{{/unless}}
+											</div>
+											<div class="column third">{{this.to}}</div>
+											<div class="column fourth">{{this.folder}}</div>
+											<div class="column fifth">{{this.length}}</div>
+										</div>
+									{{/each}}
+								</div>
+							{{else}}
+								<div class="row">
+									<div class="no-messages">
+										<p>no messages available</p>
+									</div>
+								</div>
+							{{/if}}
+						</div>	
+					</div>
+				</div>
+
 			</div>
 		</form>
 

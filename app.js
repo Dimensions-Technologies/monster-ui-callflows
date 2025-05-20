@@ -465,6 +465,18 @@ define(function(require) {
 
 			]);
 
+			// add additional handle bar support
+			Handlebars.registerHelper('includes', function(array, value, options) {
+				if (Array.isArray(array) && array.includes(value)) {
+					return options.fn(this);
+				}
+				return options.inverse(this);
+			});
+
+			Handlebars.registerHelper('eq', function(a, b) {
+				return a === b;
+			});
+
 		},
 
 		renderCallflows: function(container) {
@@ -1276,17 +1288,107 @@ define(function(require) {
 					if (miscSettings.userListShowExtension) {
 						return entityType === 'user' && entity.presence_id;
 					}
+				},
+				isTemporalRoute = function(entity) {
+					if (miscSettings.enableEnhancedListData) {
+						return entityType === 'temporal_route';
+					}
+				},
+				isVoicemail = function(entity) {
+					return entityType === 'voicemail';
 				};
 
 			return _.map(entities, function(entity) {
-				return _.merge({
-					displayName: getDisplayName(entity)
-				}, isMediaSource(entity) && {
+
+				const displayName = getDisplayName(entity);
+				const enhanced = {
+					displayName: displayName,
+					enableEnhancedListData: miscSettings.enableEnhancedListData,
+					entityType: entityType
+				};
+
+				// searchable values
+				const searchTerms = [
+					displayName,
+					entity.id,
+					entity.presence_id,
+					entity.formattedType,
+					entity.mac_address,
+					entity.enhancedDeviceData?.formattedMac,
+					entity.enhancedDeviceData?.forwardingNumber,
+					entity.enhancedDeviceData?.presenceId,
+					entity.mailbox
+				];
+
+				// feature keywords
+				const featureLabels = {
+					'do_not_disturb': 'Do Not Disturb DND',
+					'find_me_follow_me': 'Find Me Follow Me FMFM',
+					'call_forward': 'Call Forward FWD',
+					'caller_id': 'Caller ID CLIP',
+					'hotdesk': 'Hotdesk',
+					'voicemail': 'Voicemail VM'
+				};
+
+				Object.keys(featureLabels).forEach(feature => {
+					if ((entity.features || []).includes(feature)) {
+						searchTerms.push(featureLabels[feature]);
+					}
+				});
+
+				// add numbers to seach if present
+				if (Array.isArray(entity.numbers)) {
+					searchTerms.push(...entity.numbers);
+				}
+
+				// check temporal route
+				if (entityType === 'temporal_route' && miscSettings.enableEnhancedListData) {
+					searchTerms.push(entity.dimension?.rule_type === 'manual' ? 'Manual Rule Id: ' + entity.dimension.feature_code_id : 'Time Based Rule');
+				}
+
+				// cleaned search string
+				enhanced.searchText = searchTerms
+					.filter(Boolean) 
+					.join(' ')
+					.replace(/\s+/g, ' ')
+					.trim();
+
+				// check for the following
+				const hasFeatureIcon =
+					(entity.features || []).includes('do_not_disturb') ||
+					(entity.features || []).includes('voicemail') ||
+					(entity.features || []).includes('call_forward') ||
+					(entity.features || []).includes('caller_id') ||
+					(entity.features || []).includes('hotdesk') ||
+					entity.numbers;
+
+				return _.merge(enhanced, isMediaSource(entity) && {
 					additionalInfo: self.i18n.active().callflows.media.mediaSources[entity.media_source]
 				}, isUser(entity) && {
-					additionalInfo: entity.presence_id
-				}, entity);
+					additionalInfo: [
+					entity.presence_id,
+					hasFeatureIcon ? '<span style="margin-left: 4px; margin-right: 0;">-</span>'	: '',
+					(entity.features || []).includes('do_not_disturb') ? '<span class="material-symbols-user-state icon-do-not-disturb" title="Do Not Disturb">do_not_disturb_on</span>' : '',
+					(entity.features || []).includes('voicemail') ? '<span class="material-symbols-user-state icon-voicemail" title="Voicemail">voicemail</span>' : '',
+					(entity.features || []).includes('call_forward') ? ' <span class="material-symbols-user-state icon-find-me-follow-me" title="Find Me Follow Me">alt_route</span>' : '',
+					(entity.features || []).includes('call_forward') ? ' <span class="material-symbols-user-state icon-forward" title="Call Forward">phone_forwarded</span>' : '',
+					(entity.features || []).includes('caller_id') ? ' <span class="material-symbols-user-state icon-caller-id" title="Caller ID">outbound</span>' : '',
+					(entity.features || []).includes('hotdesk') ? ' <span class="material-symbols-user-state icon-hotdesk" title="Hotdesk">desk</span>' : '',
+					(Array.isArray(entity.numbers) && entity.numbers.length > 0) ? '<span class="material-symbols-user-state icon-numbers" title="Assigned Phone Numbers">numbers</span>' : ''
+				].join(' ')
+				}, isTemporalRoute(entity) && {
+					additionalInfo: entity.dimension?.rule_type === 'manual' ? 'Manual Rule - Feature Code Id: ' + entity.dimension.feature_code_id : 'Time Based Rule'
+				}, isVoicemail(entity) && {
+					additionalInfo: [
+						entity.mailbox,
+						'- Messages: ',
+						'New: ' + (entity?.folders?.new ?? '0'),
+						'Saved: ' + (entity?.folders?.saved ?? '0')
+					].join(' ')
+				},entity);
+
 			});
+
 		},
 
 		renderAccountSettings: function(container) {

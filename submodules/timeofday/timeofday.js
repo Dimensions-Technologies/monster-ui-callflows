@@ -1368,16 +1368,34 @@ define(function(require) {
 		temporalRuleList: function(callback) {
 			var self = this;
 
-			self.callApi({
-				resource: 'temporalRule.list',
-				data: {
-					accountId: self.accountId,
-					filters: { paginate: false }
-				},
-				success: function(data) {
-					callback && callback(data.data);
-				}
-			});
+			console.log('temporal rule list');
+
+			if (miscSettings.enableEnhancedListData) {
+				self.callApi({
+					resource: 'temporalRule.list',
+					data: {
+						accountId: self.accountId,
+						filters: {
+							paginate: false,
+							fields: ["id", "name", "flags", "features", "dimension"]
+						}
+					},
+					success: function(data) {
+						callback && callback(data.data);
+					}
+				});
+			} else {
+				self.callApi({
+					resource: 'temporalRule.list',
+					data: {
+						accountId: self.accountId,
+						filters: { paginate: false }
+					},
+					success: function(data) {
+						callback && callback(data.data);
+					}
+				});
+			}
 		},
 
 		temporalSetList: function(callback) {
