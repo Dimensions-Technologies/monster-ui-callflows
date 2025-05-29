@@ -1170,7 +1170,9 @@ define(function(require) {
 
 				$('.list-element').removeClass('selected-element');
 				$this.addClass('selected-element');
-				
+
+				template.find('.entity-edition .entity-content').empty();
+
 				editEntity(type, id);
 			});
 
