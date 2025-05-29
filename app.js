@@ -855,6 +855,9 @@ define(function(require) {
 				var $this = $(this),
 					callflowId = $this.data('id');
 
+				// remove existing callflow from view when selecting a new callflow
+				$('#ws_callflow .flowchart').hide();
+
 				$('.list-element').removeClass('selected-element');
 				$this.addClass('selected-element');
 
@@ -2323,7 +2326,6 @@ define(function(require) {
 
 				monster.ui.alert(self.i18n.active().oldCallflows.duplicate_callflow_info);
 				
-				//$('#pending_change', '#ws_callflow').show();
 				$('#pending_change', '#ws_callflow').show();
 				if (miscSettings.callflowButtonsWithinHeader) {
 					$('.delete', '.entity-header').addClass('disabled');
@@ -2661,12 +2663,14 @@ define(function(require) {
 				console.log('callflowFlags', callflowFlags);
 			}
 
+			// show callflow on page
+			$('#ws_callflow .flowchart').show();
+
 		},
 
 		show_pending_change: function(pending_change) {
 			var self = this;
 			if (pending_change) {
-				//$('#pending_change', '#ws_callflow').show();
 				$('#pending_change', '#ws_callflow').show();
 				$('.duplicate', '#ws_callflow').addClass('disabled');
 				if (miscSettings.callflowButtonsWithinHeader) {
@@ -2679,7 +2683,6 @@ define(function(require) {
 					}
 				}
 			} else {
-				//$('#pending_change', '#ws_callflow').hide();
 				$('#pending_change', '#ws_callflow').hide();
 				$('.duplicate', '#ws_callflow').removeClass('disabled');
 				if (!miscSettings.disableButtonAnimation) {
