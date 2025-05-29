@@ -203,7 +203,7 @@
 						{{ i18n.callflows.user.the_following_devices_are_mapped }}
 					</div>
 					{{/unless}}
-					<div id="tab_devices">
+					<div id="tab_devices" class="{{#if miscSettings.hideUserDeviceTableActions}}hide-actions{{/if}}">
 						<div class="row title">
 							<div class="column first title">{{ i18n.callflows.user.device_name }}&nbsp;&nbsp;<span class="icon medium device"/></div>
 							<div class="column second title">{{ i18n.callflows.user.type }}&nbsp;&nbsp;<span class="icon medium iphone" style="margin-bottom: 4px;"/></div>

@@ -33,7 +33,7 @@
 	color: #666666;
 	/*margin: 20px auto auto; */
 	margin: 20px 60px; /* left align table */
-	width: 900px;
+	max-width: 920px;
 }
 
 .callflows-port #user-form #equipment #tab_devices .action_device {
@@ -50,8 +50,12 @@
 	color: #05addc;
 }
 
-.callflows-port #user-form #equipment #tab_devices .column:not(.fifth) {
+.callflows-port #user-form #equipment #tab_devices .column:not(.fourth):not(.fifth) {
 	border-right: 1px solid #A6A6A6;
+}
+
+.callflows-port #user-form #equipment #tab_devices .column:is(.fifth) {
+	border-left: 1px solid #A6A6A6;
 }
 
 .callflows-port #user-form #equipment #tab_devices .column {
@@ -68,12 +72,24 @@
 	text-indent: 25px;
 }
 
+.callflows-port #user-form #equipment #tab_devices.hide-actions .column.first {
+	width: 32% !important;
+}
+
 .callflows-port #user-form #equipment #tab_devices .column.second {
 	width: 20% !important;
 }
 
+.callflows-port #user-form #equipment #tab_devices.hide-actions .column.second {
+	width: 26% !important;
+}
+
 .callflows-port #user-form #equipment #tab_devices .column.third {
 	width: 20% !important;
+}
+
+.callflows-port #user-form #equipment #tab_devices.hide-actions .column.third {
+	width: 26% !important;
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.fourth {
@@ -85,8 +101,8 @@
 }
 
 .callflows-port #user-form #equipment #tab_devices .column.merged {
-	width: 560px;
-	border-right: none;
+	width: 920px;
+	border-right: none !important;
 }
 
 .callflows-port #user-form #equipment #tab_devices .row {

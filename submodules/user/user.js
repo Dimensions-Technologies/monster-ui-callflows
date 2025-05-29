@@ -1170,225 +1170,229 @@ define(function(require) {
 
 			$('#tab_find_me_follow_me', user_html).hide(); // show find me follow me table
 
-			self.userGetDeviceList(data, function(callback) {
-				var deviceList = callback,
-					findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
-					userCallflow = data?.field_data?.user_callflow;
-
-				self.userRenderDeviceList(data, deviceList, user_html);
-
-				if (findMeFollowMeEnabled && userCallflow) {
-					$('#tab_find_me_follow_me', user_html).show(); // show find me follow me table
-					data.field_data.ring_group = userCallflow.flow.data;
-					self.usersRenderFindMeFollowMe(data, deviceList, user_html);
-				}
-
-			});
-
-			// if user the user is logged into a hotdesk device update the table
-			if (data.field_data.device_list) {
-				self.userRenderHotdeskList(data, user_html);
-			}
-
-			monster.ui.validate(user_form, {
-				rules: {
-					'extra.shoutcastUrl': {
-						protocol: true
-					},
-					username: {
-						required: true,
-						minlength: 3,
-						regex: /^[0-9a-zA-Z+@._-]*$/
-					},
-					first_name: {
-						required: true,
-						minlength: 1,
-						maxlength: 256,
-						regex: /^[0-9a-zA-Z\s\-']+$/
-					},
-					last_name: {
-						required: true,
-						minlength: 1,
-						maxlength: 256,
-						regex: /^[0-9a-zA-Z\s\-']+$/
-					},
-
-					email: {
-						required: true,
-						email: true
-					},
-					pwd_mngt_pwd1: {
-						required: true,
-						minlength: 3
-					},
-					pwd_mngt_pwd2: {
-						required: true,
-						minlength: 3,
-						equalTo: '#pwd_mngt_pwd1'
-					},
-					'hotdesk.pin': { regex: /^[0-9]*$/ },
-					'hotdesk.id': { regex: /^[0-9+#*]*$/ },
-					call_forward_number: { regex: /^[+]?[0-9]*$/ },
-					'caller_id.internal.name': { maxlength: 30 },
-					'caller_id.external.name': { regex: /^[0-9A-Za-z ,]{0,30}$/ },
-					'caller_id.emergency.name': { regex: /^[0-9A-Za-z ,]{0,30}$/ },
-					'caller_id.asserted.name': { regex: /^[0-9A-Za-z ,]{0,30}$/ },
-					'caller_id.internal.number': { regex: /^[+]?[0-9\s\-.()]*$/ },
-					'caller_id.external.number': { regex: /^[+]?[0-9\s\-.()]*$/ },
-					'caller_id.emergency.number': { regex: /^[+]?[0-9\s\-.()]*$/ },
-					'caller_id.asserted.number': { phoneNumber: true },
-					'caller_id.asserted.realm': { realm: true }
+			// the following is within monster.waterfall so that the device list is rendered before the page loads
+			monster.waterfall([
+				function(callback) {
+					self.userGetDeviceList(data, function(deviceList) {
+						data.field_data.device_list = deviceList;
+						self.userRenderDeviceList(data, deviceList, user_html, function() {
+							callback(null);
+						});
+					});
 				},
-				messages: {
-					username: { regex: self.i18n.active().callflows.user.validation.username },
-					first_name: { regex: self.i18n.active().callflows.user.validation.name },
-					last_name: { regex: self.i18n.active().callflows.user.validation.name },
-					'hotdesk.pin': { regex: self.i18n.active().callflows.user.validation.hotdesk.pin },
-					'hotdesk.id': { regex: self.i18n.active().callflows.user.validation.hotdesk.id },
-					'caller_id.internal.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
-					'caller_id.external.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
-					'caller_id.emergency.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
-					'caller_id.asserted.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
-					'caller_id.internal.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
-					'caller_id.external.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
-					'caller_id.emergency.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
-					'caller_id.asserted.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
-					'caller_id.asserted.realm': { regex: self.i18n.active().callflows.user.validation.caller_id.realm }
-				}
-			});
+				function() {
+					target.empty().append(user_html);
+					
+					var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
+						userCallflow = data?.field_data?.user_callflow;
 
-			timezone.populateDropdown(
-				$('#timezone', user_html),
-				_.get(data.data, 'timezone', 'inherit'),
-				{
-					inherit: self.i18n.active().defaultTimezone
-				}
-			);
+					if (findMeFollowMeEnabled && userCallflow) {
+						$('#tab_find_me_follow_me', user_html).show();
+						data.field_data.ring_group = userCallflow.flow.data;
+						self.usersRenderFindMeFollowMe(data, data.field_data.device_list, user_html);
+					}
+					
+					// if user the user is logged into a hotdesk device update the table
+					if (data.field_data.device_list) {
+						self.userRenderHotdeskList(data, user_html);
+					}
 
-			user_html.find('input[data-mask]').each(function() {
-				var $this = $(this);
-				monster.ui.mask($this, $this.data('mask'));
-			});
-
-			if (data.data.id === monster.apps.auth.userId) {
-				$('.user-delete', user_html).hide();
-			}
-
-			$('*[rel=popover]:not([type="text"])', user_html).popover({
-				trigger: 'hover'
-			});
-
-			$('*[rel=popover][type="text"]', user_html).popover({
-				trigger: 'focus'
-			});
-
-			$('.add-phone-number', user_html).click(function(ev) {
-
-				ev.preventDefault();
-
-				var field_data = data.field_data;
-
-				self.listNumbers(function(phoneNumbers) {
-					var parsedNumbers = [];
-
-					// filter out numbers already added to the form but not yet saved
-					_.each(phoneNumbers, function(number) {
-						if ($.inArray(number.phoneNumber, field_data.phone_numbers) < 0) {	
-							parsedNumbers.push(number);
-						}
-					});
-
-					var popup_html = $(self.getTemplate({
-							name: 'addPhoneNumber',
-							data: {
-								phoneNumbers: parsedNumbers,
-								hideBuyNumbers: _.get(monster, 'config.whitelabel.hideBuyNumbers', false)
+					monster.ui.validate(user_form, {
+						rules: {
+							'extra.shoutcastUrl': {
+								protocol: true
 							},
-							submodule: 'user'
-						})),
-						popup = monster.ui.dialog(popup_html, {
-							title: self.i18n.active().oldCallflows.add_number
-						});
+							username: {
+								required: true,
+								minlength: 3,
+								regex: /^[0-9a-zA-Z+@._-]*$/
+							},
+							first_name: {
+								required: true,
+								minlength: 1,
+								maxlength: 256,
+								regex: /^[0-9a-zA-Z\s\-']+$/
+							},
+							last_name: {
+								required: true,
+								minlength: 1,
+								maxlength: 256,
+								regex: /^[0-9a-zA-Z\s\-']+$/
+							},
 
-					if (parsedNumbers.length == 0) {
-						popup_html.find('.add_number').addClass('disabled').attr('disabled', 'disabled');
-					}
-
-					monster.ui.chosen(popup_html.find('#list_numbers'), {
-						width: '160px'
-					});
-
-					// Have to do that so that the chosen dropdown isn't hidden.
-					popup_html.parent().css('overflow', 'visible');
-
-					if (parsedNumbers.length === 0) {
-						$('#list_numbers', popup_html).attr('disabled', 'disabled');
-						$('<option value="select_none">' + self.i18n.active().oldCallflows.no_phone_numbers + '</option>').appendTo($('#list_numbers', popup_html));
-					}
-
-					popup.find('.buy-link').on('click', function(e) {
-						e.preventDefault();
-						monster.pub('common.buyNumbers', {
-							searchType: $(this).data('type'),
-							callbacks: {
-								success: function(numbers) {
-									var lastNumber;
-
-									_.each(numbers, function(number, k) {
-										popup.find('#list_numbers').append($('<option value="' + k + '">' + monster.util.formatPhoneNumber(k) + '</option>'));
-										lastNumber = k;
-									});
-
-									popup.find('#list_numbers').val(lastNumber).trigger('chosen:updated');
-								}
-							}
-						});
-					});
-
-					$('.add_number', popup).click(function(event) {
-						
-						event.preventDefault();
-					
-						var number = $('input[name="number_type"]:checked', popup).val() === 'your_numbers' ? $('#list_numbers option:selected', popup).val() : $('#add_number_text', popup).val();
-					
-						// push number into field_data.numbers
-						field_data.phone_numbers.push(number);
-
-						if (miscSettings.enableConsoleLogging) {
-							console.log('Number Being Added:', number)
+							email: {
+								required: true,
+								email: true
+							},
+							pwd_mngt_pwd1: {
+								required: true,
+								minlength: 3
+							},
+							pwd_mngt_pwd2: {
+								required: true,
+								minlength: 3,
+								equalTo: '#pwd_mngt_pwd1'
+							},
+							'hotdesk.pin': { regex: /^[0-9]*$/ },
+							'hotdesk.id': { regex: /^[0-9+#*]*$/ },
+							call_forward_number: { regex: /^[+]?[0-9]*$/ },
+							'caller_id.internal.name': { maxlength: 30 },
+							'caller_id.external.name': { regex: /^[0-9A-Za-z ,]{0,30}$/ },
+							'caller_id.emergency.name': { regex: /^[0-9A-Za-z ,]{0,30}$/ },
+							'caller_id.asserted.name': { regex: /^[0-9A-Za-z ,]{0,30}$/ },
+							'caller_id.internal.number': { regex: /^[+]?[0-9\s\-.()]*$/ },
+							'caller_id.external.number': { regex: /^[+]?[0-9\s\-.()]*$/ },
+							'caller_id.emergency.number': { regex: /^[+]?[0-9\s\-.()]*$/ },
+							'caller_id.asserted.number': { phoneNumber: true },
+							'caller_id.asserted.realm': { realm: true }
+						},
+						messages: {
+							username: { regex: self.i18n.active().callflows.user.validation.username },
+							first_name: { regex: self.i18n.active().callflows.user.validation.name },
+							last_name: { regex: self.i18n.active().callflows.user.validation.name },
+							'hotdesk.pin': { regex: self.i18n.active().callflows.user.validation.hotdesk.pin },
+							'hotdesk.id': { regex: self.i18n.active().callflows.user.validation.hotdesk.id },
+							'caller_id.internal.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
+							'caller_id.external.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
+							'caller_id.emergency.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
+							'caller_id.asserted.name': { regex: self.i18n.active().callflows.user.validation.caller_id.name },
+							'caller_id.internal.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
+							'caller_id.external.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
+							'caller_id.emergency.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
+							'caller_id.asserted.number': { regex: self.i18n.active().callflows.user.validation.caller_id.number },
+							'caller_id.asserted.realm': { regex: self.i18n.active().callflows.user.validation.caller_id.realm }
 						}
-
-						self.userRenderNumberList(data, user_html)
-					
-						popup.dialog('close');
-
 					});
 
-				});
-			});
-			
+					timezone.populateDropdown(
+						$('#timezone', user_html),
+						_.get(data.data, 'timezone', 'inherit'),
+						{
+							inherit: self.i18n.active().defaultTimezone
+						}
+					);
 
-			self.winkstartTabs(user_html);
-			self.winkstartLinkForm(user_html);
+					user_html.find('input[data-mask]').each(function() {
+						var $this = $(this);
+						monster.ui.mask($this, $this.data('mask'));
+					});
 
-			hotdesk_pin_require.is(':checked') ? hotdesk_pin.show() : hotdesk_pin.hide();
+					if (data.data.id === monster.apps.auth.userId) {
+						$('.user-delete', user_html).hide();
+					}
 
-			if (!$('#music_on_hold_media_id', user_html).val()) {
-				$('#edit_link_media', user_html).hide();
-			}
+					$('*[rel=popover]:not([type="text"])', user_html).popover({
+						trigger: 'hover'
+					});
 
-			self.userBindEvents({
-				template: user_html,
-				userForm: user_form,
-				hotdeskPin: hotdesk_pin,
-				hotdeskPinRequire: hotdesk_pin_require,
-				data: data,
-				callbacks: callbacks
-			});
+					$('*[rel=popover][type="text"]', user_html).popover({
+						trigger: 'focus'
+					});
 
-			target
-				.empty()
-				.append(user_html);
+					$('.add-phone-number', user_html).click(function(ev) {
+
+						ev.preventDefault();
+
+						var field_data = data.field_data;
+
+						self.listNumbers(function(phoneNumbers) {
+							var parsedNumbers = [];
+
+							// filter out numbers already added to the form but not yet saved
+							_.each(phoneNumbers, function(number) {
+								if ($.inArray(number.phoneNumber, field_data.phone_numbers) < 0) {	
+									parsedNumbers.push(number);
+								}
+							});
+
+							var popup_html = $(self.getTemplate({
+									name: 'addPhoneNumber',
+									data: {
+										phoneNumbers: parsedNumbers,
+										hideBuyNumbers: _.get(monster, 'config.whitelabel.hideBuyNumbers', false)
+									},
+									submodule: 'user'
+								})),
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().oldCallflows.add_number
+								});
+
+							if (parsedNumbers.length == 0) {
+								popup_html.find('.add_number').addClass('disabled').attr('disabled', 'disabled');
+							}
+
+							monster.ui.chosen(popup_html.find('#list_numbers'), {
+								width: '160px'
+							});
+
+							// Have to do that so that the chosen dropdown isn't hidden.
+							popup_html.parent().css('overflow', 'visible');
+
+							if (parsedNumbers.length === 0) {
+								$('#list_numbers', popup_html).attr('disabled', 'disabled');
+								$('<option value="select_none">' + self.i18n.active().oldCallflows.no_phone_numbers + '</option>').appendTo($('#list_numbers', popup_html));
+							}
+
+							popup.find('.buy-link').on('click', function(e) {
+								e.preventDefault();
+								monster.pub('common.buyNumbers', {
+									searchType: $(this).data('type'),
+									callbacks: {
+										success: function(numbers) {
+											var lastNumber;
+
+											_.each(numbers, function(number, k) {
+												popup.find('#list_numbers').append($('<option value="' + k + '">' + monster.util.formatPhoneNumber(k) + '</option>'));
+												lastNumber = k;
+											});
+
+											popup.find('#list_numbers').val(lastNumber).trigger('chosen:updated');
+										}
+									}
+								});
+							});
+
+							$('.add_number', popup).click(function(event) {
+								
+								event.preventDefault();
+							
+								var number = $('input[name="number_type"]:checked', popup).val() === 'your_numbers' ? $('#list_numbers option:selected', popup).val() : $('#add_number_text', popup).val();
+							
+								// push number into field_data.numbers
+								field_data.phone_numbers.push(number);
+
+								if (miscSettings.enableConsoleLogging) {
+									console.log('Number Being Added:', number)
+								}
+
+								self.userRenderNumberList(data, user_html)
+							
+								popup.dialog('close');
+
+							});
+
+						});
+					});
+					
+					self.winkstartTabs(user_html);
+					self.winkstartLinkForm(user_html);
+
+					hotdesk_pin_require.is(':checked') ? hotdesk_pin.show() : hotdesk_pin.hide();
+
+					if (!$('#music_on_hold_media_id', user_html).val()) {
+						$('#edit_link_media', user_html).hide();
+					}
+
+					self.userBindEvents({
+						template: user_html,
+						userForm: user_form,
+						hotdeskPin: hotdesk_pin,
+						hotdeskPinRequire: hotdesk_pin_require,
+						data: data,
+						callbacks: callbacks
+					});
+				}
+			]);
 		},
 
 		/**
@@ -2173,7 +2177,7 @@ define(function(require) {
 
 		},
 
-		userRenderDeviceList: function(data, deviceList, parent) {
+		userRenderDeviceList: function(data, deviceList, parent, callback) {
 			var self = this,
 				parent = $('#tab_devices', parent),
 				_data = deviceList;
@@ -2229,7 +2233,10 @@ define(function(require) {
 						submodule: 'user'
 					})));
 			}
-			
+
+			if (typeof callback === 'function') {
+				callback();
+			}
 			
 		},
 
