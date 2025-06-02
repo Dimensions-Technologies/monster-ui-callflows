@@ -335,6 +335,34 @@
 	background-image: url(static/images/tall_arrow.png);
 }
 
+#ws_callflow .children > .child > .dynamic_line,
+.callflow-preview .children > .child > .dynamic_line {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 0;
+}
+
+#ws_callflow .children > .child > .branch_spacer,
+.callflow-preview .children > .child > .branch_spacer {
+	height: 30px;
+}
+
+#ws_callflow .children > .child > .dynamic_line .connector-path,
+.callflow-preview .children > .child > .dynamic_line .connector-path {
+	stroke: #555;
+	stroke-width: 2;
+	fill: none;
+}
+
+#ws_callflow .children > .child > .dynamic_line .connector-path-arrow,
+.callflow-preview .children > .child > .dynamic_line .connector-path-arrow {
+	fill: #555;
+}
+
 #ws_callflow .a_link_option,
 .callflow-preview .a_link_option {
 	color: #EEE;
@@ -592,6 +620,7 @@
 	vertical-align: top;
 	text-align: center;
 	white-space: normal;
+	position: relative;
 }
 
 #ws_callflow .branch,
@@ -729,12 +758,6 @@
 
 #ws_callflow .tools #ws_cf_tools,
 .callflow-preview .tools #ws_cf_tools {
-	/*
-	padding-right: 10px;
-	padding-top: 10px;
-	padding-bottom: 30px;
-	float: right;
-	*/
 	width: 175px;
 	position: absolute;
     top: 60px;
@@ -744,6 +767,27 @@
 	border-radius: 6px 0px 0px 0px;
 	padding-right: 10px;
 }
+
+/*
+#ws_callflow .tools,
+.callflow-preview .tools {
+	float: right;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+#ws_callflow .tools #ws_cf_tools,
+.callflow-preview .tools #ws_cf_tools {
+	width: 175px;
+	position: absolute;
+    top: 60px;
+    right: 0px;
+    z-index: 10;
+	background-color: #fff;
+	border-radius: 6px 0px 0px 0px;
+	padding-right: 10px;
+}
+*/
 
 .callflow-content .callflow-view {
     position: relative;
