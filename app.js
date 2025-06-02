@@ -2666,6 +2666,88 @@ define(function(require) {
 			// show callflow on page
 			$('#ws_callflow .flowchart').show();
 
+			// render dynamic connectors
+			if (miscSettings.enableDynamicConnectors) {
+				self.drawConnections();
+			}
+
+		},
+
+		drawConnections: function () {
+			const SVG_NS = "http://www.w3.org/2000/svg";
+
+			$('.node').each(function () {
+				var $source = $(this),
+					$childrenWrapper = $source.closest('.branch').find('>.children');
+
+				if ($childrenWrapper.length === 0) return;
+
+				$childrenWrapper.children('.child').each(function () {
+					var $child = $(this),
+						$target = $child.find('>.branch>.node'),
+						$targetBranch = $target.closest('.branch'),
+						$divOption = $targetBranch.siblings('.div_option'),
+						$lineContainer = $child.find('.dynamic_line');
+
+					if (!$target.length || $lineContainer.length === 0) return;
+
+					$lineContainer.empty();
+
+					var containerOffset = $lineContainer.offset(),
+						startOffset = $source.offset(),
+						endOffset = $target.offset();
+
+					var startX = startOffset.left + $source.outerWidth() / 2 - containerOffset.left;
+					var startY = startOffset.top + $source.outerHeight() - containerOffset.top;
+
+					var endX, endY, isArrowNeeded = false;
+
+					if ($divOption.length > 0) {
+						let optionOffset = $divOption.offset();
+						endX = optionOffset.left + $divOption.outerWidth() / 2 - containerOffset.left;
+						endY = optionOffset.top - containerOffset.top;
+					} else {
+						isArrowNeeded = true;
+						endX = endOffset.left + $target.outerWidth() / 2 - containerOffset.left;
+						endY = endOffset.top - containerOffset.top;
+					}
+
+					const arrowHeight = 6;
+					const arrowSpacing = 2;
+					const lineEndY = isArrowNeeded ? (endY - arrowHeight - arrowSpacing) : endY;
+
+					// create SVG
+					var svg = document.createElementNS(SVG_NS, "svg");
+					svg.setAttribute("class", "inline-svg");
+					svg.setAttribute("style", "position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible;");
+
+					// connector path
+					var path = document.createElementNS(SVG_NS, "path");
+					path.setAttribute("class", "connector-path");
+					path.setAttribute("d", `
+						M ${startX},${startY}
+						C ${startX},${(startY + lineEndY) / 2}
+						${endX},${(startY + lineEndY) / 2}
+						${endX},${lineEndY}
+					`);
+					svg.appendChild(path);
+
+					// arrowhead if no div_option
+					if (isArrowNeeded) {
+						var arrow = document.createElementNS(SVG_NS, "polygon");
+						arrow.setAttribute("class", "connector-path-arrow");
+						var arrowY = endY - arrowHeight - arrowSpacing;
+						arrow.setAttribute("points", `
+							${endX - 5},${arrowY}
+							${endX + 5},${arrowY}
+							${endX},${arrowY + arrowHeight}
+						`);
+						svg.appendChild(arrow);
+					}
+
+					$lineContainer[0].appendChild(svg);
+				});
+			});
 		},
 
 		show_pending_change: function(pending_change) {
@@ -2836,8 +2918,12 @@ define(function(require) {
 								$(this).siblings('.material-symbols-icon-medium').addClass('icon-adjust');
 							}
 						});
-						
 
+						// render dynamic connectors
+						if (miscSettings.enableDynamicConnectors) {
+							self.drawConnections();
+						}
+						
 					});
 				}, 
 				error: function(data) {
@@ -3131,10 +3217,11 @@ define(function(require) {
 						$('#callflow_jump').click(function() {
 							self.editCallflow({ id: previewCallflowId });
 							popup.dialog('close').remove();
-	
+
 							$('.list-element').removeClass('selected-element');
 							$('li[data-id="' + previewCallflowId + '"]').addClass('selected-element');
-							
+							$('.search-query').val('').trigger('keyup');
+
 							// bring the selected callflow into view
 							var listItem = document.querySelector('.left-bar-container .list li[data-id="' + previewCallflowId + '"]');
 							
