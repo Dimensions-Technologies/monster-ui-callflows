@@ -2174,11 +2174,17 @@ define(function(require) {
 							: number;
 					}),
 					listNumbers = formattedNumbers.toString(),
+					shortDescription = listNumbers,
 					isFeatureCode = callflow.featurecode !== false && !_.isEmpty(callflow.featurecode);
+
+				if (listNumbers.length > 36) {
+					shortDescription = listNumbers.substring(0, 36) +  '...';
+				}
 
 				if (!isFeatureCode) {
 					if (callflow.name) {
 						callflow.description = listNumbers;
+						callflow.shortDescription = shortDescription;
 						callflow.title = callflow.name;
 					} else {
 						callflow.title = listNumbers;
