@@ -1260,6 +1260,7 @@
 			"edit": "Edit Blocklist",
 			"name": "Name",
 			"blockAnonymous": "Block Anonymous",
+			"blockAnonymousHelp": "Block calls from Anonymous callers",
 			"listNumbers": "List of existing numbers",
 			"are_you_sure_you_want_to_delete": "Are you sure you want to delete this blocklist?",
 			"help": "In order to activate this blocklist, head to the Account Settings section"
