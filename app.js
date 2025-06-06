@@ -22,9 +22,9 @@ define(function(require) {
 		contactDirectories = [],
 		hideFeatureCode = {},
 		pusherApps = {},
-		deviceBillingCodeRequired = {},
-		translateX = 0, 
-		translateY = 0;
+		deviceBillingCodeRequired = {};
+		//translateX = 0, 
+		//translateY = 0;
 
 	var appSubmodules = [
 		'afterbridge',
@@ -506,11 +506,9 @@ define(function(require) {
 
 					self.hackResize(callflowsTemplate);
 
-					// hide scrollbar within callflow designer
-					if (miscSettings.hideScrollbars) {
-						$('#ws_callflow .tools', callflowsTemplate).addClass('scrollbar-hidden');
-						$('#ws_callflow .flowchart', callflowsTemplate).addClass('scrollbar-hidden');
-					}
+					// hide scrollbar within callflow designer - previously under setting miscSettings.hideScrollbars
+					$('#ws_callflow .tools', callflowsTemplate).addClass('scrollbar-hidden');
+					$('#ws_callflow .flowchart', callflowsTemplate).addClass('scrollbar-hidden');
 
 					// enable zoom control
 					self.setupZoomControls(callflowsTemplate);
@@ -714,18 +712,25 @@ define(function(require) {
 			flowWrapper.addEventListener("wheel", function (e) {
 
 				if (e.ctrlKey) return;
-		
+
 				e.preventDefault();
-		
-				scrollVelocityX += e.deltaX * 0.2;
-				scrollVelocityY += e.deltaY * 0.2;
-		
+
+				// if shift is held: treat vertical wheel (deltaY) as a horizontal
+				if (e.shiftKey) {
+					scrollVelocityX += e.deltaY * 0.2;
+				} else {
+					// no shift: normal behavior
+					scrollVelocityX += e.deltaX * 0.2;
+					scrollVelocityY += e.deltaY * 0.2;
+				}
+
 				if (!isScrolling) {
 					self.calculateAnchorNodes();
 					isScrolling = true;
 					requestAnimationFrame(animateScroll);
 				}
 			});
+
 		},	
 		
 		applyClampedPan: function(proposedX, proposedY) {
@@ -3765,100 +3770,146 @@ define(function(require) {
 
 			// set the basic drawer to open
 			$('#Basic', tools).removeClass('inactive').addClass('active');
+			$('#Basic .content', tools).show(); 
 
-			$('.category .open', tools).click(function() {
-				tools
-					.find('.category')
-					.removeClass('active')
-					.addClass('inactive');
-
-				$(this)
-					.parent('.category')
-					.removeClass('inactive')
-					.addClass('active');
+			tools.find('.category .open').each(function() {
+				const $open = $(this);
+				const isActive = $open.closest('.category').hasClass('active');
+				const iconClass = isActive ? 'fa-chevron-up' : 'fa-chevron-down';
+				$open.prepend(`<i class="fa ${iconClass}"></i>`);
 			});
 
-			var help_box = $('.callflow_helpbox_wrapper', '#callflow-view').first(),
-				$allActions = tools.find('.tool');
+			$('.category .open', tools).click(function () {
+				const $clickedCategory = $(this).parent('.category');
 
-			// Check for <br> tags in .tool_name and add class if present
+				// if this category is already active, collapse it
+				if ($clickedCategory.hasClass('active')) {
+					$clickedCategory.find('.content').stop(true, true).slideUp();
+					$clickedCategory.removeClass('active').addClass('inactive');
+					$(this).find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+				} else {
+					// close any currently open categories
+					tools.find('.category.active').removeClass('active').addClass('inactive').find('.content').stop(true, true).slideUp();
+					tools.find('.category .open i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+
+					// open the clicked category
+					$clickedCategory.find('.content').stop(true, true).slideDown();
+					$clickedCategory.removeClass('inactive').addClass('active');
+					
+					$(this).find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+				}
+			});
+
+			var	$allActions = tools.find('.tool');
+
+			// check for <br> tags in .tool_name and add class if present
 			$allActions.find('.tool_name').each(function() {
 				if ($(this).html().includes('<br>')) {
 					$(this).addClass('br');
 				}
 			});	
 
-			tools.find('.search-query').on('keyup', function() {
-				// debounce executes a function after a delay if it hasn't been called again
-				_.debounce(function(arg) {
-					var $this = arg,
-						val = $this.val().toLowerCase(),
-						categories = [];
+			// create sticky header and scrollable body
+			const $header = $('<div class="toolbox-header"></div>')
+				.append(tools.find('.title'))
+				.append(tools.find('.search-bar'));
+
+			const $body = $('<div class="toolbox-body"></div>')
+				.append(tools.find('.category'))
+				.append(tools.find('.callflow_helpbox_wrapper'));
+
+			tools.empty().append($header).append($body);
+
+			tools.find('.search-query').on('keyup', function () {
+				_.debounce(function ($input) {
+					var val = $input.val().toLowerCase();
 
 					if (val) {
-						tools.find('.category').removeClass('active').addClass('inactive');
+						$allActions.each(function () {
+							var $action = $(this),
+								$category = $action.closest('.category'),
+								$content = $category.find('.content'),
+								$icon = $category.find('.open i');
 
-						$allActions.each(function() {
-							var $thisAction = $(this);
+							if ($action.data('name').toLowerCase().includes(val)) {
+								$action.show();
 
-							if ($thisAction.data('name').toLowerCase().indexOf(val) >= 0) {
-								$thisAction.show();
-								categories.push($thisAction.parents('.category').attr('id'));
+								if (!$category.hasClass('active')) {
+									$category.removeClass('inactive').addClass('active');
+									$content.stop(true, true).slideDown();
+									$icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+								}
 							} else {
-								$thisAction.hide();
+								$action.hide();
+							}
+						});
+
+						// hide categories with no visible children
+						tools.find('.category').each(function () {
+							var $cat = $(this),
+								$content = $cat.find('.content'),
+								$icon = $cat.find('.open i');
+
+							if ($cat.find('.tool:visible').length === 0) {
+								$cat.removeClass('active').addClass('inactive');
+								$content.stop(true, true).slideUp();
+								$icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
 							}
 						});
 					} else {
-						tools.find('.category').removeClass('active').addClass('inactive');
-						tools.find('.category').first().removeClass('inactive').addClass('active');
+						// reset: show all tools
 						tools.find('.tool').show();
-					}
 
-					categories = _.uniq(categories);
-					_.each(categories, function(category) {
-						tools.find('.category[name="' + category + '"]').addClass('active').removeClass('inactive');
-					});
-				}, 200)($(this));
+						tools.find('.category').each(function () {
+							var $cat = $(this),
+								$content = $cat.find('.content'),
+								$icon = $cat.find('.open i');
+
+							// check if this is the "Basic" category
+							if ($cat.attr('id') === 'Basic') {
+								$cat.removeClass('inactive').addClass('active');
+								$content.stop(true, true).slideDown();
+								$icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+							} else {
+								$cat.removeClass('active').addClass('inactive');
+								$content.stop(true, true).slideUp();
+								$icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+							}
+						});
+					}
+				}, 250)($(this));
 			});
 
 			$('.tool', tools).hover(
-				function() {
-					var $this = $(this);
+				function () {
+					const $this = $(this);
+					let $tooltip = $('#action_tooltip');
 
-					$('.tool', tools).hover(
-						function() {
-					
-							var $this = $(this);
-							var tooltip = $('.callflow_helpbox_wrapper');
-					
-							if ($this.attr('help')) {
+					if (!$tooltip.length) {
+						$tooltip = $('<div id="action_tooltip" class="callflow_helpbox_wrapper"></div>').appendTo('body');
+					}
 
-								var toolbox = $('#ws_cf_tools'),
-									toolboxWidth = toolbox.outerWidth(),
-									leftPosition = '-' + toolboxWidth + 'px'
-					
-								tooltip.html($this.attr('help'));
-								tooltip.css({
-									position: "absolute",
-									top: $this.offset().top - $('#ws_cf_tools').offset().top + "px",
-									left: leftPosition,
-									display: "block"
-								});
+					if ($this.attr('help')) {
+						const $toolbox = $('#ws_cf_tools');
+						const toolOffset = $this.offset();
+						const toolboxOffset = $toolbox.offset();
 
-								tools.find('.callflow_helpbox_wrapper #help_box').html($this.attr('help'));
-
-							}
-						},
-						function() {
-							$('.callflow_helpbox_wrapper').hide();
-						}
-					);
+						$tooltip
+							.html($this.attr('help'))
+							.css({
+								position: "absolute",
+								top: toolOffset.top + "px",
+								left: (toolboxOffset.left - 185) + "px",
+								display: "block",
+								zIndex: 100
+							});
+					}
 				},
-				function() {
-					tools.find('.callflow_helpbox_wrapper').hide();
+				function () {
+					$('#action_tooltip').hide();
 				}
 			);
-			
+
 			function action(el) {
 				el.draggable({
 					start: function() {
@@ -3866,7 +3917,7 @@ define(function(require) {
 						$(this).addClass('inactive');
 					},
 					drag: function() {
-						$('.callflow_helpbox_wrapper', '#callflow-view').hide();
+						$('#action_tooltip').hide();
 					},
 					stop: function() {
 						self.disableDestinations();
@@ -3876,7 +3927,7 @@ define(function(require) {
 					helper: 'clone'
 				});
 			}
-
+		
 			$('.action', tools).each(function() {
 				action($(this));
 			});
