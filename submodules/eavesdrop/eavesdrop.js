@@ -29,7 +29,7 @@ define(function(require) {
 				
 				'eavesdrop[]': {
 					name: self.i18n.active().callflows.eavesdrop.name,
-					icon: 'headphones',
+					icon: 'headset',
                     google_icon: 'hearing',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'eavesdrop',
@@ -367,7 +367,7 @@ define(function(require) {
 
 				'eavesdrop_feature[]': {
 					name: self.i18n.active().callflows.eavesdropFeature.name,
-					icon: 'headphones',
+					icon: 'headset',
                     google_icon: 'hearing',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'eavesdrop_feature',

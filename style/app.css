@@ -14,6 +14,11 @@
 @import url('../style/fonts.css');
 
 /* style.css */
+#ws_callflow {
+	background-image: radial-gradient(#ccc 1px, transparent 1px); 
+	background-size: 30px 30px;
+}
+
 #ws_callflow > .callflow {
 	float: left;
 	width: 85%;
@@ -26,7 +31,8 @@
 
 #ws_callflow .callflow .root > .top_bar,
 .callflow-preview .callflow .root > .top_bar {
-	background-image: url(static/images/blue_bar.png);
+	background-color: #0399CE;
+	border-radius: 7px 7px 0px 0px;
 	height: 25px;
 	text-align: left;
 }
@@ -66,7 +72,7 @@
 	background: none;
 	background-color: #424242;
 	height: 30px;
-	border-radius: 0px 0px 2px 2px;
+	border-radius: 0px;
 }
 
 .callflow-preview .callflow .root > .content .number_row:last-child:not(:first-child) {
@@ -206,18 +212,6 @@
 	background-position: 5px center;
 }
 
-#ws_callflow .tools .active .open,
-.callflow-preview .tools .active .open {
-	background-image: url(static/images/arrow_active.png);
-	color: #22A5FF;
-}
-
-#ws_callflow .tools .inactive .open,
-.callflow-preview .tools .inactive .open{
-	background-image: url(static/images/arrow_inactive.png);
-	cursor: pointer;
-}
-
 #ws_callflow .tools .tool,
 .callflow-preview .tools .tool {
 	background: #777777;
@@ -285,6 +279,7 @@
 	width: 50%;
 	float: right;
 }
+
 .callflow-preview .children > .child:last-child > .div_line,
 #ws_callflow .children > .child:last-child > .div_line {
 	width: 50%;
@@ -604,9 +599,16 @@
     width: auto;
     height: auto;
     position: relative;
-    padding-top: 10px;
 	padding-right: 234px; /* centre callflow to page */
     text-align: center;
+}
+
+#ws_callflow #ws_cf_flow {
+	padding-top: 60px;
+}
+
+#ws_callflow .button-bar ~ .flowchart #ws_cf_flow {
+	padding-top: 90px;
 }
 
 #ws_callflow span.flow,
@@ -679,74 +681,76 @@
 }
 
 #ws_callflow .button-bar {
-	position: relative;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin: 0 auto;
-	margin-right: 10px;
-	padding: 10px 0;
-}
-
-#ws_callflow .button-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  	position: relative;
+  	z-index: 20;
 }
 
 #ws_callflow .button-bar .buttons {
-    display: flex;
-    justify-content: center;
-    flex: 1;
-	margin-left: 355px;
+  	position: absolute;
+  	/*top: 10px;*/
+  	left: 50%;
+	transform: translateX(calc(-50% - 120px));
 }
 
-#ws_callflow .button-bar .callflow-zoom {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    margin-left: auto;
-}
-
-#ws_callflow .button-bar #pending_change {
-	position: absolute;
-	left: calc(50% - 117px);
-	transform: translateX(-50%);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 50%;
-}
-
-#ws_callflow .button-bar #pending_change {	
+#ws_callflow #pending_change {	
 	display: none;
 }
 
-#ws_callflow .button-bar #pending_change span {
+#ws_callflow #pending_change {
+	position: absolute;
+	left: calc(50% - 117px);
+	transform: translateX(-50%);
+	z-index: 20;
+	background-color: rgb(255, 255, 255);
+	padding: 8px 26px;
+}
+
+#ws_callflow #pending_change {
+	top: 0px; 
+}
+
+#ws_callflow .button-bar + #pending_change {
+	top: 48px;
+}
+
+#ws_callflow #pending_change span {
 	font-size: 15px;
 	font-weight: 600;
 	letter-spacing: 0.02em;
 	color: red;
 }
 
-#ws_callflow .zoom-in-button .fa-search-plus,
-#ws_callflow .zoom-out-button .fa-search-minus {
-	margin-right: 5px;
+#ws_callflow .callflow-zoom {
+	position: fixed;
+	bottom: 20px;
+	left: 20px;
+	z-index: 10;
+	padding-left: 240px;
 }
 
-#ws_callflow .google-icons .zoom-in-button,
-#ws_callflow .google-icons .zoom-out-button {
-	margin-right: 10px;
+#ws_callflow .callflow-zoom .google-icons,
+#ws_callflow .callflow-zoom .fa-icons {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
-#ws_callflow .google-icons .zoom-in-button, 
-#ws_callflow .google-icons .zoom-out-button {
-    width: auto;
+#ws_callflow .callflow-zoom .google-icons .reset-view-button,
+#ws_callflow .callflow-zoom .google-icons .zoom-in-button, 
+#ws_callflow .callflow-zoom .google-icons .zoom-out-button,
+#ws_callflow .callflow-zoom .fa-icons .reset-view-button,
+#ws_callflow .callflow-zoom .fa-icons .zoom-in-button, 
+#ws_callflow .callflow-zoom .fa-icons .zoom-out-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     height: 38px;
+	width: 38px;
+}
+
+#ws_callflow .callflow-zoom .fa-icons .fa-search-plus,
+#ws_callflow .callflow-zoom .fa-icons .fa-search-minus  {
+	padding-bottom: 4px;
 }
 
 #ws_callflow .tools,
@@ -756,57 +760,78 @@
 	overflow-x: hidden;
 }
 
-#ws_callflow .tools #ws_cf_tools,
-.callflow-preview .tools #ws_cf_tools {
-	width: 175px;
+#ws_callflow .tools {
 	position: absolute;
-    top: 60px;
-    right: 0px;
-    z-index: 10;
-	background-color: #fff;
-	border-radius: 6px 0px 0px 0px;
-	padding-right: 10px;
+	width: 175px;
 }
 
-/*
-#ws_callflow .tools,
-.callflow-preview .tools {
-	float: right;
-	overflow-y: auto;
-	overflow-x: hidden;
+#ws_callflow .tools {
+	right: 0;
 }
 
-#ws_callflow .tools #ws_cf_tools,
-.callflow-preview .tools #ws_cf_tools {
-	width: 175px;
-	position: absolute;
-    top: 60px;
-    right: 0px;
-    z-index: 10;
-	background-color: #fff;
-	border-radius: 6px 0px 0px 0px;
-	padding-right: 10px;
+#ws_callflow .tools #ws_cf_tools .toolbox-header {
+	position: sticky;
+	top: 0;
+	z-index: 20;
 }
-*/
+
+#ws_callflow .tools #ws_cf_tools .toolbox-body {
+	position: sticky;
+	z-index: 10;
+	background-color: #fff;
+}
+
+#ws_callflow .tools .action.ui-draggable-dragging {
+  position: fixed !important; 
+  z-index: 9999 !important;
+}
 
 .callflow-content .callflow-view {
     position: relative;
+}
+
+#ws_callflow .tools .toolbox-header,
+.callflow-preview .tools .toolbox-header {
+	width: 176px;
 }
 
 #ws_callflow .tools .search-box,
 .callflow-preview .tools .search-box {
 	background: #444;
 	position: relative;
+	height: 42px;
+}
+
+#ws_callflow .tools .search-box > i.fa-search {
+    position: absolute;
+    margin: 14px 0 0 10px;
 }
 
 #ws_callflow .tools .search-box input,
 .callflow-preview .tools .search-box input {
-	width: 125px;
-	height: 15px;
-	/*border-radius: 20px;*/
-	margin-top: 3px;
+	width: 126px;
+	height: 23px;
+	margin-top: 5px;
 	margin-bottom: 3px;
 	margin-left: 4px;
+}
+
+#ws_callflow .tools .fa-chevron-up,
+#ws_callflow .tools .fa-chevron-down {
+	color: #fff;
+}
+
+#ws_cf_tools .category .open {
+	position: relative;
+	text-align: center;
+}
+
+#ws_cf_tools .category .open i.fa {
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
 }
 
 #ws_callflow .tool,
@@ -846,11 +871,11 @@
 
 #ws_callflow .title,
 .callflow-preview .title {
-	background: url("static/images/blue_bar.png");
+	background: #0399CE;
 	font-size: 12px;
 	height: 25px;
 	line-height: 25px;
-	border-radius: 6px 6px 0px 0px;
+	border-radius: 0px;
 	text-align: center;
 	color: #fff;
 	font-weight: bold;
@@ -859,10 +884,19 @@
 #callflow_container .wrapper_callflow_buttons,
 .callflow-preview .wrapper_callflow_buttons {
 	display: block;
-	/*width: 485px !important;*/
 	margin: auto;
 	margin-bottom: 5px;
 	text-align: center;
+}
+
+#callflow_container .button-bar .wrapper_callflow_buttons {
+	background-color: white;
+	padding-top: 10px;
+}
+
+#callflow_container .entity-header .wrapper_callflow_buttons {
+	background-color: transparent;
+	padding-top: 0px;
 }
 
 #callflow_container .wrapper_callflow_buttons .monster-button,
@@ -878,8 +912,8 @@
 	margin-right: 10px;
 }
 
-#callflow_container .callflow_helpbox_wrapper,
-.callflow-preview .callflow_helpbox_wrapper {
+#action_tooltip.callflow_helpbox_wrapper {
+	position: fixed !important;
 	right: 185px;
 	width: 160px;
 	background: #333333;
@@ -888,20 +922,6 @@
     border-radius: 4px;
 	display: none;
 }
-
-/*
-#callflow_container .callflow_helpbox_wrapper .tip_box,
-.callflow_preview .callflow_helpbox_wrapper .tip_box {
-	background-color: #3D3D3D;
-	border: 1px solid #333333;
-	border-radius: 2px;
-	opacity: 80%;
-	padding: 5px 2px 5px 9px;
-	text-align: left;
-	font-size: 10px;
-	line-height: 12px;
-}
-*/
 
 #callflow_container .tooltip,
 .callflow_preview .tooltip {
@@ -1099,17 +1119,6 @@
 	height: 60px;
 	line-height: 60px;
 }
-
-/*
-#callflow_container .list-container .link .description {
-	font-size: 10px;
-	height: 20px;
-	line-height: 10px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-*/
 
 #callflow_container .list-container .link .description {
 	font-size: 12px;
@@ -2068,10 +2077,23 @@
 	margin-left: 10px !important;
 }
 
+
 #callflow_container .wrapper_callflow_buttons .disabled,
 .callflow-preview .wrapper_callflow_buttons .disabled {
 	pointer-events: none;
 	opacity: 0.6;
+}
+
+#callflow_container .button-bar .wrapper_callflow_buttons .delete.disabled {
+	border-color: #fe4f38;
+	background: #ff7765;
+	opacity: 1 !important;
+}
+
+#callflow_container .button-bar .wrapper_callflow_buttons .duplicate.disabled {
+	border-color:  #DBDBDB;
+	background:    #F4F4FA;
+	opacity: 1 !important;
 }
 
 .input-readonly,
