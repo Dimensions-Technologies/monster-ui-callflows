@@ -551,7 +551,7 @@ define(function(require) {
 				this.resetView();
 			});
 		},
-		
+
 		resetView: function() {
 			const flowContainer = $("#ws_callflow .callflow");
 			if (!flowContainer.length) return;
@@ -561,7 +561,7 @@ define(function(require) {
 			this.updateZoom(flowContainer);
 			this.resetFlowState();
 		},
-		
+
 		updateZoom: function(flowContainer) {
 			if (!flowContainer || !flowContainer.length) return;
 		
@@ -2684,74 +2684,73 @@ define(function(require) {
 
 		},
 
-		drawConnections: function () {
-			const SVG_NS = "http://www.w3.org/2000/svg";
+		drawConnections: function() {
+			var SVG_NS = "http://www.w3.org/2000/svg",
+				zoom = this.zoomLevel || 1;
 
-			$('.node').each(function () {
-				var $source = $(this),
-					$childrenWrapper = $source.closest('.branch').find('>.children');
+			$('.node').each((_, nodeEl) => {
+				var $source = $(nodeEl),
+					$childrenWrapper = $source.closest('.branch').find('> .children');
+				
+				if (!$childrenWrapper.length) return;
 
-				if ($childrenWrapper.length === 0) return;
-
-				$childrenWrapper.children('.child').each(function () {
-					var $child = $(this),
-						$target = $child.find('>.branch>.node'),
-						$targetBranch = $target.closest('.branch'),
-						$divOption = $targetBranch.siblings('.div_option'),
+				$childrenWrapper.children('.child').each((_, childEl) => {
+					var $child = $(childEl),
 						$lineContainer = $child.find('.dynamic_line');
+					
+					if (!$lineContainer.length) return;
 
-					if (!$target.length || $lineContainer.length === 0) return;
-
+					// clear out any old SVGs
 					$lineContainer.empty();
 
-					var containerOffset = $lineContainer.offset(),
-						startOffset = $source.offset(),
-						endOffset = $target.offset();
+					var lineRect = $lineContainer[0].getBoundingClientRect(),
+						srcRect = nodeEl.getBoundingClientRect();
 
-					var startX = startOffset.left + $source.outerWidth() / 2 - containerOffset.left;
-					var startY = startOffset.top + $source.outerHeight() - containerOffset.top;
+					var startX = (srcRect.left + srcRect.width/2 - lineRect.left) / zoom,
+						startY = (srcRect.bottom - lineRect.top ) / zoom;
 
-					var endX, endY, isArrowNeeded = false;
-
-					if ($divOption.length > 0) {
-						let optionOffset = $divOption.offset();
-						endX = optionOffset.left + $divOption.outerWidth() / 2 - containerOffset.left;
-						endY = optionOffset.top - containerOffset.top;
+					var tgtRect, isArrow = false,
+						$divOpt = $child.children('.div_option');
+					
+					if ($divOpt.length) {
+						tgtRect = $divOpt[0].getBoundingClientRect();
 					} else {
-						isArrowNeeded = true;
-						endX = endOffset.left + $target.outerWidth() / 2 - containerOffset.left;
-						endY = endOffset.top - containerOffset.top;
+						isArrow = true;
+						tgtRect = $child.find('> .branch > .node')[0].getBoundingClientRect();
 					}
 
-					const arrowHeight = 6;
-					const arrowSpacing = 2;
-					const lineEndY = isArrowNeeded ? (endY - arrowHeight - arrowSpacing) : endY;
+					var endX = (tgtRect.left + tgtRect.width/2 - lineRect.left) / zoom,
+						endY = (tgtRect.top - lineRect.top ) / zoom;
+
+					var arrowH = 6,
+						arrowGap = 2,
+						lineEndY = isArrow ? endY - arrowH - arrowGap : endY;
 
 					// create SVG
-					var svg = document.createElementNS(SVG_NS, "svg");
-					svg.setAttribute("class", "inline-svg");
-					svg.setAttribute("style", "position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible;");
+					var svg = document.createElementNS(SVG_NS, 'svg');
+					svg.setAttribute('class','inline-svg');
+					svg.setAttribute('style', 'position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;');
 
 					// connector path
-					var path = document.createElementNS(SVG_NS, "path");
-					path.setAttribute("class", "connector-path");
-					path.setAttribute("d", `
+					var path = document.createElementNS(SVG_NS, 'path');
+					path.setAttribute('class','connector-path');
+					path.setAttribute('d', `
 						M ${startX},${startY}
-						C ${startX},${(startY + lineEndY) / 2}
-						${endX},${(startY + lineEndY) / 2}
+						C ${startX},${(startY + lineEndY)/2}
+						${endX},${(startY + lineEndY)/2}
 						${endX},${lineEndY}
 					`);
 					svg.appendChild(path);
 
 					// arrowhead if no div_option
-					if (isArrowNeeded) {
-						var arrow = document.createElementNS(SVG_NS, "polygon");
-						arrow.setAttribute("class", "connector-path-arrow");
-						var arrowY = endY - arrowHeight - arrowSpacing;
-						arrow.setAttribute("points", `
-							${endX - 5},${arrowY}
-							${endX + 5},${arrowY}
-							${endX},${arrowY + arrowHeight}
+					if (isArrow) {
+						var arrow = document.createElementNS(SVG_NS, 'polygon');
+						arrow.setAttribute('class','connector-path-arrow');
+						var arrowY = endY - arrowH - arrowGap;
+						arrow.setAttribute('points', `
+							${endX-5},${arrowY}
+							${endX+5},${arrowY}
+							${endX},${arrowY+arrowH}
 						`);
 						svg.appendChild(arrow);
 					}
