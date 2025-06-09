@@ -141,6 +141,11 @@
 	display: none !important;
 }
 
+.callflow-preview .material-symbols-icon-callflow-edit,
+.callflow-preview .material-symbols-icon-number-delete {
+	display: none;
+}
+
 #ws_callflow .callflow .node,
 .callflow-preview .callflow .node {
 	display: inline-block;
@@ -440,6 +445,10 @@
 
 .callflow-preview * {
 	cursor: default !important; /* Only a preview, cannot click */
+}
+
+.callflow-preview .info-message {
+	margin-bottom: 20px;
 }
 
 /* Add number and Edit name popups */
@@ -2645,6 +2654,8 @@
 #ws_cf_wrapper.dragging {
 	cursor: grabbing;
 }
+
+
 
 /* hide monster alert warning triangle and header */
 /*
