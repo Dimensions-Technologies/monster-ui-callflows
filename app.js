@@ -2857,6 +2857,7 @@ define(function(require) {
 					flow.root = self.branch('root');
 					flow.root.key = 'flow';
 					flow.numbers = [];
+					flow.ui_metadata = {};
 					flow.caption_map = {};
 					flow.root.index(0);
 					flow.nodes = flow.root.nodes();
@@ -2872,11 +2873,12 @@ define(function(require) {
 
 					flow.nodes = flow.root.nodes();
 					flow.numbers = callflow.numbers || [];
+					flow.ui_metadata = callflow.ui_metadata?.origin;
 
 					//prepare html from callflow
 
 					layout = self.renderBranch(flow.root);
-					callback && callback(layout);
+					callback && callback(layout, flow.ui_metadata);
 
 					$('.node', layout).each(function() {
 						var node = flow.nodes[$(this).attr('id')],
@@ -3206,16 +3208,21 @@ define(function(require) {
 				// make names of callflow nodes clickable
 				$('.details a', node_html).click(function(event) {
 					event.stopPropagation();
+
 					var nodeId = $(node_html).find('.delete').attr('id') || $(node_html).find('.material-symbols-icon-node-delete').attr('id'),
 						previewCallflowId = self.flow.nodes[nodeId].data.data.id,
-						dialogTemplate = $(self.getTemplate({
+						popup;
+
+					self.getCallflowPreview({ id: previewCallflowId }, function(callflowPreview, ui_metadata) {
+						
+						var dialogTemplate = $(self.getTemplate({
 							name: 'callflows-callflowElementDetails',
 							data: {
-								id: previewCallflowId
+								id: previewCallflowId,
+								origin: ui_metadata
 							}
-						})),
-						popup;
-					self.getCallflowPreview({ id: previewCallflowId }, function(callflowPreview) {
+						}));
+
 						popup = monster.ui.dialog(dialogTemplate, {
 							title: self.i18n.active().oldCallflows.callflow_preview_title,
 							width: '80%',
@@ -3223,7 +3230,9 @@ define(function(require) {
 								$(this).closest('.ui-dialog-content.ui-widget-content').addClass('callflow-preview-dialog');
 							}
 						});
+
 						popup.find('.callflow-preview-section.callflow').append(callflowPreview);
+
 						$('#callflow_jump').click(function() {
 							self.editCallflow({ id: previewCallflowId });
 							popup.dialog('close').remove();
@@ -3234,14 +3243,12 @@ define(function(require) {
 
 							// bring the selected callflow into view
 							var listItem = document.querySelector('.left-bar-container .list li[data-id="' + previewCallflowId + '"]');
-							
 							if (listItem) {
 								listItem.scrollIntoView({
 									behavior: 'auto',
 									block: "center"
 								});
 							}
-
 						});
 					});
 				});
