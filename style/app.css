@@ -967,12 +967,19 @@
 	min-height: 100%;
 }
 
-
-/* JR's work for left bar, from accountBrowser */
 #callflow_container .callflow-content {
 	margin-left: 241px;
 	background-color: #fff;
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	overflow: hidden;
+}
+
+#callflow_container .entity-content {
+	padding-top: 71px;
 	overflow-y: auto;
+	flex: 1;
 }
 
 .callflow-preview.callflow {
@@ -1922,6 +1929,21 @@
 	border-bottom: solid 1px #999;
 }
 
+#callflow_container .callflow-content.callflows-port .entity-header {
+	background-color: #fff;
+	position: fixed;
+	width: 800px; /* Arbitrary width if calc not supported */
+	width: -webkit-calc(100% - 241px);
+	width: -moz-calc(100% - 241px);
+	width: -o-calc(100% - 241px);
+	width: calc(100%-241px);
+	z-index: 100;
+}
+
+#callflow_container .callflow-content.callflows-port .entity-content {
+	margin-top: 71px;
+}
+
 /* add support for making the browser window small so that header height increases */
 @media (max-width: 1000px) {
     #callflow_container .entity-header {
@@ -1955,7 +1977,23 @@
 	padding: 20px 40px;
 }
 
-/* Account Settings */
+/* Account Settings & Feature Codes*/
+#callflow_container .account-settings-container .entity-header {
+	background-color: #fff;
+	position: fixed;
+	width: 800px; /* Arbitrary width if calc not supported */
+	width: -webkit-calc(100%);
+	width: -moz-calc(100%);
+	width: -o-calc(100%);
+	width: calc(100%);
+	z-index: 100;
+}
+
+#callflow_container .entity-content:has(> #account_settings_form),
+#callflow_container .entity-content:has(> #featurecode_view) {
+	overflow-y: hidden;
+}
+
 #callflow_container .account-settings-container {
 	color: #303039;
 }
@@ -1967,30 +2005,28 @@
 }
 
 #callflow_container .account-settings-container .entity-content {
-	padding: 40px;
+	padding: 71px 0 0 0; 
+	height: calc(100vh - 71px);
+	overflow: hidden;
+	box-sizing: border-box;
 }
 
-#callflow_container .account-settings-container #account_settings_form {
-	min-width: 400px;
-	max-width: 1140px;
-	margin: auto;
-}
-
-#callflow_container .account-settings-container #account_settings_form .tab-content {
-	overflow: visible;
+#callflow_container .account-settings-container #account_settings_form,
+#callflow_container .account-settings-container #featurecode_view {
+	padding: 20px 40px;
+	height: 100%;
+	overflow-y: auto;
 }
 
 #callflow_container .account-settings-container .tab-content {
 	background-color: #f0f0f9;
 	padding: 20px;
+	margin-bottom: 20px;
+	overflow: visible;
 }
 
 #callflow_container .account-settings-container .upload-toggle {
 	margin-left: 10px;
-}
-
-#callflow_container .account-settings-container .control-label {
-	margin-top: 4px;
 }
 
 #callflow_container .account-settings-container .upload-div {
@@ -2022,6 +2058,7 @@
 }
 #callflow_container .account-settings-container .action-bar {
 	padding-top: 15px;
+	margin-bottom: 50px;
 }
 
 
@@ -2193,6 +2230,7 @@
 #callflow_container .entity-header .search-box {
 	width: 221px;
 	float: left;
+	position: relative;
 }
 
 #callflow_container .entity-header .search-box .search-query {
@@ -2654,8 +2692,6 @@
 #ws_cf_wrapper.dragging {
 	cursor: grabbing;
 }
-
-
 
 /* hide monster alert warning triangle and header */
 /*

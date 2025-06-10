@@ -5,6 +5,7 @@
 			<button type="button" class="back-button monster-button-secondary">{{ i18n.entityManager.backButton_1 }}</button>
 		{{/unless}}
 		{{#if miscSettings.embeddedListView}}
+			<div class="entity-title">{{ i18n.callflows.accountSettings.title }}</div>
 			<div class="embedded-buttons">
 				<button type="button" class="monster-button monster-button-secondary non-fixed back-button">{{ i18n.entityManager.backButton_2 }}</button>
 			</div>
@@ -356,7 +357,7 @@
 						</div>
 					</div>
 				</div>
-
+			</div>
 			<div class="action-bar clearfix">
 				{{#unless miscSettings.callflowButtonsWithinHeader}}
 					<button type="button" class="monster-button-success account-settings-update pull-right">{{i18n.update}}</button>
