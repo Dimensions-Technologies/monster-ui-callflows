@@ -731,10 +731,10 @@
 
 #ws_callflow .callflow-zoom {
 	position: fixed;
-	bottom: 20px;
+	top: 151px;
 	left: 20px;
 	z-index: 10;
-	padding-left: 240px;
+	margin-left: 240px;
 }
 
 #ws_callflow .callflow-zoom .google-icons,
