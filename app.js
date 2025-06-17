@@ -22,7 +22,8 @@ define(function(require) {
 		contactDirectories = [],
 		hideFeatureCode = {},
 		pusherApps = {},
-		deviceBillingCodeRequired = {};
+		deviceBillingCodeRequired = {},
+		anankeCallbacks = {};
 		//translateX = 0, 
 		//translateY = 0;
 
@@ -268,6 +269,10 @@ define(function(require) {
 								deviceBillingCodeRequired = data.dimension.dt_callflows.deviceBillingCodeRequired;
 							}
 
+							if (data.dimension.dt_callflows.hasOwnProperty('anankeCallbacks')) {
+								anankeCallbacks = data.dimension.dt_callflows.anankeCallbacks
+							}
+
 						}
 
 					}
@@ -399,9 +404,10 @@ define(function(require) {
 						console.log('pusherApps:', pusherApps);
 						console.log('billingCodes:', billingCodes);
 						console.log('deviceBillingCodeRequired:', deviceBillingCodeRequired);
+						console.log('anankeCallbacks:', anankeCallbacks);
 					}
 
-					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, billingCodes, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories, pusherApps, deviceBillingCodeRequired });
+					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, billingCodes, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories, pusherApps, deviceBillingCodeRequired, anankeCallbacks });
 					self.renderEntityManager(parent);
 
 					// show warning message if emergency caller id has not been set on the account

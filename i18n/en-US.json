@@ -1117,7 +1117,13 @@
 				"label": "Attach messages to e-mail",
 				"help": "E-mail not having the message as an attachment"
 			},
-			"messages": "Messages"
+			"messages": "Messages",
+			"callback": {
+				"title": "Callback",
+				"enabled": "Callback Enabled",
+				"numberExists": "This callback number is already in the list",
+				"denyNumbers": "The follow numbers are not allowed: <br>"
+			}
 		},
 		"__comment": "UI-1493: Adding accountSettings to advanced callflows app",
 		"__version": "3.22",
