@@ -830,6 +830,15 @@
 			},
 			"default": "Standard"
 		},
+		"ai_agent": {
+  			"default": "Standard",
+  			"title": "KI-Agent",
+  			"name": "KI-Agent",
+  			"tip": "Der KI-Agent ermöglicht Ihnen intelligente Anrufbearbeitung und Antwortgenerierung, unterstützt durch fortschrittliche Sprachmodelle.",
+  			"text": {
+    			"label": "Eingabeaufforderung:"
+  			}
+		},
 		"timeofday": {
 			"are_you_sure_you_want_to_delete": "Möchten Sie diese Tageszeit-Regel wirklich löschen?",
 			"__version": 4.1,

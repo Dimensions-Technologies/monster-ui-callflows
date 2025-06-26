@@ -21,7 +21,7 @@
 	"callflows": {
 		"addCallflow": "Add Callflow",
 		"zoomIn": "Zoom In",
-		"zoomOut": "Zoom Out", 
+		"zoomOut": "Zoom Out",
 		"resetView": "Reset View",
 		"searchDatabase": "Search Database",
 		"buyNumbers": "Buy Numbers",
@@ -1011,7 +1011,7 @@
 				"title": "Find Me Follow Me Settings",
 				"label": "Find Me Follow Me",
 				"table": {
-					"device": "Device Name", 
+					"device": "Device Name",
 					"delay": "Delay",
 					"timeout": "Timeout",
 					"enabled": "Enabled"
@@ -1293,6 +1293,15 @@
 				"label": "Text"
 			}
 		},
+		"ai_agent": {
+			"default": "Default",
+			"title": "AI Agent",
+			"name": "AI Agent",
+			"tip": "AI Agent allows you to get the intelligent call handling and response generation powered by advanced language models.",
+			"text": {
+				"label": "Prompt :"
+			}
+		},
 
 		"__comment": "UI-439: adding sleep to adv. callflows",
 		"__version": "v4.1",
@@ -1385,9 +1394,9 @@
 				"label": "Timeout (s)",
 				"help": "How long, in milliseconds, to wait for the first DTMF",
 				"alert": "Invalid Timeout value<br>The Timeout value must be between 5 - 20"
-			}			
+			}
 		},
-		
+
 		"__comment": "UI-413: adding eavesdrop to adv. callflows",
 		"__version": "v4.1",
 		"eavesdrop": {
@@ -1499,7 +1508,7 @@
 				"queueTip": "Direct a caller to a call center queue",
 				"agentLogin": "Agent <br> Login",
 				"agentLogout": "Agent <br> Logout",
-				"agentToggle": "Agent <br> Toggle", 
+				"agentToggle": "Agent <br> Toggle",
 				"agentPause": "Agent <br> Pause",
 				"agentResume": "Agent <br> Resume"
 			},

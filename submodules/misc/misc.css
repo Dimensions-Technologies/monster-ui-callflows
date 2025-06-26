@@ -243,7 +243,7 @@
 
 /* tts callflow action reformatting */
 .dialog_popup.set-tts-input .form_content .popup_field textarea {
-    min-height: 150px; 
+    min-height: 150px;
 	min-width: 400px;
 	margin-right: 50px;
 }
@@ -253,15 +253,20 @@
 	margin-top: 20px;
 }
 
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-tts-input .popup_field:has(#ai_text_input) {
+	margin-top: 20px;
+}
+
 /* tts callflow action reformatting */
 .dialog_popup.set-tts-input .form_content .popup_field.tts-input {
 	display: flex;
-	align-items: left;	
+	align-items: left;
 }
 
 /* tts callflow action reformatting */
 .dialog_popup.set-tts-input .form_content .popup_field.tts-input .select_wrapper {
-	flex: 3; 
+	flex: 3;
 	text-align: left;
 }
 
@@ -270,9 +275,42 @@
 	width: 90px;
 }
 
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field textarea {
+    min-height: 150px;
+	min-width: 400px;
+	margin-right: 50px;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .popup_field:has(#tts_text_input) {
+	margin-top: 20px;
+}
+
+.dialog_popup.set-aiagent-input .popup_field:has(#ai_text_input) {
+	margin-top: 20px;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field.tts-input {
+	display: flex;
+	align-items: left;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field.tts-input .select_wrapper {
+	flex: 3;
+	text-align: left;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field label {
+	width: 90px;
+}
+
 /* tts media action reformatting */
 #media-form #tts_text {
-	min-height: 150px; 
+	min-height: 150px;
 }
 
 #directoryFallbackMessage .help-box,
