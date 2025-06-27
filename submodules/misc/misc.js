@@ -67,7 +67,7 @@ define(function(require) {
 			contactDirectories = args.contactDirectories && args.contactDirectories.length > 0 ? args.contactDirectories.filter(function(directory) {
 				return directory.name !== 'User Contact Directory';
 			}): [];
-			
+
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
 				// custom callflow actions
@@ -206,7 +206,7 @@ define(function(require) {
 										itemList: _data,
 										resource: 'callflow',
 										resourceId: 'callflowId',
-										callback: function(itemNotFound) { 
+										callback: function(itemNotFound) {
 											renderPopup(itemNotFound);
 										}
 									});
@@ -253,7 +253,7 @@ define(function(require) {
 									// enable or disable the save button based on the dropdown value
 									function toggleSaveButton() {
 										var selectedValue = $('#object-selector', popup_html).val();
-										
+
 										if (selectedValue == 'null') {
 											$('#add', popup_html).prop('disabled', true);
 										} else {
@@ -342,7 +342,7 @@ define(function(require) {
 										} else {
 											this.name = this.numbers ? this.numbers.toString() : self.i18n.active().oldCallflows.no_numbers;
 										}
-								
+
 										_data.push(this);
 									}
 								});
@@ -356,14 +356,14 @@ define(function(require) {
 										itemList: _data,
 										resource: 'callflow',
 										resourceId: 'callflowId',
-										callback: function(itemNotFound) { 
+										callback: function(itemNotFound) {
 											renderPopup(itemNotFound);
 										}
 									});
 								} else {
 									renderPopup(false);
 								}
-									
+
 								function renderPopup(itemNotFound) {
 									popup_html = $(self.getTemplate({
 										name: 'callflowUser-edit_dialog',
@@ -403,7 +403,7 @@ define(function(require) {
 									// enable or disable the save button based on the dropdown value
 									function toggleSaveButton() {
 										var selectedValue = $('#object-selector', popup_html).val();
-										
+
 										if (selectedValue == 'null') {
 											$('#add', popup_html).prop('disabled', true);
 										} else {
@@ -501,14 +501,14 @@ define(function(require) {
 										itemList: _data,
 										resource: 'callflow',
 										resourceId: 'callflowId',
-										callback: function(itemNotFound) { 
+										callback: function(itemNotFound) {
 											renderPopup(itemNotFound);
 										}
 									});
 								} else {
 									renderPopup(false);
 								}
-									
+
 								function renderPopup(itemNotFound) {
 									popup_html = $(self.getTemplate({
 										name: 'callflowPhoneOnly-edit_dialog',
@@ -548,7 +548,7 @@ define(function(require) {
 									// enable or disable the save button based on the dropdown value
 									function toggleSaveButton() {
 										var selectedValue = $('#object-selector', popup_html).val();
-										
+
 										if (selectedValue == 'null') {
 											$('#add', popup_html).prop('disabled', true);
 										} else {
@@ -633,7 +633,7 @@ define(function(require) {
 						if (callCentreCallflow.length > 0) {
 							callflowFilters['filter_flow.module'] = callCentreCallflow;
 						}
-							
+
 						self.callApi({
 							resource: 'callflow.list',
 							data: {
@@ -665,14 +665,14 @@ define(function(require) {
 										itemList: _data,
 										resource: 'callflow',
 										resourceId: 'callflowId',
-										callback: function(itemNotFound) { 
+										callback: function(itemNotFound) {
 											renderPopup(itemNotFound);
 										}
 									});
 								} else {
 									renderPopup(false);
 								}
-									
+
 								function renderPopup(itemNotFound) {
 									popup_html = $(self.getTemplate({
 										name: 'callflowQubicle-edit_dialog',
@@ -723,7 +723,7 @@ define(function(require) {
 									toggleSaveButton();
 
 									$('#object-selector', popup_html).change(toggleSaveButton);
-									
+
 									$('#add', popup_html).click(function() {
 										node.setMetadata('id', $('#object-selector', popup_html).val());
 
@@ -810,14 +810,14 @@ define(function(require) {
 										itemList: _data,
 										resource: 'callflow',
 										resourceId: 'callflowId',
-										callback: function(itemNotFound) { 
+										callback: function(itemNotFound) {
 											renderPopup(itemNotFound);
 										}
 									});
 								} else {
 									renderPopup(false);
 								}
-									
+
 								function renderPopup(itemNotFound) {
 									popup_html = $(self.getTemplate({
 										name: 'callflowLegacyPbx-edit_dialog',
@@ -857,7 +857,7 @@ define(function(require) {
 									// enable or disable the save button based on the dropdown value
 									function toggleSaveButton() {
 										var selectedValue = $('#object-selector', popup_html).val();
-										
+
 										if (selectedValue == 'null') {
 											$('#add', popup_html).prop('disabled', true);
 										} else {
@@ -1121,7 +1121,7 @@ define(function(require) {
 						function toggleSaveButton() {
 							var cidName = $('#cid_name_prefix', popup_html).val(),
 								cidNumber = $('#cid_number_prefix', popup_html).val();
-							
+
 							if (cidName == '' && cidNumber == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else {
@@ -1234,7 +1234,7 @@ define(function(require) {
 						// enable or disable the save button based input value
 						function toggleSaveButton() {
 							var inputValue = $('#alert_info', popup_html).val();
-							
+
 							if (inputValue == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else {
@@ -1303,7 +1303,7 @@ define(function(require) {
 						// enable or disable the save button based on the input value
 						function toggleSaveButton() {
 							var inputValue = $('#presence_id_input', popup_html).val();
-							
+
 							if (inputValue == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else {
@@ -1372,7 +1372,7 @@ define(function(require) {
 						// enable or disable the save button based on the input value
 						function toggleSaveButton() {
 							var inputValue = $('#language_id_input', popup_html).val();
-							
+
 							if (inputValue == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else {
@@ -1429,8 +1429,8 @@ define(function(require) {
 							var popup, popup_html;
 
 							var selectedId = node.getMetadata('device_id') || node.getMetadata('group_id') || node.getMetadata('user_id') || '',
-								selectedItem = _.find(results.users, { id: selectedId }) || 
-											_.find(results.groups, { id: selectedId }) || 
+								selectedItem = _.find(results.users, { id: selectedId }) ||
+											_.find(results.groups, { id: selectedId }) ||
 											_.find(results.devices, { id: selectedId });
 
 							var pickupType,
@@ -1499,7 +1499,7 @@ define(function(require) {
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
 									var selectedValue = $('#endpoint_selector', popup_html).val();
-									
+
 									if (selectedValue == 'null') {
 										$('#add', popup_html).prop('disabled', true);
 									} else {
@@ -1575,14 +1575,14 @@ define(function(require) {
 
 							var selectedId = node.getMetadata('user_id') || '',
 								selectedItem = _.find(results.users, { id: selectedId });
-	
+
 							if (!selectedItem && selectedId) {
 								self.checkItemExists({
 									selectedId: selectedId,
 									itemList: results.users,
 									resource: 'user',
 									resourceId: 'userId',
-									callback: function(itemNotFound) { 
+									callback: function(itemNotFound) {
 										renderPopup(itemNotFound);
 									}
 								});
@@ -1628,7 +1628,7 @@ define(function(require) {
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
 									var selectedValue = $('#endpoint_selector', popup_html).val();
-									
+
 									if (selectedValue == 'null') {
 										$('#add', popup_html).prop('disabled', true);
 									} else {
@@ -1714,21 +1714,21 @@ define(function(require) {
 
 							var selectedId = node.getMetadata('group_id') || '',
 								selectedItem = _.find(results.groups, { id: selectedId });
-	
+
 							if (!selectedItem && selectedId) {
 								self.checkItemExists({
 									selectedId: selectedId,
 									itemList: results.groups,
 									resource: 'group',
 									resourceId: 'groupId',
-									callback: function(itemNotFound) { 
+									callback: function(itemNotFound) {
 										renderPopup(itemNotFound);
 									}
 								});
 							} else {
 								renderPopup(false);
 							}
-							
+
 							function renderPopup(itemNotFound) {
 								popup_html = $(self.getTemplate({
 									name: 'group_pickupGroup',
@@ -1767,7 +1767,7 @@ define(function(require) {
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
 									var selectedValue = $('#endpoint_selector', popup_html).val();
-									
+
 									if (selectedValue == 'null') {
 										$('#add', popup_html).prop('disabled', true);
 									} else {
@@ -1853,14 +1853,14 @@ define(function(require) {
 
 							var selectedId = node.getMetadata('device_id') || '',
 								selectedItem = _.find(results.devices, { id: selectedId });
-	
+
 							if (!selectedItem && selectedId) {
 								self.checkItemExists({
 									selectedId: selectedId,
 									itemList: results.devices,
 									resource: 'device',
 									resourceId: 'deviceId',
-									callback: function(itemNotFound) { 
+									callback: function(itemNotFound) {
 										renderPopup(itemNotFound);
 									}
 								});
@@ -1906,7 +1906,7 @@ define(function(require) {
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
 									var selectedValue = $('#endpoint_selector', popup_html).val();
-									
+
 									if (selectedValue == 'null') {
 										$('#add', popup_html).prop('disabled', true);
 									} else {
@@ -1981,7 +1981,7 @@ define(function(require) {
 									itemList: data,
 									resource: 'user',
 									resourceId: 'userId',
-									callback: function(itemNotFound) { 
+									callback: function(itemNotFound) {
 										renderPopup(itemNotFound);
 									}
 								});
@@ -2052,7 +2052,7 @@ define(function(require) {
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
 									var selectedValue = $('#user_selector', popup_html).val();
-									
+
 									if (selectedValue == 'null') {
 										$('#add', popup_html).prop('disabled', true);
 										$('#edit_link', popup_html).hide();
@@ -2235,7 +2235,7 @@ define(function(require) {
 						// enable or disable the save button based on the input value
 						function toggleSaveButton() {
 							var inputValue = $('#pivot_voiceurl_input', popup_html).val();
-							
+
 							if (inputValue == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else if (!(inputValue.startsWith('http://') || inputValue.startsWith('https://'))) {
@@ -2252,7 +2252,7 @@ define(function(require) {
 
 						$('#add', popup_html).click(function() {
 							var requestFormat;
-							
+
 							if ($('#pivot_format_input', popup_html).length) {
 								requestFormat = $('#pivot_format_input', popup_html).val();
 							} else {
@@ -2323,8 +2323,8 @@ define(function(require) {
 								data_disa: {
 									'pin': node.getMetadata('pin'),
 									'retries': node.getMetadata('retries') || '2',
-									'interdigit': node.getMetadata('interdigit') 
-										? (node.getMetadata('interdigit') / 1000).toString() 
+									'interdigit': node.getMetadata('interdigit')
+										? (node.getMetadata('interdigit') / 1000).toString()
 										: '5',
 									'max_digits': node.getMetadata('max_digits') || '4',
 									'preconnect_audio': node.getMetadata('preconnect_audio'),
@@ -2341,7 +2341,7 @@ define(function(require) {
 							// enable or disable the save button based on the input value
 							function toggleSaveButton() {
 								var inputValue = $('#disa_pin_input', popup_html).val();
-								
+
 								if (inputValue == '') {
 									$('#add', popup_html).prop('disabled', true);
 								} else if (inputValue.length > 0 && inputValue.length < 4) {
@@ -2356,7 +2356,7 @@ define(function(require) {
 
 							$('#disa_pin_input', popup_html).change(toggleSaveButton);
 						}
-						
+
 						$('#add', popup_html).click(function() {
 							var save_disa = function() {
 								var setData = function(field, value) {
@@ -2457,14 +2457,14 @@ define(function(require) {
 							name: 'collect-dtmf',
 							data: {
 								data_dtmf: {
-									interdigit_timeout: node.getMetadata('interdigit_timeout') 
-										? (node.getMetadata('interdigit_timeout') / 1000).toString() 
+									interdigit_timeout: node.getMetadata('interdigit_timeout')
+										? (node.getMetadata('interdigit_timeout') / 1000).toString()
 										: '5',
 									collection_name: node.getMetadata('collection_name') || '',
 									max_digits: node.getMetadata('max_digits') || '4',
 									terminator: node.getMetadata('terminator') || '#',
-									timeout: node.getMetadata('timeout') 
-										? (node.getMetadata('timeout') / 1000).toString() 
+									timeout: node.getMetadata('timeout')
+										? (node.getMetadata('timeout') / 1000).toString()
 										: '10'
 								}
 							},
@@ -2476,7 +2476,7 @@ define(function(require) {
 						// enable or disable the save button based on the input value
 						function toggleSaveButton() {
 							var inputValue = $('#collect_dtmf_collection_input', popup_html).val();
-							
+
 							if (inputValue == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else {
@@ -2516,38 +2516,38 @@ define(function(require) {
 
 						// alert for invalid interdigit timeout value
 						$('#collect_dtmf_interdigit_input', popup_html).change(function() {
-						
+
 							inputValue = $('#collect_dtmf_interdigit_input', popup_html).val();
 
 							if (inputValue < 5 || inputValue > 20) {
 								$('#collect_dtmf_interdigit_input', popup_html).val(5);
 								monster.ui.alert('warning', self.i18n.active().callflows.collectDTMF.interdigitTimeout.alert);
 							}
-						
+
 						});
 
 						// alert for invalid request timeout value
 						$('#collect_dtmf_timeout_input', popup_html).change(function() {
-						
+
 							inputValue = $('#collect_dtmf_timeout_input', popup_html).val();
 
 							if (inputValue < 5 || inputValue > 20) {
 								$('#collect_dtmf_timeout_input', popup_html).val(10);
 								monster.ui.alert('warning', self.i18n.active().callflows.collectDTMF.timeout.alert);
 							}
-						
+
 						});
 
 						// alert for invalid max digits value
 						$('#collect_dtmf_max_digits_input', popup_html).change(function() {
-						
+
 							inputValue = $('#collect_dtmf_max_digits_input', popup_html).val();
 
 							if (inputValue < 1 || inputValue > 40) {
 								$('#collect_dtmf_max_digits_input', popup_html).val(4);
 								monster.ui.alert('warning', self.i18n.active().callflows.collectDTMF.maxDigits.alert);
 							}
-						
+
 						});
 
 						popup = monster.ui.dialog(popup_html, {
@@ -2601,7 +2601,7 @@ define(function(require) {
 						// enable or disable the save button based on the input value
 						function toggleSaveButton() {
 							var inputValue = $('#sleep_duration_input', popup_html).val();
-							
+
 							if (inputValue == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else {
@@ -2734,7 +2734,7 @@ define(function(require) {
 						// enable or disable the save button based on the input value
 						function toggleSaveButton() {
 							var inputValue = $('#tts_text_input', popup_html).val();
-							
+
 							if (inputValue == '') {
 								$('#add', popup_html).prop('disabled', true);
 							} else {
@@ -2745,7 +2745,7 @@ define(function(require) {
 						toggleSaveButton();
 
 						$('#tts_text_input', popup_html).change(toggleSaveButton);
-						
+
 						$('#add', popup_html).click(function() {
 							var setData = function(field, value) {
 								if (value !== 'default') {
@@ -2755,11 +2755,11 @@ define(function(require) {
 								}
 							};
 
-							
+
 							setData('text', $('#tts_text_input', popup_html).val());
 							setData('language', $('#tts_language_input', popup_html).val());
 							setData('voice', $('#tts_voice_input', popup_html).val());
-							
+
 
 
 							popup.dialog('close');
@@ -2767,6 +2767,83 @@ define(function(require) {
 
 						popup = monster.ui.dialog(popup_html, {
 							title: self.i18n.active().callflows.tts.title,
+							beforeClose: function() {
+								if (typeof callback === 'function') {
+									callback();
+								}
+							}
+						});
+					}
+				},
+				'ai_agent[]': {
+					name: self.i18n.active().callflows.ai_agent.name,
+					icon: 'user',
+					google_icon: 'ai_agent',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'ai_agent',
+					tip: self.i18n.active().callflows.ai_agent.tip,
+					data: {
+						text: ''
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('ai_agent[]'),
+					weight: 45,
+					caption: function(node) {
+						return '';
+					},
+					edit: function(node, callback) {
+						var popup, popup_html;
+
+						popup_html = $(self.getTemplate({
+							name: 'ai_agent',
+							data: {
+								miscSettings: miscSettings,
+								data_ai: {
+									'prompt': node.getMetadata('prompt')
+								}
+							},
+							submodule: 'misc'
+						}));
+
+						monster.ui.tooltips(popup_html);
+
+						// enable or disable the save button based on the input value
+						function toggleSaveButton() {
+							var inputValue = $('#ai_text_input', popup_html).val();
+
+							if (inputValue == '') {
+								$('#add', popup_html).prop('disabled', true);
+							} else {
+								$('#add', popup_html).prop('disabled', false);
+							}
+						}
+
+						toggleSaveButton();
+
+						$('#ai_text_input', popup_html).change(toggleSaveButton);
+
+						$('#add', popup_html).click(function() {
+							var setData = function(field, value) {
+								if (value !== 'default') {
+									node.setMetadata(field, value);
+								} else {
+									node.deleteMetadata(field);
+								}
+							};
+
+
+							setData('prompt', $('#ai_text_input', popup_html).val());
+							popup.dialog('close');
+						});
+
+						popup = monster.ui.dialog(popup_html, {
+							title: self.i18n.active().callflows.ai_agent.title,
 							beforeClose: function() {
 								if (typeof callback === 'function') {
 									callback();
@@ -2813,7 +2890,7 @@ define(function(require) {
 									itemList: data,
 									resource: 'media',
 									resourceId: 'mediaId',
-									callback: function(itemNotFound) { 
+									callback: function(itemNotFound) {
 										renderPopup(itemNotFound);
 									}
 								});
@@ -2863,15 +2940,15 @@ define(function(require) {
 								function updateLabelPadding() {
 									var mediaValue = $('#media_selector', popup_html).val();
 									var label = $('.popup_field label[for="media_selector"]', popup_html);
-					
+
 									if (mediaValue === 'null' || mediaValue === undefined) {
 										label.css('padding-bottom', '22px');
 									} else {
 										label.css('padding-bottom', '45px');
 									}
-									
+
 								}
-					
+
 								updateLabelPadding();
 
 								$('#media_selector', popup_html).change(updateLabelPadding);
@@ -2908,7 +2985,7 @@ define(function(require) {
 								// enable or disable the save button based on the input value
 								function toggleSaveButton() {
 									var inputValue = $('#response_code_input', popup_html).val();
-									
+
 									if (inputValue == '') {
 										$('#add', popup_html).prop('disabled', true);
 									} else {
@@ -3137,7 +3214,7 @@ define(function(require) {
 						containerClasses: 'skinny'
 					});
 
-				
+
 				// function to validate an email address
 				function isValidEmail(email) {
 					var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -3149,24 +3226,24 @@ define(function(require) {
 					var emails = template.find('#emails').val().replace(/\s/g, '').split(','),
 						userCount = widget.getSelectedItems().length,
 						hasValidEmails;
-					
+
 					if (emails.length == 1 && emails[0] == '') {
 						hasValidEmails = null;
 					} else {
 						hasValidEmails = emails.every(email => email === '' || isValidEmail(email));
 					}
-										
+
 					if (hasValidEmails == null && userCount >= 1 || hasValidEmails >= 1 && userCount >= 1 || hasValidEmails >= 1 && userCount == 0) {
 						$('#save_missed_call_alerts', template).prop('disabled', false);
 					} else {
 						$('#save_missed_call_alerts', template).prop('disabled', true);
 					}
 				}
-		
+
 				toggleSaveButton();
-		
+
 				$('#emails', template).change(toggleSaveButton);
-				
+
 				template.find('#save_missed_call_alerts').on('click', function() {
 					var recipients = [],
 						emails = template.find('#emails').val();
@@ -3219,22 +3296,22 @@ define(function(require) {
 			var self = this,
 				variables = _.extend({}, node.getMetadata('custom_application_vars')),
 				formData;
-		
+
 			function checkFormValidity(template) {
 				formData = monster.ui.getFormData('set_cav_form');
 				var items = formData.items;
-		
+
 				var hasEmptyKeyOrValue = items.some(function(item) {
 					return _.isEmpty(item.key) || _.isEmpty(item.value);
 				});
-		
+
 				if (hasEmptyKeyOrValue) {
 					$('#save_cav_variables', template).prop('disabled', true);
 				} else {
 					$('#save_cav_variables', template).prop('disabled', false);
 				}
 			}
-		
+
 			var initTemplate = function() {
 				var template = $(self.getTemplate({
 						name: 'setcav-dialog',
@@ -3242,15 +3319,15 @@ define(function(require) {
 						submodule: 'misc'
 					})),
 					popup;
-		
+
 				if (_.size(variables) <= 0) {
 					addRow(template);
 				}
-		
+
 				_.each(variables, function(variable, key) {
 					addRow(template, { key: key, value: variable });
 				});
-		
+
 				popup = monster.ui.dialog(template, {
 					title: self.i18n.active().callflows.setCav.popupTitle,
 					width: 500,
@@ -3260,23 +3337,23 @@ define(function(require) {
 						}
 					}
 				});
-		
+
 				bindSetCavEvents({ template: template, popup: popup });
 			},
-		
+
 			bindSetCavEvents = function(args) {
 				var template = args.template,
 					popup = args.popup;
-		
+
 				template.find('.cav-add-row').on('click', function() {
 					addRow(template);
 					checkFormValidity(template);
 				});
-		
+
 				template.on('change', '.cav-key, .cav-value', function() {
 					checkFormValidity(template);
 				});
-		
+
 				template.find('#save_cav_variables').on('click', function() {
 					formData = monster.ui.getFormData('set_cav_form');
 					var variables = _.chain(formData.items)
@@ -3286,14 +3363,14 @@ define(function(require) {
 						.keyBy('key')
 						.mapValues('value')
 						.value();
-		
+
 					node.setMetadata('custom_application_vars', variables);
 					popup.dialog('close');
 				});
-		
+
 				checkFormValidity(template);
 			},
-		
+
 			addRow = function(template, data) {
 				var cavRow = $(self.getTemplate({
 					name: 'setcav-row',
@@ -3302,9 +3379,9 @@ define(function(require) {
 						index: template.find('.cav-list tbody tr').length + 1
 					})
 				}));
-		
+
 				template.find('.cav-list tbody').append(cavRow);
-		
+
 				template.find('.cav-remove-row').off('click').on('click', function() {
 					if (template.find('.cav-list tbody tr').length > 1) {
 						$(this).closest('tr').remove();
@@ -3312,7 +3389,7 @@ define(function(require) {
 					}
 				});
 			};
-		
+
 			initTemplate();
 		},
 
@@ -3368,7 +3445,7 @@ define(function(require) {
 					// enable or disable the save button based on the input value
 					function toggleSaveButton() {
 						var inputValue = $template.find('#uri').val();
-		
+
 						if (inputValue === '') {
 							$template.find('#add').prop('disabled', true);
 						} else if (!(inputValue.startsWith('http://') || inputValue.startsWith('https://'))) {
@@ -3378,9 +3455,9 @@ define(function(require) {
 							$template.find('#add').prop('disabled', false);
 						}
 					}
-		
+
 					toggleSaveButton();
-		
+
 					$template.find('#uri').on('change', toggleSaveButton);
 
 					// alert for invalid retries value
@@ -3450,7 +3527,7 @@ define(function(require) {
 			var self = this,
 				selectedTag,
 				dimensionData = node.getMetadata('dimension', ''),
-				data = {			
+				data = {
 					callTags: callTags,
 					dimension: dimensionData
 				},
@@ -3462,7 +3539,7 @@ define(function(require) {
 				popup;
 
 			$('#tagDeletedMessage', popup_html).hide();
-			
+
 			// populate the tagValue field with the existing dimension.tagValue if present
 			var tagValue = dimensionData.tagValue || '';
 			popup_html.find('#tagValue').val(tagValue);
@@ -3472,25 +3549,25 @@ define(function(require) {
 				var selectedTagId = popup_html.find('#name').val();
 					selectedTag = _.find(callTags, { id: selectedTagId }),
 					nodeData = node.data.data;
-				
+
 				$('#tagValue', popup_html).prop('disabled', true);
 				$('#add', popup_html).prop('disabled', true);
-		
+
 				if (miscSettings.enableConsoleLogging) {
 					console.log('selectedTag', selectedTag);
 				}
-	
+
 				if (selectedTag) {
 					var $tagValueField = popup_html.find('#tagValue');
-					
+
    					$tagValueField.val(null);
 
 					if (selectedTag.type == 'StringListTagValueType') {
 
 						$('#tagValue', popup_html).prop('disabled', false);
-					
+
 						var dropdown = $('<select>', { id: 'tagValue', name: 'tagValue' });
-					
+
 						dropdown.append($('<option>', { value: '', text: 'Select a tag value', hidden: true }));
 
 						var selectedValue;
@@ -3502,35 +3579,35 @@ define(function(require) {
 						} else {
 							selectedValue = '';
 						}
-					
+
 						_.each(selectedTag.values, function(value) {
 							var option = $('<option>', { value: value, text: value });
-							
+
 							if (value == selectedValue) {
 								option.prop('selected', true);
 							}
-					
+
 							dropdown.append(option);
 						});
-					
+
 						$tagValueField.replaceWith(dropdown);
-					
+
 						if (selectedTag.defaultValue != undefined || selectedValue != '') {
 							$('#add', popup_html).prop('disabled', false);
 						}
-					
+
 					}
-					
+
 					if (selectedTag.type == 'BoolTagValueType') {
 
 						$('#tagValue', popup_html).prop('disabled', false);
 
 						var boolDropdown = $('<select>', { id: 'tagValue', name: 'tagValue' });
-						
+
 						boolDropdown.append($('<option>', { value: '', text: 'Select a tag value', hidden: true }));
 						boolDropdown.append($('<option>', { value: 'Yes', text: 'Yes' }));
 						boolDropdown.append($('<option>', { value: 'No', text: 'No' }));
-					
+
 						var selectedValue;
 
 						if (nodeData.hasOwnProperty('dimension') && nodeData.dimension.type == 'BoolTagValueType') {
@@ -3542,16 +3619,16 @@ define(function(require) {
 						}
 
 						boolDropdown.find(`option[value="${selectedValue}"]`).prop('selected', true);
-					
+
 						$tagValueField.replaceWith(boolDropdown);
 
 						if (selectedTag.defaultValue != undefined || selectedValue != '') {
 							$('#add', popup_html).prop('disabled', false);
 						}
-					
+
 					}
-					
-	
+
+
 					if (selectedTag.type == 'StringTagValueType') {
 
 						$('#tagValue', popup_html).prop('disabled', false);
@@ -3572,7 +3649,7 @@ define(function(require) {
 							name: 'tagValue',
 							value: formValue
 						});
-						
+
 						$tagValueField.replaceWith(textInput);
 
 						if (selectedTag.defaultValue != undefined || formValue != '') {
@@ -3601,7 +3678,7 @@ define(function(require) {
 							name: 'tagValue',
 							value: formValue
 						});
-						
+
 						$tagValueField.replaceWith(textInput);
 
 						if (selectedTag.defaultValue != undefined || formValue != '') {
@@ -3609,13 +3686,13 @@ define(function(require) {
 						}
 
 					}
-					
+
 					if (selectedTag.type == 'NumericRangeTagValueType') {
 
 						$('#tagValue', popup_html).prop('disabled', false);
-					
+
 						var formValue;
-					
+
 						if (nodeData.hasOwnProperty('dimension') && nodeData.dimension.type == 'NumericRangeTagValueType') {
 							formValue = dimensionData.tagValue;
 						} else if (selectedTag.hasOwnProperty('defaultValue')) {
@@ -3623,7 +3700,7 @@ define(function(require) {
 						} else {
 							formValue = '';
 						}
-						
+
 						var numericInput = $('<input>', {
 							type: 'text',
 							id: 'tagValue',
@@ -3632,7 +3709,7 @@ define(function(require) {
 							inputmode: 'numeric',
 							pattern: '[0-9]*'
 						});
-						
+
 						// prevent non-numeric input using the keypress event
 						numericInput.on('keypress', function(event) {
 							var charCode = event.which ? event.which : event.keyCode;
@@ -3641,30 +3718,30 @@ define(function(require) {
 								event.preventDefault();
 							}
 						});
-						
+
 						$tagValueField.replaceWith(numericInput);
-					
+
 						if (selectedTag.defaultValue != undefined || formValue != '') {
 							$('#add', popup_html).prop('disabled', false);
 						}
-					
+
 					}
-					
-				} 
-				
+
+				}
+
 				// handle scenario where selectedTag is not found due to the tag being deleted
 				if (!selectedTag && nodeData.hasOwnProperty('dimension')) {
 
-					var $callTagField = popup_html.find('#name'), 
+					var $callTagField = popup_html.find('#name'),
 						$tagValueField = popup_html.find('#tagValue');
-					
+
 					var callTagInput = $('<input>', {
 						type: 'text',
 						id: 'name',
 						name: 'name',
 						value: dimensionData.name
 					});
-					
+
 					$callTagField.replaceWith(callTagInput);
 
 					var tagValueInput = $('<input>', {
@@ -3673,7 +3750,7 @@ define(function(require) {
 						name: 'tagValue',
 						value: dimensionData.tagValue
 					});
-					
+
 					$tagValueField.replaceWith(tagValueInput);
 
 					$('#name', popup_html).prop('disabled', true);
@@ -3709,26 +3786,26 @@ define(function(require) {
 					} else {
 						$('#add', popup_html).prop('disabled', false);
 					}
-				}				
+				}
 			}
 
 			toggleSaveButton();
 
 			popup_html.on('change', '#tagValue', toggleSaveButton);
-			
+
 			$('#add', popup_html).click(function() {
-				
+
 				var encodedTagValue,
 					tagUri,
 					tagValue = $('#tagValue', popup_html).val();
 
 				if (selectedTag.type == 'BoolTagValueType') {
 					encodedTagValue = tagValue == 'Yes' ? 'true' : 'false';
-       				tagUri = selectedTag.endpoint + encodedTagValue;
+	   				tagUri = selectedTag.endpoint + encodedTagValue;
 				} else {
 					encodedTagValue = encodeURIComponent(tagValue),
 					tagUri = selectedTag.endpoint + encodedTagValue;
-				}	
+				}
 
 				node.setMetadata('uri', tagUri),
 				node.setMetadata('format', 'json'),
@@ -3744,7 +3821,7 @@ define(function(require) {
 
 				var callTagCaption = selectedTag.name + ': ' + $('#tagValue', popup_html).val();
 				node.caption = callTagCaption;
-				
+
 				popup.dialog('close');
 			});
 
@@ -3756,21 +3833,21 @@ define(function(require) {
 					}
 				}
 			});
-	
+
 		},
 
 		miscRenderEditDirectoryRouting: function(node, callback) {
 			var self = this,
 				selectedDirectory,
 				dimensionData = node.getMetadata('dimension', ''),
-				data = {			
+				data = {
 					contactDirectories: contactDirectories,
 					dimension: dimensionData
 				},
 				popup_html = $(self.getTemplate({
 					name: 'pivotDirectoryRouting',
 					data: data,
-					submodule: 'misc'					
+					submodule: 'misc'
 				})),
 				popup;
 
@@ -3786,7 +3863,7 @@ define(function(require) {
 				var selectedDirectoryId = popup_html.find('#name').val();
 					selectedDirectory = _.find(contactDirectories, { id: selectedDirectoryId }),
 					nodeData = node.data.data;
-				
+
 				$('#directoryDescription', popup_html).prop('disabled', true);
 				$('#directoryValue', popup_html).prop('disabled', true);
 				$('#add', popup_html).prop('disabled', true);
@@ -3798,20 +3875,20 @@ define(function(require) {
 				if (selectedDirectory) {
 					$('#directoryDescription', popup_html).val(selectedDirectory.description || null);
 				}
-				
+
 				// handle scenario where selectedDirectory is not found due to the directory being deleted
 				if (!selectedDirectory && nodeData.hasOwnProperty('dimension')) {
 
-					var $directoryField = popup_html.find('#name'), 
+					var $directoryField = popup_html.find('#name'),
 						$routingValueField = popup_html.find('#routingValue');
-					
+
 					var callTagInput = $('<input>', {
 						type: 'text',
 						id: 'name',
 						name: 'name',
 						value: dimensionData.name
 					});
-					
+
 					$directoryField.replaceWith(callTagInput);
 
 					function formatRoutingValue(routingValue) {
@@ -3825,7 +3902,7 @@ define(function(require) {
 						name: 'routingValue',
 						value: formatRoutingValue(dimensionData.routingValue)
 					});
-					
+
 					$routingValueField.replaceWith(tagValueInput);
 
 					$('#name', popup_html).prop('disabled', true);
@@ -3834,11 +3911,11 @@ define(function(require) {
 
 					$('#directoryFallbackMessage', popup_html).hide();
 					$('#directoryDeletedMessage', popup_html).show();
-					
+
 				}
 
 			}
-				
+
 			getDirectoryData();
 
 			popup_html.find('#name').on('change', getDirectoryData);
@@ -3847,7 +3924,7 @@ define(function(require) {
 			function toggleSaveButton() {
 
 				if (selectedDirectory) {
-					
+
 					var routingValue = popup_html.find('#routingValue').val();
 
 					if (routingValue == 'null') {
@@ -3855,7 +3932,7 @@ define(function(require) {
 					} else {
 						$('#add', popup_html).prop('disabled', false);
 					}
-				}				
+				}
 			}
 
 			toggleSaveButton();
@@ -3867,7 +3944,7 @@ define(function(require) {
 
 				var routingValue = $('#routingValue', popup_html).val(),
 					directoryUri = selectedDirectory.endpoint + '/' + routingValue;
-				
+
 				node.setMetadata('voice_url', directoryUri);
 				node.setMetadata('method', 'POST');
 				node.setMetadata('req_format', 'kazoo');
@@ -3895,9 +3972,9 @@ define(function(require) {
 					}
 				}
 			});
-	
+
 		},
-		
+
 		/* API helpers */
 		miscDeviceList: function(callback) {
 			var self = this;
