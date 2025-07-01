@@ -47,7 +47,8 @@ define(function(require) {
 		'temporalset',
 		'timeofday',
 		'user',
-		'vmbox'
+		'vmbox',
+		'ai_agent'
 	];
 
 	require(_.map(appSubmodules, function(name) {

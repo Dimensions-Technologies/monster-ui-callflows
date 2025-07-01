@@ -1293,7 +1293,15 @@
 				"label": "Text"
 			}
 		},
-
+		"ai_agent": {
+			"default": "Default",
+			"title": "AI Agent",
+			"name": "AI Agent",
+			"tip": "AI Agent allows you to get the intelligent call handling and response generation powered by advanced language models.",
+			"text": {
+				"label": "Prompt :"
+			}
+		},
 		"__comment": "UI-439: adding sleep to adv. callflows",
 		"__version": "v4.1",
 		"sleep": {
