@@ -402,25 +402,27 @@
 						</div>
 					</div>
 
-					{{#if data.hasTranscribe}}
-					<div class="clearfix">
-						<div class="input">
-							<ul class="inputs-list">
-								<li>
-									<label>
-										<span rel="popover" data-content="{{ i18n.callflows.vmbox.transcription.help }}">
-											{{#if data.transcribe}}
-												<input type="checkbox" id="transcribe" name="transcribe" checked="checked" />
-											{{else}}
-												<input type="checkbox" id="transcribe" name="transcribe" />
-											{{/if}}
-											<span>{{ i18n.callflows.vmbox.transcription.label }}</span>
-										</span>
-									</label>
-								</li>
-							</ul>
+					{{#if miscSettings.enableVoicemailTranscription}}
+						{{#if data.hasTranscribe}}
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.vmbox.transcription.help }}">
+												{{#if data.transcribe}}
+													<input type="checkbox" id="transcribe" name="transcribe" checked="checked" />
+												{{else}}
+													<input type="checkbox" id="transcribe" name="transcribe" />
+												{{/if}}
+												<span>{{ i18n.callflows.vmbox.transcription.label }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
 						</div>
-					</div>
+						{{/if}}
 					{{/if}}
 
 					<div class="clearfix">

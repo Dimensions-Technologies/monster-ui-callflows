@@ -1107,7 +1107,7 @@
 			"temporary_unavailable_message_data_content": "Select the Temporary Unavailable message that you want to use for this this device. If you set this field, it will take precedence over the Unavailable message, but if you select - Not set -, then the Unavailable message will be played instead.",
 			"transcription": {
 				"label": "Transcribe Messages",
-				"help": "Control recent enhancements to the voicemail system"
+				"help": "Enable automatic transcription for new voicemails"
 			},
 			"announceOnly": {
 				"label": "Announce only-mode",
