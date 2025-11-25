@@ -264,7 +264,7 @@ define(function(require) {
 
 			monster.ui.datepicker(timeofday_html.find('#start_date'));
 			monster.ui.datepicker(timeofday_html.find('#end_date'));
-			monster.ui.timepicker(timeofday_html.find('.timepicker'), {
+			self.timepicker(timeofday_html.find('.timepicker'), {
 				step: 5
 			});
 
@@ -1538,6 +1538,19 @@ define(function(require) {
 			if (!data.id) {
 				$('.delete', '.entity-header-buttons').addClass('disabled');
 			}
+		},
+
+		// local timepicker function that formats 24hr as 00:00 opposed to 0:00
+		timepicker: function(target, pOptions) {
+			var self = this,
+				is12hMode = _.get(monster, 'apps.auth.currentUser.ui_flags.twelve_hours_mode', false),
+				defaultOptions = {
+					timeFormat: is12hMode ? 'g:i A' : 'H:i',
+					lang: monster.apps.core.i18n.active().timepicker
+				},
+				options = $.extend(true, {}, defaultOptions, pOptions);
+
+			return target.timepicker(options);
 		}
 
 	};
