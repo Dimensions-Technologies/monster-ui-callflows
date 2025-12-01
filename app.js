@@ -8,6 +8,7 @@ define(function(require) {
 		hideFromMenu = {},
 		hideAdd = {},
 		hideCallflowAction = {},
+		userCallflowAction = {},
 		hideFromCallflowAction = {},
 		hideClassifiers = {},
 		billingCodes = {},
@@ -24,8 +25,6 @@ define(function(require) {
 		pusherApps = {},
 		deviceBillingCodeRequired = {},
 		anankeCallbacks = {};
-		//translateX = 0, 
-		//translateY = 0;
 
 	var appSubmodules = [
 		'afterbridge',
@@ -73,7 +72,9 @@ define(function(require) {
 		},
 
 		// Define the events available for other apps
-		subscribe: {},
+		subscribe: {
+			'callflows.callflow.popupEdit': 'callflowPopupEdit'
+		},
 
 		subModules: appSubmodules,
 
@@ -177,6 +178,10 @@ define(function(require) {
 								} else {
 									hideCallflowAction = data.dimension.dt_callflows.hideCallflowAction;
 								}
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('userCallflowAction')) {															
+								userCallflowAction = data.dimension.dt_callflows.userCallflowAction;
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideFromCallflowAction')) {
@@ -389,6 +394,7 @@ define(function(require) {
 						console.log('hideFromMenu:', hideFromMenu);
 						console.log('hideAdd:', hideAdd);
 						console.log('hideCallflowAction:', hideCallflowAction);
+						console.log('userCallflowAction:', userCallflowAction);
 						console.log('hideFromCallflowAction:', hideFromCallflowAction);
 						console.log('hideClassifiers:', hideClassifiers);
 						console.log('miscSettings:', miscSettings);
@@ -2024,7 +2030,6 @@ define(function(require) {
 		hackResize: function(container) {
 			var self = this;
 
-			// Adjusting the layout divs height to always fit the window's size
 			$(window).resize(function(e) {
 				var $listContainer = container.find('.list-container'),
 					$mainContent = container.find('.callflow-content'),
@@ -2034,11 +2039,16 @@ define(function(require) {
 					contentHeightPx = contentHeight + 'px',
 					innerContentHeightPx = (contentHeight - 71) + 'px';
 
-				$listContainer.css('height', window.innerHeight - $listContainer.position().top + 'px');
+				// Only run this if the list container exists
+				if ($listContainer.length) {
+					$listContainer.css('height', window.innerHeight - $listContainer.position().top + 'px');
+				}
+
 				$mainContent.css('height', contentHeightPx);
 				$tools.css('height', innerContentHeightPx);
 				$flowChart.css('height', innerContentHeightPx);
 			});
+
 			$(window).resize();
 		},
 
@@ -2678,6 +2688,12 @@ define(function(require) {
 
 			if (miscSettings.enableConsoleLogging) {
 				console.log('callflowFlags', callflowFlags);
+			}
+
+			// if modifying users mainUserCallflow remore SmartPBX's Callflow from callflow name
+			if (self.isUserCallflowPopup) {
+				var cleanedName = (self.dataCallflow.name || '').replace("SmartPBX's Callflow", '');
+				$('.callflow-managerPopup .node[name="root"] .top_bar .name').text(cleanedName);
 			}
 
 			// show callflow on page
@@ -3742,12 +3758,34 @@ define(function(require) {
 				if ('category' in data && (!data.hasOwnProperty('isListed') || data.isListed)) {
 					_.set(categories, data.category, _.get(categories, data.category, []));
 					data.key = i;
-					categories[data.category].push(data);
+
+					// default to including the action
+					var includeAction = true;
+
+					// if in user callflow popup, filter actions based on userCallflowAction map
+					if (self.isUserCallflowPopup) {					
+						var allowedMap = (typeof userCallflowAction === 'object' && userCallflowAction !== null)
+							? userCallflowAction
+							: null;
+
+						if (allowedMap && Object.keys(allowedMap).length > 0) {
+							if (Object.prototype.hasOwnProperty.call(allowedMap, data.key)) {
+								includeAction = !!allowedMap[data.key];
+							} else {
+								// treat missing key as not allowed
+								includeAction = false;
+							}
+						}
+					}
+
+					if (includeAction) {
+						categories[data.category].push(data);
+					}
 				}
 			});
 
 			$.each(categories, function(key, val) {
-				if (key !== basic_cat && key !== advanced_cat) {
+				if (key !== basic_cat && key !== advanced_cat && val.length > 0) {
 					dataTemplate.categories.push({ key: key, actions: val });
 				}
 			});
@@ -3756,13 +3794,20 @@ define(function(require) {
 				return a.key < b.key ? 1 : -1;
 			});
 
-			dataTemplate.categories.unshift({
-				key: basic_cat,
-				actions: categories[basic_cat]
-			}, {
-				key: advanced_cat,
-				actions: categories[advanced_cat]
-			});
+			// show basic / advanced ONLY if they have actions
+			if (categories[advanced_cat] && categories[advanced_cat].length > 0) {
+				dataTemplate.categories.unshift({
+					key: advanced_cat,
+					actions: categories[advanced_cat]
+				});
+			}
+
+			if (categories[basic_cat] && categories[basic_cat].length > 0) {
+				dataTemplate.categories.unshift({
+					key: basic_cat,
+					actions: categories[basic_cat]
+				});
+			}
 
 			$.each(categories, function(idx, val) {
 				val.sort(function(a, b) {
@@ -3780,9 +3825,20 @@ define(function(require) {
 				}
 			}));
 
-			// set the basic drawer to open
-			$('#Basic', tools).removeClass('inactive').addClass('active');
-			$('#Basic .content', tools).show(); 
+			// set the basic drawer to open (if it exists), otherwise first category
+			var $basicCategory = $('#Basic', tools);
+
+			if ($basicCategory.length) {
+				$basicCategory.removeClass('inactive').addClass('active');
+				$('#Basic .content', tools).show();
+			} else {
+				// no Basic category – open the first one if present
+				var $firstCategory = tools.find('.category').first();
+				if ($firstCategory.length) {
+					$firstCategory.removeClass('inactive').addClass('active');
+					$firstCategory.find('.content').show();
+				}
+			}
 
 			tools.find('.category .open').each(function() {
 				const $open = $(this);
@@ -4075,7 +4131,17 @@ define(function(require) {
 
 		},
 
-		save: function() {
+		save: function(args) {
+
+			if (miscSettings.enableModifyMainUserCallflow) {
+				var source = null,
+					callback = null;
+
+				if (args && typeof args === 'object') {
+					source = args.source;
+					callback = args.callback;
+				}
+			}
 
 			var hideModule = [];
 			
@@ -4146,8 +4212,28 @@ define(function(require) {
 				var listData = {};
 				
 				if (self.flow.id) {
+					// if main user callflow is being edited from the popup on a user
+					if (miscSettings.enableModifyMainUserCallflow && source == 'callflow-managerPopup') {
+						self.callApi({
+							resource: 'callflow.update',
+							data: {
+								accountId: self.accountId,
+								callflowId: self.flow.id,
+								data: {
+									...data_request,
+									ui_metadata: {
+										...metadata
+									}
+								},
+								removeMetadataAPI: true
+							},
+							success: function() {
+								callback();
+							}
+						});
+					}
 					// if show all callflows is enabled and this is a hidden callflow then retain existing ui_metadata 
-					if (showAllCallflows == true && isHiddenCallflow == true) {
+					else if (showAllCallflows == true && isHiddenCallflow == true) {
 						self.callApi({
 							resource: 'callflow.update',
 							data: {
@@ -4165,11 +4251,10 @@ define(function(require) {
 								listData.selectedItemId = json.data.id
 								self.repaintList(listData);
 								self.editCallflow({ id: json.data.id });
-							
 							}
 						});
 					}
-
+					// normal callflow update
 					else {
 						self.callApi({
 							resource: 'callflow.update',
@@ -4401,7 +4486,116 @@ define(function(require) {
 				}
 			});
 
-		}	
+		},
+
+		// open a callflow editor inside a dialog popup
+		callflowPopupEdit: function(args) {
+			var self       = this,
+				data       = args.data || {},
+				callflowId = data.id,
+				popup_html = $('<div class="callflow-managerPopup"><div class="inline_content main_content"></div></div>'),
+				popup;
+
+			self.isUserCallflowPopup = true;
+
+			// build dialog popup
+			popup = monster.ui.dialog(popup_html, {
+				title: self.i18n.active().callflows.user.user_callflow.popup_title,
+				width: '90%',
+				create: function() {
+					$(this).closest('.ui-dialog-content').addClass('scrollbar-hidden');
+				}
+			});
+
+			var $inline = popup_html.find('.inline_content');
+
+			self.loadCallflowManager($inline, function() {
+				
+				self.editCallflow({ id: callflowId });
+
+				self.syncFlowHeight();
+
+				// observe changes inside the popup's flowchart
+				var flowchart = $inline.find('.flowchart')[0];
+				if (flowchart) {
+					var observer = new MutationObserver(function () {
+						self.syncFlowHeight();
+					});
+					observer.observe(flowchart, {
+						attributes: true,
+						childList: true,
+						subtree: true
+					});
+					popup.data('flowObserver', observer);
+				}
+
+				// build callflow popup layout with save botton
+				var $existingContent = $inline.children().detach(),
+					$body = $('<div class="callflow-body"></div>').append($existingContent),
+					$footer = $(
+					'<div class="callflow-footer buttons-center">' +
+						'<button type="button" class="monster-button monster-button-success save-callflow">' +
+							self.i18n.active().callflows.vmbox.save +
+						'</button>' +
+					'</div>'
+				);
+
+				$inline.empty().append($body).append($footer);
+
+			}, 'callflow-managerPopup');
+
+			// clean up the observer when the dialog closes
+			popup.on('dialogclose', function () {
+				var observer = popup.data('flowObserver');
+				if (observer) {
+					observer.disconnect();
+				}
+
+				self.isUserCallflowPopup = false;
+			});
+
+			popup_html.on('click', '.save-callflow', function (e) {
+				e.preventDefault();
+				self.save({
+					source: 'callflow-managerPopup',
+					callback() {
+						popup.dialog('close');
+					}
+				});
+			});
+
+		},
+
+		// load callflow manager into a given container
+		loadCallflowManager: function(container, done, templateName) {
+			var self = this,
+				callflowsTemplate = $(self.getTemplate({
+					name: templateName,
+					data: {
+						miscSettings: miscSettings
+					}
+				}));
+
+			self.bindCallflowsEvents(callflowsTemplate, container);
+
+			monster.ui.tooltips(callflowsTemplate);
+
+			container.append(callflowsTemplate);
+
+			self.hackResize(callflowsTemplate);
+
+			// hide scrollbar within callflow designer - previously under setting miscSettings.hideScrollbars
+			$('#ws_callflow .tools', callflowsTemplate).addClass('scrollbar-hidden');
+			$('#ws_callflow .flowchart', callflowsTemplate).addClass('scrollbar-hidden');
+
+			// enable zoom control
+			self.setupZoomControls(callflowsTemplate);
+			
+			// enable moving around the callflow workspace
+			self.enableInfinitePanning();
+
+			done && done();
+		}
 
 	};
 
