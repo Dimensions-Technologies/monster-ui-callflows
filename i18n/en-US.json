@@ -1006,7 +1006,22 @@
 			"phone_numbers_options": "Assigned Phone Numbers",
 			"phone_numbers_add": "Add Phone Number",
 			"phone_numbers_none": "This user currently has no assigned phone numbers",
-			"call_routing": "Call Routing",
+			"call_routing": {
+				"title": "User's Call Routing Settings",
+				"label": "Call Routing",
+				"user": "User Based",
+				"manual": "Manually Configured",
+				"type": "Routing Type",
+				"tip": "This defines how calls will be routed for this user. 'User Based' allows Voicemail and Find Me Follow Me settings to be configured. 'Manually Configured' disables Voicemail and Find Me Follow Me settings on the user form and allows the user's call routing to be manually configured.",
+				"disable_warning": "The callflow routing type has been changed from 'Manually Configured' to 'User Based'. The user's callflow will be reset to the default configuration, and any custom changes will be removed."
+			},
+			"user_callflow": {
+				"title": "User Callflow",
+				"edit": "Edit Callflow",
+				"reset": "Reset Callflow",
+				"confirm_reset": "Are you sure you want to reset this user's callflow back to the default state? Any modifications to the user's callflow will be lost.",
+				"popup_title": "User Callflow"
+			},
 			"find_me_follow_me": {
 				"title": "Find Me Follow Me Settings",
 				"label": "Find Me Follow Me",

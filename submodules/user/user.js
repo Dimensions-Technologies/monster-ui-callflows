@@ -1168,7 +1168,8 @@ define(function(require) {
 			
 			self.userRenderNumberList(data, user_html);
 
-			$('#tab_find_me_follow_me', user_html).hide(); // show find me follow me table
+			$('#tab_find_me_follow_me', user_html).hide();
+			$('#call_routing_manual', user_html).hide();
 
 			// the following is within monster.waterfall so that the device list is rendered before the page loads
 			monster.waterfall([
@@ -1191,7 +1192,44 @@ define(function(require) {
 						data.field_data.ring_group = userCallflow.flow.data;
 						self.usersRenderFindMeFollowMe(data, data.field_data.device_list, user_html);
 					}
-					
+
+					// mainUserCallflow modification support
+					if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
+						var mainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true,
+							userCallflow = data?.field_data?.user_callflow;
+
+						// disable edit and reset user callflow button on page load - only allow modification if mainUserCallflowModified is true on user doc
+						var $userCallflowButtons = $(user_html).find('#edit_user_callflow, #reset_user_callflow');
+
+						$userCallflowButtons
+							.prop('disabled', true)
+							.addClass('button-disabled');
+
+						if (mainUserCallflowModified && userCallflow) {
+
+							$('#call_routing_user', user_html).hide();
+							$('#call_routing_manual', user_html).show();
+							
+							$userCallflowButtons
+								.prop('disabled', false)
+								.removeClass('button-disabled');
+
+							// disable voicemail and find me follow me settings on form if mainUserCallflowModified is true on user doc
+							var $userVoicemailSettings = $(user_html).find('#user_voicemail, #ring_timeout, #vm_to_email_enabled');
+
+							$userVoicemailSettings
+								.prop('disabled', true)
+								.addClass('input-readonly');
+
+							$(user_html).find('#edit_link_vmbox').hide();
+
+							$(user_html).find('#smartpbx\\.find_me_follow_me\\.enabled')
+								.prop('disabled', true)
+								.addClass('input-readonly');
+
+						}
+					}
+
 					// if user the user is logged into a hotdesk device update the table
 					if (data.field_data.device_list) {
 						self.userRenderHotdeskList(data, user_html);
@@ -1373,7 +1411,7 @@ define(function(require) {
 
 						});
 					});
-					
+
 					self.winkstartTabs(user_html);
 					self.winkstartLinkForm(user_html);
 
@@ -1457,323 +1495,360 @@ define(function(require) {
 							findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 							findMeFollowMe = form_data.smartpbx.find_me_follow_me.enabled === "true",
 							callflowRingGroup = data.field_data.callflow_ring_group,
-							ringGroup = data.field_data.ring_group;
+							ringGroup = data.field_data.ring_group,
+							mainUserCallflowReset = false;
 
-						if (miscSettings.enableConsoleLogging) {
-							console.log('Numbers on User Callflow', callflowNumbers);
-							console.log('Numbers on User Form', formNumbers);
+						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
+							var dataMainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true,
+								formMainUserCallflowModified = form_data.dimension.main_user_callflow_modified === "true";
 						}
 
-						if ('callflow_numbers' in form_data) {
-							delete form_data.callflow_numbers;
-						}
+						function continueSave() {
 
-						if ('phone_numbers' in form_data) {
-							delete form_data.phone_numbers;
-						}
+							if (miscSettings.enableConsoleLogging) {
+								console.log('Numbers on User Callflow', callflowNumbers);
+								console.log('Numbers on User Form', formNumbers);
+							}
 
-						if ('extension_numbers' in form_data) {
-							delete form_data.extension_numbers;
-						}
+							if ('callflow_numbers' in form_data) {
+								delete form_data.callflow_numbers;
+							}
 
-						if ('user_voicemail' in form_data) {
-							delete form_data.user_voicemail;
-						}
+							if ('phone_numbers' in form_data) {
+								delete form_data.phone_numbers;
+							}
 
-						if ('ring_timeout' in form_data) {
-							delete form_data.ring_timeout;
-						}
+							if ('extension_numbers' in form_data) {
+								delete form_data.extension_numbers;
+							}
 
-						if (form_data.enable_pin === false) {
-							delete data.data.queue_pin;
-							delete data.data.record_call;
-						}
+							if ('user_voicemail' in form_data) {
+								delete form_data.user_voicemail;
+							}
 
-						if (form_data.music_on_hold.media_id === 'shoutcast') {
-							form_data.music_on_hold.media_id = user_html.find('.shoutcast-url-input').val();
-						}
+							if ('ring_timeout' in form_data) {
+								delete form_data.ring_timeout;
+							}
 
-						self.userCleanFormData(form_data);
+							if (form_data.enable_pin === false) {
+								delete data.data.queue_pin;
+								delete data.data.record_call;
+							}
 
-						if ('field_data' in data) {
-							delete data.field_data;
-						}
+							if (form_data.music_on_hold.media_id === 'shoutcast') {
+								form_data.music_on_hold.media_id = user_html.find('.shoutcast-url-input').val();
+							}
 
-						monster.waterfall([
-				
-							function(callback) {
-								// voicemail update function 
-								if (userCallflow != null) {
+							self.userCleanFormData(form_data);
 
-									var voicemailFormValue,
-										voicemailEnabled;
-		
-									if (userVoicemail == 'enabled') {
-										voicemailFormValue = true
-									} else {
-										voicemailFormValue = false
-									}
-		
-									if (field_data.callflow_features.includes('voicemail')) {
-										voicemailEnabled = true
-									} else {
-										voicemailEnabled = false
-									}
-		
-									// check if there is a difference between the current state and form state
-									if (voicemailEnabled != voicemailFormValue ) {
-										if (miscSettings.enableConsoleLogging) {
-											console.log('Setting Voicemail State:', userVoicemail);
+							if ('field_data' in data) {
+								delete data.field_data;
+							}
+
+							monster.waterfall([
+					
+								function(callback) {
+									// voicemail update function 
+									if (userCallflow != null) {
+
+										var voicemailFormValue,
+											voicemailEnabled;
+			
+										if (userVoicemail == 'enabled') {
+											voicemailFormValue = true
+										} else {
+											voicemailFormValue = false
 										}
-										self.usersUpdateVMBoxStatusInCallflow({
-											callflow: userCallflow,
-											enabled: voicemailFormValue,
-											ringTimeout: ringTimeout
-										}, callback);
-									} else {
-										if (findMeFollowMe == false && userCallflow.flow.data.timeout != ringTimeout) {
-											if (miscSettings.enableConsoleLogging) {
-												console.log('Updating Callflow Timeout:', ringTimeout);
-											}
-											self.callApi({
-												resource: 'callflow.patch',
-												data: {
-													accountId: self.accountId,
-													callflowId: userCallflow.id,
-													data: {
-														flow: {
-															data: { 
-																timeout: ringTimeout
-															}
-														},
-														ui_metadata: {
-															origin: 'voip'
-														}
-													},
-													removeMetadataAPI: true
-												},
-												success: function(_callflow_update) {
-													if (miscSettings.enableConsoleLogging) {
-														console.log('User Callflow Updated', _callflow_update)
-													}
-													callback(null);
+			
+										if (field_data.callflow_features.includes('voicemail')) {
+											voicemailEnabled = true
+										} else {
+											voicemailEnabled = false
+										}
+			
+										// skip mainUserCallflow is being rest
+										if (!mainUserCallflowReset) {
+											// check if there is a difference between the current state and form state
+											if (voicemailEnabled != voicemailFormValue ) {
+												if (miscSettings.enableConsoleLogging) {
+													console.log('Setting Voicemail State:', userVoicemail);
 												}
-											})
+												self.usersUpdateVMBoxStatusInCallflow({
+													callflow: userCallflow,
+													enabled: voicemailFormValue,
+													ringTimeout: ringTimeout
+												}, callback);
+											} else {
+												if (findMeFollowMe == false && userCallflow.flow.data.timeout != ringTimeout) {
+													if (miscSettings.enableConsoleLogging) {
+														console.log('Updating Callflow Timeout:', ringTimeout);
+													}
+													self.callApi({
+														resource: 'callflow.patch',
+														data: {
+															accountId: self.accountId,
+															callflowId: userCallflow.id,
+															data: {
+																flow: {
+																	data: { 
+																		timeout: ringTimeout
+																	}
+																},
+																ui_metadata: {
+																	origin: 'voip'
+																}
+															},
+															removeMetadataAPI: true
+														},
+														success: function(_callflow_update) {
+															if (miscSettings.enableConsoleLogging) {
+																console.log('User Callflow Updated', _callflow_update)
+															}
+															callback(null);
+														}
+													})
+												} else {
+													callback(null)
+												}
+											}
 										} else {
 											callback(null)
 										}
-									}
-									
-								} else {
-									callback(null)
-								}
-
-							},
-
-							function(callback) {
-								
-								if (miscSettings.enableConsoleLogging) {
-									console.log('Find Me Follow Me Enabled:', findMeFollowMe);
-									console.log('callflowRingGroup', callflowRingGroup);
-									console.log('ringGroup', ringGroup);
-								}
-
-								var updateUserCallflow = false,
-									callflowNode = {};
-								
-								// check if find me follow me is enabled
-								if (findMeFollowMe == true) {
-									
-									// function to compare callflowRingGroup and ringGroup
-									function areRingGroupsEqual(group1, group2) {
-										if (
-											group1.timeout !== group2.timeout ||
-											group1.strategy !== group2.strategy ||
-											group1.repeats !== group2.repeats ||
-											group1.ignore_forward !== group2.ignore_forward
-										) {
-											return false;
-										}
-									
-										// check if both have an endpoints array with the same length
-										if (!Array.isArray(group1.endpoints) || !Array.isArray(group2.endpoints) ||
-											group1.endpoints.length !== group2.endpoints.length) {
-											return false;
-										}
-									
-										// sort the endpoints arrays by id for a consistent comparison
-										const sortedEndpoints1 = [...group1.endpoints].sort((a, b) => a.id.localeCompare(b.id));
-										const sortedEndpoints2 = [...group2.endpoints].sort((a, b) => a.id.localeCompare(b.id));
-									
-										return sortedEndpoints1.every((endpoint1, index) => {
-											const endpoint2 = sortedEndpoints2[index];
-											return (
-												endpoint1.id === endpoint2.id &&
-												endpoint1.endpoint_type === endpoint2.endpoint_type &&
-												endpoint1.delay === endpoint2.delay &&
-												endpoint1.timeout === endpoint2.timeout
-											);
-										});
+										
+									} else {
+										callback(null)
 									}
 
-									// check if find me follow me is currently enabled
-									if (findMeFollowMeEnabled == true) {
-										// check if there are differences between the existing ring group and what is on the form
-										if (!areRingGroupsEqual(callflowRingGroup, ringGroup)) {
+								},
+
+								function(callback) {
+									
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Find Me Follow Me Enabled:', findMeFollowMe);
+										console.log('callflowRingGroup', callflowRingGroup);
+										console.log('ringGroup', ringGroup);
+									}
+
+									var updateUserCallflow = false,
+										callflowNode = {};
+
+									// disable find me follow me if currently enabled and routing type is being set to manually configured
+									if (formMainUserCallflowModified && findMeFollowMe) {
+										findMeFollowMe = false;
+										form_data.smartpbx.find_me_follow_me.enabled = false;
+									}
+									
+									// check if find me follow me is enabled
+									if (findMeFollowMe == true) {
+										
+										// function to compare callflowRingGroup and ringGroup
+										function areRingGroupsEqual(group1, group2) {
+											if (
+												group1.timeout !== group2.timeout ||
+												group1.strategy !== group2.strategy ||
+												group1.repeats !== group2.repeats ||
+												group1.ignore_forward !== group2.ignore_forward
+											) {
+												return false;
+											}
+										
+											// check if both have an endpoints array with the same length
+											if (!Array.isArray(group1.endpoints) || !Array.isArray(group2.endpoints) ||
+												group1.endpoints.length !== group2.endpoints.length) {
+												return false;
+											}
+										
+											// sort the endpoints arrays by id for a consistent comparison
+											const sortedEndpoints1 = [...group1.endpoints].sort((a, b) => a.id.localeCompare(b.id));
+											const sortedEndpoints2 = [...group2.endpoints].sort((a, b) => a.id.localeCompare(b.id));
+										
+											return sortedEndpoints1.every((endpoint1, index) => {
+												const endpoint2 = sortedEndpoints2[index];
+												return (
+													endpoint1.id === endpoint2.id &&
+													endpoint1.endpoint_type === endpoint2.endpoint_type &&
+													endpoint1.delay === endpoint2.delay &&
+													endpoint1.timeout === endpoint2.timeout
+												);
+											});
+										}
+
+										// check if find me follow me is currently enabled
+										if (findMeFollowMeEnabled == true) {
+											// check if there are differences between the existing ring group and what is on the form
+											if (!areRingGroupsEqual(callflowRingGroup, ringGroup)) {
+												// update user callflow
+												updateUserCallflow = true;
+												
+												callflowNode.module = 'ring_group';
+												callflowNode.data = {
+													strategy: 'simultaneous',
+													timeout: ringGroup.timeout,
+													repeats: 1,
+													ignore_forward: true,
+													endpoints: ringGroup.endpoints											
+												};
+												callback(null, updateUserCallflow, callflowNode);
+											} else {
+												callback(null, updateUserCallflow, callflowNode);
+											}
+										} else {
 											// update user callflow
 											updateUserCallflow = true;
-											
+												
 											callflowNode.module = 'ring_group';
 											callflowNode.data = {
 												strategy: 'simultaneous',
 												timeout: ringGroup.timeout,
 												repeats: 1,
-                								ignore_forward: true,
-												endpoints: ringGroup.endpoints											
+												ignore_forward: true,
+												endpoints: ringGroup.endpoints
+											};
+											callback(null, updateUserCallflow, callflowNode);
+										}
+									} else {
+										// check if find me follow me state has been changed
+										if (findMeFollowMeEnabled != findMeFollowMe) {
+											// update user callflow
+											updateUserCallflow = true;
+
+											// set used module on callflow
+											callflowNode.module = 'user';
+											callflowNode.data = {
+												can_call_self: false,
+												id: data.data.id,
+												timeout: ringTimeout,
+												delay: 0,
+												strategy: "simultaneous"
 											};
 											callback(null, updateUserCallflow, callflowNode);
 										} else {
 											callback(null, updateUserCallflow, callflowNode);
 										}
-									} else {
-										// update user callflow
-										updateUserCallflow = true;
-											
-										callflowNode.module = 'ring_group';
-										callflowNode.data = {
-											strategy: 'simultaneous',
-											timeout: ringGroup.timeout,
-											repeats: 1,
-											ignore_forward: true,
-											endpoints: ringGroup.endpoints
-										};
-										callback(null, updateUserCallflow, callflowNode);
 									}
-								} else {
-									// check if find me follow me state has been changed
-									if (findMeFollowMeEnabled != findMeFollowMe) {
-										// update user callflow
-										updateUserCallflow = true;
 
-										// set used module on callflow
-										callflowNode.module = 'user';
-										callflowNode.data = {
-											can_call_self: false,
-											id: data.data.id,
-											timeout: ringTimeout,
-											delay: 0,
-                							strategy: "simultaneous"
-										};
-										callback(null, updateUserCallflow, callflowNode);
-									} else {
-										callback(null, updateUserCallflow, callflowNode);
-									}
-								}
+								},
 
-							},
+								function(updateUserCallflow, callflowNode, callback) {
 
-							function(updateUserCallflow, callflowNode, callback) {
+									// does the users callflow needs to be updated it
+									if (updateUserCallflow) {
+										// update the flow section of the users callflow
+										var flow = userCallflow.flow;
+										while (flow.hasOwnProperty('module') && ['ring_group', 'user'].indexOf(flow.module) < 0) {
+											flow = flow.children._;
+										}
+										flow.module = callflowNode.module;
+										flow.data = callflowNode.data;
 
-								// does the users callflow needs to be updated it
-								if (updateUserCallflow) {
-									// update the flow section of the users callflow
-									var flow = userCallflow.flow;
-									while (flow.hasOwnProperty('module') && ['ring_group', 'user'].indexOf(flow.module) < 0) {
-										flow = flow.children._;
-									}
-									flow.module = callflowNode.module;
-									flow.data = callflowNode.data;
-
-									self.usersUpdateCallflow(userCallflow, callback, function() {
-										callback(null);
-									});
-								} else {
-									callback(null);
-								}
-
-							},
-
-							function(callback) {
-								// patch users callflow if there is a change to the qty of numbers
-								if (userCallflow != null && formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
-									self.callApi({
-										resource: 'callflow.patch',
-										data: {
-											accountId: self.accountId,
-											callflowId: userCallflow.id,
-											data: {
-												numbers: formNumbers,
-												ui_metadata: {
-													origin: 'voip'
-												}
-											},
-											removeMetadataAPI: true
-										},
-										success: function(_callflow_update) {
-											if (miscSettings.enableConsoleLogging) {
-												console.log('User Callflow Updated', _callflow_update)
-											}
+										self.usersUpdateCallflow(userCallflow, callback, function() {
 											callback(null);
-										}
-									})
-								} else {
-									callback(null);
-								}
+										});
+									} else {
+										callback(null);
+									}
 
-							},
+								},
 
-							function() {
-								self.callApi({
-									resource: 'account.get',
-									data: {
-										accountId: self.accountId
-									},
-									success: function(_data, status) {
-										if (form_data.priv_level === 'admin') {
-											form_data.apps = form_data.apps || {};
-											if (!('voip' in form_data.apps) && $.inArray('voip', (_data.data.available_apps || [])) > -1) {
-												form_data.apps.voip = {
-													label: self.i18n.active().callflows.user.voip_services_label,
-													icon: 'device',
-													api_url: monster.config.api.default
-												};
+								function(callback) {
+									// patch users callflow if there is a change to the qty of numbers
+									if (userCallflow != null && formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
+										self.callApi({
+											resource: 'callflow.patch',
+											data: {
+												accountId: self.accountId,
+												callflowId: userCallflow.id,
+												data: {
+													numbers: formNumbers,
+													ui_metadata: {
+														origin: 'voip'
+													}
+												},
+												removeMetadataAPI: true
+											},
+											success: function(_callflow_update) {
+												if (miscSettings.enableConsoleLogging) {
+													console.log('User Callflow Updated', _callflow_update)
+												}
+												callback(null);
 											}
-										} else if (form_data.priv_level === 'user' && $.inArray('userportal', (_data.data.available_apps || [])) > -1) {
-											form_data.apps = form_data.apps || {};
-											if (!('userportal' in form_data.apps)) {
-												form_data.apps.userportal = {
-													label: self.i18n.active().callflows.user.user_portal_label,
-													icon: 'userportal',
-													api_url: monster.config.api.default
-												};
+										})
+									} else {
+										callback(null);
+									}
+
+								},
+
+								function() {
+									self.callApi({
+										resource: 'account.get',
+										data: {
+											accountId: self.accountId
+										},
+										success: function(_data, status) {
+											if (form_data.priv_level === 'admin') {
+												form_data.apps = form_data.apps || {};
+												if (!('voip' in form_data.apps) && $.inArray('voip', (_data.data.available_apps || [])) > -1) {
+													form_data.apps.voip = {
+														label: self.i18n.active().callflows.user.voip_services_label,
+														icon: 'device',
+														api_url: monster.config.api.default
+													};
+												}
+											} else if (form_data.priv_level === 'user' && $.inArray('userportal', (_data.data.available_apps || [])) > -1) {
+												form_data.apps = form_data.apps || {};
+												if (!('userportal' in form_data.apps)) {
+													form_data.apps.userportal = {
+														label: self.i18n.active().callflows.user.user_portal_label,
+														icon: 'userportal',
+														api_url: monster.config.api.default
+													};
+												}
 											}
-										}
-		
-										self.userSave(form_data, data, function(data, status, action) {
-											if (action === 'create') {
-												self.userAcquireDevice(data, function() {
+			
+											self.userSave(form_data, data, function(data, status, action) {
+												if (action === 'create') {
+													self.userAcquireDevice(data, function() {
+														if (typeof callbacks.save_success === 'function') {
+															callbacks.save_success(data, status, action);
+														}
+													}, function() {
+														if (typeof callbacks.save_error === 'function') {
+															callbacks.save_error(data, status, action);
+														}
+													});
+												} else {
 													if (typeof callbacks.save_success === 'function') {
 														callbacks.save_success(data, status, action);
 													}
-												}, function() {
-													if (typeof callbacks.save_error === 'function') {
-														callbacks.save_error(data, status, action);
-													}
-												});
-											} else {
-												if (typeof callbacks.save_success === 'function') {
-													callbacks.save_success(data, status, action);
 												}
-											}
-										}, function() {
-											$this.removeClass('disabled');
-										});
-									}
+											}, function() {
+												$this.removeClass('disabled');
+											});
+										}
+									});
+
+								}
+
+							],);
+						}
+
+						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
+							if (dataMainUserCallflowModified && !formMainUserCallflowModified) {
+								monster.ui.confirm(self.i18n.active().callflows.user.call_routing.disable_warning, function() {
+
+									self.resetUserCallflow(data, function() {
+										mainUserCallflowReset = true;
+										continueSave();
+									});
+
 								});
-
+								return;
 							}
+						}
 
-						],);
+						continueSave();
+
 					} else {
 						$this.removeClass('disabled');
 						monster.ui.alert(self.i18n.active().callflows.user.there_were_errors_on_the_form);
@@ -1941,7 +2016,7 @@ define(function(require) {
 
 			if (findMeFollowMeEnabled) {
 				$ringTimeoutInput.prop('disabled', true);
-        		$ringTimeoutInput.addClass('input-readonly'); 	
+        		$ringTimeoutInput.addClass('input-readonly');
 			} 
 			
 			user_html.find('.smart-pbx-find-me-follow-me').on('change', function(event) {
@@ -1967,6 +2042,75 @@ define(function(require) {
 					$ringTimeoutInput.prop('disabled', false);
         			$ringTimeoutInput.removeClass('input-readonly');
 				}
+			});
+
+			user_html.find('.modify-main-user-callflow').on('change', function() {
+				var state = $('.modify-main-user-callflow select[name="dimension.main_user_callflow_modified"]').val(),
+					dataMainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true;
+
+				if (state == 'true') {	
+					$('#call_routing_user', user_html).hide();
+					$('#call_routing_manual', user_html).show();
+				} else {
+					$('#call_routing_user', user_html).show();
+					$('#call_routing_manual', user_html).hide();
+
+					if (dataMainUserCallflowModified) {
+						$('#ring_timeout', user_html).val(20);
+					}
+				}
+			});
+
+			$('.edit-user-callflow', user_html).click(function(ev) {
+
+				ev.preventDefault();
+
+				// check if user callflow exists
+				var userCallflow = data.field_data && data.field_data.user_callflow;
+
+				if (!userCallflow) {
+					monster.ui.alert('warning', self.i18n.active().oldCallflows.this_callflow_has_not_been_created);
+					return;
+				}
+
+				var callflowId = userCallflow.id;
+
+				// load mainUserCallflow editor popup
+				monster.pub('callflows.callflow.popupEdit', {
+					data: { id: callflowId }
+				});
+
+			});
+
+			$('.reset-user-callflow', user_html).click(function(ev) {
+
+				ev.preventDefault();
+
+				monster.ui.confirm(self.i18n.active().callflows.user.user_callflow.confirm_reset, function() {
+
+					// check if user callflow exists
+					var userCallflow = data.field_data && data.field_data.user_callflow;
+
+					if (!userCallflow) {
+						monster.ui.alert('warning', self.i18n.active().oldCallflows.this_callflow_has_not_been_created);
+						return;
+					}
+
+					self.resetUserCallflow(data, function() {
+
+						var $parent = user_html.parent();
+
+						// refresh form data after reset
+						self.userEdit({
+							data: { id: data.data.id },
+							parent: $parent,
+							target: $parent
+						});
+
+					});
+
+				});
+
 			});
 
 			$(user_html).delegate('.action_device.edit', 'click', function() {
@@ -2523,7 +2667,9 @@ define(function(require) {
 			if (data.caller_id_options.outbound_privacy === 'default') {
 				delete data.caller_id_options;
 			}
-			
+
+			// add support for mainUserCallflowModified
+			data.dimension.main_user_callflow_modified = data.dimension.main_user_callflow_modified === "true"
 
 			return data;
 		},
@@ -2681,6 +2827,69 @@ define(function(require) {
 					callback && callback();
 				}
 			});
+		},
+
+		resetUserCallflow: function(data, callback) {
+
+			var self = this;
+
+			var owner_id = data.data.id,
+				presence_id = data.data.presence_id,
+				userCallflow = data.field_data.user_callflow;
+
+			self.callApi({
+				resource: 'voicemail.list',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						paginate: false,
+						filter_owner_id: owner_id,
+						filter_mailbox: presence_id
+					}
+				},
+				success: function(_data, status) {
+					
+					var list = _data.data || [],
+						mailbox = list.length > 0 ? list[0] : null;
+
+					var callflow = {
+						contact_list: {
+							exclude: false
+						},
+						flow: {
+							children: {},
+							data: {
+								id: data.data.id,
+								can_call_self: false,
+								timeout: 20
+							},
+							module: 'user'
+						},
+						name: userCallflow.name,
+						numbers: userCallflow.numbers,
+						owner_id: data.data.id,
+						id: userCallflow.id,
+						type: 'mainUserCallflow',
+						ui_metadata: userCallflow.ui_metadata
+					};
+
+					if (mailbox) {
+						callflow.flow.children._ = {
+							children: {},
+							data: {
+								id: mailbox.id
+							},
+							module: 'voicemail'
+						};
+					}
+
+					self.usersUpdateCallflow(callflow, function() {
+						callback();
+					});
+	
+				}
+			});
+
 		},
 
 		usersExtractDataFromCallflow: function(args) {
