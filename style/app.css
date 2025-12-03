@@ -2729,6 +2729,11 @@
 	cursor: grabbing;
 }
 
+.shoutcast-warning {
+	padding-top: 20px;
+	width: 880px;
+}
+
 /* hide monster alert warning triangle and header */
 /*
 .alert-dialog .dialog-content .dialog-header,
