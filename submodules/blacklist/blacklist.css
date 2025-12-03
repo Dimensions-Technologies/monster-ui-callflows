@@ -71,9 +71,7 @@
 	display: inherit;
 }
 
-#blacklist_wrapper .help-text-icon {
-	color: white;
-	margin-right: 10px;
-	margin-left: 100px;
-	margin-top :15px;
+#blacklist_wrapper .help-text {
+	width: 400px;
+	margin-left: 110px;
 }

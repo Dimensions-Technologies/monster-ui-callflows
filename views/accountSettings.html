@@ -272,13 +272,12 @@
 								<button type="button" class="monster-button-success upload-action upload-submit"><i class="fa fa-upload"></i></button>
 								<button type="button" class="monster-button-danger upload-action upload-cancel"><i class="fa fa-times"></i></button>
 							{{#if showMediaUploadDisclosure}}
-								<div>
+								<div class="media_upload_disclosure">
 									<br>
-									{{#monsterPanelText i18n.mediaUploadDisclosure.title "info" "fill-width"}}
-										{{i18n.mediaUploadDisclosure.text}}
-									{{/monsterPanelText}}
-									<br>
-								</div>
+									{{#monsterText}}
+										{{i18n.callflows.media.mediaUploadDisclosure.text}}
+									{{/monsterText}}
+								</div>	
 							{{/if}}
 							</div>
 						</div>
