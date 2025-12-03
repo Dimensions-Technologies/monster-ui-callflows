@@ -279,10 +279,10 @@
 #directoryDeletedMessage .help-box,
 #tagDeletedMessage .help-box,
 #pivotFallbackMessage .help-box {
-	width: 304px !important;
-	margin: 0 auto !important;
-	margin-top: 10px !important;
-	margin-bottom: 10px !important;
+	width: 304px;
+	margin: 0 auto;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 .dialog_popup.callflows-port.callflow-action-form #pivot_voiceurl_input {
