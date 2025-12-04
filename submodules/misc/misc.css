@@ -186,8 +186,8 @@
 }
 
 #missed_call_alert_popup form {
-	margin-bottom: 0;
-	margin-top: 20px;
+	margin-bottom: 0px;
+	margin-top: 0px;
 }
 
 /* Set CAV */
@@ -280,6 +280,13 @@
 #tagDeletedMessage .help-box,
 #pivotFallbackMessage .help-box {
 	width: 304px;
+	margin: 0 auto;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+#missed_call_alert_popup .help-box {
+	width: 424px;
 	margin: 0 auto;
 	margin-top: 10px;
 	margin-bottom: 10px;
