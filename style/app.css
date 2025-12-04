@@ -2103,10 +2103,22 @@
 	display: none;
 }
 
-.media-edit-callflow-popup .shoutcast-div.active,
-#callflow_container .account-settings-container .shoutcast-div.active {
+.media-edit-callflow-popup .shoutcast-div.active {
 	display: block;
 	padding-left: 20px;
+}
+
+#callflow_container .account-settings-container .shoutcast-div.active {
+	display: block;
+	padding-left: 0px;
+}
+
+#callflow_container .account-settings-container .shoutcast-div.active .shoutcast-url-input {
+	width: 210px;
+}
+
+#callflow_container .account-settings-container .shoutcast-div.active .shoutcast-warning {
+	padding-left: 78px;
 }
 
 /* Blacklist part */
@@ -2732,6 +2744,7 @@
 
 .shoutcast-warning {
 	padding-top: 20px;
+	padding-bottom: 20px;
 	width: 880px;
 }
 
@@ -2741,6 +2754,16 @@
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
+
+.callflow-action-info-text {
+	color: #303039;
+    font-size: 12px;
+    line-height: 20px;
+    padding: 5px 30px 20px 30px;
+    text-align: justify;
+}
+
+
 
 /* hide monster alert warning triangle and header */
 /*

@@ -15,9 +15,11 @@
 				</div>
 			</div>
 		</div>
-		{{#monsterPanelText i18n.callflows.after_bridge.warning 'warning' 'fill-width'}}
-			{{{ i18n.callflows.after_bridge.warning_dialog.message }}}
-		{{/monsterPanelText}}
+		<div class="help-text">
+			{{#monsterText}}
+				{{{ i18n.callflows.after_bridge.warning_dialog.message }}}
+			{{/monsterText}}
+		</div>
 	</form>
 	<div class="buttons-center">
 		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>

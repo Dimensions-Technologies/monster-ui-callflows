@@ -39,6 +39,7 @@
 			"category": "After Bridge",
 			"park": {
 				"nodeName": "After Bridge: <br> Park",
+				"dialog_title": "After Bridge: Park",
 				"tooltip": "Allow park on the caller after the bridge is terminated.",
 				"action": "Park"
 			},
@@ -51,6 +52,7 @@
 			},
 			"hangup": {
 				"nodeName": "After Bridge: <br> Hangup",
+				"dialog_title": "After Bridge: Hangup",
 				"tooltip": "Allow hangup on the caller after the bridge is terminated."
 			},
 			"warning_dialog": {
