@@ -2669,8 +2669,10 @@ define(function(require) {
 			}
 
 			// add support for mainUserCallflowModified
-			data.dimension.main_user_callflow_modified = data.dimension.main_user_callflow_modified === "true"
-
+			if (data.dimension && data.dimension.hasOwnProperty('main_user_callflow_modified')) {
+				data.dimension.main_user_callflow_modified = data.dimension.main_user_callflow_modified === "true";
+			}
+			
 			return data;
 		},
 
