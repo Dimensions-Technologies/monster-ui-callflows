@@ -1955,7 +1955,7 @@
 	width: -webkit-calc(100% - 241px);
 	width: -moz-calc(100% - 241px);
 	width: -o-calc(100% - 241px);
-	width: calc(100%-241px);
+	width: calc(100% - 241px);
 }
 
 #callflow_container .entity-header {
@@ -1972,7 +1972,7 @@
 	width: -webkit-calc(100% - 241px);
 	width: -moz-calc(100% - 241px);
 	width: -o-calc(100% - 241px);
-	width: calc(100%-241px);
+	width: calc(100% - 241px);
 	z-index: 100;
 }
 
@@ -2500,6 +2500,21 @@
 .media_upload_disclosure {
 	width: 580px;
 	margin-left: 78px;
+}
+
+#media-form .player_file.media-player {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-left: 140px;
+	margin-top: 20px;
+}
+
+#media-form .player_file.media-player .media-progress {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-left: 30px;
 }
 
 /* branch variable */
