@@ -593,6 +593,8 @@
 			"tts": "TTS",
 			"file_input": "File input",
 			"change_file": "Change File",
+			"play_file": "Play",
+			"pause_file": "Pause",
 			"download_file": "Download File",
 			"text": "Text",
 			"text_placeholder": "Text To Speech",
