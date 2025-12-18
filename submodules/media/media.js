@@ -596,11 +596,6 @@ define(function(require) {
 				after_render: function() {
 					popup = monster.ui.dialog(popup_html, {
 						title: (data.id) ? self.i18n.active().callflows.media.edit_media : self.i18n.active().callflows.media.create_media,
-						close: function() {
-							if (typeof window.cleanupMediaPlayer === 'function') {
-								window.cleanupMediaPlayer();
-							}
-						}
 					});
 				}
 			}, data_defaults);
