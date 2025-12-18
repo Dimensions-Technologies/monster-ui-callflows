@@ -1834,14 +1834,13 @@ define(function(require) {
 						}
 
 						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
+							// routing type changed from manually configured to user based on form - show confirm dialog
 							if (dataMainUserCallflowModified && !formMainUserCallflowModified) {
 								monster.ui.confirm(self.i18n.active().callflows.user.call_routing.disable_warning, function() {
-
 									self.resetUserCallflow(data, function() {
 										mainUserCallflowReset = true;
 										continueSave();
 									});
-
 								});
 								return;
 							}
@@ -2097,15 +2096,6 @@ define(function(require) {
 					}
 
 					self.resetUserCallflow(data, function() {
-
-						var $parent = user_html.parent();
-
-						// refresh form data after reset
-						self.userEdit({
-							data: { id: data.data.id },
-							parent: $parent,
-							target: $parent
-						});
 
 					});
 
@@ -2886,7 +2876,7 @@ define(function(require) {
 					}
 
 					self.usersUpdateCallflow(callflow, function() {
-						callback();
+						callback(null);
 					});
 	
 				}
