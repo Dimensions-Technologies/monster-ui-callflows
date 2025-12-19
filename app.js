@@ -2384,11 +2384,14 @@ define(function(require) {
 
 			// check if the action is a webhook or pivot and adjust the caption logic
 			if (json.module == 'webhook' && json.data.hasOwnProperty('dimension')) {
-				var callTagCaption = json.data.dimension.name + ': ' + json.data.dimension.tagValue
-				branch.caption = callTagCaption;
+				var nodeCaption = json.data.dimension.name + ': ' + json.data.dimension.tagValue
+				branch.caption = nodeCaption;
 			} else if (json.module == 'pivot' && json.data.hasOwnProperty('dimension')) {
-				var callTagCaption = json.data.dimension.name
-				branch.caption = callTagCaption;
+				var nodeCaption = json.data.dimension.name
+				branch.caption = nodeCaption;
+			} else if (json.module == 'resources' && json.data.id == 'resources_to_did') {
+				var nodeCaption = json.data.to_did
+				branch.caption = nodeCaption;
 			} else {
 				branch.caption = self.actions.hasOwnProperty(branch.actionName) ? self.actions[branch.actionName].caption(branch, self.flow.caption_map) : '';
 			}
@@ -3643,6 +3646,11 @@ define(function(require) {
 					{
 						type: 'dimensionsDirectoryRouting',
 						actionName: 'dimensionsDirectoryRouting[id=*]'
+					},
+					// custom resource actions
+					{
+						type: 'resources_to_did',
+						actionName: 'resources_to_did[id=*]'
 					}
 				];
 				
@@ -3671,9 +3679,8 @@ define(function(require) {
 				});
 
 				// re-render action on load or after save
-				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]' || branch.actionName == 'webhook[]' || branch.actionName == 'pivot[]') {
-					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
-					
+				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]' || branch.actionName == 'webhook[]' || branch.actionName == 'pivot[]' || branch.actionName == 'resources[]') {
+					if (self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
 						// Check if the branch id is contained within the flags array
 						self.dataCallflow.dimension.flags.forEach(function(flag) {
 							var branchId = null,
