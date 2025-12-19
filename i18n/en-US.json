@@ -1325,6 +1325,18 @@
 			}
 		},
 
+		"to_did": {
+			"title": "To DID",
+			"name": "To DID",
+			"tip": "Allows you to send a call directly to an external number",
+			"number": {
+				"label": "Number"
+			},
+			"noMatchError": "This action can't be added as there has been an issue finding the no_match callflow on this account.",
+			"ring_this_number_for": "Ring this number for",
+			"seconds": "seconds."
+		},
+
 		"__comment": "UI-439: adding sleep to adv. callflows",
 		"__version": "v4.0",
 		"pageGroup": {
