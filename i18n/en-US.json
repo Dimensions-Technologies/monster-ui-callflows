@@ -1052,7 +1052,8 @@
 					"mac_address": "MAC Address",
 					"status": "Status"
 				}
-			}
+			},
+			"unavailable_message": "The person you are calling is currently unavailable, please try again later."
 		},
 		"vmbox": {
 			"voicemail": "Voicemail",
