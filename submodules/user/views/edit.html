@@ -601,6 +601,50 @@
 						</div>
 					</div>
 
+					<hr />
+
+					<h3>{{ i18n.callflows.user.missed_call_alert.title }}</h3>
+
+					<div id="missed_call_alert">
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.missed_call_alert.enable_missed_call_alert_content }}">
+												{{#if field_data.missed_call_alert_enabled}}
+													<input type="checkbox" id="missed_call_alert_enabled" name="missed_call_alert.enabled" checked="checked" rel="popover" data-content=""/>
+												{{else}}
+													<input type="checkbox" id="missed_call_alert_enabled" name="missed_call_alert.enabled" rel="popover" data-content=""/>
+												{{/if}}
+												<span>{{ i18n.callflows.user.missed_call_alert.enable }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.user.missed_call_alert.internal_missed_call_alert_content }}">
+												{{#if field_data.missed_call_alert_internal}}
+													<input type="checkbox" id="missed_call_alert_internal" name="missed_call_alert.internal" checked="checked" rel="popover" data-content=""/>
+												{{else}}
+													<input type="checkbox" id="missed_call_alert_internal" name="missed_call_alert.internal" rel="popover" data-content=""/>
+												{{/if}}
+												<span>{{ i18n.callflows.user.missed_call_alert.internal }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
 					{{#if miscSettings.enableModifyMainUserCallflow}}
 						<hr />
 
@@ -845,6 +889,50 @@
 				</div>
 				{{/unless}}
 
+				{{#unless miscSettings.userShowCallRoutingTab}}
+					<hr />
+
+					<h3>{{ i18n.callflows.user.missed_call_alert.title }}</h3>
+
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.missed_call_alert.enable_missed_call_alert_content }}">
+											{{#if field_data.missed_call_alert_enabled}}
+												<input type="checkbox" id="missed_call_alert_enabled" name="missed_call_alert.enabled" checked="checked" rel="popover" data-content=""/>
+											{{else}}
+												<input type="checkbox" id="missed_call_alert_enabled" name="missed_call_alert.enabled" rel="popover" data-content=""/>
+											{{/if}}
+											<span>{{ i18n.callflows.user.missed_call_alert.enable }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="clearfix">
+						<div class="input">
+							<ul class="inputs-list">
+								<li>
+									<label>
+										<span rel="popover" data-content="{{ i18n.callflows.user.missed_call_alert.internal_missed_call_alert_content }}">
+											{{#if field_data.missed_call_alert_internal}}
+												<input type="checkbox" id="missed_call_alert_internal" name="missed_call_alert.internal" checked="checked" rel="popover" data-content=""/>
+											{{else}}
+												<input type="checkbox" id="missed_call_alert_internal" name="missed_call_alert.internal" rel="popover" data-content=""/>
+											{{/if}}
+											<span>{{ i18n.callflows.user.missed_call_alert.internal }}</span>
+										</span>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
+				{{/unless}}
+					
 			</div>
 			
 			{{#unless miscSettings.userShowCallRoutingTab}}

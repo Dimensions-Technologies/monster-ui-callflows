@@ -954,6 +954,11 @@ define(function(require) {
 				if (userCallflow) {
 					data.field_data.user_ring_timeout_current = self.userCallflowGetRingTimeout(userCallflow, findMeFollowMeEnabled);
 					data.field_data.user_ring_timeout = data.field_data.user_ring_timeout_current;
+					
+					var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
+
+					data.field_data.missed_call_alert_enabled = !!missedCallNode;
+					data.field_data.missed_call_alert_internal = !!(missedCallNode && missedCallNode.alert_on_internal_calls);
 				}
 
 				user_html = $(self.getTemplate({
@@ -1523,7 +1528,9 @@ define(function(require) {
 							findMeFollowMe = form_data.smartpbx.find_me_follow_me.enabled === "true",
 							callflowRingGroup = data.field_data.callflow_ring_group,
 							ringGroup = data.field_data.ring_group,
-							mainUserCallflowReset = false;
+							mainUserCallflowReset = false,
+							missedCallAlertEnabled = $('#missed_call_alert_enabled', user_html).is(':checked'),
+							missedCallAlertInternalEnabled = $('#missed_call_alert_internal', user_html).is(':checked');
 
 						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
 							var dataMainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true,
@@ -1582,6 +1589,53 @@ define(function(require) {
 							}
 
 							monster.waterfall([
+
+								function(callback) {
+
+									if (!userCallflow || !userCallflow.flow) {
+										return callback(null);
+									}
+
+									var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
+
+									// disable missed call alert
+									if (!missedCallAlertEnabled) {
+										if (!missedCallNode) {
+											return callback(null);
+										}
+
+										self.userCallflowDisableMissedCallAlert(userCallflow);
+
+										return self.userUpdateCallflow(userCallflow, callback, function() {
+											callback(null);
+										});
+									}
+
+									// enable missed call alert
+									if (!missedCallNode) {
+										self.userCallflowEnableMissedCallAlert(userCallflow, {
+											alert_on_internal_calls: !!missedCallAlertInternalEnabled
+										});
+
+										return self.userUpdateCallflow(userCallflow, callback, function() {
+											callback(null);
+										});
+									}
+
+									// update alert on internal calls 
+									var currentInternal = !!(missedCallNode && missedCallNode.alert_on_internal_calls);
+
+									if (currentInternal === !!missedCallAlertInternalEnabled) {
+										return callback(null);
+									}
+
+									missedCallNode = missedCallNode || {};
+									missedCallNode.alert_on_internal_calls = !!missedCallAlertInternalEnabled;
+
+									return self.userUpdateCallflow(userCallflow, callback, function() {
+										callback(null);
+									});
+								},
 
 								function(callback) {
 									
@@ -2029,6 +2083,25 @@ define(function(require) {
 
 			});
 
+			function missedCallAlertState() {
+
+				var missedCallAlertEnabled  = user_html.find('#missed_call_alert_enabled'),
+					missedCallInternal = user_html.find('#missed_call_alert_internal'),
+					enabled = missedCallAlertEnabled.is(':checked');
+
+				if (!enabled) {
+					missedCallInternal.prop('disabled', true).toggleClass('input-readonly', true);
+					missedCallInternal.prop('checked', false);
+				} else {
+					missedCallInternal.prop('disabled', false).toggleClass('input-readonly', false);
+				}
+
+			}
+
+			missedCallAlertState();
+
+			$('#missed_call_alert_enabled', user_html).on('change', missedCallAlertState);
+		
 			var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true;
 			const $ringTimeoutInput = $(user_html).find('#ring_timeout');
 
@@ -3074,6 +3147,60 @@ define(function(require) {
 					callback(null);
 				}
 			});
+		},
+
+		userCallflowHasMissedCallAlert: function(callflow) {
+			var flow = _.get(callflow, 'flow');
+
+			if (!flow || flow.module !== 'missed_call_alert') {
+				return null;
+			}
+
+			return flow.data;
+		},
+		
+		userCallflowEnableMissedCallAlert: function(callflow, opts) {
+			if (callflow.flow.module === 'missed_call_alert') { 
+				return callflow; 
+			}
+
+			opts = opts || {};
+
+			var oldRoot = _.cloneDeep(callflow.flow);
+
+			callflow.flow = {
+				module: 'missed_call_alert',
+				data: {
+					recipients: [
+						{
+							type: 'user',
+							id: callflow.owner_id
+						}
+					],
+					alert_on_internal_calls: !!opts.alert_on_internal_calls
+				},
+				children: {
+					_: oldRoot
+				}
+			};
+
+			return callflow;
+		},
+
+		userCallflowDisableMissedCallAlert: function(callflow) {
+			if (callflow.flow.module !== 'missed_call_alert') { 
+				return callflow; 
+			}
+
+			var child = _.get(callflow, 'flow.children._');
+			
+			if (!child) { 
+				return callflow; 
+			}
+
+			callflow.flow = child;
+
+			return callflow;
 		},
 
 		userSubmoduleButtons: function(data) {

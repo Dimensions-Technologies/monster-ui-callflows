@@ -1053,7 +1053,14 @@
 					"status": "Status"
 				}
 			},
-			"unavailable_message": "The person you are calling is currently unavailable, please try again later."
+			"unavailable_message": "The person you are calling is currently unavailable, please try again later.",
+			"missed_call_alert": {
+				"title": "Missed Call Alert Settings",
+				"enable": "Enable Missed Call Alert",
+				"enable_missed_call_alert_content": "If checked, the missed call alert feature will be enabled for user.",
+				"internal": "Alert on internal calls",
+				"internal_missed_call_alert_content": "If checked, include internal calls when triggering missed call alerts."
+			}
 		},
 		"vmbox": {
 			"voicemail": "Voicemail",
