@@ -1039,7 +1039,8 @@
 					"enabled": "Enabled",
 					"disabled": "Disabled"
 				},
-				"warning": "Note: Find Me Follow Me settings will be updated based on the Presence Profile selected by the user"
+				"warning": "Note: Find Me Follow Me settings will be updated based on the Presence Profile selected by the user",
+				"can_not_save": "Cannot save settings. <br> Find Me Follow Me is enabled, but no devices have been configured."
 			},
 			"hotdesk": {
 				"title": "Hotdesk Settings",

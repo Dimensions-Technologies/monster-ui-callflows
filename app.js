@@ -1379,6 +1379,7 @@ define(function(require) {
 				const hasFeatureIcon =
 					(entity.features || []).includes('do_not_disturb') ||
 					(entity.features || []).includes('voicemail') ||
+					(entity.features || []).includes('find_me_follow_me') ||
 					(entity.features || []).includes('call_forward') ||
 					(entity.features || []).includes('caller_id') ||
 					(entity.features || []).includes('hotdesk') ||
@@ -1392,7 +1393,7 @@ define(function(require) {
 					hasFeatureIcon ? '<span style="margin-left: 4px; margin-right: 0;">-</span>'	: '',
 					(entity.features || []).includes('do_not_disturb') ? '<span class="material-symbols-user-state icon-do-not-disturb" title="Do Not Disturb">do_not_disturb_on</span>' : '',
 					(entity.features || []).includes('voicemail') ? '<span class="material-symbols-user-state icon-voicemail" title="Voicemail">voicemail</span>' : '',
-					(entity.features || []).includes('call_forward') ? ' <span class="material-symbols-user-state icon-find-me-follow-me" title="Find Me Follow Me">alt_route</span>' : '',
+					(entity.features || []).includes('find_me_follow_me') ? ' <span class="material-symbols-user-state icon-find-me-follow-me" title="Find Me Follow Me">alt_route</span>' : '',
 					(entity.features || []).includes('call_forward') ? ' <span class="material-symbols-user-state icon-forward" title="Call Forward">phone_forwarded</span>' : '',
 					(entity.features || []).includes('caller_id') ? ' <span class="material-symbols-user-state icon-caller-id" title="Caller ID">outbound</span>' : '',
 					(entity.features || []).includes('hotdesk') ? ' <span class="material-symbols-user-state icon-hotdesk" title="Hotdesk">desk</span>' : '',
