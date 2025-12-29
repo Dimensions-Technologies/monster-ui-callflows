@@ -422,7 +422,7 @@
 					<div class="clearfix">
 						<label for="ring_timeout">{{ i18n.callflows.user.ringing_timeout }}</label>
 						<div class="input ring-timeout">
-							<input disabled class="span4 input-readonly" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_callflow.flow.data.timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_fmfm_help }}"/>
+							<input disabled class="span4 input-readonly" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_ring_timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_fmfm_help }}"/>
 							{{#unless miscSettings.userRingTimeoutPresenceProfileHelp}}
 							<div class="information-text">{{ i18n.callflows.user.ringing_timeout_disabled_help1 }}</div>
 							{{/unless}}
@@ -639,7 +639,7 @@
 						<div class="clearfix">
 							<label for="ring_timeout">{{ i18n.callflows.user.ringing_timeout }}</label>
 							<div class="input ring-timeout">
-								<input class="span4" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_callflow.flow.data.timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_fmfm_help }}"/>
+								<input class="span4" id="ring_timeout" name="ring_timeout" type="number" min="10" step="1" max="120" value="{{field_data.user_ring_timeout}}" rel="popover" data-content="{{ i18n.callflows.user.ringing_timeout_fmfm_help }}"/>
 								{{#unless miscSettings.userRingTimeoutPresenceProfileHelp}}
 								<div class="information-text">{{ i18n.callflows.user.ringing_timeout_disabled_help1 }}</div>
 								{{/unless}}

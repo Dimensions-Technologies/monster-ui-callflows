@@ -882,7 +882,13 @@ define(function(require) {
 							defaults.field_data.user_callflow = userCallflow.data;
 
 							if (defaults.field_data.callflow_features.includes("ring_group")) {
-								defaults.field_data.callflow_ring_group = userCallflow.data.flow.data;
+								//defaults.field_data.callflow_ring_group = userCallflow.data.flow.data;
+								var ringGroupNode = self.userCallflowGetNode({
+										callflow: userCallflow.data,
+										module: 'ring_group'
+									});
+
+								defaults.field_data.callflow_ring_group = ringGroupNode.data;
 							}
 
 							self.userRender(render_data, target, callbacks);
@@ -941,7 +947,15 @@ define(function(require) {
 				else {
 					allowAddingExternalCallerId = true
 				}
-				
+
+				var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
+					userCallflow = data?.field_data?.user_callflow;
+
+				if (userCallflow) {
+					data.field_data.user_ring_timeout_current = self.userCallflowGetRingTimeout(userCallflow, findMeFollowMeEnabled);
+					data.field_data.user_ring_timeout = data.field_data.user_ring_timeout_current;
+				}
+
 				user_html = $(self.getTemplate({
 					name: 'edit',
 					data: _.merge({
@@ -989,7 +1003,7 @@ define(function(require) {
 			user_html.find('.ring-timeout').on('change', function(event) {
 
 				if (data.field_data.user_callflow != null) {
-					timeoutReset = data.field_data.user_callflow.flow.data.timeout
+					timeoutReset = data.field_data.user_ring_timeout_current
 				} else {
 					timeoutReset = 30
 				}
@@ -1189,7 +1203,15 @@ define(function(require) {
 
 					if (findMeFollowMeEnabled && userCallflow) {
 						$('#tab_find_me_follow_me', user_html).show();
-						data.field_data.ring_group = userCallflow.flow.data;
+						//data.field_data.ring_group = userCallflow.flow.data;
+
+						var ringGroupNode = self.userCallflowGetNode({
+							callflow: userCallflow,
+							module: 'ring_group'
+						});
+
+						data.field_data.ring_group = ringGroupNode.data;
+
 						self.usersRenderFindMeFollowMe(data, data.field_data.device_list, user_html);
 					}
 
@@ -1491,6 +1513,7 @@ define(function(require) {
 							formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
 							userCallflow = data.field_data.user_callflow,
 							userVoicemail = form_data.user_voicemail,
+							currentRingTimeout = data.field_data.user_ring_timeout_current,
 							ringTimeout = parseInt(form_data.ring_timeout, 10),
 							findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 							findMeFollowMe = form_data.smartpbx.find_me_follow_me.enabled === "true",
@@ -1501,6 +1524,15 @@ define(function(require) {
 						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
 							var dataMainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true,
 								formMainUserCallflowModified = form_data.dimension.main_user_callflow_modified === "true";
+						}
+
+						// show warning message opposed to error if find me follow me is enabled but no devices are set to ring
+						if (findMeFollowMe) {
+							var endpoints = Array.isArray(ringGroup && ringGroup.endpoints) ? ringGroup.endpoints : [];
+							if (endpoints.length === 0) {
+								monster.ui.alert('warning', self.i18n.active().callflows.user.find_me_follow_me.can_not_save);
+								return
+							}
 						}
 
 						function continueSave() {
@@ -1546,80 +1578,6 @@ define(function(require) {
 							}
 
 							monster.waterfall([
-					
-								function(callback) {
-									// voicemail update function 
-									if (userCallflow != null) {
-
-										var voicemailFormValue,
-											voicemailEnabled;
-			
-										if (userVoicemail == 'enabled') {
-											voicemailFormValue = true
-										} else {
-											voicemailFormValue = false
-										}
-			
-										if (field_data.callflow_features.includes('voicemail')) {
-											voicemailEnabled = true
-										} else {
-											voicemailEnabled = false
-										}
-			
-										// skip mainUserCallflow is being rest
-										if (!mainUserCallflowReset) {
-											// check if there is a difference between the current state and form state
-											if (voicemailEnabled != voicemailFormValue ) {
-												if (miscSettings.enableConsoleLogging) {
-													console.log('Setting Voicemail State:', userVoicemail);
-												}
-												self.usersUpdateVMBoxStatusInCallflow({
-													callflow: userCallflow,
-													enabled: voicemailFormValue,
-													ringTimeout: ringTimeout
-												}, callback);
-											} else {
-												if (findMeFollowMe == false && userCallflow.flow.data.timeout != ringTimeout) {
-													if (miscSettings.enableConsoleLogging) {
-														console.log('Updating Callflow Timeout:', ringTimeout);
-													}
-													self.callApi({
-														resource: 'callflow.patch',
-														data: {
-															accountId: self.accountId,
-															callflowId: userCallflow.id,
-															data: {
-																flow: {
-																	data: { 
-																		timeout: ringTimeout
-																	}
-																},
-																ui_metadata: {
-																	origin: 'voip'
-																}
-															},
-															removeMetadataAPI: true
-														},
-														success: function(_callflow_update) {
-															if (miscSettings.enableConsoleLogging) {
-																console.log('User Callflow Updated', _callflow_update)
-															}
-															callback(null);
-														}
-													})
-												} else {
-													callback(null)
-												}
-											}
-										} else {
-											callback(null)
-										}
-										
-									} else {
-										callback(null)
-									}
-
-								},
 
 								function(callback) {
 									
@@ -1741,11 +1699,68 @@ define(function(require) {
 										flow.module = callflowNode.module;
 										flow.data = callflowNode.data;
 
-										self.usersUpdateCallflow(userCallflow, callback, function() {
+										self.userUpdateCallflow(userCallflow, callback, function() {
 											callback(null);
 										});
 									} else {
 										callback(null);
+									}
+
+								},
+					
+								function(callback) {
+									// voicemail update function - do this after updating find me follow me
+									if (userCallflow != null) {
+
+										var voicemailFormValue,
+											voicemailEnabled;
+			
+										if (userVoicemail == 'enabled') {
+											voicemailFormValue = true
+										} else {
+											voicemailFormValue = false
+										}
+			
+										if (field_data.callflow_features.includes('voicemail')) {
+											voicemailEnabled = true
+										} else {
+											voicemailEnabled = false
+										}
+
+										// skip mainUserCallflow is being reset
+										if (!mainUserCallflowReset) {
+
+											var ringTimeoutChanged = ringTimeout !== currentRingTimeout,
+												voicemailChanged = voicemailEnabled != voicemailFormValue;
+
+											if (voicemailChanged || (findMeFollowMe == false && ringTimeoutChanged)) {
+
+												if (miscSettings.enableConsoleLogging) {
+													console.log('Updating Voicemail/Timeout:', {
+														voicemailChanged: voicemailChanged,
+														ringTimeoutChanged: ringTimeoutChanged,
+														ringTimeout: ringTimeout,
+														currentRingTimeout: currentRingTimeout
+													});
+												}
+												
+												// updates voicemail skip_module (if needed) and sets timeout on the user node
+												self.usersUpdateVMBoxStatusInCallflow({
+													callflow: userCallflow,
+													enabled: voicemailFormValue,
+													ringTimeout: ringTimeout
+												}, callback);
+
+											} else {
+												callback(null);
+											}
+
+										} else {
+											callback(null);
+										}
+
+									} else {
+										callback(null)
 									}
 
 								},
@@ -1878,7 +1893,7 @@ define(function(require) {
 			});
 
 			$('.inline_action_vmbox', user_html).click(function(ev) {
-				var flow = self.usersExtractDataFromCallflow({
+				var flow = self.userCallflowGetNode({
 					callflow: data.field_data.user_callflow,
 					module: 'voicemail'
 					})
@@ -2030,7 +2045,24 @@ define(function(require) {
 		
 						if (userCallflow) {
 							$('#tab_find_me_follow_me', user_html).show(); // show find me follow me table
-							data.field_data.ring_group = userCallflow.flow.data;
+							
+							var ringGroupNode = self.userCallflowGetNode({
+								callflow: userCallflow,
+								module: 'ring_group'
+							});
+
+							data.field_data.ring_group = ringGroupNode
+								? ringGroupNode.data
+								: {
+									strategy: 'simultaneous',
+									timeout: 30,
+									repeats: 1,
+									ignore_forward: true,
+									endpoints: []
+								};
+
+							//data.field_data.ring_group = userCallflow.flow.data;
+
 							self.usersRenderFindMeFollowMe(data, deviceList, user_html);
 						}
 					});
@@ -2875,7 +2907,7 @@ define(function(require) {
 						};
 					}
 
-					self.usersUpdateCallflow(callflow, function() {
+					self.userUpdateCallflow(callflow, function() {
 						callback(null);
 					});
 	
@@ -2883,27 +2915,72 @@ define(function(require) {
 			});
 
 		},
+		
+		userCallflowGetRingTimeout: function(callflow, findMeFollowMeEnabled) {
+			var self = this;
 
-		usersExtractDataFromCallflow: function(args) {
-			var self = this,
-				flow = _.get(args, 'callflow.flow'),
-				cfModule = args.module;
+			var targetModule = findMeFollowMeEnabled === true ? 'ring_group' : 'user';
 
-			if (_.isNil(flow)) {
+			var node = self.userCallflowGetNode({
+				callflow: callflow,
+				module: targetModule
+			});
+
+			return _.get(node, 'data.timeout');
+		},
+
+		userCallflowSetRingTimeout: function(callflow, ringTimeout) {
+			var self = this;
+				
+			var userNode = self.userCallflowGetNode({
+				callflow: callflow,
+				module: 'user'
+			});
+
+			if (!userNode) {
+				return false;
+			}
+
+			userNode.data.timeout = ringTimeout;
+			return true;
+		},
+
+		userCallflowGetNode: function(args) {
+			var root = _.get(args, 'callflow.flow'),
+				targetModule = args.module,
+				dataPath = args.dataPath,
+				found;
+
+			if (!root) {
 				return undefined;
 			}
 
-			while (flow.module !== cfModule && _.has(flow.children, '_')) {
-				flow = flow.children._;
+			(function walk(node) {
+				if (!node || found) {
+					return;
+				}
+
+				if (node.module === targetModule) {
+					found = node;
+					return;
+				}
+
+				if (node.children && typeof node.children === 'object') {
+					_.each(node.children, function(child) {
+						walk(child);
+					});
+				}
+			})(root);
+
+			if (!found) {
+				return undefined;
 			}
 
-			if (flow.module !== cfModule) {
-				return undefined;
-			} else if (_.has(args, 'dataPath')) {
-				return _.get(flow, args.dataPath);
-			} else {
-				return flow;
+			if (!_.isNil(dataPath)) {
+				return _.get(found, dataPath);
 			}
+
+			return found;
 		},
 
 		usersUpdateVMBoxStatusInCallflow: function(args, callback) {
@@ -2912,25 +2989,27 @@ define(function(require) {
 				enabled = args.enabled,
 				ringTimeout = args.ringTimeout;
 
-			var flow = self.usersExtractDataFromCallflow({
+			var vmNode = self.userCallflowGetNode({
 				callflow: callflow,
 				module: 'voicemail'
 			});
-
-			if (flow) {
-				flow.data.skip_module = !enabled;
-				callflow.flow.data.timeout = ringTimeout;
-
-				self.usersUpdateCallflow(callflow, callback, function() {
-					callback(null);
-				});
-			} else {
-				callback(null);
+	
+			// toggle voicemail
+			if (vmNode) {
+				vmNode.data.skip_module = !enabled;
 			}
 
+			// set ring timeout on the user node
+			if (ringTimeout) {
+				self.userCallflowSetRingTimeout(callflow, ringTimeout);
+			}
+			
+			self.userUpdateCallflow(callflow, callback, function() {
+				callback && callback(null);
+			});
 		},
 
-		usersUpdateCallflow: function(callflow, callback) {
+		userUpdateCallflow: function(callflow, callback) {
 			var self = this;
 
 			self.callApi({
@@ -2992,7 +3071,7 @@ define(function(require) {
 
 			var scaleSections = 6,
 				scaleMaxSeconds = 120,
-				ringGroup = data.field_data.user_callflow.flow.data;
+				ringGroup = data.field_data.ring_group;
 			
 			var sliderTooltip = function(event, ui, deviceId) {
 				// update delay and timeout values in the respective columns
