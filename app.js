@@ -4623,7 +4623,19 @@ define(function(require) {
 
 			var validators = {
 				emailAddress: function(v) {
-					return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+					// basic shape: name@example.com
+					if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+						return false;
+					}
+					// no double dots anywhere
+					if (/\.\./.test(v)) {
+						return false;
+					}
+					// no leading dot, no trailing dot before @, no domain starting with dot
+					if (/^\.|\.@|@\./.test(v)) {
+						return false;
+					}
+					return true;
 				},
 
 				// E.164 or national-ish (matches your earlier patterns: +441234..., 01234..., allows spaces () . -)

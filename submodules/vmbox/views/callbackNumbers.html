@@ -3,5 +3,9 @@
 	<span class="number">{{ number }}</span>
 	<span class="interval">{{ interval }}s</span>
 	<span class="attempts">{{ attempts }}</span>
-	<a href="javascript:void(0);" class="delete-callback">Delete</a>
+	{{#if miscSettings.enableGoogleIcons}}
+		<a class="delete-callback material-symbols-icon-delete" href="javascript:void(0);">clear</a>
+	{{else}}
+		<a class="delete-callback icon medium trash" href="javascript:void(0);"></a>
+	{{/if}}
 </li>

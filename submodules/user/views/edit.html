@@ -663,7 +663,11 @@
 							</div>
 						</div>
 
-						<div id="missed_call_email_override_section"></div>
+						<div class="clearfix">
+							<div class="input">
+								<div id="missed_call_email_editor_section"></div>
+							</div>
+						</div>
 
 					</div>
 
@@ -955,25 +959,30 @@
 					</div>
 
 					<div class="clearfix">
-							<div class="input">
-								<ul class="inputs-list">
-								<li>
-									<label>
-										<span rel="popover" data-content="{{ i18n.callflows.user.missed_call_alert.override_recipients_content }}">
-											{{#if field_data.missed_call_alert_email_override}}
-											<input type="checkbox" id="missed_call_alert_email_override" name="missed_call_alert.email_override" checked="checked" rel="popover" data-content=""/>
-											{{else}}
-											<input type="checkbox" id="missed_call_alert_email_override" name="missed_call_alert.email_override" rel="popover" data-content=""/>
-											{{/if}}
-											<span>{{ i18n.callflows.user.missed_call_alert.override_recipients }}</span>
-										</span>
-									</label>
-								</li>
-								</ul>
-							</div>
+						<div class="input">
+							<ul class="inputs-list">
+							<li>
+								<label>
+									<span rel="popover" data-content="{{ i18n.callflows.user.missed_call_alert.override_recipients_content }}">
+										{{#if field_data.missed_call_alert_email_override}}
+										<input type="checkbox" id="missed_call_alert_email_override" name="missed_call_alert.email_override" checked="checked" rel="popover" data-content=""/>
+										{{else}}
+										<input type="checkbox" id="missed_call_alert_email_override" name="missed_call_alert.email_override" rel="popover" data-content=""/>
+										{{/if}}
+										<span>{{ i18n.callflows.user.missed_call_alert.override_recipients }}</span>
+									</span>
+								</label>
+							</li>
+							</ul>
 						</div>
+					</div>
 
-					<div id="missed_call_email_override_section"></div>
+					<div class="clearfix">
+						<div class="input">
+							<div id="missed_call_email_editor_section"></div>
+						</div>
+					</div>
+
 				{{/unless}}
 					
 			</div>
