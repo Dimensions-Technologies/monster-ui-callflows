@@ -4603,6 +4603,166 @@ define(function(require) {
 			self.enableInfinitePanning();
 
 			done && done();
+		},
+
+		// reusable list editor for phone numbers and email addresses
+		listEditorBind: function(opts) {
+			var self = this,
+				$container = opts.container;
+
+			var $placeholder = $container.find('.item-wrapper.placeholder'),
+				$input = $container.find('.list-editor-input'),
+				$add = $container.find('.list-editor-add'),
+				$cancel = $container.find('.list-editor-cancel'),
+				$saved = $container.find('.saved-items'),
+				$error = $container.find('.list-editor-error');
+
+			var valueType = opts.valueType || null, // 'emailAddress' | 'phoneNumber' | null
+				normalize = opts.normalize || function(v) { return (v || '').toString().trim(); },
+				unique = opts.unique !== false;
+
+			var validators = {
+				emailAddress: function(v) {
+					return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+				},
+
+				// E.164 or national-ish (matches your earlier patterns: +441234..., 01234..., allows spaces () . -)
+				phoneNumber: function(v) {
+					return /^\+?[0-9\s().-]{6,20}$/.test(v);
+				}
+			};
+
+			function getValues() {
+				var values = [];
+				$saved.find('.item-wrapper').each(function() {
+					var v = $(this).attr('data-value');
+					if (v) values.push(v);
+				});
+				return values;
+			}
+
+			function emitChange() {
+				if (typeof opts.onChange === 'function') {
+					opts.onChange(getValues());
+				}
+			}
+
+			function exists(value) {
+				var found = false;
+				$saved.find('.item-wrapper').each(function() {
+					if ($(this).attr('data-value') === value) {
+						found = true;
+						return false;
+					}
+				});
+				return found;
+			}
+
+			function validate(value) {
+				if (valueType && validators[valueType]) {
+					var ok = validators[valueType](value);
+
+					if (!ok) {
+						var msg = opts.invalidMessage || 'Invalid value';
+						return { ok: false, message: msg };
+					}
+
+					return { ok: true };
+				}
+				return { ok: !!value };
+			}
+
+			function showError(msg) {
+				if (!msg) return;
+				$error.text(msg).show();
+				$input.addClass('monster-invalid');
+			}
+
+			function clearError() {
+				$error.text('').hide();
+				$input.removeClass('monster-invalid');
+			}
+
+			function addValue(raw) {
+				clearError();
+
+				var value = normalize(raw);
+				var v = validate(value);
+
+				if (!v.ok) {
+					showError(opts.invalidMessage || 'Invalid value');
+					return;
+				}
+
+				if (unique && exists(value)) {
+					showError(opts.duplicateMessage || 'The entered value already exists');
+					return;
+				}
+
+				$saved.prepend(opts.getItemHtml(value));
+				$input.val('');
+				clearError();
+				emitChange();
+			}
+
+			$placeholder.off('click.listEditor').on('click.listEditor', function() {
+				$(this).addClass('active');
+				$input.focus();
+			});
+
+			$add.off('click.listEditor').on('click.listEditor', function(e) {
+				e.preventDefault();
+				addValue($input.val());
+			});
+
+			$container.find('.add-item').off('keypress.listEditor').on('keypress.listEditor', function(e) {
+				var code = e.keyCode || e.which;
+				if (code === 13) {
+					e.preventDefault();
+					addValue($input.val());
+				}
+			});
+
+			$container.off('click.listEditorDelete', '.list-editor-delete')
+			.on('click.listEditorDelete', '.list-editor-delete', function() {
+				$(this).closest('.item-wrapper').remove();
+				emitChange();
+			});
+
+			$input.on('input.listEditor', function() {
+				clearError();
+			});
+
+			$cancel.off('click.listEditor').on('click.listEditor', function(e) {
+				e.stopPropagation();
+				$placeholder.removeClass('active');
+				$input.val('');
+				clearError();
+			});
+
+			// Load initial values
+			_.each(opts.initial || [], function(v) {
+				addValue(v);
+			});
+
+			return {
+				getValues: getValues,
+				setValues: function(values) {
+					$saved.empty();
+					_.each(values || [], function(v) { addValue(v); });
+				},
+				clear: function() {
+					$saved.empty();
+					emitChange();
+				},
+				setEnabled: function(enabled) {
+					$container.toggle(!!enabled);
+					if (!enabled) {
+						$placeholder.removeClass('active');
+						$input.val('');
+					}
+				}
+			};
 		}
 
 	};
