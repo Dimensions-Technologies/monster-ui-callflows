@@ -1040,7 +1040,7 @@
 					"disabled": "Disabled"
 				},
 				"warning": "Note: Find Me Follow Me settings will be updated based on the Presence Profile selected by the user",
-				"can_not_save": "Cannot save settings. <br> Find Me Follow Me is enabled, but no devices have been configured."
+				"can_not_save": "Unable to save settings. <br> Find Me Follow Me is enabled, but no devices have been configured."
 			},
 			"hotdesk": {
 				"title": "Hotdesk Settings",
@@ -1065,7 +1065,7 @@
 				"recipients": "Notification Emails",
 				"add_email": "Add Email Address",
 				"invalid_email": "The value entered is not a valid email address.",
-				"no_override_recipients": "Cannot save settings. <br> Missed Call Alert is enabled to use alternative recipients, but no email addresses are configured."
+				"no_override_recipients": "Unable to save settings. <br> Missed Call Alert is enabled to use alternative recipients, but no email addresses are configured."
 			}
 		},
 		"vmbox": {
@@ -1148,8 +1148,8 @@
 				"help": "Set a voicemail box to announce only-mode"
 			},
 			"emailAsAttachment": {
-				"label": "Attach messages to e-mail",
-				"help": "E-mail not having the message as an attachment"
+				"label": "Attach messages to email",
+				"help": "If checked, the email will include the message as an attachment"
 			},
 			"messages": "Messages",
 			"callback": {
@@ -1157,6 +1157,17 @@
 				"enabled": "Callback Enabled",
 				"numberExists": "This callback number is already in the list",
 				"denyNumbers": "The follow numbers are not allowed: <br>"
+			},
+			"email": {
+				"title": "Email",
+				"enable": "Enable Voicemail to Email",
+				"enable_content": "If checked, voicemail to email will be enabled.",
+				"override_recipients": "Alternative email recipient(s)",
+				"override_recipients_content": "Use alternative email addresses for voicemail notifications instead of the user's email.",
+				"recipients": "Notification Emails",
+				"add_email": "Add Email Address",
+				"invalid_email": "The value entered is not a valid email address.",
+				"no_override_recipients": "Unable to save settings. <br> Alternative email recipient(s) is set, but no email addresses are configured."
 			}
 		},
 		"__comment": "UI-1493: Adding accountSettings to advanced callflows app",

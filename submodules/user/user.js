@@ -2130,7 +2130,7 @@ define(function(require) {
 					overrideEmail.prop('disabled', true).toggleClass('input-readonly', true);
 					overrideEmail.prop('checked', false);
 					$('.list-editor-input', user_html).val('');
-					$('#missed_call_email_override_section', user_html).hide();
+					$('#missed_call_email_editor_section', user_html).hide();
 					$('.list-editor-error', user_html).hide();
 				} else {
 					missedCallInternal.prop('disabled', false).toggleClass('input-readonly', false);
@@ -2150,10 +2150,10 @@ define(function(require) {
 					
 				if (!enabled) {
 					$('.list-editor-input', user_html).val('');
-					$('#missed_call_email_override_section', user_html).hide();
+					$('#missed_call_email_editor_section', user_html).hide();
 					$('.list-editor-error', user_html).hide();
 				} else {
-					$('#missed_call_email_override_section', user_html).show();
+					$('#missed_call_email_editor_section', user_html).show();
 				}
 
 			}
@@ -2162,14 +2162,14 @@ define(function(require) {
 
 			$('#missed_call_alert_email_override', user_html).on('change', missedCallAlertOverrideEmail);
 
-			var $missedCallAlertEmailOverride = user_html.find('#missed_call_email_override_section');
+			var $missedCallAlertEmailOverride = user_html.find('#missed_call_email_editor_section');
 
 			var listEditorHtml = $(self.getTemplate({
 				name: 'listEditor',
 				data: {
 					title: self.i18n.active().callflows.user.missed_call_alert.recipients,
 					addLabel: self.i18n.active().callflows.user.missed_call_alert.add_email,
-					placeholder: 'name@example.com'
+					placeholder: 'Email Address'
 				}
 			}));
 
