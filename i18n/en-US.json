@@ -1057,9 +1057,15 @@
 			"missed_call_alert": {
 				"title": "Missed Call Alert Settings",
 				"enable": "Enable Missed Call Alert",
-				"enable_missed_call_alert_content": "If checked, the missed call alert feature will be enabled for user.",
+				"enable_content": "If checked, the missed call alert feature will be enabled for user.",
 				"internal": "Alert on internal calls",
-				"internal_missed_call_alert_content": "If checked, include internal calls when triggering missed call alerts."
+				"internal_content": "If checked, include internal calls when triggering missed call alerts.",
+				"override_recipients": "Alternative email recipient(s)",
+				"override_recipients_content": "Use alternative email addresses for Missed Call Alerts instead of the user's email.",
+				"recipients": "Notification Emails",
+				"add_email": "Add Email Address",
+				"invalid_email": "The value entered is not a valid email address.",
+				"no_override_recipients": "Cannot save settings. <br> Missed Call Alert is enabled to use alternative recipients, but no email addresses are configured."
 			}
 		},
 		"vmbox": {

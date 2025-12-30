@@ -952,13 +952,17 @@ define(function(require) {
 					userCallflow = data?.field_data?.user_callflow;
 
 				if (userCallflow) {
+					var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
+					
 					data.field_data.user_ring_timeout_current = self.userCallflowGetRingTimeout(userCallflow, findMeFollowMeEnabled);
 					data.field_data.user_ring_timeout = data.field_data.user_ring_timeout_current;
 					
-					var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
-
-					data.field_data.missed_call_alert_enabled = !!missedCallNode;
-					data.field_data.missed_call_alert_internal = !!(missedCallNode && missedCallNode.alert_on_internal_calls);
+					if (missedCallNode) {
+						data.field_data.missed_call_alert_enabled = !!missedCallNode;
+						data.field_data.missed_call_alert_internal = !!(missedCallNode && missedCallNode.alert_on_internal_calls);
+						data.field_data.missed_call_alert_email_override = !!self.userCallflowHasMissedCallAlertEmailOverride(userCallflow);
+						data.field_data.missed_call_alert_emails = self.userCallflowGetMissedCallAlertEmailRecipients(userCallflow);
+					}
 				}
 
 				user_html = $(self.getTemplate({
@@ -1530,7 +1534,9 @@ define(function(require) {
 							ringGroup = data.field_data.ring_group,
 							mainUserCallflowReset = false,
 							missedCallAlertEnabled = $('#missed_call_alert_enabled', user_html).is(':checked'),
-							missedCallAlertInternalEnabled = $('#missed_call_alert_internal', user_html).is(':checked');
+							missedCallAlertInternalEnabled = $('#missed_call_alert_internal', user_html).is(':checked'),
+							missedCallAlertOverrideEmail = $('#missed_call_alert_email_override', user_html).is(':checked'),
+							missedCallAlertEmailEditor = data.field_data.missed_call_email_editor;
 
 						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
 							var dataMainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true,
@@ -1543,6 +1549,15 @@ define(function(require) {
 							if (endpoints.length === 0) {
 								monster.ui.alert('warning', self.i18n.active().callflows.user.find_me_follow_me.can_not_save);
 								return
+							}
+						}
+
+						// show warning message opposed to error if missed call alert is enabled with email override but not emails are set
+						if (missedCallAlertOverrideEmail) {
+							var emails = missedCallAlertEmailEditor ? missedCallAlertEmailEditor.getValues() : [];
+							if (!emails.length) {
+								monster.ui.alert('warning', self.i18n.active().callflows.user.missed_call_alert.no_override_recipients);
+								return;
 							}
 						}
 
@@ -1596,11 +1611,32 @@ define(function(require) {
 										return callback(null);
 									}
 
-									var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
+									var missedCallData = self.userCallflowHasMissedCallAlert(userCallflow);
+
+									// build recipients list
+									function buildRecipients() {
+										if (!missedCallAlertOverrideEmail) {
+											return [
+												{ 
+													type: 'user', 
+													id: userCallflow.owner_id 
+												}
+											];
+										}
+
+										var emails = (missedCallAlertEmailEditor.getValues());
+
+										return _.map(emails, function(e) {
+											return { 
+												type: 'email', 
+												id: e 
+											};
+										});
+									}
 
 									// disable missed call alert
 									if (!missedCallAlertEnabled) {
-										if (!missedCallNode) {
+										if (!missedCallData) {
 											return callback(null);
 										}
 
@@ -1612,25 +1648,23 @@ define(function(require) {
 									}
 
 									// enable missed call alert
-									if (!missedCallNode) {
+									if (!missedCallData) {
 										self.userCallflowEnableMissedCallAlert(userCallflow, {
 											alert_on_internal_calls: !!missedCallAlertInternalEnabled
 										});
 
-										return self.userUpdateCallflow(userCallflow, callback, function() {
-											callback(null);
-										});
+										missedCallData = self.userCallflowHasMissedCallAlert(userCallflow);
 									}
 
-									// update alert on internal calls 
-									var currentInternal = !!(missedCallNode && missedCallNode.alert_on_internal_calls);
-
-									if (currentInternal === !!missedCallAlertInternalEnabled) {
+									// update recipients and alert on internal calls
+									var recipients = buildRecipients();
+									
+									if (recipients === null) {
 										return callback(null);
 									}
 
-									missedCallNode = missedCallNode || {};
-									missedCallNode.alert_on_internal_calls = !!missedCallAlertInternalEnabled;
+									missedCallData.alert_on_internal_calls = !!missedCallAlertInternalEnabled;
+									missedCallData.recipients = recipients;
 
 									return self.userUpdateCallflow(userCallflow, callback, function() {
 										callback(null);
@@ -2087,13 +2121,20 @@ define(function(require) {
 
 				var missedCallAlertEnabled  = user_html.find('#missed_call_alert_enabled'),
 					missedCallInternal = user_html.find('#missed_call_alert_internal'),
-					enabled = missedCallAlertEnabled.is(':checked');
+					enabled = missedCallAlertEnabled.is(':checked'),
+					overrideEmail = user_html.find('#missed_call_alert_email_override');
 
 				if (!enabled) {
 					missedCallInternal.prop('disabled', true).toggleClass('input-readonly', true);
 					missedCallInternal.prop('checked', false);
+					overrideEmail.prop('disabled', true).toggleClass('input-readonly', true);
+					overrideEmail.prop('checked', false);
+					$('.list-editor-input', user_html).val('');
+					$('#missed_call_email_override_section', user_html).hide();
+					$('.list-editor-error', user_html).hide();
 				} else {
 					missedCallInternal.prop('disabled', false).toggleClass('input-readonly', false);
+					overrideEmail.prop('disabled', false).toggleClass('input-readonly', false);
 				}
 
 			}
@@ -2101,7 +2142,60 @@ define(function(require) {
 			missedCallAlertState();
 
 			$('#missed_call_alert_enabled', user_html).on('change', missedCallAlertState);
-		
+
+			function missedCallAlertOverrideEmail() {
+
+				var overrideEmail = user_html.find('#missed_call_alert_email_override'),
+					enabled = overrideEmail.is(':checked');
+					
+				if (!enabled) {
+					$('.list-editor-input', user_html).val('');
+					$('#missed_call_email_override_section', user_html).hide();
+					$('.list-editor-error', user_html).hide();
+				} else {
+					$('#missed_call_email_override_section', user_html).show();
+				}
+
+			}
+
+			missedCallAlertOverrideEmail()
+
+			$('#missed_call_alert_email_override', user_html).on('change', missedCallAlertOverrideEmail);
+
+			var $missedCallAlertEmailOverride = user_html.find('#missed_call_email_override_section');
+
+			var listEditorHtml = $(self.getTemplate({
+				name: 'listEditor',
+				data: {
+					title: self.i18n.active().callflows.user.missed_call_alert.recipients,
+					addLabel: self.i18n.active().callflows.user.missed_call_alert.add_email,
+					placeholder: 'name@example.com'
+				}
+			}));
+
+			$missedCallAlertEmailOverride.append(listEditorHtml);
+
+			var emailEditor = self.listEditorBind({
+				container: listEditorHtml,
+				initial: data.field_data.missed_call_alert_emails || [],
+				valueType: 'emailAddress',
+				getItemHtml: function(value) {
+					return $(self.getTemplate({
+					name: 'listEditorItem',
+					data: {
+						value: value,
+						miscSettings: miscSettings
+					}
+					}));
+				},
+				normalize: function(v) {
+					return (v || '').trim().toLowerCase();
+				},
+				invalidMessage: self.i18n.active().callflows.user.missed_call_alert.invalid_email
+			});
+
+			data.field_data.missed_call_email_editor = emailEditor;
+
 			var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true;
 			const $ringTimeoutInput = $(user_html).find('#ring_timeout');
 
@@ -3201,6 +3295,23 @@ define(function(require) {
 			callflow.flow = child;
 
 			return callflow;
+		},
+
+		userCallflowGetMissedCallAlertEmailRecipients: function(callflow) {
+			var data = this.userCallflowHasMissedCallAlert(callflow);
+			if (!data || !Array.isArray(data.recipients)) {
+				return [];
+			}
+
+			return _.chain(data.recipients)
+				.filter({ type: 'email' })
+				.map('id')
+				.filter(Boolean)
+				.value();
+		},
+
+		userCallflowHasMissedCallAlertEmailOverride: function(callflow) {
+			return this.userCallflowGetMissedCallAlertEmailRecipients(callflow).length > 0;
 		},
 
 		userSubmoduleButtons: function(data) {

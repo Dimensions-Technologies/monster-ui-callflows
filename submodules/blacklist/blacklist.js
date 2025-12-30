@@ -226,7 +226,7 @@ define(function(require) {
 				}
 			});
 
-			$(template).delegate('.delete-number, .material-symbols-icon-blocklist-delete', 'click', function(e) {
+			$(template).delegate('.delete-number, .material-symbols-icon-delete', 'click', function(e) {
 				$(this).parents('.number-wrapper').remove();
 			});
 
