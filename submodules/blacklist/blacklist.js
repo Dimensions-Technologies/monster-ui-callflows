@@ -58,8 +58,7 @@ define(function(require) {
 							},
 							submodule: 'blacklist'
 						})),
-						blacklistForm = template.find('#blacklist-form'),
-						$listNumbers = template.find('.saved-numbers');
+						blacklistForm = template.find('#blacklist-form');
 
 					monster.ui.validate(blacklistForm, {
 						rules: {
@@ -67,16 +66,45 @@ define(function(require) {
 						}
 					});
 
-					_.each(data.numbers, function(v, number) {
-						$listNumbers.append($(self.getTemplate({
-							name: 'addNumber',
-							data: {
-								number: number,
-								miscSettings: miscSettings
-							},
-							submodule: 'blacklist'
-						})));
+					var $numbersEditorSection = template.find('#blacklist_numbers_editor_section');
+
+					var listEditorHtml = $(self.getTemplate({
+						name: 'listEditor',
+						data: {
+							title: self.i18n.active().callflows.blacklist.listNumbers,
+							addLabel: self.i18n.active().callflows.blacklist.addNumber,
+							placeholder: 'Phone Number'
+						}
+					}));
+
+					$numbersEditorSection.empty().append(listEditorHtml);
+
+					// convert blacklist { numbers: { "<num>": {} } } into an array
+					var initialNumbers = [];
+					if (data && data.numbers && typeof data.numbers === 'object') {
+						initialNumbers = Object.keys(data.numbers).reverse();
+					}
+
+					var numbersEditor = self.listEditorBind({
+						container: listEditorHtml,
+						initial: initialNumbers,
+						valueType: 'phoneNumber',
+						getItemHtml: function(value) {
+							return $(self.getTemplate({
+								name: 'listEditorItem',
+								data: {
+									value: value,
+									miscSettings: miscSettings
+								}
+							}));
+						},
+						normalize: function(v) {
+							return (v || '').toString().trim();
+						},
+						invalidMessage: self.i18n.active().callflows.blacklist.invalid_number
 					});
+
+					data._numbersEditor = numbersEditor;
 
 					self.blacklistBindEvents(data, template, args.callbacks);
 
@@ -98,143 +126,17 @@ define(function(require) {
 			}
 		},
 
-		/*
 		blacklistBindEvents: function(data, template, callbacks) {
-			var self = this,
-				addNumber = function(e) {
-					var number = template.find('#number_value').val();
+			var self = this;
 
-					if (number) {
-						$('.list-numbers .saved-numbers', template)
-							.prepend($(self.getTemplate({
-								name: 'addNumber',
-								data: {
-									number: number
-								},
-								submodule: 'blacklist'
-							})));
-
-						$('#number_value', template).val('');
-					}
-				};
-
-			$('.number-wrapper.placeholder:not(.active)', template).on('click', function() {
-				var $this = $(this);
-
-				$this.addClass('active');
-
-				$('#number_value', template).focus();
-			});
-
-			$('#add_number', template).on('click', function(e) {
-				e.preventDefault();
-				addNumber(e);
-			});
-
-			$('.add-number', template).bind('keypress', function(e) {
-				var code = e.keyCode || e.which;
-
-				if (code === 13) {
-					addNumber(e);
-				}
-			});
-
-			$(template).delegate('.delete-number', 'click', function(e) {
-				$(this).parents('.number-wrapper').remove();
-			});
-
-			$('#cancel_number', template).on('click', function(e) {
-				e.stopPropagation();
-
-				$('.number-wrapper.placeholder.active', template).removeClass('active');
-				$('#number_value', template).val('');
-			});
-
-			$('.blacklist-save', template).on('click', function() {
-				var formData = form2object('blacklist-form'),
-					cleanData = self.blacklistCleanFormData(formData),
-					mapNumbers = {};
-
-				$('.saved-numbers .number-wrapper', template).each(function(k, wrapper) {
-					var number = $(wrapper).attr('data-number');
-					mapNumbers[number] = {};
-				});
-
-				cleanData.numbers = mapNumbers;
-
-				if (data.id) {
-					cleanData.id = data.id;
-				}
-
-				self.blacklistSave(cleanData, callbacks.save_success);
-			});
-
-			$('.blacklist-delete', template).on('click', function() {
-				monster.ui.confirm(self.i18n.active().callflows.blacklist.are_you_sure_you_want_to_delete, function() {
-					self.blacklistDelete(data.id, callbacks.delete_success);
-				});
-			});
-		},
-		*/
-
-		blacklistBindEvents: function(data, template, callbacks) {
-			var self = this,
-				addNumber = function(e) {
-					var number = template.find('#number_value').val();
-
-					if (number) {
-						$('.list-numbers .saved-numbers', template)
-							.prepend($(self.getTemplate({
-								name: 'addNumber',
-								data: {
-									number: number,
-									miscSettings: miscSettings
-								},
-								submodule: 'blacklist'
-							})));
-
-						$('#number_value', template).val('');
-					}
-				};
-
+			$('.list-editor-error', template).hide();
+				
 			$('*[rel=popover]:not([type="text"])', template).popover({
 				trigger: 'hover'
 			});
 
 			$('*[rel=popover][type="text"]', template).popover({
 				trigger: 'focus'
-			});
-
-			$('.number-wrapper.placeholder:not(.active)', template).click(function() {
-				var $this = $(this);
-
-				$this.addClass('active');
-
-				$('#number_value', template).focus();
-			});
-
-			$('#add_number', template).click(function(e) {
-				e.preventDefault();
-				addNumber();
-			});
-
-			$('.add-number', template).bind('keypress', function(e) {
-				var code = e.keyCode || e.which;
-
-				if (code === 13) {
-					addNumber(e);
-				}
-			});
-
-			$(template).delegate('.delete-number, .material-symbols-icon-delete', 'click', function(e) {
-				$(this).parents('.number-wrapper').remove();
-			});
-
-			$('#cancel_number', template).click(function(e) {
-				e.stopPropagation();
-
-				$('.number-wrapper.placeholder.active', template).removeClass('active');
-				$('#number_value', template).val('');
 			});
 
 			$('.blacklist-save', template).click(function() {
@@ -246,13 +148,17 @@ define(function(require) {
 			});
 
 			function saveButtonEvents() {
-
 				var formData = monster.ui.getFormData('blacklist-form'),
 					cleanData = self.blacklistCleanFormData(formData),
 					mapNumbers = {};
 
-				$('.saved-numbers .number-wrapper', template).each(function(k, wrapper) {
-					var number = $(wrapper).attr('data-number');
+				var editor = data._numbersEditor;
+				
+				var numbers = (editor && typeof editor.getValues === 'function')
+					? editor.getValues()
+					: [];
+
+				_.each(numbers, function(number) {
 					mapNumbers[number] = {};
 				});
 
@@ -263,8 +169,7 @@ define(function(require) {
 				}
 
 				self.blacklistSave(cleanData, callbacks.save_success);
-
-			};
+			}
 
 			$('.blacklist-delete', template).click(function() {
 				deleteButtonEvents();
