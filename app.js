@@ -1588,7 +1588,7 @@ define(function(require) {
 		
 					// Setup input fields
 					monster.ui.chosen(template.find('.cid-number-select, .preflow-callflows-dropdown'));
-					monster.ui.mask(template.find('.phone-number'), 'phoneNumber');
+					monster.ui.mask(template.find('.asserted-phone-number'), 'phoneNumber');
 		
 					// Set validation rules
 					monster.ui.validate(template.find('#account_settings_form'), {
