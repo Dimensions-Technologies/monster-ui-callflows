@@ -4638,9 +4638,9 @@ define(function(require) {
 					return true;
 				},
 
-				// E.164 or national-ish (matches your earlier patterns: +441234..., 01234..., allows spaces () . -)
+				// no spaces, brackets, dots or hyphens
 				phoneNumber: function(v) {
-					return /^\+?[0-9\s().-]{6,20}$/.test(v);
+					return /^\+?\d{6,20}$/.test(v);
 				}
 			};
 
