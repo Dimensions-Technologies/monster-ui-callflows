@@ -1,0 +1,34 @@
+<div class="menu-line {{#unless number}}editing{{/unless}}">
+	<div class="text">{{i18n.strategy.popup.pressKey}}</div>
+	<select class="number-input span1">
+	{{#select number}}
+		<option value="_">Default action</option>
+		<option value="0">0</option>
+		<option value="1">1</option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+		<option value="5">5</option>
+		<option value="6">6</option>
+		<option value="7">7</option>
+		<option value="8">8</option>
+		<option value="9">9</option>
+		<option value="timeout">timeout</option>
+		<option value="*">*</option>
+	{{/select}}
+	</select>
+	<div class="text">{{i18n.strategy.popup.for}}</div>
+	<div class="input-prepend target-input">
+		<span class="add-on"><i class="target-icon"></i></span>
+		<select class="target-select">
+			{{#each callEntities}}
+				<optgroup label="{{groupName}}" data-icon="{{groupIcon}}">
+					{{#each entities}}
+						<option value="{{id}}" data-type="{{module}}" {{#compare id '===' ../../selectedId }}selected{{/compare}}>{{name}}</option>
+					{{/each}}
+				</optgroup>
+			{{/each}}
+		</select>
+	</div>
+	<i class="remove-btn fa fa-times monster-lightgrey"></i>
+</div>

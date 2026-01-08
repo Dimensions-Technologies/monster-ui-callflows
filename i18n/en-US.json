@@ -1229,6 +1229,18 @@
 					"static": "Static"
 				},
 				"help": "Comma separated values (my_custom_properties,comma separated,in-whatever-case-style)"
+			},
+			"mainNumber": {
+				"companyNumber": {
+					"title": "Main Company Numbers"
+				},
+				"conferenceNumber": {
+					"title": "Main Conference Number"
+				}, 
+				"faxboxNumber": {
+					"title": "Main Faxbox Number"
+				},
+				"phone_numbers_none": "There are currently no assigned phone numbers"
 			}
 		},
 		"__comment": "UI-1667: Adding way to customize Feature codes",
@@ -1953,6 +1965,386 @@
 		"delete_callflow_action_note_1": "This callflow action supports multiple child branches,<br> therefor all child items will be deleted.",
 		"delete_callflow_action_note_2": "Any child items will be moved up into the place of the deleted callflow action."
 
+	},
+	"strategy": {
+		"addOfficeHours": {
+			"title": "Add Office Hours",
+			"labels": {
+				"addHours": "Add Hours",
+				"selectDays": "Select one or more days of the week",
+				"officeStatus": "Office Status",
+				"startTime": "Start Time",
+				"endTime": "End Time",
+				"lunchHours": "Lunch Hours (closed)",
+				"openHours": "Open Hours"
+			},
+			"errors": {
+				"noDaysSelected": "No days have been selected."
+			}
+		},
+		"addEditOfficeHolidays": {
+			"title": {
+				"add": "Add Holiday",
+				"edit": "Edit Holiday"
+			},
+			"labels": {
+				"addHoliday": "Add Holiday",
+				"updateHoliday": "Update Holiday",
+				"name": "Holiday Name",
+				"dateType": "Date Type",
+				"date": "Date",
+				"recurringAnnually": "Recurring Annually",
+				"allDay": "All Day",
+				"year": "Year",
+				"time": "Time"
+			},
+			"dateType": {
+				"singleDate": "Single Date",
+				"dateRange": "Date Range",
+				"advancedDate": "Advanced Date"
+			},
+			"placeholders": {
+				"name": "Holiday Name"
+			},
+			"errors": {
+				"noName": "Please enter a name for this holiday",
+				"minimum": "Holiday name must be 4 characters or greater",
+				"maximum": "Holiday name must be limited to 60 characters",
+				"nameExists": "Holiday name already exists. Please specificy a unique name"
+			}
+		},
+		"noNumberHelp": "Note: Please add a Main Office Number to your account first. Once you add a main number, you will be able to set up Office Hours, Holidays and Incoming Call Handling (Call-Flow) for your office.",
+		"sectionTitles": {
+			"numbers": "Main Company Numbers",
+			"confnum": "Main Conference Number",
+			"hours": "Office Hours Strategy",
+			"holidays": "Office Holidays",
+			"calls": "Incoming Call Handling",
+			"__comment": "UI-1210",
+			"__version": "3.22",
+			"faxingnum": "Main Faxbox Number"
+		},
+		"noNumberTitle": "Add Main Number",
+		"noNumberMessage": "Please add or buy a number from the links below to continue.",
+		"noConfNumMessage": "Please add a main conference number.",
+		"numberLinks": {
+			"spare": "Add from Spare Numbers",
+			"buy": {
+				"link": "Buy Numbers",
+				"regular": "Local",
+				"tollfree": "Toll-free",
+				"vanity": "Vanity"
+			},
+			"port": "Port Numbers"
+		},
+		"hours": {
+			"importOfficeHours": {
+				"title": "Import Office Hours"
+			},
+			"emptyState": {
+				"title": "Your Office Hours Are Empty",
+				"text": "Get started quickly by populating your office hours using one of our templates.",
+				"defaultOption": "Select a template",
+				"nineToFiveWithNoonToOneLunchbreak": "Open weekdays from 9:00 to 5:00. Closed for lunch from 12:00 to 1:00."
+			},
+			"days": {
+				"monday": "Monday",
+				"tuesday": "Tuesday",
+				"wednesday": "Wednesday",
+				"thursday": "Thursday",
+				"friday": "Friday",
+				"saturday": "Saturday",
+				"sunday": "Sunday"
+			},
+			"allDays": "All Days",
+			"to": "to",
+			"open": "Open",
+			"lunch": "Lunch Hours",
+			"addHours": "Add Hours",
+			"importCsv": "Import CSV",
+			"downloadCsv": "Download CSV",
+			"info": "Info",
+			"infoOne": "If a timeframe is not listed in the table below, it is assumed the office is closed and will follow the closed call path.",
+			"infoTwo": "Don’t forget to set the call routing for when your office is closed. To set call routing for when your office is closed, go in the “Incoming Call Handling” section of this page and select the “After Hours” tab. For setting call routing for lunch hours, select the “Lunch Hours” tab.",
+			"alwaysOpenTitle": "Open 24/7",
+			"alwaysOpenDescription": "Choose this option if you want incoming calls to be handled the same way all the time.",
+			"customHoursTitle": "Custom Office Hours",
+			"customHoursDescription": "Choose this option if you want incoming calls to be handled differently when your office is closed.",
+			"listTitle": "Custom Hours",
+			"timezone": "Timezone:",
+			"to": "to",
+			"lunchbreakTitle": "Are you closed for lunch hours?",
+			"__comment": "UI-1250: Adding help boxes",
+			"__version": "3.20_s2",
+			"helpAfterHours": "Do not forget to set the call routing for when your office is closed for the night! To set it up, go in the \"Incoming Call Handling\" section of this page, and select the \"After Hours\" tab.",
+			"helpLunchHours": "If your office is closed during lunch hours, you also need to choose the call routing for that. You can set it up in the \"Incoming Call Handling\" section as well, under the \"Lunch Hours\" tab."
+		},
+		"holidays": {
+			"enableTitle": "Enable Office Holidays",
+			"title": "Holidays",
+			"holidaySchedule": "Holiday Schedule",
+			"buttons": {
+				"addHoliday": "Add Holiday",
+				"importHolidays": "Import Holidays",
+				"includeNationalHolidays": "Include National Holidays"
+			},
+			"listing": {
+				"headers": {
+					"name": "Name",
+					"date": "Date",
+					"actions": "Actions"
+				},
+				"search": "Search...",
+				"dateWithYear": "{{dateText}}, {{year}}"
+			},
+			"days": {
+				"monday": "Mon",
+				"tuesday": "Tue",
+				"wednesday": "Wed",
+				"thursday": "Thu",
+				"friday": "Fri",
+				"saturday": "Sat",
+				"sunday": "Sun"
+			},
+			"ordinals": {
+				"first": "First",
+				"second": "Second",
+				"third": "Third",
+				"fourth": "Fourth",
+				"fifth": "Fifth",
+				"last": "Last"
+			},
+			"months": {
+				"january": "Jan",
+				"february": "Feb",
+				"march": "Mar",
+				"april": "Apr",
+				"may": "May",
+				"june": "Jun",
+				"july": "Jul",
+				"august": "Aug",
+				"september": "Sep",
+				"october": "Oct",
+				"november": "Nov",
+				"december": "Dec"
+			},
+			"to": "to",
+			"empty": {
+				"title": "Your Office Holidays Are Empty",
+				"description": "Please use the Add holiday or Import Holidays buttons to enter holidays."
+			},
+			"importOfficeHolidays": {
+				"title": "Import Holidays"
+			},
+			"importNationalOfficeHolidays": {
+				"title": "Select National Holidays",
+				"labels": {
+					"selectYourCountry": "Select Your Country",
+					"description": "Select holidays when your office will be closed",
+					"includeObservedDates": "Include Observed Dates",
+					"selectHolidays": "Select Holidays",
+					"holiday": "holiday"
+				}
+			},
+			"dialogs": {
+				"delete": {
+					"title": "Delete Holiday?",
+					"deleteAll": "Delete all recurring instances",
+					"message": "Delete holiday \"{{variable}}\"? Deleting a holiday will permanently remove it.",
+					"buttons": {
+						"yes": "Yes, Delete Holiday",
+						"no": "No, Keep Holiday"
+					}
+				}
+			},
+			"helpHolidays": "Do not forget to set the call routing for when your office is closed for the holidays! To set it up, go in the \"Incoming Call Handling\" section of this page, and select the \"Holidays\" tab.",
+			"expiredHolidays": "Expired holidays"
+		},
+		"calls": {
+			"openHoursTitle": "Open Hours",
+			"lunchHoursTitle": "Lunch Hours",
+			"afterHoursTitle": "After Hours",
+			"holidaysTitle": "Holidays",
+			"incomingCall": "Incoming Call",
+			"virtualReceptionist": "Virtual Receptionist",
+			"voicemail": "Voicemail",
+			"groupOther": "Other",
+			"optionNone": "Skip to Voicemail",
+			"callTabsMessages": {
+				"MainOpenHours": "Select the way you want your callers to reach you when your office is Open.",
+				"MainLunchHours": "Select the way you want your callers to reach you during Lunch Hours.",
+				"MainAfterHours": "Select the way you want your callers to reach you when your office is Closed.",
+				"MainHolidays": "Select the way you want your callers to reach you when you are closed during Holidays."
+			}
+		},
+		"popup": {
+			"title": "Virtual Receptionist",
+			"infoBlock": "Virtual Receptionist will answer incoming calls professionally and automatically transfer them to an appropriate department or person. Main Menu will allow you to set up call routes. Please type or record greetings that matches the Main Menu.",
+			"menuTitle": "Main Menu",
+			"greetingsTitle": "Greetings",
+			"addRouteLink": "Add route",
+			"ttsGreetingTitle": "Text to Speech",
+			"ttsGreetingPlaceholder": "Please enter your greeting message here.",
+			"uploadGreetingTitle": "Upload your own file",
+			"chooseExistingGreetingTitle": "Choose from existing recordings",
+			"noExistingGreetings": "You don't have any greetings recorded yet. Upload some first.",
+			"recordGreetingTitle": "Record it over the phone",
+			"recordGreetingInfo": "Record the greeting message yourself over the phone, by following the steps below:",
+			"recordGreetingLines": {
+				"line1": "Pick up a phone registered in this account.",
+				"line2": "Dial into the appropriate menu.",
+				"line3": "Enter this PIN when prompted:",
+				"line4": "Record your greetings / menu."
+			},
+			"pressKey": "Press",
+			"for": "for",
+			"__comment": "UI-1025: Updating media file uploads throughout the UI",
+			"__version": "3.20_s3",
+			"fileUploadButton": "Choose File",
+			"__comment": "UI-1185: Adding a help message to the greetings",
+			"__version": "3.20_s4",
+			"greetingsHelp": "You need to click the \"Update\" button in order to save your changes for the greeting message.",
+			"__comment": "UI-1657: Add default action translation",
+			"__version": "v3.22",
+			"defaultAction": "Default action"
+		},
+		"open": "Open",
+		"closed": "Closed",
+		"callEntities": {
+			"qubicle": "Call Queues",
+			"user": "Users",
+			"device": "Devices",
+			"ring_group": "Groups",
+			"voicemail": "Voicemail Boxes",
+			"__comment": "UI-1353: Add directory support for the virtual receptionist",
+			"__version": "v3.20_s4",
+			"directory": "Directory",
+			"__comment": "UI-1742: Can now select a callflow created in Advanced Callflows in Main Number",
+			"__version": "3.22",
+			"advancedCallflows": "Advanced Callflows",
+			"__comment": "UI-1886: Can now select a media in virtual receptionist",
+			"__version": "3.23",
+			"play": "Media"
+		},
+		"confirmMessages": {
+			"deleteHoliday": "This holiday will be permanently deleted. Continue?",
+			"disableHolidays": "All existing holidays will be permanently deleted. Continue?",
+			"resetCalls": "All incoming call handling strategies will be reset to their default values. Continue?"
+		},
+		"alertMessages": {
+			"uniqueHoliday": "Every holiday must have a unique name.",
+			"undefinedMenu": "You selected a Virtual Receptionist without setting it up. Please set it up by clicking on the Virtual Receptionist link, or choose a different option.",
+			"emptyTtsGreeting": "You must type in your greeting message to enable Text to Speech functionality.",
+			"emptyUploadGreeting": "Please select a file to upload",
+			"fileTooBigAlert": "You can not upload a file with a size exceeding 5MB",
+			"uniqueMenuNumbers": "Numbers within the menu must be unique and non-empty.",
+			"lastE911Error": "You need e911 set up on at least one of your Main Numbers. Please set up e911 on another Main Number before deleting this one."
+		},
+		"toastrMessages": {
+			"updateHolidaySuccess": "Holidays successfully updated.",
+			"updateCallSuccess": "Call strategy successfully updated.",
+			"resetCallSuccess": "Call strategy successfully reset.",
+			"buyNumbersSuccess": "The numbers have been purchased.",
+			"buyNumbersError": "An error occured while purchasing numbers.",
+			"removeNumberSuccess": "Number successfully removed from the main callflow.",
+			"noE911NumberAvailable": "There are no main numbers with e911 feature available. Please assign a main number with the e911 feature."
+		},
+		"popupRemoveFeatures": {
+			"title": "Features",
+			"questionPartOne": "Do you want to remove features from",
+			"questionPartTwo": "?",
+			"featuresToRemove": "Check the feature(s) to remove :",
+			"features": {
+				"cnam": "Caller-ID",
+				"e911": "e911"
+			}
+		},
+
+		"__comment": "UI-1604: Walkthrough dashboard",
+		"__version": "3.21",
+		"walkthrough": {
+			"first": {
+				"steps": {
+					"1": "Setup your main company number within SmartPBX by purchasing or porting a number. This is different than User Phone Numbers because it represents the main phone number for the entire company."
+				}
+			},
+			"second": {
+				"steps": {
+					"1": "Set up your office hours phone strategy to your convenience. You can set up a 24 hour open office strategy or if your office is ever closed, create custom hours. You can even close your office during lunch hours.",
+					"2": "Is your office closed on holidays? Create specific dates or time frames when your office will be closed",
+					"3": "Virtual Receptionist allows you to seamlessly answer incoming calls. Add call routes to contact the appropriate department or person within the system. You can also create customized greetings using text-to-speech, uploading your own file or recording it over the phone.",
+					"4": "Create a main Conference Number for your business. Purchase, port or add an existing number and set up a Conference Number seamlessly.",
+					"__comment": "UI-1210: Add a step to the walkthrough to explain the main faxbox number",
+					"__version": "3.22",
+					"5": "Create a main Faxbox Number for your business. Purchase, port or add an existing number and set up a Faxbox Number seamlessly."
+				}
+			}
+		},
+		"__comment": "UI-17142: ",
+		"__version": "3.22",
+		"noFaxingNumMessage": "Please add a main faxbox number.",
+		"__comment": "UI-1210: ",
+		"__version": "3.22",
+		"faxing": {
+			"nameExtension": "'s Main Faxbox",
+			"headerExtension": " Fax Printer",
+			"editFaxbox": "Edit Faxbox"
+		},
+		"__comment": "UI-1774: Adding custom greetings to conference",
+		"__version": "3.22",
+		"customConferenceGreeting": {
+			"title": "Custom Conference Greeting",
+			"link": "Custom Greeting",
+			"info": "Customize your conference greeting message using our Text-to-Speech feature. Simply type your greeting message in the input field below.",
+			"mainConfMissing": "Your Main Conference could not be found.",
+			"tooltip": "Your Main Conference has a custom greeting message.",
+			"entity": "conference"
+		},
+
+		"__comment": "UI-2499: Handle case where greeting has been deleted",
+		"__version": "4.0",
+		"greetingMissing": "The greeting that was configured on this Virtual Receptionist is missing. Please setup a new greeting.",
+
+		"__comment": "",
+		"__version": "3.22",
+		"popupEditFaxbox": {
+			"titles": {
+				"create": "Create Main Faxbox",
+				"edit": "Edit Main Faxbox"
+			},
+			"text": "Main Faxbox",
+			"labels": {
+				"inbound": "Inbound Notification Email"
+			}
+		},
+
+		"buttons": {
+			"reset": "Reset"
+		},
+
+		"updateCallerIdDialog": {
+			"title": {
+				"emergency": "Account Emergency Caller-ID",
+				"external": "Account External Caller-ID"
+			},
+			"headerAddNumber": {
+				"emergency": "You've just turned E911 on one of your main number, please select which number you would like to use for your Account Emergency Caller-ID."
+			},
+			"headerRemoveNumber": {
+				"emergency": "You've disabled E911 on the number that was used for your Emergency Caller-ID, please select a new number to use as this Account Emergency Caller-ID."
+			},
+			"headerChooseNumber": {
+				"emergency": "You've not set the emergency number for the account yet, please select which number you would like to use for your Account Emergency Caller-ID.",
+				"external": "You've not set the external number for the account yet, please select a new number to use as this Account External Caller-ID."
+			},
+			"success": {
+				"emergency": "You successfully updated the E911 on the account to be {{ number }}.",
+				"external": "You successfully updated the external caller ID on the account to be {{ number }}."
+			},
+			"current": {
+				"emergency": "Current one"
+			}
+		}
 	},
 	"__comment": "UI-1260: created common control for carrier selection",
 	"__version": "v3.20_s2",

@@ -1,0 +1,248 @@
+/* ===== Holidays toggler ===== */
+
+.holidays-toggler {
+  padding: 32px 0 20px 20px;
+}
+
+.holidays-toggler span {
+  color: #151517;
+  font-weight: 600;
+}
+
+/* ===== Buttons ===== */
+.holidays-list .monster-button,
+.holidays-actions .monster-button{
+  color: #151517;
+  border-radius: 2px;
+}
+
+.save-button {
+  background: #2ed022;
+  border-color: #209218;
+  margin-left: 3px;
+}
+
+/* ===== Holidays container ===== */
+
+.holidays-div {
+  color: #151517;
+  padding: 20px;
+  display: none;
+}
+
+.holidays-div .title {
+  font-size: 18px;
+  margin-bottom: 1rem;
+}
+
+/* Help block */
+.holidays-div .help-div {
+  background-color: #B8DEFF;
+  display: flex;
+  padding: 16px;
+}
+
+.holidays-div .help-div .help-icon {
+  margin-right: 12px;
+  position: relative;
+  bottom: 2px;
+}
+
+/* Year config */
+.holidays-div .year-config {
+  margin: 16px 0;
+}
+
+.holidays-div .year-config select {
+  height: 36px;
+  width: 140px;
+}
+
+/* Actions wrapper */
+.holidays-div .actions-wrapper {
+  position: relative;   
+  z-index: 1;
+  margin-bottom: 16px;  
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.holidays-div .actions-wrapper button {
+  font-size: 14px;
+  padding: 8px 7px;
+  border: 1px solid #bcbcc2;
+  background: linear-gradient(-180deg, #FFFFFF 0%, #f4f4f5 100%);
+  margin-right: 8px;
+  min-width: 96px;
+}
+
+.holidays-div .actions-wrapper button span {
+  margin-left: 0.5rem;
+}
+
+.holidays-div .actions-wrapper button .svg-icon {
+  color: #64646c;
+}
+
+/* Add holiday button */
+.holidays-div .actions-wrapper .add-holiday {
+  background: #2297FF;
+  border: 1px solid #006bca;
+}
+
+.holidays-div .actions-wrapper .add-holiday .svg-icon {
+  color: #151517;
+}
+
+/* ===== Holidays table ===== */
+.holidays-div #holidays_list_table {
+  position: relative;
+  color: #2e2e32;
+}
+
+.holidays-div #holidays_list_table .footable-filtering {
+  position: absolute;
+  top: -52px;
+  right: 0;
+  margin: 0;
+  z-index: 10;
+}
+
+/* Footable filtering */
+.holidays-div #holidays_list_table .footable-filtering .input-group {
+  width: 256px;
+}
+
+.holidays-div
+  #holidays_list_table
+  .footable-filtering
+  .input-group
+  .form-control {
+  width: 192px;
+}
+
+.holidays-div
+  #holidays_list_table
+  .footable-filtering
+  .input-group
+  input[type="text"] {
+  height: 22px;
+}
+
+.holidays-div
+  #holidays_list_table
+  .footable-filtering
+  .input-group
+  .input-group-btn
+  .btn-primary {
+  background-color: #FFFFFF !important;
+  color: #909099;
+  border-left: unset;
+  height: 36px;
+}
+
+.holidays-div
+  #holidays_list_table
+  .footable-filtering
+  .input-group
+  .input-group-btn
+  .btn-primary
+  .fooicon {
+  font-size: 16px;
+}
+
+/* Table header */
+.holidays-div #holidays_list_table .footable-header {
+  background-color: #dbdbde;
+}
+
+.holidays-div #holidays_list_table .footable-header th {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e2e32;
+  border-color: #bcbcc2;
+}
+
+/* Table body */
+.holidays-div #holidays_list_table tbody tr {
+  height: 44px;
+  border: 1px solid #bcbcc2;
+}
+
+.holidays-div #holidays_list_table tbody tr svg {
+  color: #64646c;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.holidays-div #holidays_list_table tbody tr.footable-empty {
+  display: none;
+}
+
+.holidays-div #holidays_list_table tbody tr:nth-child(even) {
+  background: rgba(244, 244, 245, 0.48);
+}
+
+/* Table borders */
+.holidays-div
+  #holidays_list_table
+  td:first-child,
+.holidays-div
+  #holidays_list_table
+  .footable-header
+  th:first-child {
+  border-left: 1px solid #bcbcc2;
+}
+
+.holidays-div
+  #holidays_list_table
+  td:last-child,
+.holidays-div
+  #holidays_list_table
+  .footable-header
+  th:last-child {
+  border-right: 1px solid #bcbcc2;
+}
+
+/* ===== Empty state ===== */
+
+.holidays-div .custom-footable-empty {
+  color: #151517;
+  display: none;
+  border-radius: 2px;
+  border: 1px solid #e0e0e9;
+  border-top: none;
+  text-align: center;
+}
+
+.holidays-div .custom-footable-empty.show {
+  display: block;
+}
+
+.holidays-div .custom-footable-empty svg {
+  color: #909099;
+  height: 1.5rem;
+  width: 1.5rem;
+  cursor: default;
+  margin-right: 12px;
+}
+
+.holidays-div .custom-footable-empty .title-row {
+  padding: 44px 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.holidays-div .custom-footable-empty .title-row span {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.holidays-div .custom-footable-empty .description-row {
+  margin-bottom: 40px;
+}
+
+.holidays-div .custom-footable-empty .description-row .description {
+  font-size: 14px;
+}

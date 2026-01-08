@@ -1,0 +1,18 @@
+<ul class="nav nav-tabs calls-tabs clearfix">
+{{#each tabs}}
+	<li class="{{cssClass}}{{#if @first}} active{{/if}}">
+		<a href="#{{href}}"><i class="{{iconClass}}"></i>{{label}}</a>
+	</li>
+{{/each}}
+</ul>
+<div class="tab-content callflow-tabs">
+{{#each tabs}}
+	<div class="callflow-tab tab-pane fade{{#if @first}} active in{{/if}}" id="{{href}}" data-callflow="{{callflowType}}"></div>
+{{/each}}
+</div>
+
+<div class="calls-actions basic-actions">
+	<button type="button" class="monster-button monster-button-danger pull-left reset-button">{{i18n.strategy.buttons.reset}}</button>
+	<a href="#" class="monster-link blue cancel-link">{{i18n.cancel}}</a>
+	<button class="monster-button monster-button-success save-button">{{i18n.saveChanges}}</button>
+</div>

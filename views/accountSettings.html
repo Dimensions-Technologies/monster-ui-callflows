@@ -26,6 +26,9 @@
 						<li class="tab-overview"><a href="#account_settings_blacklist">Blocklist</a></li>
 					{{/unless}}
 					<li class="tab-overview"><a href="#account_settings_misc">Misc</a></li>
+					{{#if miscSettings.enableSmartPbxMainNumber}}
+						<li class="tab-overview"><a href="#account_settings_strategy">Main Number</a></li>
+					{{/if}}
 					<!-- placeholder for call restrictions -->
 					{{#unless miscSettings.hideCallRestictions}}
 						<li class="tab-overview"><a href="#account_settings_call_restrictions">Call Restrictions</a></li>
@@ -331,6 +334,16 @@
 						</div>
 					</div>
 					{{/unless}}
+				</div>
+
+				<!-- Main Number Section -->
+				<div class="tab-pane" id="account_settings_strategy">
+					<div class="settings-section">
+						<!--<div class="section-title">Strategy</div>-->
+						<div class="section-content">
+							<div class="strategy-parent"></div>
+						</div>
+					</div>
 				</div>
 
 				<div class="tab-pane" id="account_settings_call_restrictions">

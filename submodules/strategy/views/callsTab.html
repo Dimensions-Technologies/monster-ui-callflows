@@ -1,0 +1,104 @@
+<div class="callflow-tab-title">{{tabMessage}}</div>
+<div class="call-options-container">
+{{#each strategies}}
+	<div class="call-option {{type}}-call{{#compare @root.callOption.type "===" type}} active{{/compare}}">
+		<div class="radio-div">
+		{{#monsterRadio "radio-large"}}
+			<input type="radio" {{#compare @root.callOption.type '===' type}}checked{{/compare}} name="calls.{{@root.callflow}}" value="menu">
+		{{/monsterRadio}}
+		</div>
+		<div class="title">
+			{{@root.i18n.strategy.calls.incomingCall}}
+		</div>
+		{{#each options as |option|}}
+			{{#if @root.miscSettings.enableGoogleIcons}}
+				<i class="material-symbols-outlined incomming-call-arrow" style="font-size: 48px;">arrow_downward_alt</i>
+			{{else}}
+				<div class="arrow-icon"><i class="fa fa-arrow-down fa-lg"></i></div>
+			{{/if}}
+			{{#compare option "===" "menu"}}
+				<div class="menu-div {{#if @root.menu}}has-menu" data-callflow="{{@root.menu}}{{/if}}">
+					<div class="link">
+						<a href="#">
+							<div class="menu-icon">
+								{{#if @root.miscSettings.enableGoogleIcons}}
+									<i class="material-symbols-outlined" style="font-size: 64px;">person</i>
+								{{else}}
+									<i class="fa fa-user fa-3x"></i>
+								{{/if}}
+							</div>
+							<div class="link-icon">
+								{{#unless @root.miscSettings.enableGoogleIcons}}
+									<i class="fa fa-cog icon-small"></i>
+								{{/unless}}
+								<span>{{@root.i18n.strategy.calls.virtualReceptionist}}</span>
+							</div>
+						</a>
+					</div>
+				</div>
+			{{/compare}}
+			{{#compare option "===" "entity"}}
+				<div class="user-select">
+					<div class="title">N/A</div>
+					<select>
+					{{#select @root.callOption.callEntityId}}
+						{{#each @root.callEntities}}
+							<optgroup label="{{groupName}}">
+								{{#each entities}}
+									<option value="{{id}}" data-type="{{module}}">
+										{{name}}
+									</option>
+								{{/each}}
+							</optgroup>
+						{{/each}}
+						{{#if ../allowNone}}
+							<optgroup label="{{@root.i18n.strategy.calls.groupOther}}">
+								<option value="none" data-type="none">
+									{{@root.i18n.strategy.calls.optionNone}}
+								</option>
+							</optgroup>
+						{{/if}}
+					{{/select}}
+					</select>
+				</div>
+			{{/compare}}
+			{{#compare option "===" "voicemail"}}
+				<div class="voicemail-select">
+					<div class="title">
+						{{@root.i18n.strategy.calls.voicemail}}
+					</div>
+					<select>
+					{{#select @root.callOption.voicemailId}}
+						{{#each @root.voicemails}}
+							<option value="{{id}}">
+								{{name}}
+							</option>
+						{{/each}}
+					{{/select}}
+					</select>
+				</div>
+			{{/compare}}
+			{{#compare option "===" "callflow"}}
+				<div class="advancedCallflows-select">
+					<div class="title">
+						{{@root.i18n.strategy.callEntities.advancedCallflows}}
+					</div>
+					<select>
+					{{#select @root.callOption.callEntityId}}
+						{{#each @root.callEntities}}
+							{{#compare groupType '===' 'advancedCallflows'}}
+								{{#each entities}}
+									<option value="{{id}}" data-type="{{module}}">
+										{{name}}
+									</option>
+								{{/each}}
+							{{/compare}}
+						{{/each}}
+					{{/select}}
+					</select>
+				</div>
+			{{/compare}}
+		{{/each}}
+	</div>
+{{/each}}
+</div>
