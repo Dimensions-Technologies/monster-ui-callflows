@@ -155,7 +155,7 @@
 						<div class="clearfix">
 							<label for="rule_type">{{ i18n.callflows.timeofday.rule_type }}</label>
 							<div class="input">
-								<select name="rule_type" id="rule_type" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.rule_type_help }}">
+								<select name="rule_type" id="rule_type" class="input-medium" rel="popover" data-content="{{ i18n.callflows.timeofday.rule_type_help }}"{{#unless data.showSave}} disabled{{/unless}}>
 									<option value="automatic">{{ i18n.callflows.timeofday.automatic_rule }}</option>
 									<option value="manual"{{#if data.dimension.rule_type}} selected{{/if}}>{{ i18n.callflows.timeofday.manual_rule }}</option>
 								</select>

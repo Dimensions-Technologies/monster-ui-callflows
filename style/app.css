@@ -12,6 +12,9 @@
 @import url('../submodules/temporalset/temporalset.css');
 @import url('../submodules/vmbox/vmbox.css');
 @import url('../style/fonts.css');
+@import url('../submodules/strategy/strategy.css');
+@import url('../submodules/strategyHolidays/strategyHolidays.css');
+@import url('../submodules/strategyHours/strategyHours.css');
 
 /* style.css */
 #ws_callflow {
@@ -2882,4 +2885,57 @@
 
 .list-editor .list-editor-delete.icon.medium.trash {
 	margin-bottom: 8px;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .numberRows .row {
+	margin-left: 0px;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row .number-container {
+    min-width: 237px;
+	display: flex;
+	align-items: center;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row .number-container .number .phone-number-label {
+    text-align: left;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row>* {
+    display: inline-block;
+    padding: 10px;
+    height: 32px;
+    line-height: 32px;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row button {
+    margin-right: 25px;
+	text-align: center;
+	line-height: 14px;
+	min-width: unset;
+	width: 100px;
+}
+
+#phone_numbers_container hr {
+    margin: 0px 0;
+}
+
+/* phone numbers tab formatting */
+.number-addition {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	display: flex;
+    justify-content: flex-end;
+}
+
+#account_settings_main_number .settings-section {
+    padding: 20px;
+    background: #FFF;
+    border: 1px solid #ccc;
+	
 }

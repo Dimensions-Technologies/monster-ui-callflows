@@ -1368,44 +1368,46 @@ define(function(require) {
 		temporalRuleList: function(callback) {
 			var self = this;
 
-			console.log('temporal rule list');
+			var temporalRuleFilters = {
+					paginate: false
+				};
+			
+			if (!miscSettings.temporalRuleShowVoipItems) {
+				temporalRuleFilters['filter_not_ui_metadata.origin'] = 'voip';
+			}
 
 			if (miscSettings.enableEnhancedListData) {
-				self.callApi({
-					resource: 'temporalRule.list',
-					data: {
-						accountId: self.accountId,
-						filters: {
-							paginate: false,
-							fields: ["id", "name", "flags", "features", "dimension"]
-						}
-					},
-					success: function(data) {
-						callback && callback(data.data);
-					}
-				});
-			} else {
-				self.callApi({
-					resource: 'temporalRule.list',
-					data: {
-						accountId: self.accountId,
-						filters: { paginate: false }
-					},
-					success: function(data) {
-						callback && callback(data.data);
-					}
-				});
+				temporalRuleFilters['fields'] = ["id", "name", "flags", "features", "dimension"];
 			}
+
+			self.callApi({
+				resource: 'temporalRule.list',
+				data: {
+					accountId: self.accountId,
+					filters: temporalRuleFilters
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			});
 		},
 
 		temporalSetList: function(callback) {
 			var self = this;
 
+			var temporalRuleSetsFilters = {
+					paginate: false
+				};
+			
+			if (!miscSettings.temporalRuleSetsShowVoipItems) {
+				temporalRuleSetsFilters['filter_not_ui_metadata.origin'] = 'voip';
+			}
+
 			self.callApi({
 				resource: 'temporalSet.list',
 				data: {
 					accountId: self.accountId,
-					filters: { paginate: false }
+					filters: temporalRuleSetsFilters
 				},
 				success: function(data) {
 					callback && callback(data.data);
