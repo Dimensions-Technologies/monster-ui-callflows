@@ -4,7 +4,8 @@ define(function(require) {
 		$ = require('jquery'),
 		moment = require('moment'),
 		Papa = require('papaparse'),
-		timezone = require('monster-timezone');
+		timezone = require('monster-timezone'),
+		miscSettings = {};
 
 	require('file-saver');
 
@@ -70,6 +71,10 @@ define(function(require) {
 		},
 
 		strategyHoursRender: function(args) {
+
+			// set variables for use elsewhere
+			miscSettings = args.miscSettings;
+
 			var self = this,
 				$container = args.container,
 				strategyData = args.strategyData,
@@ -79,7 +84,8 @@ define(function(require) {
 					name: 'layout',
 					data: {
 						alwaysOpen: _.every(intervals, _.isEmpty),
-						companyTimezone: timezone.formatTimezone(strategyData.callflows.MainCallflow.flow.data.timezone || monster.apps.auth.currentAccount.timezone)
+						companyTimezone: timezone.formatTimezone(strategyData.callflows.MainCallflow.flow.data.timezone || monster.apps.auth.currentAccount.timezone),
+						miscSettings: miscSettings
 					},
 					submodule: 'strategyHours'
 				}));
@@ -119,7 +125,10 @@ define(function(require) {
 						intervalUpperBound = meta.max,
 						$template = $(self.getTemplate({
 							name: 'listing',
-							data: data,
+							data: {
+								...data,
+								miscSettings: miscSettings
+							},
 							submodule: 'strategyHours'
 						}));
 
@@ -210,7 +219,7 @@ define(function(require) {
 			template.on('click', '.import-csv', function(event) {
 				event.preventDefault();
 
-				monster.pub('common.csvUploader.renderPopup', {
+				monster.pub('callflows.csvUploader.renderPopup', {
 					title: self.i18n.active().strategy.hours.importOfficeHours.title,
 					header: ['day', 'start', 'end', 'type'],
 					row: {

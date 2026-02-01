@@ -1,0 +1,56 @@
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element {
+    position: relative;
+    border-bottom: solid 1px #dedede;
+    height: 70px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element>div,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element>div,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element>div {
+    display: inline-block;
+    padding: 10px;
+    line-height: 50px;
+    height: 50px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element .features-block .dropdown-toggle,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element .features-block .dropdown-toggle,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element .features-block .dropdown-toggle {
+    background-color: transparent !important;
+    margin-top: 5px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element .features-block .edit-features,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element .features-block .edit-features,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element .features-block .edit-features {
+    position: absolute;
+    right: 10px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element .features-block .features,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element .features-block .features,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element .features-block .features {
+    margin-right: 45px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element .features-block .features>i.active,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element .features-block .features>i.active,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element .features-block .features>i.active {
+    display: inline-block;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element .number>button,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element .number>button,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element .number>button {
+    margin: 0 15px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-element .no-number-error,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-element .no-number-error,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-element .no-number-error {
+    font-style: italic;
+    color: #ee1212;
+    font-weight: 600;
+}

@@ -12,7 +12,22 @@
 @import url('../submodules/temporalset/temporalset.css');
 @import url('../submodules/vmbox/vmbox.css');
 @import url('../style/fonts.css');
+@import url('../submodules/csvUploader/csvUploader.css');
+@import url('../submodules/mediaSelect/mediaSelect.css');
+
+
 @import url('../submodules/strategy/strategy.css');
+@import url('../submodules/strategy/partials/addOfficeHours.css');
+@import url('../submodules/strategy/partials/changeCallerIdPopup.css');
+@import url('../submodules/strategy/partials/customConferenceGreeting.css');
+@import url('../submodules/strategy/partials/faxboxPopup.css');
+@import url('../submodules/strategy/partials/menuPopup.css');
+@import url('../submodules/strategy/partials/number-actions.css');
+@import url('../submodules/strategy/partials/number-element.css');
+@import url('../submodules/strategy/partials/officeHolidaysManagement.css');
+@import url('../submodules/strategy/partials/strategy-calls.css');
+@import url('../submodules/strategy/partials/strategy-confnum.css');
+
 @import url('../submodules/strategyHolidays/strategyHolidays.css');
 @import url('../submodules/strategyHours/strategyHours.css');
 
@@ -2080,6 +2095,14 @@
 	margin-left: 10px;
 	min-width: 20px;
 	padding-right: 10px;
+	display: inline-flex;
+    align-items: center;
+    justify-content: center
+}
+#callflow_container .account-settings-container .upload-div .upload-cancel {
+	margin-left: 0.75rem;
+	position: relative;
+	top: 2px;
 }
 #callflow_container .account-settings-container .upload-div .file-upload {
 	margin: 0;
@@ -2088,12 +2111,14 @@
 #callflow_container .account-settings-container .upload-div .file-upload > input {
 	margin: 0;
 	margin-left: 180px;
-	width: 110px;
+	width: 210px;
 	padding: 6px;
 }
 #callflow_container .account-settings-container .upload-div .file-upload > button {
 	width: 100px;
 	min-width: initial;
+	height: 34px;
+	line-height: 0px;
 }
 #callflow_container .account-settings-container .action-bar {
 	padding-top: 15px;
@@ -2938,4 +2963,9 @@
     background: #FFF;
     border: 1px solid #ccc;
 	
+}
+
+/* prevent the popup content from clipping */
+.ui-dialog-content {
+    overflow: visible !important;
 }

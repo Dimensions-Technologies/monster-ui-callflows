@@ -62,9 +62,13 @@
 							{{/select}}
 							</select>
 						</div>
-						<button type="button" class="monster-button-ghost-icon delete-interval">
-							{{telicon "trash"}}
-						</button>
+						{{#if @root.miscSettings.enableGoogleIcons}}
+							<a class="material-symbols-icon-delete delete-interval">clear</a>
+						{{else}}
+							<button type="button" class="monster-button-ghost-icon delete-interval">
+								{{telicon "trash"}}
+							</button>
+						{{/if}}
 					</li>
 				{{/each}}
 				</ul>

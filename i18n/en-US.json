@@ -1206,7 +1206,8 @@
 				"__version": "v4.1",
 				"shoutcastURL": "Stream URL",
 				"shoutcastURLHelp": "You can type any URL including :// (http, https, shout...)",
-				"shoutcastURLWarning": "WARNING: If the stream selected here attempts to be played, and is unavailable, the call may fail completely. Please make sure the stream you use is available 24/7."
+				"shoutcastURLWarning": "WARNING: If the stream selected here attempts to be played, and is unavailable, the call may fail completely. Please make sure the stream you use is available 24/7.",
+				"uploadNewMedia": "Upload New Media"
 			},
 			"callRestrictions": {
 				"title": "Account's Call Restrictions",
@@ -1780,8 +1781,53 @@
 			"title": "Legacy PBX",
 			"which_callflow": "Which Legacy PBX?",
 			"callflow_tip": "Connect a caller to a legacy pbx"
+		},
+		"csvUploader": {
+			"defaultTitle": "Import CSV File",
+			"uploadCsv": "Upload your CSV file to import",
+			"uploadCsvStep": "1. Upload your CSV file to import",
+			"downloadCsv": "2. Or download a CSV template and enter your {{variable}} then upload",
+			"defaultData": "data",
+			"noFile": "No file selected...",
+			"chooseFile": "Choose File",
+			"defaultFilename": "template.csv",
+			"invalidFile": "Only .csv files accepted",
+			"invalidRows": "Invalid entry at row(s) {{list}}",
+			"andMore": "and more",
+			"downloadTemplate": "Download CSV Template",
+			"import": "Import"
+		},
+		"mediaSelect": {
+			"defaultLabel": "Media",
+			"emptyUploadAlert": "Empty Upload",
+			"fileTooBigAlert": "File Too Big",
+			"invalidMedia": "Select a valid media",
+			"shoutcastURL": "Stream URL",
+			"shoutcastURLHelp": "You can type any URL including :// (http, https, shout...)",
+			"noneLabel": "- None -",
+			"silence": "Silence",
+			"shoutcastURLWarning": "WARNING: If the stream selected here attempts to be played, and is unavailable, the call may fail completely. Please make sure the stream you use is available 24/7.",
+			"useExistingMedia": "Use Existing Media",
+			"uploadNewMedia": "Upload New Media",
+			"browse": "Browse", 
+			"textToSpeech": {
+				"tab": "Text-to-Speech",
+				"info": "Customize your greeting message using Text-to-Speech. Type your desired greeting below. Once your changes are saved, anyone who calls this {{entity}} will be greeted with your custom message.",
+				"language": "The greeting will be generated using the system's default Text-to-Speech voice: ",
+				"placeholder": "Type your custom greeting…",
+				"errors": {
+					"create": "Error creating text to speech media",
+					"update": "Error updating text to speech media"
+				}
+			},
+			"mediaUploadDisclosure": {
+				"text": "You are responsible for uploading audio files. Please ensure you have the appropriate rights to use them."
+			},
+			"uploadResponse": {
+				"success": "Media uploaded successfully",
+				"error": "There has been an error uploading the selected media file"
+			}
 		}
-
 	},
 	"oldCallflows": {
 		"call_forwarding_cat": "Call Forwarding",
@@ -2030,7 +2076,7 @@
 		"numberLinks": {
 			"spare": "Add from Spare Numbers",
 			"buy": {
-				"link": "Buy Numbers",
+				"link": "Buy New Numbers",
 				"regular": "Local",
 				"tollfree": "Toll-free",
 				"vanity": "Vanity"
@@ -2148,12 +2194,13 @@
 			},
 			"dialogs": {
 				"delete": {
-					"title": "Delete Holiday?",
+					"title": "Delete Holiday",
 					"deleteAll": "Delete all recurring instances",
-					"message": "Delete holiday \"{{variable}}\"? Deleting a holiday will permanently remove it.",
+					"message": "Delete holiday \"{{variable}}\" ?",
+					"permanent": "Deleting a holiday will permanently remove it.",
 					"buttons": {
-						"yes": "Yes, Delete Holiday",
-						"no": "No, Keep Holiday"
+						"yes": "Delete Holiday",
+						"no": "Keep Holiday"
 					}
 				}
 			},
@@ -2167,6 +2214,7 @@
 			"holidaysTitle": "Holidays",
 			"incomingCall": "Incoming Call",
 			"virtualReceptionist": "Virtual Receptionist",
+			"virtualReceptionistEdit": "Edit",
 			"voicemail": "Voicemail",
 			"groupOther": "Other",
 			"optionNone": "Skip to Voicemail",
@@ -2186,6 +2234,7 @@
 			"ttsGreetingTitle": "Text to Speech",
 			"ttsGreetingPlaceholder": "Please enter your greeting message here.",
 			"uploadGreetingTitle": "Upload your own file",
+			"browse": "Browse",
 			"chooseExistingGreetingTitle": "Choose from existing recordings",
 			"noExistingGreetings": "You don't have any greetings recorded yet. Upload some first.",
 			"recordGreetingTitle": "Record it over the phone",
@@ -2221,7 +2270,7 @@
 			"directory": "Directory",
 			"__comment": "UI-1742: Can now select a callflow created in Advanced Callflows in Main Number",
 			"__version": "3.22",
-			"advancedCallflows": "Advanced Callflows",
+			"advancedCallflows": "Callflows",
 			"__comment": "UI-1886: Can now select a media in virtual receptionist",
 			"__version": "3.23",
 			"play": "Media"

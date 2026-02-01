@@ -1,0 +1,191 @@
+#strategy_menu_popup.callflows-strategy {
+    width: 1000px;
+}
+
+#strategy_menu_popup.callflows-strategy .form-content {
+    padding: 1.5rem 1rem;
+}
+
+#strategy_menu_popup.callflows-strategy .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0;
+    background-color: transparent;
+    border-top-color: #dbdbde;
+}
+
+#strategy_menu_popup.callflows-strategy .form-actions > *:not(:last-child) {
+    margin-right: 0.75rem;
+}
+
+#strategy_menu_popup.callflows-strategy .number-input.span1 {
+    width: 160px;
+}
+
+#strategy_menu_popup.callflows-strategy>div:not(:last-of-type) {
+    margin-bottom: 25px;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block>div {
+    float: left;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .left {
+    width: 600px;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .right {
+    margin-left: 20px;
+    width: 340px;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .title {
+    color: #2297ff;
+    font-size: 22px;
+    font-weight: 600;
+    padding: 15px 0;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line {
+    padding: 5px 0;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line>div,
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line>input,
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line>select {
+    margin: 0 12px 0 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line .target-input .add-on {
+    width: 20px;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line .target-select {
+    width: 150px;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line .chosen-container .chosen-drop {
+    width: 280px;
+}
+
+/* hidden by default (but still in layout so it can animate) */
+#strategy_menu_popup.callflows-strategy .choose-existing-inline {
+    max-height: 0;
+    opacity: 0;
+}
+
+#strategy_menu_popup.callflows-strategy .accordion-group.choose-existing-open .choose-existing-inline {
+    max-height: 80px;
+    opacity: 1;
+    padding-top: 6px;
+    display: flex;
+    justify-content: center;
+}
+
+#strategy_menu_popup.callflows-strategy .accordion-group.choose-existing-open .choose-existing-inline .chosen-drop {
+    width: 318px;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line i.remove-btn {
+    cursor: pointer;
+    opacity: .8;
+    vertical-align: middle;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line i.remove-btn:hover {
+    color: #2297ff;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .menu-line i.remove-btn:active {
+    color: #2297ff;
+    text-shadow: 1px 1px 1px #999;
+}
+
+#strategy_menu_popup.callflows-strategy .menu-block .add-menu-line {
+    margin-top: 10px;
+}
+
+#strategy_menu_popup.callflows-strategy .action-block .cancel-link {
+    line-height: 30px;
+    margin-right: 10px;
+    color: #2297ff;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option {
+    border-color: #c0c0c9;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option.active {
+    border-color: #2297ff;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option:not(:last-of-type) {
+    margin-bottom: 15px;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option.active .greeting-option-header i {
+    color: #2297ff;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .greeting-option-header {
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 2px;
+    cursor: pointer;
+    background-color: #e0e0e9;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .greeting-option-header:not(.collapsed) {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .greeting-option-header i {
+    vertical-align: middle;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .greeting-option-content {
+    padding: 10px;
+    font-size: 14px;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .greeting-option-content textarea {
+    width: 100%;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    margin: 0;
+    min-height: 90px;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .greeting-option-actions {
+    margin-top: 10px;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .greeting-option-actions button:not(:first-of-type) {
+    margin-right: 10px;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .upload-container {
+    display: flex;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .upload-container input[type="text"] {
+    margin: 0;
+    width: auto;
+    box-shadow: none;
+    border-radius: 2px 0 0 2px;
+    margin-right: -1px;
+    flex-grow: 1;
+}
+
+#strategy_menu_popup.callflows-strategy #strategy_menu_popup_accordion .greeting-option .upload-container button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    width: 170px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}

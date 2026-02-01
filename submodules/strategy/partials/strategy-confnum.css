@@ -1,0 +1,20 @@
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .element-content .greeting-link {
+    margin-left: 10px;
+    position: relative;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .element-content .greeting-link:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 50px;
+    border-right: solid 1px #c0c0c9;
+    top: -15px;
+    right: -15px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .element-content .custom-greeting-icon {
+    position: absolute;
+    right: 45px;
+    top: 23px;
+}

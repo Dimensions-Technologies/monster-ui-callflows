@@ -1,17 +1,29 @@
-<div id="delete_holiday_dialog" class="delete-dialog">
-	<div class="dialog-content-wrapper">
-		<p>{{replaceVar i18n.strategy.holidays.dialogs.delete.message holidayName}}</p>
-		{{#monsterCheckbox i18n.strategy.holidays.dialogs.delete.deleteAll}}
-			<input class="deleteAll" type="checkbox"></input>
-		{{/monsterCheckbox}}
+<div id="delete_holiday_dialog" class="monster-feature-popup-container delete-dialog callflows-strategy">
+	<div class="content">
+		<form class="form-horizontal">
+			<div class="contorl-group">
+				<div class="warning">
+					{{#if miscSettings.enableGoogleIcons}}
+						<i class="material-symbols-outlined" style="font-size: 32px;">warning</i>
+					{{else}}
+						<i class="fa fa-warning monster-red"></i>
+					{{/if}}
+					{{replaceVar i18n.strategy.holidays.dialogs.delete.message holidayName}}
+				</div>
+				<br>
+				<p>{{i18n.strategy.holidays.dialogs.delete.permanent}}</p>
+				<br>
+				{{#monsterCheckbox i18n.strategy.holidays.dialogs.delete.deleteAll}}
+					<input class="deleteAll" type="checkbox"></input>
+				{{/monsterCheckbox}}
+			</div>
+		</form>
 	</div>
 
-	<div class="alert-dialog-buttons clearfix">
-		<div class="action-buttons">
-			<button type="button" class="monster-button-ghost monster-button-fit cancel">
-				{{ i18n.strategy.holidays.dialogs.delete.buttons.no }}
-			</a>
-			<button type="button" class="monster-button-success monster-button-fit delete">
+	<div class="actions clearfix">
+		<div class="pull-right">
+			<a class="monster-link blue cancel" href="javascript:void(0);">{{ i18n.cancel }}</a>
+			<button type="button" class="monster-button-danger monster-button-fit delete">
 				{{ i18n.strategy.holidays.dialogs.delete.buttons.yes }}
 			</button>
 		</div>

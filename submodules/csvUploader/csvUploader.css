@@ -1,0 +1,72 @@
+.csv-uploader-callflows-control-container {
+    min-width: 448px;
+    margin: 0;
+}
+
+.csv-uploader-callflows-control-container .form-content {
+    padding: 2rem 1rem;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group {
+    margin: 0;
+}
+
+.csv-uploader-callflows-control-container .form-contents .control-group:not(:first-child) {
+    margin-top: 40px;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group .file-upload {
+    display: flex;
+    position: relative;
+    margin: 0;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group .file-upload input[type="text"] {
+    z-index: 1;
+    width: 100%;
+    height: 30px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group .file-upload label.monster-invalid {
+    bottom: -20px;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group .download-link {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group .download-link svg {
+    margin-right: 0.5rem;
+    color: #606069;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group .download-link .text {
+    color: #2297ff;
+}
+
+.csv-uploader-callflows-control-container .form-content .control-group .download-link:hover {
+    color: #2297ff;
+}
+
+.csv-uploader-callflows-control-container .form-actions {
+    margin: 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.csv-uploader-callflows-control-container .form-actions > :not(:last-child) {
+    margin-right: 12px;
+}
+
+.csv-uploader-callflows-control-container .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0;
+    background-color: transparent;
+    border-top-color: #dbdbde;
+}

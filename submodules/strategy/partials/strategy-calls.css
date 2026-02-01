@@ -1,0 +1,188 @@
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs {
+    height: 34px;
+    margin: 0;
+    padding: 20px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .after-hours-tab.active a:focus,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .after-hours-tab.active a:focus i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .after-hours-tab.active a:hover,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .after-hours-tab.active a:hover i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .holidays-tab.active a:focus,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .holidays-tab.active a:focus i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .holidays-tab.active a:hover,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .holidays-tab.active a:hover i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .lunch-hours-tab.active a:focus,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .lunch-hours-tab.active a:focus i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .lunch-hours-tab.active a:hover,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .lunch-hours-tab.active a:hover i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .open-hours-tab.active a:focus,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .open-hours-tab.active a:focus i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .open-hours-tab.active a:hover,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .calls-tabs .open-hours-tab.active a:hover i {
+    color: #ffffff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs {
+    overflow: visible;
+    padding: 20px;
+    border: none;
+    background: transparent;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option {
+    display: inline-block;
+    vertical-align: top;
+    padding: 10px;
+    border: solid 2px #ccc;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option i {
+    color: #aaa;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option .radio-div .iradio_flat {
+    margin: 0;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option select {
+    width: 160px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option.active .menu-div .menu-icon i {
+    color: rgba(238,18,18,.8);
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option.active .menu-div.has-menu .menu-icon i {
+    color: #22a5ff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option {
+    margin: 14px 14px 0 0;
+    width: 240px;
+    height: 326px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option:last-child {
+    margin-right: 0;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .arrow-connector {
+    width: 26px;
+    margin: 10px auto;
+    position: relative;
+    display: block;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .arrow-connector::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 0;
+    width: 2px;
+    height: calc(100% - 10px);
+    background: #9ca3af;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .arrow-connector::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #9ca3af;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option.menu-call .arrow-connector {
+    height: 166px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option.advanced-callflow-call .arrow-connector {
+    height: 166px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option.user-menu-call .arrow-connector,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option.user-voicemail-call .arrow-connector {
+    height: 48px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option.active .arrow-connector::before {
+    background: #22a5ff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .call-option.active .arrow-connector::after {
+    border-top: 10px solid #22a5ff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .menu-icon {
+    padding-top: 14px;
+    padding-bottom: 0px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .menu-icon .fa-user {
+    margin-top: -10px;
+    padding-bottom: 12px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .call-options-container .incomming-call-arrow {
+    line-height: 60px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option>div:not(:first-of-type) {
+    margin-top: 6px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option .chosen-container {
+    text-align: left;
+    width: 220px !important;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option .menu-div .link-icon i {
+    margin-right: 5px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option .menu-div .link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option .menu-div .link a {
+    margin-top: -10px;
+    color: #9ca3af;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option .menu-div .link a:hover {
+    margin-top: -10px;
+    color: #9ca3af;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option.active .menu-div .link a {
+    color: #22a5ff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option.active .menu-div .link a:hover {
+    text-decoration: underline;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option .title {
+    padding-bottom: 4px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .element-content .callflow-tabs .call-option.active {
+    background-color: #f0f0f0;
+    border-color: #22a5ff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls.open .tab-content.callflow-tabs {
+    background-color: #ffffff;
+    padding: 20px;
+    margin-bottom: 20px;
+    overflow: visible;
+}
