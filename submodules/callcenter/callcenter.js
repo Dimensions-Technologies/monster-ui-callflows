@@ -245,13 +245,45 @@ define(function(require) {
 							data: {
 								accountId: self.accountId
 							},
-							success: function(data, status) {
-								// Sort the data based on the 'name' field
-								data.data.sort(function(a, b) {
-									return a.name.localeCompare(b.name);
+							success: function(queueResp) {
+
+								var queues = queueResp.data || [];
+
+								// list queue callflows
+								self.listQueueCallflows(function(callflows) {
+
+									// map based on callflow owner_id
+									var callflowMap = {};
+
+									_.each(callflows, function(cf) {
+										if (cf.owner_id) {
+											callflowMap[cf.owner_id] = cf;
+										}
+									});
+
+									// add numbers to list data
+									_.each(queues, function(queue) {
+
+										var cf = callflowMap[queue.id];
+
+										if (cf) {
+											queue.callflow_id = cf.id;
+											queue.numbers = cf.numbers || [];
+											queue.callflow_name = cf.name || null;
+										} else {
+											queue.callflow_id = null;
+											queue.numbers = [];
+											queue.callflow_name = null;
+										}
+									});
+
+									// sort the data based on the 'name' field
+									queues.sort(function(a, b) {
+										return a.name.localeCompare(b.name);
+									});
+
+									callback && callback(queues);
 								});
-					
-								callback && callback(data.data);
 							}
 						});
 					},
@@ -493,13 +525,24 @@ define(function(require) {
 			var parallelTasks = {
 
 				media_list: function (callback) {
+
+					var mediaFilters = {
+						paginate: false
+					};
+		
+					if (miscSettings.hideMailboxMedia) {
+						mediaFilters['filter_not_media_source'] = 'recording';
+					}
+
+					if (!miscSettings.mediaShowVoipItems) {
+						mediaFilters['filter_not_ui_metadata.origin'] = 'voip';
+					}
+
 					self.callApi({
 						resource: 'media.list',
 						data: {
 							accountId: self.accountId,
-							filters: {
-								paginate: false
-							}
+							filters: mediaFilters
 						},
 						success: function (mediaList, status) {
 							_.each(mediaList.data, function (media) {
@@ -520,6 +563,9 @@ define(function(require) {
 				},
 				user_list: function (callback) {
 					self.getUsersList(function (users) {
+
+						users = _.orderBy(users, ['last_name', 'first_name'], ['asc', 'asc']);
+						
 						defaults.field_data.users = users;
 
 						if (typeof data === 'object' && data.id) {
@@ -536,8 +582,17 @@ define(function(require) {
 							callback(null, {});
 						}
 					});
+				},
+				callflow_list: function (callback) {
+					self.getCallflowList(function (callflows) {
+						callflows.unshift({
+							id: '',
+							name: self.i18n.active().callflows.acdc.notSet
+						});
+						defaults.field_data.callflows = callflows;
+						callback(null, callflows);
+					})
 				}
-
 			};
 
 			// conditionally add `agent_status` to the parallel tasks if this is an existing queue
@@ -567,14 +622,51 @@ define(function(require) {
 			// execute the parallel tasks
 			monster.parallel(parallelTasks, function (err, results) {
 				let render_data = defaults;
+
 				if (typeof data === 'object' && data.id) {
-				  render_data = $.extend(true, defaults, results.user_list);
+
+					render_data = $.extend(true, defaults, results.user_list);
+
+					self.findQueueCallflow(data.id, function(callflow) {
+
+						var queueCallflowId = callflow.id,
+							queueExtension = callflow.numbers[0];
+
+						render_data.field_data.callflow_id = queueCallflowId;
+						render_data.field_data.queue_extension = queueExtension;
+
+						self.getTimeoutCallflow(queueCallflowId, function(timeoutCallflow) {
+
+							// check if timeoutCallflow exists in callflow_list
+							var itemNotFound = timeoutCallflow && !_.some(results.callflow_list || [], function(cf) {
+								return cf && cf.id === timeoutCallflow;
+							});
+
+							render_data.field_data.timeout_callflow = timeoutCallflow || '';
+
+							if (itemNotFound) {
+								render_data.field_data.timeout_callflow_missing = true;
+								render_data.field_data.timeout_callflow_missing_text = self.i18n.active().callflows.acdc.callflowNotFound;
+							}
+
+							self.queueRender(render_data, target, callbacks);
+
+							if (typeof callbacks.after_render === 'function') {
+								callbacks.after_render();
+							}
+						});
+		
+					});
+
+					return; // prevent fall-through (render happens in callbacks above)
+
 				}
-			  
+
+				render_data.field_data.timeout_callflow = '';
 				self.queueRender(render_data, target, callbacks);
-			  
+
 				if (typeof callbacks.after_render === 'function') {
-				  callbacks.after_render();
+					callbacks.after_render();
 				}
 			});
 
@@ -594,6 +686,65 @@ define(function(require) {
 					callback && callback(users.data);
 				}
 			});
+		},
+
+		// callflow list for queue timeout
+		getCallflowList: function(callback) {
+			var self = this;
+
+			var callflowFilters = {
+				paginate: false,
+				filter_not_numbers: 'no_match',
+				filter_not_name: 'Dimensions_ReservedFeatureCodes'
+			};
+
+			var hideDimensionDeviceCallflow = [];
+
+			// are custom callflow actions enabled
+			if (miscSettings && miscSettings.enableCustomCallflowActions) {
+				if (miscSettings.callflowActionHideSmartPbxCallflows) {
+					callflowFilters['filter_not_type'] = 'mainUserCallflow';
+				}
+				if (miscSettings.callflowActionHideOriginVoip) {
+					callflowFilters['filter_not_ui_metadata.origin'] = 'voip';
+				}
+				if (miscSettings.callflowActionHidePhoneOnlyCallflows) {
+					hideDimensionDeviceCallflow.push('communal');
+				}
+				if (miscSettings.callflowActionHideLegacyPbxCallflows) {
+					hideDimensionDeviceCallflow.push('legacypbx');
+				}
+				if (hideDimensionDeviceCallflow.length > 0) {
+					callflowFilters['filter_not_dimension.type'] = hideDimensionDeviceCallflow;
+				}
+			}
+
+			self.callApi({
+				resource: 'callflow.list',
+				data: {
+					accountId: self.accountId,
+					filters: callflowFilters
+				},
+				success: function (callflows) {
+					var list_callflows = [];
+
+					$.each(callflows.data, function () {
+						if (this.featurecode === false) {
+							list_callflows.push(this);
+						}
+					});
+
+					list_callflows.sort(function (a, b) {
+						var aName = (a.name || (a.numbers && a.numbers[0] + '') || '').toLowerCase(),
+							bName = (b.name || (b.numbers && b.numbers[0] + '') || '').toLowerCase();
+
+						return aName > bName ? 1 : -1;
+					});
+
+					callback && callback(list_callflows);
+				}
+			});
+
 		},
 
 		queueRenderList: function(_parent, callback) {
@@ -661,6 +812,80 @@ define(function(require) {
 			});
 		},
 
+		findQueueCallflow: function(queueId, callback) {
+			var self = this;
+
+			var callflowFilters = {
+				paginate: false,
+				'filter_owner_id': queueId
+			};
+
+			self.callApi({
+				resource: 'callflow.list',
+				data: {
+					accountId: self.accountId,
+					filters: callflowFilters
+				},
+				success: function(_data) {
+
+					var callflow = _data?.data?.[0] || null;
+
+					callback && callback(callflow);
+				}
+			});
+		},
+
+		getCallflow: function(callflowId, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.get',
+				data: {
+					accountId: self.accountId,
+					callflowId: callflowId
+				},
+				success: function(_data) {
+					callback && callback(_data.data || []);
+				}
+			});
+		},
+
+		listQueueCallflows: function(callback) {
+			var self = this;
+
+			var callflowFilters = {
+				paginate: false,
+				'filter_flow.module': 'acdc_member'
+			};
+
+			self.callApi({
+				resource: 'callflow.list',
+				data: {
+					accountId: self.accountId,
+					filters: callflowFilters
+				},
+				success: function(_data) {
+					callback && callback(_data.data || []);
+				}
+			});
+		},
+
+		getTimeoutCallflow: function(callflowId, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.get',
+				data: {
+					accountId: self.accountId,
+					callflowId: callflowId
+				},
+				success: function(resp) {
+					var timeoutCallflow = resp.data.flow.children?._?.data?.id || null;
+					callback && callback(timeoutCallflow);
+				}
+			});
+		},
+
 		queueRender: function(data, target, callbacks) {
 
 			fieldReadOnly = false;
@@ -711,17 +936,26 @@ define(function(require) {
 
 				if (monster.ui.valid($form)) {
 					var form_data = monster.ui.getFormData($form[0]);
-					var agentsList = [];
-
-					var existingExtension = data.data?.numbers?.[0] || "";
-					var formExtension = form_data.extension;
+					
+					var existingExtension = data.field_data?.queue_extension,
+						formExtension = form_data.extension,
+						extensionChanged = existingExtension !== formExtension,
+						existingTimeout = data.field_data?.timeout_callflow,
+						formTimeout = form_data.timeout_callflow_id,
+						timeoutChanged = existingTimeout !== formTimeout,
+						timeoutMissing = data.field_data?.timeout_callflow_missing;
 
 					if (formExtension == "") {
 						monster.ui.alert('warning', self.i18n.active().callflows.acdc.extension.extensionNumberRequired);
 						return; // exit early to prevent save
 					}
 
-					if (existingExtension != formExtension) {
+					if (timeoutMissing && formTimeout == 'null') {
+						monster.ui.alert('warning', self.i18n.active().callflows.acdc.timeout.timeoutMissing);
+						return; // exit early to prevent save
+					}
+
+					if (extensionChanged) {
 						self.callApi({
 							resource: 'callflow.list',
 							data: {
@@ -743,7 +977,8 @@ define(function(require) {
 							}
 						});
 					} else {
-						data.field_data.update_callflow = false;
+						// no extension change, update callflow if timeout changed
+						data.field_data.update_callflow = timeoutChanged;
 						processUserListAndSave(form_data, data, queue_html, callbacks);
 					}
 
@@ -778,66 +1013,74 @@ define(function(require) {
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();
-
 				monster.ui.confirm(self.i18n.active().callflows.callcenter.deleteConfirmMessage, function() {
 					self.queueDelete(data, callbacks.delete_success, callbacks.delete_error);
 				});
 			};
 
-			$('.add-user', queue_html).click(function(e) {
+			$('.add-user', queue_html).on('click', function(e) {
 				e.preventDefault();
 
 				var $userSelect = $('#users-list', queue_html);
+				var user_id = $userSelect.val();
 
-				if ($userSelect.val() !== 'empty_option_user') {
-					var user_id = $userSelect.val(),
-						user_data = {
-							user_id: user_id,
-							user_name: $('#option_user_' + user_id, queue_html).text()
-						};
-
-					if ($('#row_no_data', queue_html).size() > 0) {
-						$('#row_no_data', queue_html).remove();
-					}
-
-					$('.js-user-table-body', queue_html).prepend(
-						$(self.getTemplate({
-							name: 'user-row',
-							data: user_data,
-							submodule: 'callcenter'
-						}))
-					);
-					$('#option_user_' + user_id, queue_html).hide();
-
-					$userSelect.val('empty_option_user');
+				if (!user_id || user_id === 'null') {
+					return;
 				}
+
+				var user_name = $.trim($userSelect.find('option:selected').text());
+
+				$('#row_no_data', queue_html).remove();
+
+				$('.js-user-table-body', queue_html).prepend(
+					$(self.getTemplate({
+						name: 'user-row',
+						data: {
+							user_id: user_id,
+							user_name: user_name,
+							agent_status: '',
+							miscSettings: miscSettings
+						},
+						submodule: 'callcenter'
+					}))
+				);
+
+				$userSelect.find('option[value="' + user_id + '"]').remove();
+				$userSelect.val('null');
+				$userSelect.trigger('chosen:updated');
 			});
 
-			$(queue_html).on('click', '.js-edit-user', function() {
-				var _data = {
-					id: $(this).data('id')
-				};
+			$(queue_html).on('click', '.js-delete-user', function(e) {
+				e.preventDefault();
 
-				monster.pub('callflows.user.popupEdit', {
-					data: _data,
-					callflow: function(_data) {
-						$('#row_user_' + _data.data.id + ' .column.first', queue_html).html(_data.data.first_name + ' ' + _data.data.last_name);
-						$('#option_user_' + _data.data.id, queue_html).html(_data.data.first_name + ' ' + _data.data.last_name);
-					}
-				});
-			});
+				var user_id = String($(this).data('id'));
+				var $row = $('#row_user_' + user_id, queue_html);
 
-			$(queue_html).on('click', '.js-delete-user', function() {
-				var user_id = $(this).data('id');
+				var user_name = $.trim($row.find('td').eq(0).text());
 
-				//removes it from the grid
-				$('#row_user_' + user_id, queue_html).remove();
+				$row.remove();
 
-				//re-add it to the dropdown
-				$('#option_user_' + user_id, queue_html).show();
+				var $userSelect = $('#users-list', queue_html);
 
-				//if grid empty, add no data line
-				if ($('.js-user-table-body .js-user-table-item', queue_html).size() === 0) {
+				var $opt = $userSelect.find('option[value="' + user_id + '"]');
+
+				if (!$opt.length) {
+					$opt = $('<option>', {
+						value: user_id,
+						id: 'option_user_' + user_id,
+						text: user_name
+					}).appendTo($userSelect);
+				} else {
+					$opt.text(user_name);
+				}
+
+				$opt.prop('disabled', false);
+				$opt.removeAttr('style');
+
+				$userSelect.trigger('chosen:updated');
+				$userSelect.trigger('liszt:updated');
+
+				if ($('.js-user-table-body .js-user-table-item', queue_html).length === 0) {
 					$('.js-user-table-body', queue_html).append(
 						$(self.getTemplate({
 							name: 'user-row',
@@ -896,8 +1139,28 @@ define(function(require) {
 				});
 			});
 
+			//show message if timeout callflow has been deleted 
+			if (data.field_data.timeout_callflow_missing) {
+				var missingText = data.field_data.timeout_callflow_missing_text,
+					$timeout = queue_html.find('#timeout_callflow_id');
+
+				$timeout.attr('data-placeholder', missingText).addClass('item-not-found');
+			}
+
 			// add search to dropdown
 			queue_html.find('#moh').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
+			queue_html.find('#timeout_callflow_id').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
+			queue_html.find('#users-list').chosen({
 				width: '224px',
 				disable_search_threshold: 0,
 				search_contains: true
@@ -964,25 +1227,19 @@ define(function(require) {
 		queueCallflowDelete: function(data, success, error) {
 			var self = this;
 
-			if (Array.isArray(data.data.callflows) && data.data.callflows.length > 0) {
-				const deletePromises = data.data.callflows.map(function(callflowId) {
-					return new Promise(function(resolve, reject) {
-						self.callApi({
-							resource: 'callflow.delete',
-							data: {
-								accountId: self.accountId,
-								callflowId: callflowId
-							},
-							success: function() {
-								resolve();
-							}
-						});
-					});
-				});
+			var callflowId = data.field_data.callflow_id;
 
-				Promise.all(deletePromises).then(function() {
-					if (typeof success === 'function') {
-						success();
+			if (callflowId) {
+				self.callApi({
+					resource: 'callflow.delete',
+					data: {
+						accountId: self.accountId,
+						callflowId: callflowId
+					},
+					success: function() {
+						if (typeof success === 'function') {
+							success();
+						}
 					}
 				});
 			} else {
@@ -1021,7 +1278,8 @@ define(function(require) {
 								data: {
 									user_id: v.id,
 									user_name: v.first_name + ' ' + v.last_name,
-									agent_status: agentStatus
+									agent_status: agentStatus,
+									miscSettings: miscSettings
 								},
 								submodule: 'callcenter'
 							}));
@@ -1059,8 +1317,12 @@ define(function(require) {
 				normalized_data = self.normalizeData($.extend(true, {}, data.data, form_data));
 
 			if (typeof data.data === 'object' && data.data.id) {
-				var queueId = data.data.id;
-				self.queueUpdate(queueId, normalized_data, extensionNumber, updateCallflow, function(queueData) {
+				var queueId = data.data.id,
+					callflowId = data.field_data.callflow_id,
+					timeoutCallflow = form_data.timeout_callflow_id || null;
+
+				self.queueUpdate(queueId, normalized_data, extensionNumber, updateCallflow, callflowId, timeoutCallflow, function(queueData) {
+					data.field_data.queue_extension = extensionNumber;
 					self.agentsSave(queueId, data.field_data.user_list.new_list, function(agentsData) {
 						queueData.agents = agentsData.agents;
 						if (typeof (success) === 'function') {
@@ -1069,7 +1331,8 @@ define(function(require) {
 					});
 				});
 			} else {
-				self.queueCreate(normalized_data, extensionNumber, function(queueData) {
+				self.queueCreate(normalized_data, extensionNumber, timeoutCallflow, function(queueData) {
+					data.field_data.queue_extension = extensionNumber;
 					self.agentsSave(queueData.id, data.field_data.user_list.new_list, function(agentsData) {
 						queueData.agents = agentsData.agents;
 						if (typeof (success) === 'function') {
@@ -1080,7 +1343,7 @@ define(function(require) {
 			}
 		},
 
-		queueUpdate: function(queueId, data, extensionNumber, updateCallflow, success, error){
+		queueUpdate: function(queueId, data, extensionNumber, updateCallflow, callflowId, timeoutCallflow, success, error){
 			var self = this;
 
 			monster.request({
@@ -1093,23 +1356,10 @@ define(function(require) {
 				},
 				success: function(_data) {
 					if (updateCallflow) {
-						self.queueCallflowUpdate(_data.data, extensionNumber, function(callflowData) {
-							monster.request({
-								resource: 'callcenter.queues.patch',
-								data: {
-									accountId: self.accountId,
-									queuesId: _data.data.id,
-									generateError: false,
-									data: {
-										numbers: callflowData.numbers
-									}
-								},
-								success: function() {
-									if (typeof (success) === 'function') {
-										success(_data.data);
-									}
-								},
-							});
+						self.queueCallflowUpdate(_data.data, extensionNumber, callflowId, timeoutCallflow, function() {
+							if (typeof (success) === 'function') {
+								success(_data.data);
+							}
 						});
 					} else {
 						if (typeof (success) === 'function') {
@@ -1125,7 +1375,7 @@ define(function(require) {
 			});
 		},
 
-		queueCreate: function(data, extensionNumber, success, error) {
+		queueCreate: function(data, extensionNumber, timeoutCallflow, success, error) {
 			var self = this;
 
 			monster.request({
@@ -1136,26 +1386,10 @@ define(function(require) {
 					data: data
 				},
 				success: function(_data) {
-					self.queueCallflowCreate(_data.data, extensionNumber, function(callflowData) {
-						monster.request({
-							resource: 'callcenter.queues.patch',
-							data: {
-								accountId: self.accountId,
-								queuesId: _data.data.id,
-								generateError: false,
-								data: {
-									callflows: [
-										callflowData.id
-									],
-									numbers: callflowData.numbers
-								}
-							},
-							success: function() {
-								if (typeof (success) === 'function') {
-									success(_data.data);
-								}
-							},
-						});
+					self.queueCallflowCreate(_data.data, extensionNumber, timeoutCallflow, function() {
+						if (typeof (success) === 'function') {
+							success(_data.data);
+						}
 					});
 				},
 				error: function(_data) {
@@ -1166,8 +1400,20 @@ define(function(require) {
 			});
 		},
 
-		queueCallflowCreate: function(data, extensionNumber, success, error) {
+		queueCallflowCreate: function(data, extensionNumber, timeoutCallflow, success, error) {
 			var self = this;
+
+			var children = {};
+
+			if (timeoutCallflow) {
+				children["_"] = {
+					module: "callflow",
+					data: {
+						id: timeoutCallflow
+					},
+					children: {}
+				};
+			}
 
 			self.callApi({
 				resource: 'callflow.create',
@@ -1182,8 +1428,9 @@ define(function(require) {
 								priority: 1
 							},
 							module: 'acdc_member',
-							children: {}
+							children: children
 						},
+						owner_id: data.id,
 						ui_metadata: {
 							origin: 'voip'
 						}
@@ -1198,14 +1445,26 @@ define(function(require) {
 			});
 		},
 
-		queueCallflowUpdate: function(data, extensionNumber, success, error) {
+		queueCallflowUpdate: function(data, extensionNumber, callflowId, timeoutCallflow, success, error) {
 			var self = this;
+
+			var children = {};
+
+			if (timeoutCallflow) {
+				children["_"] = {
+					module: "callflow",
+					data: {
+						id: timeoutCallflow
+					},
+					children: {}
+				};
+			}
 
 			self.callApi({
 				resource: 'callflow.update',
 				data: {
 					accountId: self.accountId,
-					callflowId: data.callflows[0],
+					callflowId: callflowId,
 					data: {
 						name: data.name,
 						numbers: [ extensionNumber ],
@@ -1215,8 +1474,9 @@ define(function(require) {
 								priority: 1
 							},
 							module: 'acdc_member',
-							children: {}
+							children: children
 						},
+						owner_id: data.id,
 						ui_metadata: {
 							origin: 'voip'
 						}
@@ -1234,6 +1494,7 @@ define(function(require) {
 		normalizeData: function(form_data) {
 			delete form_data.user_id;
 			delete form_data.extension;
+			delete form_data.timeout_callflow_id;
 
 			// remove blank fields and let Kazoo set the defaults
 			$.each(form_data, function(key, value){

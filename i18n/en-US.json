@@ -294,7 +294,7 @@
 			"mdn_data_content": "Mobile Device Number",
 			"__version": "3.22",
 			"__comment": "UI-2135: Add an empty option for SIP device brands to support SmartPBX devices",
-			"none": "- Not set -",
+			"none": "- Not Set -",
 			"mediaWebrtc": {
 				"content": "If checked, forces a WebRTC compatible SDP on the INVITE.",
 				"label": "WebRTC"
@@ -652,7 +652,7 @@
 			"continue_to_default_action": "Continue to default action",
 			"continue_to_default_action_popover": "If true, when caller dials an extension, call will be branched, once that branch finishes if menu has a default action set, that action will be executed",
 			"greeting_message": "Greeting Message",
-			"greeting_message_data_content": "Select the Greeting message that you want to use for this menu. If you select - Not set -, then no media file will be played.",
+			"greeting_message_data_content": "Select the Greeting message that you want to use for this menu. If you select - Not Set -, then no media file will be played.",
 			"edit": "Edit",
 			"create": "Create",
 			"whitelist_of_numbers": "Whitelist of numbers",
@@ -678,7 +678,7 @@
 			"save": "Save",
 			"menu_option": "Menu option",
 			"menus_label": "Menus",
-			"not_set": "- Not set -",
+			"not_set": "- Not Set -",
 			"there_were_errors_on_the_form": "There were errors on the form, please correct!",
 			"are_you_sure_you_want_to_delete": "Are you sure you want to delete this menu?",
 			"no_name": "(no name)",
@@ -1097,7 +1097,7 @@
 			"pin_number": "PIN number",
 			"pin_number_data_content": "Enter the PIN Number of this voicemail box (must be at least 4 digits)",
 			"unavailable_message": "Unavailable Message",
-			"unavailable_message_data_content": "Select the Unavailable message that you want to use for this this device. If you select - Not set -, then no media file will be played.",
+			"unavailable_message_data_content": "Select the Unavailable message that you want to use for this this device. If you select - Not Set -, then no media file will be played.",
 			"timezone": "Timezone",
 			"already_setup": "Already Setup",
 			"already_setup_data_content": "Is this voicemail box already considered initialized? If not, the first time the user logs in they will be forced to change their PIN and setup a greeting.",
@@ -1120,7 +1120,7 @@
 			"delete": "Delete",
 			"save": "Save",
 			"voicemail_boxes_label": "Voicemail Boxes",
-			"not_set": "- Not set -",
+			"not_set": "- Not Set -",
 			"there_were_errors_on_the_form": "There were errors on the form, please correct!",
 			"are_you_sure_you_want_to_delete": "Are you sure you want to delete this voicemail box?",
 			"no_name": "(no name)",
@@ -1138,7 +1138,7 @@
 			"default": "Account Default",
 			"__comment": "UI-3040: add temporary greeting",
 			"temporary_unavailable_message": "Temporary Message",
-			"temporary_unavailable_message_data_content": "Select the Temporary Unavailable message that you want to use for this this device. If you set this field, it will take precedence over the Unavailable message, but if you select - Not set -, then the Unavailable message will be played instead.",
+			"temporary_unavailable_message_data_content": "Select the Temporary Unavailable message that you want to use for this this device. If you set this field, it will take precedence over the Unavailable message, but if you select - Not Set -, then the Unavailable message will be played instead.",
 			"transcription": {
 				"label": "Transcribe Messages",
 				"help": "Enable automatic transcription for new voicemails"
@@ -1577,12 +1577,24 @@
 			"save": "Save",
 			"delete": "Delete",
 			"queuePriority": "Queue Priority",
+			"notSet": "- Not Set -",
+			"callflowNotFound": "Configured Destination Not Found",
 			"settings": {
 				"title": "Queue Settings",
 				"connectionTimeout": "In seconds, how long to try to connect the caller before progressing past the queue callflow action",
 				"connectionTimeoutInvalid": "Invalid Value <br> The entered value must be between 20 and 3600",
 				"maxQueueSize": "How many callers are allowed to wait on hold in the queue. Set as 0 for no limit",
-				"maxQueueSizeInvalid": "Invalid Value <br> The entered value must be between 0 and 100"
+				"maxQueueSizeInvalid": "Invalid Value <br> The entered value must be between 0 and 100",
+				"queueName": "Name",
+				"queueExtension": "Extension",
+				"strategy": "Ring Strategy",
+				"strategyMostIdle": "Most Idle",
+				"strategyRingAll": "Ring All",
+				"strategyRoundRobin": "Round Robin",
+				"timeout": "Queue Timeout",
+				"callLimit": "Queue Call Limit",
+				"enterWhenEmpty": "Enter When Empty",
+				"timeoutCallflow": "Timeout Callflow"
 			},
 			"moh": {
 				"title": "Music On Hold"
@@ -1590,7 +1602,11 @@
 			"announcements": {
 				"title": "Announcements",
 				"intervalHelp": "Time between announcements. Between 15 and 30 seconds.",
-				"intervalInvalid": "Invalid Value <br> The entered value must be between 15 and 30"
+				"intervalInvalid": "Invalid Value <br> The entered value must be between 15 and 30",
+				"announcement": "Announcement",
+				"announcementInterval": "Announcement Interval",
+				"announcementPosition": "Position in Queue",
+				"announcementWait": "Estimated Wait Time"
 			},
 			"agents": {
 				"title": "Agents",
@@ -1606,15 +1622,23 @@
 				"agentTimeout": "Duration of agent Wrapup time (in seconds) after a call has been processed",
 				"agentWrapup": "Timeout in seconds given to agent to answer a ringing call. If timeout expires, call is routed to next available agent",
 				"agentTimeoutInvalid": "Invalid Value <br> The entered value must be between 5 and 120",
-				"agentWrapupInvalid": "Invalid Value <br> The entered value must be between 0 and 300"
+				"agentWrapupInvalid": "Invalid Value <br> The entered value must be between 0 and 300",
+				"agentRingTimeout": "Agent Connect Timeout",
+				"agentWrapTimeout": "Agent Wrap-up Time"
 			},
 			"advancedSettings": {
-				"title": "Advanced Settings"
+				"title": "Advanced Settings",
+				"recordCaller": "Record Caller",
+				"recordingUrl": "Recording URL",
+				"cdrUrl": "CDR URL"
 			},
 			"extension": {
 				"extensionNumber": "Queue extension number",
 				"extensionNumberRequired": "An extension number is required for this queue.",
 				"extensionNumberExists": "This extension number is already used by: <br>"
+			},
+			"timeout": {
+				"timeoutMissing": "The saved Timeout Callflow could not be found. <br> Please select a replacement or choose Not Set to clear it."
 			}
 		},
 		"callcenter": {

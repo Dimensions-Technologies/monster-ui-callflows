@@ -3,14 +3,15 @@
 		<td>{{ user_name }}</td>
 		<td>{{ agent_status }}</td>
 		<td>
-			<!--
-			<a class="js-edit-user link-icon" data-id="{{ user_id }}">
-				<i class="fa fa-pencil"></i>
-			</a>
-			-->
-			<a class="js-delete-user link-icon" data-id="{{ user_id }}">
-				<i class="fa fa-trash"></i>
-			</a>
+			{{#if miscSettings.enableGoogleIcons}}
+				<a class="js-delete-user link-icon" data-id="{{ user_id }}">
+					<i class="material-symbols-icon-groups-delete">clear</i>
+				</a>
+			{{else}}
+				<a class="js-delete-user link-icon" data-id="{{ user_id }}">
+					<i class="fa fa-trash-o"></i>
+				</a>
+			{{/if}}
 		</td>
 	</tr>
 {{else}}
