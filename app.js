@@ -1952,16 +1952,15 @@ define(function(require) {
 
 								/* added toaster for future use
 								monster.ui.toast({
-								type: 'success',
-								message: self.i18n.active().entityManager.changesSaved,
-								options: {
-									positionClass: 'toast-bottom-right',
-									timeOut: 3000,
-									extendedTimeOut: 1000,
-								}
-							});
-							*/
-
+									type: 'success',
+									message: self.i18n.active().entityManager.changesSaved,
+									options: {
+										positionClass: 'toast-bottom-right',
+										timeOut: 3000,
+										extendedTimeOut: 1000,
+									}
+								});
+								*/
 						}
 					});
 				};
