@@ -1940,27 +1940,44 @@ define(function(require) {
 
 				delete newData.extra;
 
-				self.callApi({
-					resource: 'account.update',
-					data: {
-						accountId: newData.id,
-						data: newData
-					},
-					success: function(data, status) {
-						self.render();
+				var updateAccountSettings = function() {
+					self.callApi({
+						resource: 'account.update',
+							data: {
+								accountId: newData.id,
+								data: newData
+							},
+							success: function(data, status) {
+								self.renderAccountSettings(template.closest('.callflow-edition'));
 
-						/* added toaster for future use
-						monster.ui.toast({
-							type: 'success',
-							message: self.i18n.active().entityManager.changesSaved,
-							options: {
-								positionClass: 'toast-bottom-right',
-								timeOut: 3000,
-								extendedTimeOut: 1000,
+								/* added toaster for future use
+								monster.ui.toast({
+								type: 'success',
+								message: self.i18n.active().entityManager.changesSaved,
+								options: {
+									positionClass: 'toast-bottom-right',
+									timeOut: 3000,
+									extendedTimeOut: 1000,
+								}
+							});
+							*/
+
+						}
+					});
+				};
+
+				monster.pub('callflows.strategyHours.save', {
+					parent: template,
+					callback: function() {
+						monster.pub('callflows.strategyHolidays.save', {
+							parent: template,
+							callback: function() {
+								monster.pub('callflows.strategyCalls.save', {
+									parent: template,
+									callback: updateAccountSettings
+								});
 							}
 						});
-						*/
-
 					}
 				});
 			});

@@ -14,7 +14,8 @@ define(function(require) {
 			'callflows.strategy.addOfficeHours': 'strategyAddOfficeHoursPopup',
 			'callflows.strategy.render': 'strategyRender',
 			'callflows.auth.currentAccountUpdated': '_strategyOnCurrentAccountUpdated',
-			'callflows.strategy.addEditOfficeHolidays': 'strategyAddEditOfficeHolidaysPopup'
+			'callflows.strategy.addEditOfficeHolidays': 'strategyAddEditOfficeHolidaysPopup',
+			'callflows.strategyCalls.save': 'strategyCallsSave'
 		},
 
 		weekdays: [
@@ -131,6 +132,8 @@ define(function(require) {
 						submodule: 'strategy'
 					}));
 
+				template.data('strategyData', results);
+
 				self.strategyBindEvents(template, results);
 
 				parent
@@ -230,7 +233,13 @@ define(function(require) {
 				strategyCallsContainer = template.find('.element-container.strategy-calls .element-content');
 
 			template.find('.element-header-inner').on('click', function(e) {
-				var element = $(this).parents('.element-container');
+				var element = $(this).parents('.element-container'),
+					shouldReuseSectionState = _.some([
+						element.hasClass('strategy-hours')
+							&& element.find('#strategy_custom_hours_form').length > 0,
+						element.hasClass('strategy-holidays')
+							&& element.find('.holidays-toggler').length > 0
+					]);
 				if (element.hasClass('open')) {
 					element.find('.element-content').slideUp(function() {
 						element.removeClass('open');
@@ -245,14 +254,19 @@ define(function(require) {
 						}
 					});
 
-					self.strategyRefreshTemplate({
-						container: element,
-						strategyData: strategyData,
-						callback: function() {
-							element.addClass('open');
-							element.find('.element-content').slideDown();
-						}
-					});
+					if (shouldReuseSectionState) {
+						element.addClass('open');
+						element.find('.element-content').slideDown();
+					} else {
+						self.strategyRefreshTemplate({
+							container: element,
+							strategyData: strategyData,
+							callback: function() {
+								element.addClass('open');
+								element.find('.element-content').slideDown();
+							}
+						});
+					}
 				}
 			});
 
@@ -311,6 +325,7 @@ define(function(require) {
 					callerIdType: 'external',
 					number: number,
 					success: function() {
+						/*
 						monster.ui.toast({
 							type: 'success',
 							message: self.getTemplate({
@@ -320,6 +335,7 @@ define(function(require) {
 								}
 							})
 						});
+						*/
 					}
 				});
 			});
@@ -1785,133 +1801,6 @@ define(function(require) {
 				$this.siblings('.title').text($this.find('option:selected').closest('optgroup').prop('label'));
 			});
 
-			container.on('click', '.save-button', function(e) {
-				e.preventDefault();
-				var invalidTab = null,
-					flows = {};
-
-				$.each(container.find('.callflow-tab'), function() {
-					var $this = $(this),
-						callflowName = $this.data('callflow'),
-						callOption = $this.find('.call-option.active'),
-						menu = callOption.find('.menu-div'),
-						callEntity = callOption.find('.user-select'),
-						voicemail = callOption.find('.voicemail-select'),
-						advancedCallflow = callOption.find('.advancedCallflows-select'),
-						flow = {};
-
-					if (callEntity.length) {
-						var selectedEntity = callEntity.find('option:selected'),
-							flowElement = {
-								children: {},
-								module: selectedEntity.data('type'),
-								data: {}
-							};
-						switch (flowElement.module) {
-							case 'user':
-							case 'device':
-							case 'callflow':
-							case 'play':
-								flowElement.data.id = selectedEntity.val();
-
-								break;
-							case 'ring_group':
-								flowElement.data.endpoints = [{
-									endpoint_type: 'group',
-									id: selectedEntity.val()
-								}];
-
-								break;
-							case 'none':
-								flowElement = {};
-
-								break;
-							default:
-								break;
-						}
-
-						flow = flowElement;
-					}
-
-					if (voicemail.length) {
-						var selectedVoicemail = voicemail.find('option:selected'),
-							flowElement = {
-								children: {},
-								module: 'voicemail',
-								data: {
-									id: selectedVoicemail.val()
-								}
-							};
-
-						if ('children' in flow) {
-							flow.children._ = flowElement;
-						} else {
-							flow = flowElement;
-						}
-					}
-
-					if (menu.length) {
-						var menuCallflowName = menu.data('callflow');
-						if (!menuCallflowName) {
-							invalidTab = this.id;
-							return false;
-						} else {
-							var flowElement = {
-								children: {},
-								module: 'callflow',
-								data: {
-									id: strategyData.callflows[menuCallflowName].id
-								}
-							};
-
-							if ('children' in flow) {
-								flow.children._ = flowElement;
-							} else {
-								flow = flowElement;
-							}
-						}
-					}
-
-					if (advancedCallflow.length) {
-						flow = {
-							children: {},
-							module: 'callflow',
-							data: {
-								id: advancedCallflow.find('option:selected').val()
-							},
-							is_main_number_cf: true
-						};
-					}
-
-					flows[callflowName] = flow;
-				});
-
-				if (invalidTab) {
-					monster.ui.alert(self.i18n.active().strategy.alertMessages.undefinedMenu);
-					container.find('a[href="#' + invalidTab + '"]').tab('show');
-				} else {
-					var parallelRequests = {};
-					_.each(flows, function(val, key) {
-						strategyData.callflows[key].flow = val;
-						parallelRequests[key] = function(callback) {
-							self.strategyUpdateCallflow(strategyData.callflows[key], function(updatedCallflow) {
-								strategyData.callflows[key] = updatedCallflow;
-								callback(null, updatedCallflow);
-							});
-						};
-					});
-
-					monster.parallel(parallelRequests, function(err, results) {
-						container.hide();
-						container.parents('.element-container').removeClass('open');
-						monster.ui.toast({
-							type: 'success',
-							message: self.i18n.active().strategy.toastrMessages.updateCallSuccess
-						});
-					});
-				}
-			});
-
 			container.on('click', '.reset-button', function(e) {
 				e.preventDefault();
 
@@ -1941,6 +1830,155 @@ define(function(require) {
 						});
 					});
 				});
+			});
+		},
+
+		strategyCallsSave: function(args, callback) {
+			var self = this,
+				saveArgs = args || {},
+				saveCallback = _.isFunction(callback)
+					? callback
+					: _.get(saveArgs, 'callback', _.noop),
+				$parent = saveArgs.parent || $(),
+				$container = saveArgs.container || $parent.find('.element-container.strategy-calls .element-content').first(),
+				strategyData = saveArgs.strategyData || $parent.find('#strategy_container').data('strategyData'),
+				closeOnSuccess = _.get(saveArgs, 'closeOnSuccess', false),
+				showToast = _.get(saveArgs, 'showToast', false),
+				$tabs = $container.find('.callflow-tab');
+
+			if ($container.length < 1 || _.isUndefined(strategyData) || $tabs.length < 1) {
+				saveCallback();
+				return;
+			}
+
+			var invalidTab = null,
+				flows = {};
+
+			$.each($tabs, function() {
+				var $this = $(this),
+					callflowName = $this.data('callflow'),
+					callOption = $this.find('.call-option.active'),
+					menu = callOption.find('.menu-div'),
+					callEntity = callOption.find('.user-select'),
+					voicemail = callOption.find('.voicemail-select'),
+					advancedCallflow = callOption.find('.advancedCallflows-select'),
+					flow = {};
+
+				if (callEntity.length) {
+					var selectedEntity = callEntity.find('option:selected'),
+						flowElement = {
+							children: {},
+							module: selectedEntity.data('type'),
+							data: {}
+						};
+					switch (flowElement.module) {
+						case 'user':
+						case 'device':
+						case 'callflow':
+						case 'play':
+							flowElement.data.id = selectedEntity.val();
+
+							break;
+						case 'ring_group':
+							flowElement.data.endpoints = [{
+								endpoint_type: 'group',
+								id: selectedEntity.val()
+							}];
+
+							break;
+						case 'none':
+							flowElement = {};
+
+							break;
+						default:
+							break;
+					}
+
+					flow = flowElement;
+				}
+
+				if (voicemail.length) {
+					var selectedVoicemail = voicemail.find('option:selected'),
+						voicemailElement = {
+							children: {},
+							module: 'voicemail',
+							data: {
+								id: selectedVoicemail.val()
+							}
+						};
+
+					if ('children' in flow) {
+						flow.children._ = voicemailElement;
+					} else {
+						flow = voicemailElement;
+					}
+				}
+
+				if (menu.length) {
+					var menuCallflowName = menu.data('callflow');
+					if (!menuCallflowName) {
+						invalidTab = this.id;
+						return false;
+					} else {
+						var menuElement = {
+							children: {},
+							module: 'callflow',
+							data: {
+								id: strategyData.callflows[menuCallflowName].id
+							}
+						};
+
+						if ('children' in flow) {
+							flow.children._ = menuElement;
+						} else {
+							flow = menuElement;
+						}
+					}
+				}
+
+				if (advancedCallflow.length) {
+					flow = {
+						children: {},
+						module: 'callflow',
+						data: {
+							id: advancedCallflow.find('option:selected').val()
+						},
+						is_main_number_cf: true
+					};
+				}
+
+				flows[callflowName] = flow;
+			});
+
+			if (invalidTab) {
+				monster.ui.alert(self.i18n.active().strategy.alertMessages.undefinedMenu);
+				$container.find('a[href="#' + invalidTab + '"]').tab('show');
+				return;
+			}
+
+			var parallelRequests = {};
+			_.each(flows, function(val, key) {
+				strategyData.callflows[key].flow = val;
+				parallelRequests[key] = function(next) {
+					self.strategyUpdateCallflow(strategyData.callflows[key], function(updatedCallflow) {
+						strategyData.callflows[key] = updatedCallflow;
+						next(null, updatedCallflow);
+					});
+				};
+			});
+
+			monster.parallel(parallelRequests, function(err) {
+				if (closeOnSuccess) {
+					$container.hide();
+					$container.parents('.element-container').removeClass('open');
+				}
+				if (showToast) {
+					monster.ui.toast({
+						type: 'success',
+						message: self.i18n.active().strategy.toastrMessages.updateCallSuccess
+					});
+				}
+				saveCallback();
 			});
 		},
 
@@ -2145,7 +2183,7 @@ define(function(require) {
 				width: '150px'
 			});
 
-			container.find('.upload-input').fileUpload({
+				container.find('.upload-input').fileUpload({
 				inputOnly: true,
 				wrapperClass: 'upload-container',
 				btnText: self.i18n.active().strategy.popup.browse,
@@ -2160,10 +2198,48 @@ define(function(require) {
 					}
 					container.find('.upload-container input').val('');
 					mediaToUpload = undefined;
-				}
-			});
+					}
+				});
 
-			container.on('change', '.target-select', function(e) {
+				chooseExisting
+					.on('show.bs.collapse', function () {
+						$(this).closest('.accordion-group').addClass('choose-existing-open');
+					})
+					.on('hide.bs.collapse', function () {
+						$(this).closest('.accordion-group').removeClass('choose-existing-open');
+					});
+
+				var greetingSource = _
+						.chain(greeting)
+						.get('media_source', _.get(greeting, 'source_type', ''))
+						.toString()
+						.toLower()
+						.value(),
+					panelBySource = {
+						tts: '#strategy_menu_popup_tts_greeting',
+						text_to_speech: '#strategy_menu_popup_tts_greeting',
+						upload: '#strategy_menu_popup_choose_existing',
+						recording: '#strategy_menu_popup_record_greeting'
+					},
+					defaultPanelSelector = _.has(menu, 'media.greeting')
+						? '#strategy_menu_popup_choose_existing'
+						: '',
+					targetPanelSelector = panelBySource[greetingSource] || defaultPanelSelector,
+					$activeGreetingPanel = targetPanelSelector
+						? container.find(targetPanelSelector).first()
+						: container.find('.greeting-option.active .collapse').first();
+
+				if ($activeGreetingPanel.length > 0) {
+					container.find('.greeting-option').removeClass('active');
+					container.find('.accordion-group').removeClass('choose-existing-open');
+					$activeGreetingPanel.parents('.greeting-option').addClass('active');
+					if ($activeGreetingPanel.is('#strategy_menu_popup_choose_existing')) {
+						$activeGreetingPanel.closest('.accordion-group').addClass('choose-existing-open');
+					}
+					$activeGreetingPanel.collapse('show');
+				}
+
+				container.on('change', '.target-select', function(e) {
 				var $this = $(this),
 					iconElem = $this.parents('.target-input').find('.target-icon'),
 					icon = $this.find('option:selected').parents('optgroup').data('icon');
@@ -2237,13 +2313,12 @@ define(function(require) {
 								}
 							});
 
-							container.find('.greeting-option').removeClass('active');
-							ttsGreeting.parents('.greeting-option').addClass('active');
-							ttsGreeting.collapse('hide');
-						}
-					});
-				} else {
-					monster.ui.alert(self.i18n.active().strategy.alertMessages.emptyTtsGreeting);
+								container.find('.greeting-option').removeClass('active');
+								ttsGreeting.parents('.greeting-option').addClass('active');
+							}
+						});
+					} else {
+						monster.ui.alert(self.i18n.active().strategy.alertMessages.emptyTtsGreeting);
 				}
 			});
 
@@ -2295,25 +2370,24 @@ define(function(require) {
 								}
 							});
 
-							uploadFile(mediaToUpload.file, greeting.id, function() {
-								container.find('.greeting-option').removeClass('active');
-								uploadGreeting.parents('.greeting-option').addClass('active');
-								uploadGreeting.collapse('hide');
-							});
-						}
-					});
-				} else {
+								uploadFile(mediaToUpload.file, greeting.id, function() {
+									container.find('.greeting-option').removeClass('active');
+									uploadGreeting.parents('.greeting-option').addClass('active');
+								});
+							}
+						});
+					} else {
 					monster.ui.alert(self.i18n.active().strategy.alertMessages.emptyUploadGreeting);
 				}
 			});
 
-			chooseExisting.find('.update-greeting').on('click', function(ev) {
-				ev.preventDefault();
+				chooseExisting.find('.update-greeting').on('click', function(ev) {
+					ev.preventDefault();
 
-				var greetingId = chooseExisting.find('.choose-input').find(':selected').val();
-				menu.media.greeting = greetingId;
-				self.callApi({
-					resource: 'menu.update',
+					var greetingId = container.find('.choose-existing-inline .choose-input').val();
+					menu.media.greeting = greetingId;
+					self.callApi({
+						resource: 'menu.update',
 					data: {
 						accountId: self.accountId,
 						menuId: menu.id,
@@ -2325,21 +2399,12 @@ define(function(require) {
 						},
 						removeMetadataAPI: true
 					},
-					success: function(data, status) {
-						menu = data.data;
-						container.find('.greeting-option').removeClass('active');
-						chooseExisting.parents('.greeting-option').addClass('active');
-						chooseExisting.collapse('hide');
-					}
-				});
-			});
-
-			chooseExisting
-				.on('show.bs.collapse', function () {
-					$(this).closest('.accordion-group').addClass('choose-existing-open');
-				})
-				.on('hide.bs.collapse', function () {
-					$(this).closest('.accordion-group').removeClass('choose-existing-open');
+						success: function(data, status) {
+							menu = data.data;
+							container.find('.greeting-option').removeClass('active');
+							chooseExisting.parents('.greeting-option').addClass('active');
+						}
+					});
 				});
 
 			container.find('.cancel-greeting').on('click', function() {

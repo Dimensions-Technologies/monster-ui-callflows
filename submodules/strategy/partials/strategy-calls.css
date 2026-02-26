@@ -186,3 +186,7 @@
     margin-bottom: 20px;
     overflow: visible;
 }
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-calls .calls-actions {
+    text-align: left;
+}
