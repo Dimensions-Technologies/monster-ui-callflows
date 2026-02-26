@@ -1887,68 +1887,82 @@ define(function(require) {
 		},
 
 		deviceSave: function(form_data, data, success) {
+			var self = this;
 
-			if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
-				var	self = this, 
-					callflowNumbers = data.field_data.callflow_numbers,
-					formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
-					deviceCallflow = data.field_data.device_callflow;
+			function saveDevice() {
+				var id = (typeof data.data === 'object' && data.data.id) ? data.data.id : undefined,
+					normalized_data = self.deviceFixArrays(self.deviceNormalizeData($.extend(true, {}, data.data, form_data)), form_data);
 
-				if (miscSettings.enableConsoleLogging) {
-					console.log('Numbers on User Callflow', callflowNumbers);
-					console.log('Numbers on User Form', formNumbers);
+				if (id) {
+					self.deviceUpdate(normalized_data, function(_data, status) {
+						success && success(_data, status, 'update');
+					});
+				} else {
+					self.deviceCreate(normalized_data, function(_data, status) {
+						success && success(_data, status, 'create');
+					});
 				}
+			}
 
-				if ('callflow_numbers' in form_data) {
-					delete form_data.callflow_numbers;
-				}
+			function patchDeviceCallflow(saveDevice) {
+				if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
+					var callflowNumbers = data.field_data.callflow_numbers,
+						formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
+						deviceCallflow = data.field_data.device_callflow,
+						callflowNumbersSorted = _.sortBy(callflowNumbers || []),
+						formNumbersSorted = _.sortBy(formNumbers || []),
+						numbersChanged = !_.isEqual(callflowNumbersSorted, formNumbersSorted);
 
-				if ('phone_numbers' in form_data) {
-					delete form_data.phone_numbers;
-				}
+					if (miscSettings.enableConsoleLogging) {
+						console.log('Numbers on Device Callflow', callflowNumbers);
+						console.log('Numbers on Device Form', formNumbers);
+					}
 
-				if ('extension_numbers' in form_data) {
-					delete form_data.extension_numbers;
-				}
+					if ('callflow_numbers' in form_data) {
+						delete form_data.callflow_numbers;
+					}
 
-				// patch users callflow if there is a change to the qty of numbers 
-				if (formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
-					self.callApi({
-						resource: 'callflow.patch',
-						data: {
-							accountId: self.accountId,
-							callflowId: deviceCallflow,
+					if ('phone_numbers' in form_data) {
+						delete form_data.phone_numbers;
+					}
+
+					if ('extension_numbers' in form_data) {
+						delete form_data.extension_numbers;
+					}
+
+					// patch device callflow if there is a change to the assigned numbers 
+					if (numbersChanged) {
+						self.callApi({
+							resource: 'callflow.patch',
 							data: {
-								numbers: formNumbers,
-								ui_metadata: {
-									origin: 'voip'
-								}
+								accountId: self.accountId,
+								callflowId: deviceCallflow,
+								data: {
+									numbers: formNumbers,
+									ui_metadata: {
+										origin: 'voip'
+									}
+								},
+								removeMetadataAPI: true
 							},
-							removeMetadataAPI: true
-						},
-						success: function(_callflow_update) {
-							if (miscSettings.enableConsoleLogging) {
-								console.log('Device Callflow Updated', _callflow_update)
+							success: function(_callflow_update) {
+								if (miscSettings.enableConsoleLogging) {
+									console.log('Device Callflow Updated', _callflow_update);
+								}
+								saveDevice();
+							},
+							error: function() {
+								saveDevice();
 							}
-						}
-					})
+						});
+					} else {
+						return saveDevice();
+					}
+				} else {
+					return saveDevice();
 				}
 			}
-
-			var self = this,
-				id = (typeof data.data === 'object' && data.data.id) ? data.data.id : undefined,
-				normalized_data = self.deviceFixArrays(self.deviceNormalizeData($.extend(true, {}, data.data, form_data)), form_data);
-
-			if (id) {
-				self.deviceUpdate(normalized_data, function(_data, status) {
-					success && success(_data, status, 'update');
-				});
-			} else {
-				self.deviceCreate(normalized_data, function(_data, status) {
-					success && success(_data, status, 'create');
-				});
-			}
-
+			patchDeviceCallflow(saveDevice);
 		},
 
 		deviceList: function(callback, deviceType) {
