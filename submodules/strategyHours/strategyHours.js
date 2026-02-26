@@ -28,7 +28,8 @@ define(function(require) {
 	return {
 		subscribe: {
 			'callflows.strategyHours.render': 'strategyHoursRender',
-			'callflows.strategyHours.listing.onUpdate': 'strategyHoursListingOnUpdate'
+			'callflows.strategyHours.listing.onUpdate': 'strategyHoursListingOnUpdate',
+			'callflows.strategyHours.save': 'strategyHoursSave'
 		},
 
 		appFlags: {
@@ -91,6 +92,9 @@ define(function(require) {
 				}));
 
 			$container
+				.data('strategyHoursData', {
+					strategyData: strategyData
+				})
 				.find('.element-content')
 					.empty()
 					.append(template);
@@ -313,25 +317,36 @@ define(function(require) {
 				saveIntervalsAsCsv(parent);
 			});
 
-			template.find('form').on('submit', function(event) {
-				event.preventDefault();
+		},
 
-				var $button = $(event.originalEvent.submitter),
-					$section = $(this).parents('.element-container'),
-					formData = monster.ui.getFormData('strategy_custom_hours_form'),
-					is24hStrategy = formData.enabled === 'true',
-					weekdays = self.weekdays,
-					intervals = is24hStrategy
-						? self.strategyHoursGetDaysIntervalsFromTemplate(parent)
-						: _.map(weekdays, function() { return []; });
+		strategyHoursSave: function(args, callback) {
+			var self = this,
+				saveArgs = args || {},
+				saveCallback = _.isFunction(callback)
+					? callback
+					: _.get(saveArgs, 'callback', _.noop),
+				$parent = saveArgs.parent || $(),
+				$isHoursContainer = $parent.hasClass('strategy-hours'),
+				$hoursContainer = $isHoursContainer
+					? $parent
+					: $parent.find('.element-container.strategy-hours').first(),
+				metadata = $hoursContainer.data('strategyHoursData'),
+				strategyData = _.get(metadata, 'strategyData'),
+				$form = $hoursContainer.find('#strategy_custom_hours_form');
 
-				$button.prop('disabled', 'disabled');
+			if ($hoursContainer.length < 1 || $form.length < 1 || _.isUndefined(strategyData)) {
+				saveCallback();
+				return;
+			}
 
-				self.strategyHoursUpdateStrategyData(intervals, strategyData, function() {
-					$section.find('.element-content').slideUp();
-					$section.removeClass('open');
-				});
-			});
+			var formData = monster.ui.getFormData('strategy_custom_hours_form'),
+				is24hStrategy = formData.enabled === 'true',
+				weekdays = self.weekdays,
+				intervals = is24hStrategy
+					? self.strategyHoursGetDaysIntervalsFromTemplate($hoursContainer)
+					: _.map(weekdays, function() { return []; });
+
+			self.strategyHoursUpdateStrategyData(intervals, strategyData, saveCallback);
 		},
 
 		strategyHoursListingBindEvents: function(parent, template) {
