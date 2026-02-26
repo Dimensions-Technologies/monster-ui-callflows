@@ -365,6 +365,7 @@ define(function(require) {
 						callerIdType: 'emergency',
 						number: number,
 						success: function() {
+							/*
 							monster.ui.toast({
 								type: 'success',
 								message: self.getTemplate({
@@ -374,7 +375,7 @@ define(function(require) {
 									}
 								})
 							});
-
+							*/
 							cb(null);
 						}
 					});
@@ -470,6 +471,7 @@ define(function(require) {
 					callerIdType: 'emergency',
 					number: number,
 					success: function() {
+						/*
 						monster.ui.toast({
 							type: 'success',
 							message: self.getTemplate({
@@ -479,7 +481,7 @@ define(function(require) {
 								}
 							})
 						});
-
+						*/
 						_.has(args, 'callbacks.success') && args.callbacks.success();
 					}
 				});
@@ -1053,16 +1055,20 @@ define(function(require) {
 					callbacks: {
 						success: function(numbers) {
 							addNumbersToMainCallflow(_.keys(numbers));
+							/*
 							monster.ui.toast({
 								type: 'success',
 								message: self.i18n.active().strategy.toastrMessages.buyNumbersSuccess
 							});
+							*/
 						},
 						error: function(error) {
+							/*
 							monster.ui.toast({
 								type: 'error',
 								message: self.i18n.active().strategy.toastrMessages.buyNumbersError
 							});
+							*/
 						}
 					}
 				});
@@ -1104,10 +1110,12 @@ define(function(require) {
 										});
 									},
 									function(updatedCallflow, callback) {
+										/*
 										monster.ui.toast({
 											type: 'success',
 											message: self.i18n.active().strategy.toastrMessages.removeNumberSuccess
 										});
+										*/
 										strategyData.callflows.MainCallflow = updatedCallflow;
 										refreshNumbersTemplate();
 
@@ -1251,16 +1259,20 @@ define(function(require) {
 					callbacks: {
 						success: function(numbers) {
 							addNumbersToMainConference(_.keys(numbers));
+							/*
 							monster.ui.toast({
 								type: 'success',
 								message: self.i18n.active().strategy.toastrMessages.buyNumbersSuccess
 							});
+							*/
 						},
 						error: function(error) {
+							/*
 							monster.ui.toast({
 								type: 'error',
 								message: self.i18n.active().strategy.toastrMessages.buyNumbersError
 							});
+							*/
 						}
 					}
 				});
@@ -1280,10 +1292,12 @@ define(function(require) {
 
 					self.strategyUpdateCallflow(strategyData.callflows.MainConference, function(updatedCallflow) {
 						var parentContainer = container.parents('.element-container');
+						/*
 						monster.ui.toast({
 							type: 'success',
 							message: self.i18n.active().strategy.toastrMessages.removeNumberSuccess
 						});
+						*/
 						strategyData.callflows.MainConference = updatedCallflow;
 						refreshConfNumHeader(parentContainer);
 						self.strategyRefreshTemplate({
@@ -1583,10 +1597,12 @@ define(function(require) {
 					}
 				], function(err, results) {
 					if (!err) {
+						/*
 						monster.ui.toast({
 							type: 'success',
 							message: 'Main Fabox Email Successfully Changed'
 						});
+						*/
 					}
 				});
 			});
@@ -1599,16 +1615,20 @@ define(function(require) {
 					callbacks: {
 						success: function(numbers) {
 							addNumbersToMainFaxing(_.keys(numbers));
+							/*
 							monster.ui.toast({
 								type: 'success',
 								message: self.i18n.active().strategy.toastrMessages.buyNumbersSuccess
 							});
+							*/
 						},
 						error: function(error) {
+							/*
 							monster.ui.toast({
 								type: 'error',
 								message: self.i18n.active().strategy.toastrMessages.buyNumbersError
 							});
+							*/
 						}
 					}
 				});
@@ -1633,10 +1653,12 @@ define(function(require) {
 							delete mainFaxing.flow.data.id;
 							self.strategyUpdateCallflow(mainFaxing, function(updatedCallflow) {
 								var parentContainer = container.parents('.element-container');
+								/*
 								monster.ui.toast({
 									type: 'success',
 									message: self.i18n.active().strategy.toastrMessages.removeNumberSuccess
 								});
+								*/
 								strategyData.callflows.MainFaxing = updatedCallflow;
 								refreshFaxingNumHeader(parentContainer);
 								self.strategyRefreshTemplate({
@@ -1824,10 +1846,12 @@ define(function(require) {
 
 						container.hide();
 						container.parents('.element-container').removeClass('open');
+						/*
 						monster.ui.toast({
 							type: 'success',
 							message: self.i18n.active().strategy.toastrMessages.resetCallSuccess
 						});
+						*/
 					});
 				});
 			});
@@ -1973,10 +1997,12 @@ define(function(require) {
 					$container.parents('.element-container').removeClass('open');
 				}
 				if (showToast) {
+					/*
 					monster.ui.toast({
 						type: 'success',
 						message: self.i18n.active().strategy.toastrMessages.updateCallSuccess
 					});
+					*/
 				}
 				saveCallback();
 			});
@@ -2094,10 +2120,12 @@ define(function(require) {
 								error: function(data, status, globalHandler) {
 									if (data && data.error === '404') {
 										showPopup();
+										/*
 										monster.ui.toast({
 											type: 'warning',
 											message: self.i18n.active().strategy.greetingMissing
 										});
+										*/
 									} else {
 										globalHandler(data, { generateError: true });
 									}
