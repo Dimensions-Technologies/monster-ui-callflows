@@ -1858,8 +1858,12 @@ define(function(require) {
 								},
 
 								function(callback) {
-									// patch users callflow if there is a change to the qty of numbers
-									if (userCallflow != null && formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
+									// patch user callflow if there is a change to the assigned numbers 
+									var callflowNumbersSorted = _.sortBy(callflowNumbers || []),
+										formNumbersSorted = _.sortBy(formNumbers || []),
+										numbersChanged = !_.isEqual(callflowNumbersSorted, formNumbersSorted);
+
+									if (userCallflow != null && numbersChanged) {
 										self.callApi({
 											resource: 'callflow.patch',
 											data: {
