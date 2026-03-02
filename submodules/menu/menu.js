@@ -240,7 +240,7 @@ define(function(require) {
 
 			// add search to dropdown
 			menu_html.find('#media_greeting').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})

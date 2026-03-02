@@ -2038,14 +2038,14 @@ define(function(require) {
 
 			// add search to dropdown
 			user_html.find('#timezone').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			// add search to dropdown
 			user_html.find('#music_on_hold_media_id').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
@@ -2871,7 +2871,11 @@ define(function(require) {
 			if (data.dimension && data.dimension.hasOwnProperty('main_user_callflow_modified')) {
 				data.dimension.main_user_callflow_modified = data.dimension.main_user_callflow_modified === "true";
 			}
-			
+
+			if (data.full_name) {
+				delete data.full_name
+			}
+
 			return data;
 		},
 

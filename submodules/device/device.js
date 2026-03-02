@@ -196,6 +196,7 @@ define(function(require) {
 						extension_numbers: [],
 						callflow_numbers: [],
 						hide_owner: data.hide_owner || false,
+						dimensions_provisioned_device: false,
 						outbound_flags: data.outbound_flags ? data.outbound_flags.join(', ') : data.outbound_flags
 					},
 					functions: {
@@ -211,15 +212,25 @@ define(function(require) {
 				
 				parallelRequests = function(deviceData) {
 
+					// format mac_address on device form
+					if (deviceData.mac_address) {
+						var formattedMac = monster.util.formatMacAddress(deviceData.mac_address);
+						deviceData.mac_address = formattedMac
+					}
+
 					// clear dimensionsDeviceType so device page loads correctly when switching between devices
 					dimensionDeviceType = {}
 
 					if (deviceData.hasOwnProperty('dimension') && deviceData.dimension.hasOwnProperty('type')) {
+						
+						defaults.field_data.dimensions_provisioned_device = true;
+						
 						dimensionDeviceType[deviceData.dimension.type] = true;
 						dimensionDeviceType['dimensionsProvisionedDevice'] = true;
 						dimensionDeviceType['preventDelete'] = true;
 						dimensionDeviceType['showDeviceSimplifiedSipSettings'] = false;
-						
+						dimensionDeviceType['hideT38'] = true;
+
 						if (deviceData.dimension.model == 'UCS' || deviceData.dimension.type == 'legacypbx') {
 							dimensionDeviceType['showDeviceSimplifiedSipSettings'] = true;
 						}
@@ -236,6 +247,12 @@ define(function(require) {
 							defaults.field_data.hide_owner = true;
 						}
 
+						if (deviceData.dimension.type == 'sip_device' || deviceData.dimension.type == 'communal') {
+							if (deviceData.dimension.model == 'UCS' || deviceData.dimension.model == 'FXS') {
+								dimensionDeviceType['hideT38'] = false;
+							}
+						}
+						
 						if (miscSettings.enableConsoleLogging) {
 							console.log('Device Details', dimensionDeviceType);
 							console.log('Device Doc Details', deviceData.dimension);
@@ -244,7 +261,6 @@ define(function(require) {
 					}
 
 					if (miscSettings.callflowButtonsWithinHeader) {
-						//debugger;
 						self.deviceSubmoduleButtons(deviceData);
 					};
 
@@ -1029,22 +1045,24 @@ define(function(require) {
 				});
 
 				// add search to dropdown
-				device_html.find('#owner_id').chosen({
-					width: '224px',
-					disable_search_threshold: 0,
-					search_contains: true
-				})
+				if(!data.field_data.dimensions_provisioned_device) {
+					device_html.find('#owner_id').chosen({
+						width: '404px',
+						disable_search_threshold: 0,
+						search_contains: true
+					})
+				}
 
 				// add search to dropdown
 				device_html.find('#music_on_hold_media_id').chosen({
-					width: '224px',
+					width: '404px',
 					disable_search_threshold: 0,
 					search_contains: true
 				})
 
 				// add search to dropdown
 				device_html.find('#billing_code').chosen({
-					width: '224px',
+					width: '404px',
 					disable_search_threshold: 0,
 					search_contains: true
 				})
@@ -2447,6 +2465,11 @@ define(function(require) {
 								'call_forward',
 								'presence_id'
 							]));
+
+							// format MAC address if present 
+							if (enhancedDeviceData && enhancedDeviceData.formattedMac) {
+								enhancedDeviceData.formattedMac = String(enhancedDeviceData.formattedMac).toUpperCase();
+							}
 
 							return _.merge({
 								customEntityTemplate: self.getTemplate({

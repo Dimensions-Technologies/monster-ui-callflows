@@ -493,14 +493,14 @@ define(function(require) {
 
 			// add search to dropdown
 			faxbox_html.find('#owner_id').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			// add search to dropdown
 			faxbox_html.find('#fax_timezone').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
