@@ -64,14 +64,14 @@ define(function(require) {
 
 			// add search to dropdown
 			groups_html.find('#select_user_id').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			// add search to dropdown
 			groups_html.find('#select_device_id').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})

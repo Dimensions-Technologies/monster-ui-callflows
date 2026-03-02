@@ -439,7 +439,7 @@ define(function(require) {
 
 			// add search to dropdown
 			conference_html.find('#owner_id').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})

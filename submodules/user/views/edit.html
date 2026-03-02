@@ -56,61 +56,72 @@
 					</div>
 				{{/unless}}
 
-				<div class="clearfix">
-					<label for="first_name">{{ i18n.callflows.user.first_name }}</label>
-					{{#unless miscSettings.userReadOnlyFields}}
+				{{#if miscSettings.userReadOnlyFields}}
+					<div class="clearfix">
+						<label for="full_name">{{ i18n.callflows.user.full_name }}</label>
+							<div class="input">
+								<input disabled class="span4 input-readonly" id="full_name" name="full_name" type="text" placeholder="{{ i18n.callflows.user.last_name_placeholder }}" value="{{data.first_name}} {{data.last_name}}" />
+							</div>
+
+							<!-- first_name and last_name fields required on form -->
+							<div class="input" style="display:none;">
+								<input disabled class="span4 input-readonly" id="first_name" name="first_name" type="text" value="{{data.first_name}}" />
+							</div>
+							<div class="input" style="display:none;">
+								<input disabled class="span4 input-readonly" id="last_name" name="last_name" type="text" value="{{data.last_name}}" />
+							</div>
+					</div>
+				{{else}}
+					<div class="clearfix">
+						<label for="first_name">{{ i18n.callflows.user.first_name }}</label>
 						<div class="input">
 							<input class="span4" id="first_name" name="first_name" type="text" placeholder="{{ i18n.callflows.user.first_name_placeholder }}" value="{{data.first_name}}" rel="popover" data-content="{{ i18n.callflows.user.first_name_data_content }}"/>
 						</div>
-					{{/unless}}
-					{{#if miscSettings.userReadOnlyFields}}
-						<div class="input">
-							<input disabled class="span4 input-readonly" id="first_name" name="first_name" type="text" placeholder="{{ i18n.callflows.user.first_name_placeholder }}" value="{{data.first_name}}" />
-						</div>
-					{{/if}}
-				</div>
-
-				<div class="clearfix">
-					<label for="last_name">{{ i18n.callflows.user.last_name }}</label>
-					{{#unless miscSettings.userReadOnlyFields}}
+					</div>
+					<div class="clearfix">
+						<label for="last_name">{{ i18n.callflows.user.last_name }}</label>
 						<div class="input">
 							<input class="span4" id="last_name" name="last_name" type="text" placeholder="{{ i18n.callflows.user.last_name_placeholder }}" value="{{data.last_name}}" rel="popover" data-content="{{ i18n.callflows.user.last_name_data_content }}"/>
 						</div>
-					{{/unless}}
+					</div>
+				{{/if}}
+
+				<div class="clearfix">
+					<label for="name">{{ i18n.callflows.user.presence_id }}</label>
 					{{#if miscSettings.userReadOnlyFields}}
 						<div class="input">
-							<input disabled class="span4 input-readonly" id="last_name" name="last_name" type="text" placeholder="{{ i18n.callflows.user.last_name_placeholder }}" value="{{data.last_name}}" />
+							<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.user.presence_id_placeholder }}" value="{{data.presence_id}}" />
+						</div>
+					{{else}}
+						<div class="input">
+							<input class="span4" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.user.presence_id_placeholder }}" value="{{data.presence_id}}" rel="popover" data-content="{{ i18n.callflows.user.presence_id_help }}"/>
 						</div>
 					{{/if}}
 				</div>
 
 				<div class="clearfix">
 					<label for="email">{{ i18n.callflows.user.email }}</label>
-					{{#unless miscSettings.userReadOnlyFields}}
-						<div class="input">
-							<input class="span4" id="email" name="email" type="text" placeholder="{{ i18n.callflows.user.email_placeholder }}" value="{{data.email}}" rel="popover" data-content="{{ i18n.callflows.user.email_data_content }}"/>
-						</div>
-					{{/unless}}
 					{{#if miscSettings.userReadOnlyFields}}
 						<div class="input">
 							<input disabled class="span4 input-readonly" id="email" name="email" type="text" placeholder="{{ i18n.callflows.user.email_placeholder }}" value="{{data.email}}" />
+						</div>
+					{{else}}
+						<div class="input">
+							<input class="span4" id="email" name="email" type="text" placeholder="{{ i18n.callflows.user.email_placeholder }}" value="{{data.email}}" rel="popover" data-content="{{ i18n.callflows.user.email_data_content }}"/>
 						</div>
 					{{/if}}
 				</div>
 
 				<div class="clearfix">
 					<label for="priv_level">{{ i18n.callflows.user.user_privilege_level }}</label>
-					{{#unless miscSettings.userReadOnlyFields}}
-						<div class="input">
-							<select id="priv_level" name="priv_level" class="medium" rel="popover" data-content="{{ i18n.callflows.user.user_privilege_level_data_content }}">
-								<option value="admin"{{#compare data.priv_level '===' 'admin'}} selected{{/compare}}>{{ i18n.callflows.user.administrator }}</option>
-								<option value="user"{{#compare data.priv_level '===' 'user'}} selected{{/compare}}>{{ i18n.callflows.user.user }}</option>
-							</select>
-						</div>
-					{{/unless}}
 					{{#if miscSettings.userReadOnlyFields}}
 						<div class="input">
-							<select disabled id="priv_level" name="priv_level" class="medium no-stop-cursor" >
+							<input disabled class="span4 input-readonly" id="priv_level" name="priv_level" type="text" value="{{#compare data.priv_level '===' 'admin'}}{{ i18n.callflows.user.administrator }}{{else}}{{ i18n.callflows.user.user }}{{/compare}}"/>
+							<input type="hidden" id="priv_level" name="priv_level" value="{{data.priv_level}}" />
+						</div>
+					{{else}}
+						<div class="input">
+							<select id="priv_level" name="priv_level" class="medium" rel="popover" data-content="{{ i18n.callflows.user.user_privilege_level_data_content }}">
 								<option value="admin"{{#compare data.priv_level '===' 'admin'}} selected{{/compare}}>{{ i18n.callflows.user.administrator }}</option>
 								<option value="user"{{#compare data.priv_level '===' 'user'}} selected{{/compare}}>{{ i18n.callflows.user.user }}</option>
 							</select>
@@ -228,45 +239,30 @@
 			</div>
 
 			<div id="caller_id">
-				<div class="clearfix">
-					<label for="name">{{ i18n.callflows.user.presence_id }}</label>
-					{{#unless miscSettings.userReadOnlyFields}}
-						<div class="input">
-							<input class="span4" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.user.presence_id_placeholder }}" value="{{data.presence_id}}" rel="popover" data-content="{{ i18n.callflows.user.presence_id_help }}"/>
-						</div>
-					{{/unless}}
-					{{#if miscSettings.userReadOnlyFields}}
-						<div class="input">
-							<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.user.presence_id_placeholder }}" value="{{data.presence_id}}" />
-						</div>
-					{{/if}}
-				</div>
 				<!-- internal / on-net caller id -->
 				<h3>{{ i18n.callflows.user.in_house_calls }}</h3>
 				<div class="clearfix">
 					<label for="advanced_caller_id_name_internal">{{ i18n.callflows.user.caller_id_name }}</label>
-					{{#unless miscSettings.userReadOnlyFields}}
-						<div class="input">
-							<input class="span4" id="advanced_caller_id_name_internal" name="caller_id.internal.name" type="text" placeholder="{{ i18n.callflows.user.caller_id_name_placeholder }}" value="{{data.caller_id.internal.name}}"  rel="popover" data-content="{{ i18n.callflows.user.caller_id_name_data_content }}" />
-						</div>
-					{{/unless}}
 					{{#if miscSettings.userReadOnlyFields}}
 						<div class="input">
 							<input disabled class="span4 input-readonly" id="advanced_caller_id_name_internal" name="caller_id.internal.name" type="text" placeholder="{{ i18n.callflows.user.caller_id_name_placeholder }}" value="{{data.caller_id.internal.name}}" />
+						</div>
+					{{else}}
+						<div class="input">
+							<input class="span4" id="advanced_caller_id_name_internal" name="caller_id.internal.name" type="text" placeholder="{{ i18n.callflows.user.caller_id_name_placeholder }}" value="{{data.caller_id.internal.name}}"  rel="popover" data-content="{{ i18n.callflows.user.caller_id_name_data_content }}" />
 						</div>
 					{{/if}}
 				</div>
 
 				<div class="clearfix">
 					<label for="advanced_caller_id_number_internal">{{ i18n.callflows.user.caller_id_number }}</label>
-					{{#unless miscSettings.userReadOnlyFields}}
-						<div class="input">
-							<input class="span4" id="advanced_caller_id_number_internal" name="caller_id.internal.number" type="text" placeholder="+15555555555" value="{{data.caller_id.internal.number}}" rel="popover" data-content="{{ i18n.callflows.user.caller_id_number_data_content }}" data-mask="phoneNumber" />
-						</div>
-					{{/unless}}
 					{{#if miscSettings.userReadOnlyFields}}
 						<div class="input">
 							<input disabled class="span4 input-readonly" id="advanced_caller_id_number_internal" name="caller_id.internal.number" type="text" placeholder="+15555555555" value="{{data.caller_id.internal.number}}" />
+						</div>
+					{{else}}
+						<div class="input">
+							<input class="span4" id="advanced_caller_id_number_internal" name="caller_id.internal.number" type="text" placeholder="+15555555555" value="{{data.caller_id.internal.number}}" rel="popover" data-content="{{ i18n.callflows.user.caller_id_number_data_content }}" data-mask="phoneNumber" />
 						</div>
 					{{/if}}
 				</div>

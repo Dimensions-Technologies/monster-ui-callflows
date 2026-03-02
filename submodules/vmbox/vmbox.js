@@ -471,21 +471,21 @@ define(function(require) {
 
 			// add search to dropdown
 			vmbox_html.find('#media_unavailable').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			// add search to dropdown
 			vmbox_html.find('#media_temporary_unavailable').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			// add search to dropdown
 			vmbox_html.find('#timezone').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})

@@ -1149,19 +1149,19 @@ define(function(require) {
 
 			// add search to dropdown
 			queue_html.find('#moh').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			queue_html.find('#timeout_callflow_id').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			queue_html.find('#users-list').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
