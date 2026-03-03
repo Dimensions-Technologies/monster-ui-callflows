@@ -2227,6 +2227,7 @@ define(function(require) {
 									'method': node.getMetadata('method') || 'post',
 									'voice_url': node.getMetadata('voice_url') || '',
 									'req_timeout': node.getMetadata('req_timeout') || '5',
+									'req_body_format': node.getMetadata('req_body_format') || 'form',
 									'req_format': node.getMetadata('req_format') || 'kazoo'
 								}
 							},
@@ -2263,6 +2264,7 @@ define(function(require) {
 
 							node.setMetadata('voice_url', $('#pivot_voiceurl_input', popup_html).val());
 							node.setMetadata('method', $('#pivot_method_input', popup_html).val());
+							node.setMetadata('req_body_format', $('#pivot_body_format_input', popup_html).val());
 							node.setMetadata('req_format', requestFormat);
 							node.setMetadata('req_timeout', $('#pivot_timeout_input', popup_html).val());
 
