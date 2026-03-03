@@ -1749,6 +1749,10 @@ define(function(require) {
 				}
 			}
 
+			if (data.owner_id_display) {
+				delete data.owner_id_display;
+			}
+
 			return data;
 		},
 

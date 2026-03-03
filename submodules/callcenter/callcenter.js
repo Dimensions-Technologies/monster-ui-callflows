@@ -1161,7 +1161,7 @@ define(function(require) {
 			})
 
 			queue_html.find('#users-list').chosen({
-				width: '404px',
+				width: '224px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
@@ -1495,6 +1495,7 @@ define(function(require) {
 			delete form_data.user_id;
 			delete form_data.extension;
 			delete form_data.timeout_callflow_id;
+			delete form_data.strategy_display;
 
 			// remove blank fields and let Kazoo set the defaults
 			$.each(form_data, function(key, value){

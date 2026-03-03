@@ -43,25 +43,19 @@
                     </div>
                 </div>
 
-                {{#unless fieldReadOnly}}
-                    <div class="clearfix">
-                        <label for="strategy">{{ i18n.callflows.acdc.settings.strategy }}</label>
-                        <div class="input strategy">
-                            <select name="strategy" id="strategy" class="medium" >
-                                <option value="most_idle" {{#compare data.strategy "===" "most_idle"}} selected{{/compare}}>{{ i18n.callflows.acdc.settings.strategyMostIdle }}</option>
-                                <option value="ring_all" {{#compare data.strategy "===" "ring_all"}} selected{{/compare}}>{{ i18n.callflows.acdc.settings.strategyRingAll }}</option>
-                                <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>{{ i18n.callflows.acdc.settings.strategyRoundRobin }}</option>
-                            </select>
-                            <!--<span class="help-block">{{ i18nApp.strategy }}</span>-->
-                        </div>
-                    </div>
-                {{/unless}}
-
                 {{#if fieldReadOnly}}
                     <div class="clearfix">
                         <label for="strategy">{{ i18n.callflows.acdc.settings.strategy }}</label>
                         <div class="input">
-                            <select disabled name="strategy" id="strategy" class="medium input-readonly" >
+                            <input disabled class="span4 input-readonly" id="strategy_display" name="strategy_display" type="text" value="{{#compare data.strategy '===' 'most_idle'}}{{ i18n.callflows.acdc.settings.strategyMostIdle }}{{/compare}}{{#compare data.strategy '===' 'ring_all'}}{{ i18n.callflows.acdc.settings.strategyRingAll }}{{/compare}}{{#compare data.strategy '===' 'round_robin'}}{{ i18n.callflows.acdc.settings.strategyRoundRobin }}{{/compare}}"/>
+                            <input type="hidden" id="strategy" name="strategy" value="{{data.strategy}}" />
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="clearfix">
+                        <label for="strategy">{{ i18n.callflows.acdc.settings.strategy }}</label>
+                        <div class="input strategy">
+                            <select name="strategy" id="strategy" class="medium" >
                                 <option value="most_idle" {{#compare data.strategy "===" "most_idle"}} selected{{/compare}}>{{ i18n.callflows.acdc.settings.strategyMostIdle }}</option>
                                 <option value="ring_all" {{#compare data.strategy "===" "ring_all"}} selected{{/compare}}>{{ i18n.callflows.acdc.settings.strategyRingAll }}</option>
                                 <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>{{ i18n.callflows.acdc.settings.strategyRoundRobin }}</option>

@@ -63,7 +63,7 @@ define(function(require) {
 			
 			chosenSelectors.forEach(selector => {
 				directory_html.find(selector).chosen({
-					width: '404px',
+					width: '224px',
 					disable_search_threshold: selector === '#callflow_type' ? 10 : 0, // hide search for #callflow_type
 					search_contains: true
 				});
@@ -205,7 +205,7 @@ define(function(require) {
 						$('#callflow_id, #userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id', directory_html)
 							.filter(':visible')
 							.prop('disabled', true)
-							.chosen({ width: '404px', search_contains: true });
+							.chosen({ width: '224px', search_contains: true });
 
 						// Disable callflow selectors initially
 						$('#callflow_type', directory_html).prop('disabled', true).addClass('input-readonly').trigger("chosen:updated");
@@ -338,7 +338,7 @@ define(function(require) {
 					if (selectedField) {
 						selectedField.show()
 							.prop('disabled', false) // Ensure it's enabled
-							.chosen({ width: '404px', search_contains: true });
+							.chosen({ width: '224px', search_contains: true });
 					}
 
 				});

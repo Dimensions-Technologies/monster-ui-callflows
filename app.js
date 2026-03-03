@@ -4587,6 +4587,7 @@ define(function(require) {
 			popup = monster.ui.dialog(popup_html, {
 				title: self.i18n.active().callflows.user.user_callflow.popup_title,
 				width: '90%',
+				dialogClass: 'userCallflow-dialog',
 				create: function() {
 					$(this).closest('.ui-dialog-content').addClass('scrollbar-hidden');
 				}
