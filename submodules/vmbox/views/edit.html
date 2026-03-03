@@ -28,92 +28,67 @@
 			<div class="pill-content">
 				<div class="active basic_view" id="basic">
 					
-					{{#unless miscSettings.vmboxPreventDelete}}
-						<div class="clearfix">
-							<label for="name">{{ i18n.callflows.vmbox.name }}</label>
-							<div class="input">
-								<input class="span4" id="name" name="name" type="text" placeholder="{{ i18n.callflows.vmbox.name_placeholder }}" value="{{data.name}}" rel="popover" data-content="{{ i18n.callflows.vmbox.name_data_content }}"/>
-							</div>
-						</div>
-					{{/unless}}
-
-					{{#if miscSettings.vmboxPreventDelete}}
+					{{#if miscSettings.readOnlyMailbox}}
 						<div class="clearfix">
 							<label for="name">{{ i18n.callflows.vmbox.name }}</label>
 							<div class="input">
 								<input disabled class="span4 input-readonly" id="name" name="name" type="text" placeholder="{{ i18n.callflows.vmbox.name_placeholder }}" value="{{data.name}}"/>
 							</div>
 						</div>
-					{{/if}}
-
-					{{#unless miscSettings.vmboxPreventDelete}}
-						<div class="clearfix">
-							<label for="mailbox">{{ i18n.callflows.vmbox.voicemail_number }}</label>
-							<div class="input">
-								<input class="span4" id="mailbox" name="mailbox" type="text" placeholder="{{ i18n.callflows.vmbox.voicemail_number_placeholder }}" value="{{data.mailbox}}" rel="popover" data-content="{{ i18n.callflows.vmbox.voicemail_number_data_content }}"/>
-							</div>
-						</div>
-					{{/unless}}
-
-					{{#if miscSettings.vmboxPreventDelete}}
 						<div class="clearfix">
 							<label for="mailbox">{{ i18n.callflows.vmbox.voicemail_number }}</label>
 							<div class="input">
 								<input disabled class="span4 input-readonly" id="mailbox" name="mailbox" type="text" placeholder="{{ i18n.callflows.vmbox.voicemail_number_placeholder }}" value="{{data.mailbox}}"/>
 							</div>
 						</div>
-					{{/if}}
-
-					{{#unless miscSettings.hideVmboxUserAssignment}}
-					{{#unless miscSettings.vmboxPreventDelete}}
+					{{else}}
 						<div class="clearfix">
-							<label for="owner_id">{{ i18n.callflows.vmbox.assign_to }}</label>
+							<label for="name">{{ i18n.callflows.vmbox.name }}</label>
 							<div class="input">
-								<span rel="popover" data-content="{{ i18n.callflows.vmbox.assign_to_data_content }}">
-									<select name="owner_id" id="owner_id" class="medium" >
-										{{#each field_data.users}}
-											{{#compare ../data.owner_id "==" id}}
-												<option value="{{id}}" id="{{id}}" selected="selected">{{first_name}} {{last_name}}</option>
-											{{else}}
-												<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
-											{{/compare}}
-										{{/each}}
-									</select>
-									{{#unless hideAdd.user}}
-										<div class="edit_create">
-											<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.vmbox.edit }}</a>
-											<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.vmbox.create }}</a>
-										</div>
-									{{/unless}}
-								</span>
+								<input class="span4" id="name" name="name" type="text" placeholder="{{ i18n.callflows.vmbox.name_placeholder }}" value="{{data.name}}" rel="popover" data-content="{{ i18n.callflows.vmbox.name_data_content }}"/>
 							</div>
 						</div>
-					{{/unless}}
-					{{/unless}}
+						<div class="clearfix">
+							<label for="mailbox">{{ i18n.callflows.vmbox.voicemail_number }}</label>
+							<div class="input">
+								<input class="span4" id="mailbox" name="mailbox" type="text" placeholder="{{ i18n.callflows.vmbox.voicemail_number_placeholder }}" value="{{data.mailbox}}" rel="popover" data-content="{{ i18n.callflows.vmbox.voicemail_number_data_content }}"/>
+							</div>
+						</div>
+					{{/if}}
 
-					{{#if miscSettings.vmboxPreventDelete}}
+					{{#if miscSettings.readOnlyMailbox}}
 						<div disabled class="clearfix input-readonly">
 							<label for="owner_id">{{ i18n.callflows.vmbox.assign_to }}</label>
 							<div class="input">
-								<span>
-									<select name="owner_id" id="owner_id" class="medium" >
-										{{#each field_data.users}}
-											{{#compare ../data.owner_id "==" id}}
-												<option value="{{id}}" id="{{id}}" selected="selected">{{first_name}} {{last_name}}</option>
-											{{else}}
-												<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
-											{{/compare}}
-										{{/each}}
-									</select>
-									{{#unless hideAdd.user}}
-										<div class="edit_create">
-											<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.vmbox.edit }}</a>
-											<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.vmbox.create }}</a>
-										</div>
-									{{/unless}}
-								</span>
+								<input disabled class="span4 input-readonly" id="owner_id_display" name="owner_id_display" type="text" value="{{#each field_data.users}}{{#compare id '===' ../data.owner_id}}{{ first_name }} {{ last_name }}{{/compare}}{{/each}}" />
+								<input type="hidden" id="owner_id" name="owner_id" value="{{data.owner_id}}" />
 							</div>
 						</div>
+					{{else}}
+						{{#unless miscSettings.hideVmboxUserAssignment}}
+								<div class="clearfix">
+									<label for="owner_id">{{ i18n.callflows.vmbox.assign_to }}</label>
+									<div class="input">
+										<span rel="popover" data-content="{{ i18n.callflows.vmbox.assign_to_data_content }}">
+											<select name="owner_id" id="owner_id" class="medium" >
+												{{#each field_data.users}}
+													{{#compare ../data.owner_id "==" id}}
+														<option value="{{id}}" id="{{id}}" selected="selected">{{first_name}} {{last_name}}</option>
+													{{else}}
+														<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
+													{{/compare}}
+												{{/each}}
+											</select>
+											{{#unless hideAdd.user}}
+												<div class="edit_create">
+													<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.vmbox.edit }}</a>
+													<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.vmbox.create }}</a>
+												</div>
+											{{/unless}}
+										</span>
+									</div>
+								</div>
+						{{/unless}}
 					{{/if}}
 
 					<div class="clearfix">
@@ -581,7 +556,7 @@
 
 		 <div class="buttons-right">
 			{{#unless miscSettings.callflowButtonsWithinHeader}}
-				{{#unless miscSettings.vmboxPreventDelete}}
+				{{#unless miscSettings.readOnlyMailbox}}
 				{{#if data.id}}
 					<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
 				{{/if}}
@@ -589,7 +564,7 @@
 				<button class="monster-button monster-button-success vmbox-save">{{ i18n.callflows.vmbox.save }}</button>
 			{{/unless}}
 			{{#if miscSettings.callflowButtonsWithinHeader}}
-				{{#unless miscSettings.vmboxPreventDelete}}
+				{{#unless miscSettings.readOnlyMailbox}}
 					{{#if data.id}}
 						{{#if miscSettings.popupEdit}}
 							{{#unless hideAdd.voicemail}}

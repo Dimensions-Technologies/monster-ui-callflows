@@ -94,7 +94,7 @@
 							<div class="clearfix">
 								<label for="owner_id">{{ i18n.callflows.device.assign_to }}</label>
 								<div class="input">
-									<input disabled class="span4 input-readonly" id="owner_id" name="owner_id" type="text" value="{{#each field_data.users}}{{#compare id '===' ../data.owner_id}}{{ first_name }} {{ last_name }}{{/compare}}{{/each}}"/>
+									<input disabled class="span4 input-readonly" id="owner_id_display" name="owner_id_display" type="text" value="{{#each field_data.users}}{{#compare id '===' ../data.owner_id}}{{ first_name }} {{ last_name }}{{/compare}}{{/each}}"/>
 									<input type="hidden" id="owner_id" name="owner_id" value="{{data.owner_id}}" />
 								</div>
 							</div>

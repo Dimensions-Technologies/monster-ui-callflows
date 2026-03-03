@@ -18,3 +18,7 @@
 	line-height: 30px;
 }
 */
+
+.callflows-port #faxbox_form #owner_id_chosen {
+	margin-bottom: 10px;
+}
