@@ -3005,7 +3005,7 @@
 }
 
 #callflow_container .chosen-container .chosen-single div b:before,
-.dialog_popup.callflows-port .chosen-container .chosen-single div b:before {
+.callflows-port .chosen-container .chosen-single div b:before {
     top: 50%;
     right: 5px;
     width: 5px;
@@ -3015,3 +3015,5 @@
     border-bottom: 2px solid #444;
     transform: translateY(-65%) rotate(45deg);
 }
+
+

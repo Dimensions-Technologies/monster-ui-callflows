@@ -490,3 +490,8 @@
 .callflows-port #user-form .edit_reset_user_callflow .monster-button {
 	margin-right: 10px;;
 }
+
+.callflows-port #user-form .faxbox-help {
+	width: 580px;
+	margin-left: 78px;
+}

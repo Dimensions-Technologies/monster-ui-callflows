@@ -28,33 +28,80 @@
 	 <form id="faxbox_form" action="" method="post">
 		<div class="pill-content">
 			<div class="active basic_view" id="basic">
-				<div class="clearfix">
-					<label for="name">{{ i18n.callflows.faxbox.name }}</label>
-					<div class="input">
-						<input class="span4" id="name" name="name" type="text" placeholder="{{ i18n.callflows.faxbox.name_placeholder }}" value="{{faxbox.name}}" rel="popover" data-content="{{ i18n.callflows.faxbox.name_data_content }}"/>
-					</div>
-				</div>
 
-				<div class="clearfix">
-					<label for="owner_id">{{ i18n.callflows.faxbox.assign_to }}</label>
-					<div class="input">
-						<span rel="popover" data-content="{{ i18n.callflows.faxbox.belongs_to_data_content }}">
-							<select name="owner_id" id="owner_id" class="medium">
-							{{#select faxbox.owner_id}}
-								{{#each users}}
-									<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
-								{{/each}}
-							{{/select}}
-							</select>
-							{{#unless hideAdd.user}}
-								<div class="edit_create">
-									<a id="edit_link"  class="inline-action" data-action="edit" href="#">{{ i18n.callflows.faxbox.edit_user }}</a>
-									<a class="inline-action" data-action="create" href="#">{{ i18n.callflows.faxbox.create_user }}</a>
-								</div>
-							{{/unless}}
-						</span>
+				{{#if miscSettings.readOnlyFaxbox}}
+					<div class="clearfix">
+						<label for="name">{{ i18n.callflows.faxbox.name }}</label>
+						<div class="input">
+							<input disabled class="span4 input-readonly" id="name" name="name" type="text" placeholder="{{ i18n.callflows.faxbox.name_placeholder }}" value="{{faxbox.name}}" rel="popover" data-content="{{ i18n.callflows.faxbox.name_data_content }}"/>
+						</div>
 					</div>
-				</div>
+				{{else}}
+					<div class="clearfix">
+						<label for="name">{{ i18n.callflows.faxbox.name }}</label>
+						<div class="input">
+							<input class="span4" id="name" name="name" type="text" placeholder="{{ i18n.callflows.faxbox.name_placeholder }}" value="{{faxbox.name}}" rel="popover" data-content="{{ i18n.callflows.faxbox.name_data_content }}"/>
+						</div>
+					</div>
+				{{/if}}
+
+
+				{{#if miscSettings.readOnlyFaxbox}}
+					<div disabled class="clearfix input-readonly">
+						<label for="owner_id">{{ i18n.callflows.faxbox.assign_to }}</label>
+						<div class="input">
+							<input disabled class="span4 input-readonly" id="owner_id_display" name="owner_id_display" type="text" value="{{#each users}}{{#compare id '===' ../faxbox.owner_id}}{{first_name}} {{last_name}}{{/compare}}{{/each}}" />
+							<input type="hidden" id="owner_id" name="owner_id" value="{{faxbox.owner_id}}" />
+						</div>
+					</div>
+				{{else}}
+					{{#unless miscSettings.hideFaxboxUserAssignment}}
+						<div class="clearfix">
+							<label for="owner_id">{{ i18n.callflows.faxbox.assign_to }}</label>
+							<div class="input">
+								<span rel="popover" data-content="{{ i18n.callflows.faxbox.belongs_to_data_content }}">
+									<select name="owner_id" id="owner_id" class="medium">
+									{{#select faxbox.owner_id}}
+										{{#each users}}
+											<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
+										{{/each}}
+									{{/select}}
+									</select>
+									{{#unless hideAdd.user}}
+										<div class="edit_create">
+											<a id="edit_link"  class="inline-action" data-action="edit" href="#">{{ i18n.callflows.faxbox.edit_user }}</a>
+											<a class="inline-action" data-action="create" href="#">{{ i18n.callflows.faxbox.create_user }}</a>
+										</div>
+									{{/unless}}
+								</span>
+							</div>
+						</div>
+					{{/unless}}
+				{{/if}}
+
+				{{#if miscSettings.readOnlyFaxbox}}
+					<div disabled class="clearfix input-readonly">
+						<label for="faxbox_number">{{ i18n.callflows.faxbox.number }}</label>
+						<div class="input">
+							<input disabled class="span4 input-readonly" id="faxbox_number_display" name="faxbox_number_display" type="text" value="{{#if faxbox_callflow_number}}{{formatPhoneNumber faxbox_callflow_number}}{{/if}}" />
+							<input type="hidden" id="faxbox_number" name="faxbox_number" value="{{faxbox_callflow_number}}" />
+						</div>
+					</div>
+				{{else}}
+					<div class="clearfix">
+						<label for="faxbox_number">{{ i18n.callflows.faxbox.number }}</label>
+						<div class="input faxbox-number-selection">
+							<select id="faxbox_number" name="faxbox_number" class="medium" data-placeholder="{{ i18n.callflows.user.faxbox.no_number }}">
+								{{#select faxbox_callflow_number}}
+									<option value=""></option>
+									{{#each spare_phone_numbers}}
+										<option value="{{this}}">{{formatPhoneNumber this}}</option>
+									{{/each}}
+								{{/select}}
+							</select>
+						</div>
+					</div>
+				{{/if}}
 
 				<hr>
 				<h3>{{ i18n.callflows.faxbox.notification_emails }}</h3>
@@ -73,31 +120,98 @@
 					</div>
 				</div>
 
+				{{#if faxbox.id}}
+					<div class="faxbox-help">
+						<br>
+						{{#monsterText}}
+						<div class="faxbox-help-section">
+							<div class="faxbox-help-title">
+								<strong>{{i18n.callflows.user.faxbox.faxToEmail.title}}</strong>
+							</div>
+							<p class="faxbox-help-text">
+								{{i18n.callflows.user.faxbox.faxToEmail.text1}}
+								<strong class="monster-primary-color">{{faxbox.number}}</strong>
+								{{i18n.callflows.user.faxbox.faxToEmail.text2}}
+								{{#if faxbox.owner_id}}
+									<strong class="monster-primary-color">{{#each users}}{{#compare id '===' ../faxbox.owner_id}}{{email}}{{/compare}}{{/each}}</strong>
+								{{else}}
+									{{i18n.callflows.user.faxbox.faxToEmail.text3}}
+								{{/if}}
+							</p>
+						</div>
+						<br>
+						<div class="faxbox-help-section">
+							<div class="faxbox-help-title">
+								<strong>{{i18n.callflows.user.faxbox.emailToFax.title}}</strong>
+							</div>
+
+							<p class="faxbox-help-text">
+								{{i18n.callflows.user.faxbox.emailToFax.text1}}
+								<strong><em><span class="number-mirror">{{i18n.callflows.user.faxbox.emailToFax.default}}</span></em></strong>
+								<strong class="monster-primary-color">@{{faxbox.realm}}</strong>
+								<br>
+								{{i18n.callflows.user.faxbox.emailToFax.text2}}
+								<strong><em><span class="number-mirror">{{i18n.callflows.user.faxbox.emailToFax.default}}</span></em></strong>.
+							</p>
+
+							<p class="faxbox-help-text">
+								{{#if faxbox.owner_id}}
+									{{i18n.callflows.user.faxbox.emailToFax.text3}}
+									<strong class="monster-primary-color">{{#each users}}{{#compare id '===' ../faxbox.owner_id}}{{email}}{{/compare}}{{/each}}</strong>.
+								{{else}}
+									{{i18n.callflows.user.faxbox.emailToFax.text4}}
+								{{/if}}
+							</p>
+						</div>
+						{{/monsterText}}
+					</div>
+				{{/if}}
+
 			</div>
 
 			<div id="caller_id_tab">
-				<div class="clearfix">
-					<label for="caller_id">{{ i18n.callflows.faxbox.caller_id }}</label>
-					<div class="input">
-						<span rel="popover" data-content="{{ i18n.callflows.faxbox.caller_id_data_content }}">
-							<select name="caller_id" id="caller_id" class="medium callflows-caller-id-dropdown">
-								{{#select faxbox.caller_id}}
-									<option value="_disabled">{{ i18n.callflows.faxbox.caller_id_no_selected }}</option>
-									{{#each phone_numbers}}
-										<option value="{{this}}">{{formatPhoneNumber this}}</option>
-									{{/each}}
-								{{/select}}
-							</select>
-						</span>
-					</div>
-				</div>
 
-				<div class="clearfix">
-					<label for="caller_name">{{ i18n.callflows.faxbox.caller_name }}</label>
-					<div class="input">
-						<input class="span4" id="caller_name" name="caller_name" type="text" placeholder="{{ i18n.callflows.faxbox.caller_name_placeholder }}" value="{{faxbox.caller_name}}" rel="popover" data-content="{{ i18n.callflows.faxbox.caller_name_data_content }}"/>
+				{{#if miscSettings.readOnlyCallerIdName}}
+					<div class="clearfix">
+						<label for="caller_name">{{ i18n.callflows.faxbox.caller_name }}</label>
+						<div class="input">
+							<input disabled class="span4 input-readonly" id="caller_name" name="caller_name" type="text" placeholder="{{ i18n.callflows.faxbox.caller_name_placeholder }}" value="{{faxbox.caller_name}}" rel="popover" data-content="{{ i18n.callflows.faxbox.caller_name_data_content }}"/>
+						</div>
 					</div>
-				</div>
+				{{else}}
+					<div class="clearfix">
+						<label for="caller_name">{{ i18n.callflows.faxbox.caller_name }}</label>
+						<div class="input">
+							<input class="span4" id="caller_name" name="caller_name" type="text" placeholder="{{ i18n.callflows.faxbox.caller_name_placeholder }}" value="{{faxbox.caller_name}}" rel="popover" data-content="{{ i18n.callflows.faxbox.caller_name_data_content }}"/>
+						</div>
+					</div>
+				{{/if}}
+
+				{{#if miscSettings.readOnlyFaxboxCallerId}}
+					<div disabled class="clearfix input-readonly">
+						<label for="caller_id">{{ i18n.callflows.faxbox.caller_id }}</label>
+						<div class="input">
+							<input disabled class="span4 input-readonly" id="caller_id_display" name="caller_id_display" type="text" placeholder="{{ i18n.callflows.faxbox.caller_id_placeholder }}" value="{{#compare faxbox.caller_id '===' '_disabled'}}{{ i18n.callflows.faxbox.caller_id_no_selected }}{{/compare}}{{#compare faxbox.caller_id '!==' '_disabled'}}{{formatPhoneNumber faxbox.caller_id}}{{/compare}}" />
+							<input type="hidden" id="caller_id" name="caller_id" value="{{faxbox.caller_id}}" />
+						</div>
+					</div>
+				{{else}}
+					<div class="clearfix">
+						<label for="caller_id">{{ i18n.callflows.faxbox.caller_id }}</label>
+						<div class="input">
+							<span rel="popover" data-content="{{ i18n.callflows.faxbox.caller_id_data_content }}">
+								<select name="caller_id" id="caller_id" class="medium callflows-caller-id-dropdown">
+									{{#select faxbox.caller_id}}
+										<option value="_disabled">{{ i18n.callflows.faxbox.caller_id_no_selected }}</option>
+										{{#each phone_numbers}}
+											<option value="{{this}}">{{formatPhoneNumber this}}</option>
+										{{/each}}
+									{{/select}}
+								</select>
+							</span>
+						</div>
+					</div>
+				{{/if}}
 
 				<div class="clearfix">
 					<label for="fax_header">{{ i18n.callflows.faxbox.fax_header }}</label>
@@ -106,12 +220,21 @@
 					</div>
 				</div>
 
-				<div class="clearfix">
-					<label for="fax_identity">{{ i18n.callflows.faxbox.fax_identity }}</label>
-					<div class="input">
-						<input class="span4" id="fax_identity" name="fax_identity" type="text" placeholder="{{ i18n.callflows.faxbox.fax_identity_placeholder }}" value="{{faxbox.fax_identity}}" rel="popover" data-content="{{ i18n.callflows.faxbox.fax_identity_data_content }}"/>
+				{{#if miscSettings.readOnlyFaxboxCallerId}}
+					<div class="clearfix">
+						<label for="fax_identity">{{ i18n.callflows.faxbox.fax_identity }}</label>
+						<div class="input">
+							<input disabled class="span4 input-readonly" id="fax_identity" name="fax_identity" type="text" placeholder="{{ i18n.callflows.faxbox.fax_identity_placeholder }}" value="{{faxbox.fax_identity}}" rel="popover" data-content="{{ i18n.callflows.faxbox.fax_identity_data_content }}"/>
+						</div>
 					</div>
-				</div>
+				{{else}}
+					<div class="clearfix">
+						<label for="fax_identity">{{ i18n.callflows.faxbox.fax_identity }}</label>
+						<div class="input">
+							<input class="span4" id="fax_identity" name="fax_identity" type="text" placeholder="{{ i18n.callflows.faxbox.fax_identity_placeholder }}" value="{{faxbox.fax_identity}}" rel="popover" data-content="{{ i18n.callflows.faxbox.fax_identity_data_content }}"/>
+						</div>
+					</div>
+				{{/if}}
 			</div>
 
 			<div id="smtp">
@@ -177,19 +300,23 @@
 
 	 <div class="buttons-right">
 		{{#unless miscSettings.callflowButtonsWithinHeader}}
-			{{#if data.id}}
-				<button class="monster-button monster-button-danger faxbox-delete">{{ i18n.callflows.faxbox.delete }}</button>	
-			{{/if}}
+			{{#unless miscSettings.readOnlyFaxbox}}
+				{{#if faxbox.id}}
+					<button class="monster-button monster-button-danger faxbox-delete">{{ i18n.callflows.faxbox.delete }}</button>	
+				{{/if}}
+			{{/unless}}
 			<button class="monster-button monster-button-success faxbox-save">{{ i18n.callflows.faxbox.save }}</button>
 		{{/unless}}
 		{{#if miscSettings.callflowButtonsWithinHeader}}
-			{{#if data.id}}
-				{{#if miscSettings.popupEdit}}
-					{{#unless hideAdd.faxbox}}
-						<button class="monster-button monster-button-danger faxbox-delete">{{ i18n.callflows.faxbox.delete }}</button>
-					{{/unless}}
+			{{#unless miscSettings.readOnlyFaxbox}}
+				{{#if data.id}}
+					{{#if miscSettings.popupEdit}}
+						{{#unless hideAdd.faxbox}}
+							<button class="monster-button monster-button-danger faxbox-delete">{{ i18n.callflows.faxbox.delete }}</button>
+						{{/unless}}
+					{{/if}}
 				{{/if}}
-			{{/if}}
+			{{/unless}}
 			{{#if miscSettings.popupEdit}}
 				<button class="monster-button monster-button-success faxbox-save">{{ i18n.callflows.faxbox.save }}</button>
 			{{/if}}

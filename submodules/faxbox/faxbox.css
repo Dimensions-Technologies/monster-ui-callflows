@@ -22,3 +22,12 @@
 .callflows-port #faxbox_form #owner_id_chosen {
 	margin-bottom: 10px;
 }
+
+.callflows-port #faxbox_form .faxbox-help {
+	width: 580px;
+	margin-left: 78px;
+}
+
+.callflows-port #caller_id_tab #caller_id_chosen {
+	margin-bottom: 10px;
+}
