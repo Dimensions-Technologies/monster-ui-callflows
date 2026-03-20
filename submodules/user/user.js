@@ -949,8 +949,9 @@ define(function(require) {
 				}
 
 				var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
+					userFaxboxEnabled = data?.data?.smartpbx?.faxing?.enabled === true,
 					userCallflow = data?.field_data?.user_callflow;
-
+	
 				if (userCallflow) {
 					var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
 					
@@ -975,6 +976,10 @@ define(function(require) {
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
 						data: {
 							vm_to_email_enabled: _.get(data, 'data.vm_to_email_enabled', true)
+						},
+						faxbox: { 
+							realm: monster.apps.auth.currentAccount.realm,
+							email: data.data.email
 						}
 					}, _.pick(data.extra, [
 						'phoneNumbers'
@@ -1012,6 +1017,30 @@ define(function(require) {
 			if (!findMeFollowMeEnabled) {
 				user_html.find('.information-text.ring-timeout').hide();
 			}
+
+			if (!userFaxboxEnabled) {
+				user_html.find('.smartpbx-faxing .edit_create').hide();
+				user_html.find('.smartpbx-faxing-number').hide();
+				user_html.find('.faxbox-help').hide();
+			}
+
+			user_html.find('#smartpbx\\.faxing\\.enabled').on('change', function() {
+
+				var isEnabled = $(this).val();
+
+				if (isEnabled == 'true') {
+					if (userFaxboxEnabled) {
+						user_html.find('.smartpbx-faxing .edit_create').show();
+						user_html.find('.faxbox-help').show();
+					}
+					user_html.find('.smartpbx-faxing-number').show();
+				} else {
+					user_html.find('.smartpbx-faxing .edit_create').hide();
+					user_html.find('.smartpbx-faxing-number').hide();
+					user_html.find('.faxbox-help').hide();
+				}
+
+			});
 
 			user_html.find('.ring-timeout').on('change', function(event) {
 
@@ -1198,8 +1227,21 @@ define(function(require) {
 			$('#tab_find_me_follow_me', user_html).hide();
 			$('#call_routing_manual', user_html).hide();
 
-			// the following is within monster.waterfall so that the device list is rendered before the page loads
+			// the following is within monster.waterfall so that faxbox data and the device list is rendered before the page loads
 			monster.waterfall([
+				function(callback) {
+					// if user faxbox enabled get faxbox details
+					if (userFaxboxEnabled) {
+						var ownerId = data.data.id;
+							
+						self.getUserFaxboxDetails(ownerId, function(faxbox) {
+							data.field_data.user_faxbox = faxbox;
+							callback(null);
+						});
+					} else {
+						callback(null);
+					}
+				},
 				function(callback) {
 					self.userGetDeviceList(data, function(deviceList) {
 						data.field_data.device_list = deviceList;
@@ -1210,6 +1252,9 @@ define(function(require) {
 				},
 				function() {
 					target.empty().append(user_html);
+
+					// should always call this so if faxbox is disabled then enabled the number dropdown is populated
+					self.userRenderFaxboxNumberSelector(data, user_html);
 					
 					var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 						userCallflow = data?.field_data?.user_callflow;
@@ -1366,14 +1411,15 @@ define(function(require) {
 
 						ev.preventDefault();
 
-						var field_data = data.field_data;
+							var field_data = data.field_data;
 
 						self.listNumbers(function(phoneNumbers) {
-							var parsedNumbers = [];
+							var parsedNumbers = [],
+								selectedFaxingNumber = _.get(field_data, 'user_faxbox.phoneNumber');
 
 							// filter out numbers already added to the form but not yet saved
 							_.each(phoneNumbers, function(number) {
-								if ($.inArray(number.phoneNumber, field_data.phone_numbers) < 0) {	
+								if ($.inArray(number.phoneNumber, field_data.phone_numbers) < 0 && number.phoneNumber !== selectedFaxingNumber) {	
 									parsedNumbers.push(number);
 								}
 							});
@@ -1439,6 +1485,7 @@ define(function(require) {
 								}
 
 								self.userRenderNumberList(data, user_html)
+								self.userRenderFaxboxNumberSelector(data, user_html);
 							
 								popup.dialog('close');
 
@@ -1524,10 +1571,14 @@ define(function(require) {
 							field_data = data.field_data,
 							callflowNumbers = data.field_data.callflow_numbers,
 							formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
+							faxboxData = data.field_data.user_faxbox || {},
+							selectedFaxingNumber = $('#user_faxing_number', user_html).val() || '',
 							userCallflow = data.field_data.user_callflow,
 							userVoicemail = form_data.user_voicemail,
 							currentRingTimeout = data.field_data.user_ring_timeout_current,
 							ringTimeout = parseInt(form_data.ring_timeout, 10),
+							currentFaxingEnabled = data?.data?.smartpbx?.faxing?.enabled === true,
+							faxingEnabled = form_data.smartpbx.faxing.enabled === "true",
 							findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 							findMeFollowMe = form_data.smartpbx.find_me_follow_me.enabled === "true",
 							callflowRingGroup = data.field_data.callflow_ring_group,
@@ -1559,6 +1610,12 @@ define(function(require) {
 								monster.ui.alert('warning', self.i18n.active().callflows.user.missed_call_alert.no_override_recipients);
 								return;
 							}
+						}
+
+						// show warning message if personal fax box is enabled but no faxbox number is selected
+						if (faxingEnabled && selectedFaxingNumber == '') {
+							monster.ui.alert('warning', self.i18n.active().callflows.user.faxbox.no_faxbox_number);
+							return;
 						}
 
 						function continueSave() {
@@ -1890,6 +1947,219 @@ define(function(require) {
 
 								},
 
+								function(callback) {
+									// function for personal faxbox support 
+									function clearFaxboxState() {
+										faxboxData.id = null;
+										faxboxData.callflowId = null;
+										faxboxData.callflow_numbers = [];
+										faxboxData.phoneNumber = '';
+										faxboxData.doc = null;
+									}
+
+									function getFaxboxCallerName() {
+										return _.trim([
+											form_data.first_name || data.data.first_name,
+											form_data.last_name || data.data.last_name
+										].join(' '));
+									}
+
+									function createFaxboxCallflow(faxboxId, faxboxDoc) {
+										self.callApi({
+											resource: 'callflow.create',
+											data: {
+												accountId: self.accountId,
+												data: {
+													type: 'faxing',
+													owner_id: data.data.id,
+													numbers: [
+														selectedFaxingNumber
+													],
+													flow: {
+														module: 'faxbox',
+														children: {},
+														data: {
+															id: faxboxId
+														}
+													},
+													ui_metadata: {
+														origin: 'voip'
+													}
+												},
+												removeMetadataAPI: true
+											},
+												success: function(callflowResponse) {
+													faxboxData.id = faxboxId;
+													faxboxData.callflowId = callflowResponse.data.id;
+													faxboxData.callflow_numbers = [selectedFaxingNumber];
+													faxboxData.phoneNumber = selectedFaxingNumber;
+													faxboxData.doc = faxboxDoc;
+													callback(null);
+												},
+												error: function() {
+													callback(null);
+											}
+										});
+									}
+
+									function deleteFaxboxCallflow() {
+										if (!faxboxData.callflowId) {
+											clearFaxboxState();
+											callback(null);
+											return;
+										}
+
+										self.callApi({
+											resource: 'callflow.delete',
+											data: {
+												accountId: self.accountId,
+												callflowId: faxboxData.callflowId
+											},
+											success: function() {
+												clearFaxboxState();
+												callback(null);
+											},
+											error: function() {
+												callback(null);
+											}
+										});
+									}
+
+									if (currentFaxingEnabled && !faxingEnabled) {
+										self.callApi({
+											resource: 'faxbox.delete',
+											data: {
+												accountId: self.accountId,
+												faxboxId: faxboxData.id
+											},
+											success: function() {
+												deleteFaxboxCallflow();
+											}
+										});
+										
+										return;
+									}
+
+									if (!currentFaxingEnabled && faxingEnabled && !faxboxData.id && selectedFaxingNumber && data.data.id) {
+										var	faxIdentity = monster.util.formatPhoneNumber(selectedFaxingNumber).split(' ').join(''),
+											callerName = getFaxboxCallerName(),
+											faxboxName = callerName ? callerName + '\'s Faxbox' : 'Faxbox';
+
+										if (miscSettings.readOnlyCallerIdName) {
+											callerName = faxIdentity;
+										}
+
+										self.callApi({
+											resource: 'faxbox.create',
+											data: {
+												accountId: self.accountId,
+												data: {
+													retries: 3,
+													name: faxboxName,
+													caller_name: callerName,
+													fax_header: 'Fax Printer',
+													owner_id: data.data.id,
+													caller_id: selectedFaxingNumber,
+													fax_identity: faxIdentity,
+													ui_metadata: {
+														origin: 'voip'
+													}
+												}
+											},
+											success: function(faxboxResponse) {
+												createFaxboxCallflow(faxboxResponse.data.id, faxboxResponse.data);
+											},
+											error: function() {
+												callback(null);
+											}
+										});
+
+										return;
+									}
+
+									if (!faxingEnabled) {
+										callback(null);
+										return;
+									}
+
+									var currentFaxboxNumbers = _.sortBy(faxboxData.callflow_numbers || []),
+										nonPhoneFaxboxNumbers = _.filter(faxboxData.callflow_numbers || [], function(number) {
+											if (miscSettings.fixedExtensionLength) {
+												return number.length <= 7;
+											}
+
+											return !_.startsWith(number, '+');
+										}),
+										nextFaxboxNumbers = selectedFaxingNumber
+											? [selectedFaxingNumber].concat(nonPhoneFaxboxNumbers)
+											: nonPhoneFaxboxNumbers,
+										nextFaxboxNumbersSorted = _.sortBy(nextFaxboxNumbers),
+										faxboxNumbersChanged = !_.isEqual(currentFaxboxNumbers, nextFaxboxNumbersSorted);
+
+									if (!faxboxData.callflowId || !faxboxNumbersChanged) {
+										callback(null);
+										return;
+									}
+
+									self.callApi({
+										resource: 'callflow.patch',
+										data: {
+											accountId: self.accountId,
+											callflowId: faxboxData.callflowId,
+											data: {
+												numbers: nextFaxboxNumbers,
+												ui_metadata: {
+													origin: 'voip'
+												}
+											},
+											removeMetadataAPI: true
+										},
+										success: function() {
+											var	faxIdentity = monster.util.formatPhoneNumber(selectedFaxingNumber).split(' ').join('');
+
+											faxboxData.callflow_numbers = nextFaxboxNumbers;
+											faxboxData.phoneNumber = selectedFaxingNumber;
+
+											if (!faxboxData.id || !faxboxData.doc || !selectedFaxingNumber) {
+												callback(null);
+												return;
+											}
+
+											var	callerName = getFaxboxCallerName();
+
+											if (miscSettings.readOnlyCallerIdName) {
+												callerName = faxIdentity;
+											}
+
+											self.callApi({
+												resource: 'faxbox.update',
+												data: {
+													accountId: self.accountId,
+													faxboxId: faxboxData.id,
+													data: _.merge({}, faxboxData.doc, {
+														caller_name: callerName,
+														caller_id: selectedFaxingNumber,
+														fax_identity: faxIdentity,
+														ui_metadata: {
+															origin: 'voip'
+														}
+													})
+												},
+												success: function(data) {
+													faxboxData.doc = data.data;
+													callback(null);
+												},
+												error: function() {
+													callback(null);
+												}
+											});
+										},
+										error: function() {
+											callback(null);
+										}
+									});
+								},
+
 								function() {
 									self.callApi({
 										resource: 'account.get',
@@ -2006,6 +2276,25 @@ define(function(require) {
 					});
 				}
 
+			});
+
+			$('.inline_action_faxbox', user_html).click(function(ev) {
+				var ownerId = data.data.id,
+					action = $(this).data('action');
+
+				ev.preventDefault();
+
+				self.getUserFaxbox(ownerId, function(faxboxId) {
+					if (action === 'edit' && !faxboxId) {
+						monster.ui.alert('warning', self.i18n.active().callflows.user.faxbox.no_faxbox);
+						return;
+					}
+
+					monster.pub('callflows.faxbox.editPopup', {
+						data: action === 'edit' ? { id: faxboxId } : {},
+						callback: function() {}
+					});
+				});
 			});
 
 			$('.inline_action_media', user_html).click(function(ev) {
@@ -2449,6 +2738,7 @@ define(function(require) {
 
 		userRenderNumberList: function(data, parent) {
 			var self = this,
+				user_html = parent,
 				parent = $('#phone_numbers_container', parent);
 
 				if (miscSettings.enableConsoleLogging) {
@@ -2494,9 +2784,72 @@ define(function(require) {
 						console.log('Phone Number Being Removed:', phoneNumberValue);
 						console.log('Field Data', field_data);
 					}
+
+					self.userRenderFaxboxNumberSelector(data, user_html);
 					
 				})
 				
+		},
+
+		userGetAvailableFaxNumbers: function(data, callback) {
+			var self = this,
+				selectedFaxingNumber = _.get(data, 'field_data.user_faxbox.phoneNumber', ''),
+				assignedPhoneNumbers = _.get(data, 'field_data.phone_numbers', []);
+
+			self.listNumbers(function(phoneNumbers) {
+				var availableNumbers = _.filter(phoneNumbers, function(number) {
+					return $.inArray(number.phoneNumber, assignedPhoneNumbers) < 0;
+				});
+
+				if (selectedFaxingNumber && !_.some(availableNumbers, { phoneNumber: selectedFaxingNumber })) {
+					availableNumbers.unshift({
+						phoneNumber: selectedFaxingNumber
+					});
+				}
+
+				callback && callback(availableNumbers);
+			});
+		},
+
+		userRenderFaxboxNumberSelector: function(data, parent) {
+			var self = this,
+				$select = $('#user_faxing_number', parent);
+
+			if (!$select.length) {
+				return;
+			}
+
+			var renderSelector = function() {
+				var selectedFaxingNumber = _.get(data, 'field_data.user_faxbox.phoneNumber', '');
+
+				self.userGetAvailableFaxNumbers(data, function(phoneNumbers) {
+					$select.empty().append($('<option>', { value: '' }));
+
+					_.each(phoneNumbers, function(number) {
+						$select.append($('<option>', {
+							value: number.phoneNumber,
+							text: monster.util.formatPhoneNumber(number.phoneNumber)
+						}));
+					});
+
+					$select.prop('disabled', phoneNumbers.length === 0 && !selectedFaxingNumber);
+					$select.val(selectedFaxingNumber || '');
+
+					if ($select.data('chosen')) {
+						$select.trigger('chosen:updated');
+					} else {
+						monster.ui.chosen($select, {
+							width: '220px'
+						});
+
+						$select.change(function() {
+							data.field_data.user_faxbox.phoneNumber = $(this).val() || '';
+						});
+					}
+				});
+			};
+
+			renderSelector();
 		},
 
 		userGetDeviceList: function(data, callback) {
@@ -2857,6 +3210,11 @@ define(function(require) {
 				enabled: data.smartpbx.find_me_follow_me.enabled === "true"
 			}
 
+			// add support for setting faxbox state
+			data.smartpbx.faxing = {
+				enabled: data.smartpbx.faxing.enabled === "true"
+			}
+
 			// add support for setting dnd on user doc
 			data.do_not_disturb = {
 				enabled: data.do_not_disturb.enabled === "true"
@@ -3162,6 +3520,79 @@ define(function(require) {
 			}
 
 			return found;
+		},
+
+		getUserFaxbox: function(ownerId, callback) {
+			var self = this;
+
+			self.getUserFaxboxDetails(ownerId, function(faxbox) {
+				callback && callback(faxbox?.id);
+			});
+		},
+
+		getUserFaxboxDetails: function(ownerId, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.list',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						paginate: false,
+						filter_owner_id: ownerId,
+						filter_type: 'faxing'
+					}
+				},
+				success: function(data) {
+					if (data.data.length > 0) {
+
+						var callflowId = data.data[0].id;
+
+						self.callApi({
+							resource: 'callflow.get',
+							data: {
+								accountId: self.accountId,
+								callflowId: callflowId
+							},
+							success: function(data) {
+								var callflow = data.data,
+									faxboxId = callflow.flow.data.id,
+									faxboxNumbers = callflow.numbers || [],
+									faxboxPhoneNumber = faxboxNumbers;
+							
+								self.callApi({
+									resource: 'faxbox.get',
+									data: {
+										accountId: self.accountId,
+										faxboxId: faxboxId,
+										generateError: false
+									},
+									success: function(faxboxData) {
+										callback && callback({
+											id: faxboxId,
+											callflowId: callflow.id,
+											callflow_numbers: faxboxNumbers,
+											phoneNumber: faxboxPhoneNumber,
+											doc: faxboxData.data
+										});
+									},
+									error: function() {
+										callback && callback(null);
+									}
+								});
+							},
+							error: function() {
+								callback && callback(null);
+							}
+						});
+					} else {
+						callback && callback(null);
+					}
+				},
+				error: function() {
+					callback && callback(null);
+				}
+			});
 		},
 
 		usersUpdateVMBoxStatusInCallflow: function(args, callback) {

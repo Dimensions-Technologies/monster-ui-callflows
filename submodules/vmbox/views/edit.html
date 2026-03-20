@@ -557,9 +557,9 @@
 		 <div class="buttons-right">
 			{{#unless miscSettings.callflowButtonsWithinHeader}}
 				{{#unless miscSettings.readOnlyMailbox}}
-				{{#if data.id}}
-					<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
-				{{/if}}
+					{{#if data.id}}
+						<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
+					{{/if}}
 				{{/unless}}
 				<button class="monster-button monster-button-success vmbox-save">{{ i18n.callflows.vmbox.save }}</button>
 			{{/unless}}

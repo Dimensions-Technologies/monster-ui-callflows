@@ -12,6 +12,7 @@ define(function(require) {
 		subscribe: {
 			'callflows.fetchActions': 'faxboxDefineActions',
 			'callflows.faxbox.edit': '_faxboxEdit',
+			'callflows.faxbox.editPopup': 'faxboxPopupEdit',
 			'callflows.faxbox.submoduleButtons': 'faxboxSubmoduleButtons'
 		},
 
@@ -254,10 +255,6 @@ define(function(require) {
 					after_render: _callbacks.after_render
 				};
 
-			if (miscSettings.callflowButtonsWithinHeader) {
-				self.faxboxSubmoduleButtons(data);
-			};
-
 			monster.parallel({
 				faxbox: function(callback) {
 					if (typeof data === 'object' && data.id) {
@@ -317,26 +314,45 @@ define(function(require) {
 							}
 						},
 						success: function(_data) {
-							_data.numbers = _.chain(_data)
-								.get('data.numbers', {})
-								.keys()
-								.sortBy()
-								.value();
+							var numbers = _.get(_data, 'data.numbers', {}),
+								allNumbers = _.keys(numbers).sort(),
+								spareNumbers = _.chain(numbers)
+									.pickBy(function(meta) {
+										return !meta.hasOwnProperty('used_by') || meta.used_by === '';
+									})
+									.keys()
+									.sortBy()
+									.value();
 
-							callback(null, _data.numbers);
+							callback(null, {
+								all: allNumbers,
+								spare: spareNumbers
+							});
 						}
 					});
 				}
 			}, function(err, results) {
-				if (!data.hasOwnProperty('id')) {
-					if (_.size(results.current_user) === 0) {
-						results.faxbox = $.extend(true, self.faxboxGetDefaultSettings(), results.faxbox);
-					} else {
-						results.faxbox = $.extend(true, self.faxboxGetDefaultSettings(results.current_user), results.faxbox);
+
+				miscSettings.readOnlyFaxbox = false;
+
+				if (results.faxbox.hasOwnProperty('owner_id') && results.faxbox.owner_id != null) {
+					if (miscSettings.faxboxPreventDeletingUserAssociated) {
+						miscSettings.readOnlyFaxbox = true;
 					}
 				}
 
+				if (miscSettings.readOnlyFaxbox || miscSettings.readOnlyFaxboxCallerId) {
+					miscSettings.readOnlyFaxboxCallerId = true;
+				}
+
+				if (!data.hasOwnProperty('id')) {
+					results.faxbox = $.extend(true, self.faxboxGetDefaultSettings(), results.faxbox);
+				}
+
 				delete results.current_user;
+
+				results.spare_phone_numbers = results.phone_numbers.spare;
+				results.phone_numbers = results.phone_numbers.all;
 
 				var invalidCallerID = _.find(results.phone_numbers, _.get(results.faxbox, 'caller_id', null));
 
@@ -344,34 +360,59 @@ define(function(require) {
 					results.phone_numbers.unshift(results.faxbox.caller_id);
 				}
 
-				self.faxboxRender(results, target, callbacks);
+				if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+					self.faxboxSubmoduleButtons(data);
+				};
 
-				if (typeof callbacks.after_render === 'function') {
-					callbacks.after_render();
-				}
+				self.faxboxGetCallflow(results.faxbox, function(faxboxCallflow) {
+					var faxboxCallflowNumber = _.get(faxboxCallflow, 'numbers[0]');
 
-				if (miscSettings.callflowButtonsWithinHeader) {
-					miscSettings.popupEdit = false;
-				}
+					if (faxboxCallflowNumber && !_.includes(results.phone_numbers, faxboxCallflowNumber)) {
+						results.phone_numbers.unshift(faxboxCallflowNumber);
+					}
+
+					if (faxboxCallflowNumber && !_.includes(results.spare_phone_numbers, faxboxCallflowNumber)) {
+						results.spare_phone_numbers.unshift(faxboxCallflowNumber);
+					}
+
+					results.faxbox_callflow = faxboxCallflow;
+
+					self.faxboxRender(results, target, callbacks);
+
+					if (typeof callbacks.after_render === 'function') {
+						callbacks.after_render();
+					}
+
+					if (miscSettings.callflowButtonsWithinHeader) {
+						miscSettings.popupEdit = false;
+					}
+				});
 
 			});
 		},
 
 		faxboxRender: function(data, target, callbacks) {
 			var self = this,
+				renderData = data,
+				normalizedFaxbox = self.faxboxNormalizedData(data.faxbox),
+				selectedFaxboxNumber = _.get(data, 'selected_faxbox_number', '') || _.get(data, 'faxbox_callflow.numbers[0]', ''),
 				faxbox_html = $(self.getTemplate({
 					name: 'edit',
 					data: {
 						hideAdd: hideAdd,
 						miscSettings: miscSettings,
-						faxbox: self.faxboxNormalizedData(data.faxbox),
+						faxbox: $.extend(true, {}, normalizedFaxbox, {
+							realm: monster.apps.auth.currentAccount.realm,
+							number: selectedFaxboxNumber
+						}),
 						users: data.user_list,
-						phone_numbers: data.phone_numbers
+						phone_numbers: data.phone_numbers,
+						spare_phone_numbers: data.spare_phone_numbers,
+						faxbox_callflow_number: selectedFaxboxNumber,
+						inbound_email_notification: null
 					},
 					submodule: 'faxbox'
 				}));
-
-			monster.ui.chosen(faxbox_html.find('.callflows-caller-id-dropdown'));
 
 			timezone.populateDropdown($('#fax_timezone', faxbox_html), data.faxbox.fax_timezone || 'inherit', {
 				inherit: self.i18n.active().defaultTimezone
@@ -387,56 +428,104 @@ define(function(require) {
 
 			self.winkstartTabs(faxbox_html);
 
-			if (!data.faxbox.hasOwnProperty('id')) {
-				$('#owner_id', faxbox_html).change(function(ev) {
-					if ($(this).val()) {
-						self.faxboxGetUser($(this).val(), function(_data, status) {
-							data.faxbox = self.faxboxGetDefaultSettings(_data);
-							$('#edit_link', faxbox_html).show();
-							self.faxboxRender(data, target, callbacks);
-						});
-					} else {
-						data.faxbox = self.faxboxGetDefaultSettings();
-						$('#edit_link', faxbox_html).hide();
-						self.faxboxRender(data, target, callbacks);
-					}
-				});
-			} else {
-				$('#owner_id', faxbox_html).change(function(ev) {
-					var currentFaxbox = monster.ui.getFormData('faxbox_form');
+			function persistFaxboxNumber(number) {
+				renderData.selected_faxbox_number = number || '';
+			}
 
-					if ($(this).val()) {
-						$('[id$="bound_notification_email"]', faxbox_html).each(function(idx, el) {
-							$(el).attr('disabled', true);
-						});
+			faxbox_html.find('#faxbox_number').on('change', function() {
+				persistFaxboxNumber($(this).val() || '');
+			});
 
-						self.faxboxGetUser($(this).val(), function(_data, status) {
-							data.faxbox = $.extend(true, {}, self.faxboxGetDefaultSettings(), data.faxbox, currentFaxbox, {
-								cloud_connector_claim_url: faxbox_html.find('#cloud_connector_claim_url').attr('href'),
-								notifications: {
-									inbound: {
-										email: {
-											send_to: _data.email || _data.username
-										}
-									},
-									outbound: {
-										email: {
-											send_to: _data.email || _data.username
-										}
-									}
+			// section commented out since we are not supporting assigning a faxbox to a user from the faxbox section
+			/*
+			var ownerChangeRequestId = 0;
+
+			if (!miscSettings.hideFaxboxUserAssignment) {
+				if (!data.faxbox.hasOwnProperty('id')) {
+					$('#owner_id', faxbox_html).change(function(ev) {
+						var currentFaxbox = monster.ui.getFormData('faxbox_form'),
+							preservedFaxboxNumber = $('#faxbox_number', faxbox_html).val() || currentFaxbox.faxbox_number || _.get(renderData, 'selected_faxbox_number', '') || _.get(renderData, 'faxbox_callflow.numbers[0]', ''),
+							preservedCallerId = $('#caller_id', faxbox_html).val() || currentFaxbox.caller_id || _.get(data, 'faxbox.caller_id', ''),
+							preservedCallerName = $('#caller_name', faxbox_html).val() || currentFaxbox.caller_name || _.get(data, 'faxbox.caller_name', ''),
+							preservedFaxIdentity = $('#fax_identity', faxbox_html).val() || currentFaxbox.fax_identity || _.get(data, 'faxbox.fax_identity', ''),
+							requestId = ++ownerChangeRequestId;
+
+						persistFaxboxNumber(preservedFaxboxNumber);
+
+						if ($(this).val()) {
+							self.faxboxGetUser($(this).val(), function(_data, status) {
+								if (requestId !== ownerChangeRequestId) {
+									return;
 								}
-							});
 
+								data.faxbox = $.extend(true, {}, self.faxboxGetDefaultSettings(_data), {
+									caller_id: preservedCallerId,
+									caller_name: preservedCallerName,
+									fax_identity: preservedFaxIdentity
+								});
+								$('#edit_link', faxbox_html).show();
+								self.faxboxRender(data, target, callbacks);
+							});
+						} else {
+							data.faxbox = $.extend(true, {}, self.faxboxGetDefaultSettings(), {
+								caller_id: preservedCallerId,
+								caller_name: preservedCallerName,
+								fax_identity: preservedFaxIdentity
+							});
 							$('#edit_link', faxbox_html).hide();
 							self.faxboxRender(data, target, callbacks);
-						});
-					} else {
-						$('[id$="bound_notification_email"]', faxbox_html).each(function(idx, el) {
-							$(el).attr('disabled', false);
-						});
-					}
-				});
+						}
+					});
+				} else {
+					$('#owner_id', faxbox_html).change(function(ev) {
+						var currentFaxbox = monster.ui.getFormData('faxbox_form'),
+							preservedCallerId = $('#caller_id', faxbox_html).val() || currentFaxbox.caller_id || _.get(data, 'faxbox.caller_id', ''),
+							preservedCallerName = $('#caller_name', faxbox_html).val() || currentFaxbox.caller_name || _.get(data, 'faxbox.caller_name', ''),
+							preservedFaxIdentity = $('#fax_identity', faxbox_html).val() || currentFaxbox.fax_identity || _.get(data, 'faxbox.fax_identity', ''),
+							requestId = ++ownerChangeRequestId;
+
+						if ($(this).val()) {
+							$('[id$="bound_notification_email"]', faxbox_html).each(function(idx, el) {
+								$(el).attr('disabled', true);
+							});
+
+							self.faxboxGetUser($(this).val(), function(_data, status) {
+								if (requestId !== ownerChangeRequestId) {
+									return;
+								}
+
+								data.faxbox = $.extend(true, {}, self.faxboxGetDefaultSettings(), data.faxbox, currentFaxbox, {
+									cloud_connector_claim_url: faxbox_html.find('#cloud_connector_claim_url').attr('href'),
+									notifications: {
+										inbound: {
+											email: {
+												send_to: _data.email || _data.username
+											}
+										},
+										outbound: {
+											email: {
+												send_to: _data.email || _data.username
+											}
+										}
+									}
+								});
+									data.faxbox.caller_id = preservedCallerId;
+									data.faxbox.caller_name = preservedCallerName;
+									data.faxbox.fax_identity = preservedFaxIdentity;
+									persistFaxboxNumber($('#faxbox_number', faxbox_html).val() || currentFaxbox.faxbox_number || _.get(renderData, 'selected_faxbox_number', '') || _.get(renderData, 'faxbox_callflow.numbers[0]', ''));
+
+								$('#edit_link', faxbox_html).hide();
+								self.faxboxRender(data, target, callbacks);
+							});
+						} else {
+							$('[id$="bound_notification_email"]', faxbox_html).each(function(idx, el) {
+								$(el).attr('disabled', false);
+							});
+						}
+					});
+				}
 			}
+			*/
 
 			if (!$('#owner_id', faxbox_html).val()) {
 				$('#edit_link', faxbox_html).hide();
@@ -487,30 +576,54 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.faxbox')
+					.on('click.faxbox', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			// add search to dropdown
-			faxbox_html.find('#owner_id').chosen({
-				width: '404px',
-				disable_search_threshold: 0,
-				search_contains: true
-			})
+			monster.ui.chosen(faxbox_html.find('.callflows-caller-id-dropdown'));
+			monster.ui.chosen(faxbox_html.find('select#faxbox_number'));
+			monster.ui.chosen(faxbox_html.find('select#owner_id'));
+			monster.ui.chosen(faxbox_html.find('#fax_timezone'));
 
-			// add search to dropdown
-			faxbox_html.find('#fax_timezone').chosen({
-				width: '404px',
-				disable_search_threshold: 0,
-				search_contains: true
-			})
+			if (miscSettings.readOnlyFaxboxCallerId) {
+				faxbox_html.find('#faxbox_number').on('change', function() {
+					var selectedNumber = $(this).val() || '',
+						formattedNumber = selectedNumber ? monster.util.formatPhoneNumber(selectedNumber) : '';
 
+					faxbox_html.find('#caller_id_display').val(formattedNumber);
+					faxbox_html.find('#caller_id').val(selectedNumber);
+					faxbox_html.find('#fax_identity').val(formattedNumber);
+
+					if (miscSettings.readOnlyCallerIdName) {
+						faxbox_html.find('#caller_name').val(formattedNumber);
+					}
+				});
+			}
+			
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var form_html = $('#faxbox_form', faxbox_html),
 					form_data = monster.ui.getFormData('faxbox_form'),
+					faxboxNumber = form_data.faxbox_number || $('#faxbox_number', faxbox_html).val() || _.get(renderData, 'selected_faxbox_number', '') || '',
 					word_reg = /^[\w\s'-]+/;
+
+				// prevent save if this is a non user associated faxbox and not all required fields are set
+				if (!form_data.hasOwnProperty('owner_id')) {
+					var faxboxNumber = form_data.faxbox_number,
+						inboundEmail = form_data.notifications.inbound.email.send_to,
+						permissionList = form_data.smtp_permission_list;
+
+					if (faxboxNumber == '' || inboundEmail == '' || permissionList == '') {
+						monster.ui.alert('warning', self.i18n.active().callflows.faxbox.can_not_save);
+						return
+					}
+				}
 
 				monster.ui.validate(form_html, {
 					rules: {
@@ -546,10 +659,27 @@ define(function(require) {
 					$this.addClass('disabled');
 
 					if (monster.ui.valid(form_html)) {
-						delete data.faxbox.custom_smtp_address;
-						self.faxboxSave(form_data, data.faxbox, function(data) {
-							$this.removeClass('disabled');
-							callbacks && callbacks.hasOwnProperty('save_success') && callbacks.save_success(data);
+						persistFaxboxNumber(faxboxNumber);
+						delete renderData.faxbox.custom_smtp_address;
+						delete form_data.faxbox_number;
+						self.faxboxSave(form_data, renderData.faxbox, function(savedFaxbox) {
+							self.faxboxSyncCallflowNumber({
+								faxbox: savedFaxbox,
+								currentCallflow: renderData.faxbox_callflow,
+								number: faxboxNumber,
+								ownerId: savedFaxbox.owner_id || savedFaxbox.id || form_data.owner_id || renderData.faxbox.owner_id || renderData.faxbox.id
+							}, function(updatedCallflow) {
+								renderData.faxbox = savedFaxbox;
+								renderData.faxbox_callflow = updatedCallflow;
+								renderData.selected_faxbox_number = faxboxNumber;
+								$this.removeClass('disabled');
+								callbacks && callbacks.hasOwnProperty('save_success') && callbacks.save_success(savedFaxbox);
+							}, function() {
+								renderData.faxbox = savedFaxbox;
+								renderData.selected_faxbox_number = faxboxNumber;
+								$this.removeClass('disabled');
+								callbacks && callbacks.hasOwnProperty('save_success') && callbacks.save_success(savedFaxbox);
+							});
 						}, function(data) {
 							$this.removeClass('disabled');
 						});
@@ -563,9 +693,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.faxbox')
+					.on('click.faxbox', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();
@@ -606,12 +740,142 @@ define(function(require) {
 			});
 		},
 
+		faxboxGetCallflow: function(faxbox, callback) {
+			var self = this,
+				callflowOwnerId = _.get(faxbox, 'owner_id') || _.get(faxbox, 'id');
+			
+			if (!faxbox || !faxbox.id || !callflowOwnerId) {
+				callback && callback(null);
+
+				return;
+			}
+
+			self.callApi({
+				resource: 'callflow.list',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						paginate: false,
+						filter_owner_id: callflowOwnerId,
+						filter_type: 'faxing'
+					}
+				},
+				success: function(data) {
+					var callflowId = _.get(data, 'data[0].id');
+
+					if (!callflowId) {
+						callback && callback(null);
+
+						return;
+					}
+
+					self.callApi({
+						resource: 'callflow.get',
+						data: {
+							accountId: self.accountId,
+							callflowId: callflowId
+						},
+						success: function(callflowData) {
+							var callflow = callflowData.data;
+
+							if (_.get(callflow, 'flow.data.id') !== faxbox.id) {
+								callback && callback(null);
+
+								return;
+							}
+
+							callback && callback(callflow);
+						},
+						error: function() {
+							callback && callback(null);
+						}
+					});
+				},
+				error: function() {
+					callback && callback(null);
+				}
+			});
+		},
+
+		faxboxSyncCallflowNumber: function(args, success, error) {
+			var self = this,
+				faxbox = args.faxbox,
+				number = args.number,
+				ownerId = args.ownerId || _.get(faxbox, 'owner_id') || _.get(faxbox, 'id'),
+				currentCallflow = args.currentCallflow,
+				currentNumber = _.get(currentCallflow, 'numbers[0]', '');
+
+			if (!faxbox || !faxbox.id || !number) {
+				success && success(currentCallflow || null);
+				return;
+			}
+
+			if (currentCallflow && currentCallflow.id && currentNumber === number) {
+				success && success(currentCallflow);
+				return;
+			}
+
+			if (currentCallflow && currentCallflow.id) {
+				self.callApi({
+					resource: 'callflow.patch',
+					data: {
+						accountId: self.accountId,
+						callflowId: currentCallflow.id,
+						data: {
+							numbers: [number],
+							ui_metadata: {
+								origin: 'voip'
+							}
+						},
+						removeMetadataAPI: true
+					},
+					success: function(callflowData) {
+						success && success(callflowData.data);
+					},
+					error: function() {
+						error && error();
+					}
+				});
+
+				return;
+			}
+
+			self.callApi({
+				resource: 'callflow.create',
+				data: {
+					accountId: self.accountId,
+					data: {
+						type: 'faxing',
+						owner_id: ownerId,
+						numbers: [number],
+						flow: {
+							module: 'faxbox',
+							children: {},
+							data: {
+								id: faxbox.id
+							}
+						},
+						ui_metadata: {
+							origin: 'voip'
+						}
+					},
+					removeMetadataAPI: true
+				},
+				success: function(callflowData) {
+					success && success(callflowData.data);
+				},
+				error: function() {
+					error && error();
+				}
+			});
+		},
+
 		faxboxGetDefaultSettings: function(user) {
 			var self = this,
 				default_faxbox = {
 					name: '',
 					caller_name: '',
-					fax_header: '',
+					fax_header: 'Fax Printer',
 					fax_timezone: 'inherit',
 					retries: 3,
 					notifications: {
@@ -634,7 +898,7 @@ define(function(require) {
 				return $.extend(true, {}, default_faxbox, {
 					name: user.first_name.concat(' ', user.last_name, self.i18n.active().callflows.faxbox.default_settings_name_extension),
 					caller_name: user.first_name.concat(' ', user.last_name),
-					fax_header: monster.config.whitelabel.companyName.concat(self.i18n.active().callflows.faxbox.default_settings_header_extension),
+					fax_header: 'Fax Printer',
 					owner_id: user.id,
 					notifications: {
 						inbound: {
@@ -808,18 +1072,38 @@ define(function(require) {
 			var self = this;
 
 			if (typeof data === 'object' && data.hasOwnProperty('id')) {
-				self.callApi({
-					resource: 'faxbox.delete',
-					data: {
-						accountId: self.accountId,
-						faxboxId: data.id
-					},
-					success: function(data) {
-						callbackSuccess && callbackSuccess(data.data);
-					},
-					error: function(error) {
-						callbackError && callbackError();
-					}
+				self.faxboxGetCallflow(data, function(callflow) {
+					self.callApi({
+						resource: 'faxbox.delete',
+						data: {
+							accountId: self.accountId,
+							faxboxId: data.id
+						},
+						success: function(faxboxData) {
+							if (!callflow || !callflow.id) {
+								callbackSuccess && callbackSuccess(faxboxData.data);
+
+								return;
+							}
+
+							self.callApi({
+								resource: 'callflow.delete',
+								data: {
+									accountId: self.accountId,
+									callflowId: callflow.id
+								},
+								success: function() {
+									callbackSuccess && callbackSuccess(faxboxData.data);
+								},
+								error: function() {
+									callbackSuccess && callbackSuccess(faxboxData.data);
+								}
+							});
+						},
+						error: function() {
+							callbackError && callbackError();
+						}
+					});
 				});
 			}
 		},
@@ -843,10 +1127,15 @@ define(function(require) {
 		},
 
 		faxboxSubmoduleButtons: function(data) {
-			var existingItem = true;
+			var existingItem = true,
+				hideDelete = false;
 			
 			if (!data.id) {
 				existingItem = false;
+			}
+
+			if (miscSettings.readOnlyFaxbox) {
+				hideDelete = true;
 			}
 			
 			var self = this,
@@ -855,7 +1144,7 @@ define(function(require) {
 					data: {
 						miscSettings: miscSettings,
 						existingItem: existingItem,
-						hideDelete: hideAdd.faxbox
+						hideDelete: hideDelete
 					}
 				}));
 			

@@ -142,7 +142,6 @@ define(function(require) {
 			function(err, results) {
 				var render_data = defaults;
 
-				//miscSettings.vmboxPreventDelete = false;
 				miscSettings.readOnlyMailbox = false;
 
 				if (results.get_vmbox.hasOwnProperty('owner_id') && results.get_vmbox.owner_id != null) {

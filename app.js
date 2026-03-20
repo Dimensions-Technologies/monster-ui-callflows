@@ -1326,6 +1326,9 @@ define(function(require) {
 				isAcdcMember = function(entity) {
 					return entityType === 'acdc_member' && entity.numbers ;
 				},
+				isFaxbox = function(entity) {
+					return entityType === 'faxbox';
+				},
 				isVoicemail = function(entity) {
 					return entityType === 'voicemail';
 				};
@@ -1359,7 +1362,8 @@ define(function(require) {
 					'call_forward': 'Call Forward FWD',
 					'caller_id': 'Caller ID CLIP',
 					'hotdesk': 'Hotdesk',
-					'voicemail': 'Voicemail VM'
+					'voicemail': 'Voicemail VM',
+					'faxing': 'Faxbox'
 				};
 
 				Object.keys(featureLabels).forEach(feature => {
@@ -1368,8 +1372,19 @@ define(function(require) {
 					}
 				});
 
+				// add faxbox caller id to seach if present
+				if (entityType === 'faxbox' && entity.caller_id) {
+					var formattedCallerId = monster.util.formatPhoneNumber(entity.caller_id).split(' ').join('');
+					searchTerms.push(entity.caller_id);
+					searchTerms.push(formattedCallerId);
+				}
+
 				// add numbers to seach if present
 				if (Array.isArray(entity.numbers)) {
+					var formattedNumbers = _.map(entity.numbers, function(number) {
+						return monster.util.formatPhoneNumber(number).split(' ').join('');
+					});
+					searchTerms.push(...formattedNumbers);
 					searchTerms.push(...entity.numbers);
 				}
 
@@ -1393,6 +1408,7 @@ define(function(require) {
 					(entity.features || []).includes('call_forward') ||
 					(entity.features || []).includes('caller_id') ||
 					(entity.features || []).includes('hotdesk') ||
+					(entity.features || []).includes('faxing') ||
 					entity.numbers;
 
 				return _.merge(enhanced, isMediaSource(entity) && {
@@ -1400,19 +1416,23 @@ define(function(require) {
 				}, isUser(entity) && {
 					additionalInfo: [
 					entity.presence_id,
-					hasFeatureIcon ? '<span style="margin-left: 4px; margin-right: 0;">-</span>'	: '',
+					hasFeatureIcon ? '<span style="margin-left: 4px; margin-right: 0;">-</span>' : '',
 					(entity.features || []).includes('do_not_disturb') ? '<span class="material-symbols-user-state icon-do-not-disturb" title="Do Not Disturb">do_not_disturb_on</span>' : '',
 					(entity.features || []).includes('voicemail') ? '<span class="material-symbols-user-state icon-voicemail" title="Voicemail">voicemail</span>' : '',
 					(entity.features || []).includes('find_me_follow_me') ? ' <span class="material-symbols-user-state icon-find-me-follow-me" title="Find Me Follow Me">alt_route</span>' : '',
 					(entity.features || []).includes('call_forward') ? ' <span class="material-symbols-user-state icon-forward" title="Call Forward">phone_forwarded</span>' : '',
 					(entity.features || []).includes('caller_id') ? ' <span class="material-symbols-user-state icon-caller-id" title="Caller ID">outbound</span>' : '',
 					(entity.features || []).includes('hotdesk') ? ' <span class="material-symbols-user-state icon-hotdesk" title="Hotdesk">desk</span>' : '',
+					(entity.features || []).includes('faxing') ? ' <span class="material-symbols-user-state icon-faxing" title="Faxbox">fax</span>' : '',
 					(Array.isArray(entity.numbers) && entity.numbers.length > 0) ? '<span class="material-symbols-user-state icon-numbers" title="Assigned Phone Numbers">numbers</span>' : ''
 				].join(' ')
 				}, isTemporalRoute(entity) && {
 					additionalInfo: entity.dimension?.rule_type === 'manual' ? 'Manual Rule - Feature Code Id: ' + entity.dimension.feature_code_id : 'Time Based Rule'
 				}, isAcdcMember(entity) && {
 					additionalInfo: entity.numbers
+				}, 
+				isFaxbox(entity) && {
+					additionalInfo: monster.util.formatPhoneNumber(entity.caller_id)
 				}, isVoicemail(entity) && {
 					additionalInfo: [
 						entity.mailbox,

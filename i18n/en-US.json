@@ -94,7 +94,7 @@
 			"conference_server": "Conference Server",
 			"conference_name": "Conference Name:",
 			"conference_name_data_content": "Friendly name for this conference",
-			"assign_to": "Assign To",
+			"assign_to": "Assigned to",
 			"assign_to_data_content": "Select the user who owns this conference",
 			"edit": "Edit",
 			"create": "Create",
@@ -217,7 +217,7 @@
 			"presence_id_help": "",
 			"presence_id_placeholder": "",
 			"device_nickname": "Device Name",
-			"assign_to": "Assign To",
+			"assign_to": "Assigned to",
 			"in_house_calls": "Internal Calls",
 			"caller_id_name": "Caller ID Name",
 			"caller_id_name_data_content": "Define the Caller ID Name of this Device for Internal Calls (max. 30 chars).",
@@ -485,7 +485,7 @@
 			"google": "Google",
 			"options": "Options",
 			"no_name": "(no name)",
-			"assign_to": "Assign to",
+			"assign_to": "Assigned to",
 			"edit_user": "Edit",
 			"create_user": "Create",
 			"belongs_to_data_content": "Select the owner of this faxbox",
@@ -498,7 +498,7 @@
 			"caller_id": "Caller ID",
 			"caller_id_placeholder": "Caller ID",
 			"caller_id_data_content": "Caller ID for this fax box",
-			"caller_id_no_selected": "- No caller ID -",
+			"caller_id_no_selected": "None",
 			"fax_header": "Fax header",
 			"fax_header_placeholder": "Fax header",
 			"fax_header_data_content": "Information imprinted on the fax",
@@ -513,7 +513,7 @@
 			"retries": "Retries",
 			"retries_placeholder": "0",
 			"retries_data_content": "Number of retries for a fax",
-			"notification_emails": "Notifications emails",
+			"notification_emails": "Notification Emails",
 			"inbound_notification_email": "Inbound faxes",
 			"inbound_notification_email_placeholder": "mail@domain1.com, mail@domain2.com",
 			"inbound_notification_email_data_content": "List of email addresses separated by a comma that will receive a notification when a fax is received by the faxbox",
@@ -539,7 +539,9 @@
 			"validation": {
 				"retries": "Please enter a numeric value between 0 and 4",
 				"words": "Please only enter alphanumeric characters, space or - '"
-			}
+			},
+			"number": "Faxbox Number",
+			"can_not_save": "Unable to save settings.<br>Please ensure a Faxbox Number, Inbound Notification Email <br> and SMTP Permission List has been configured."
 		},
 		"groups": {
 			"title": "Groups",
@@ -1069,6 +1071,33 @@
 				"add_email": "Add Email Address",
 				"invalid_email": "The value entered is not a valid email address.",
 				"no_override_recipients": "Unable to save settings. <br> Missed Call Alert is enabled to use alternative recipients, but no email addresses are configured."
+			},
+			"faxbox": {
+				"title": "Personal Faxbox Settings",
+				"state": {
+					"enabled": "Enabled",
+					"disabled": "Disabled"
+				},
+				"label": "Faxbox",
+				"edit": "Edit Faxbox",
+				"number": "Faxbox Number",
+				"no_number": "No Number Selected",
+				"no_faxbox_number": "Unable to save settings. <br> Personal Faxbox is enabled, but no number is configured.",
+				"no_faxbox": "This user has no associated faxbox",
+				"faxToEmail": {
+					"title": "Fax to Email",
+					"text1": "Faxes sent to ",
+					"text2": " will be converted to emails and delivered to ",
+					"text3": "the addresses configured in the Notification Emails section under Inbound Faxes."
+				},
+				"emailToFax": {
+					"title": "Email to Fax",
+					"text1": "To send a fax, email a PDF or TIFF attachment to ",
+					"text2": "The attachment will be delivered as a fax to ",
+					"text3": "The email must come from ",
+					"text4": "The sender's email address or domain must be included in the SMTP Permissions list.",
+					"default": "{destination number}"
+				}
 			}
 		},
 		"vmbox": {
@@ -1093,7 +1122,7 @@
 			"voicemail_number": "Voicemail Number",
 			"voicemail_number_placeholder": "Number",
 			"voicemail_number_data_content": "Number of this voicemail box",
-			"assign_to": "Assigned To",
+			"assign_to": "Assigned to",
 			"assign_to_data_content": "Chose the owner of this voicemail box",
 			"edit": "Edit",
 			"create": "Create",

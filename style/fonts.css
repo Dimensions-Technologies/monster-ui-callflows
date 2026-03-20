@@ -239,6 +239,10 @@
     color: #ff7a22;
 }
 
+.material-symbols-user-state.icon-faxing {
+    color: #ff0000;
+}
+
 .selected-element .material-symbols-user-state  {
     color: #ffffff;
 }
