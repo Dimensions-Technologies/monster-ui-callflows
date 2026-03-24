@@ -514,10 +514,10 @@
 			"retries_placeholder": "0",
 			"retries_data_content": "Number of retries for a fax",
 			"notification_emails": "Notification Emails",
-			"inbound_notification_email": "Inbound faxes",
+			"inbound_notification_email": "Inbound Faxes",
 			"inbound_notification_email_placeholder": "mail@domain1.com, mail@domain2.com",
 			"inbound_notification_email_data_content": "List of email addresses separated by a comma that will receive a notification when a fax is received by the faxbox",
-			"outbound_notification_email": "Fax sent receipts",
+			"outbound_notification_email": "Send Receipts",
 			"outbound_notification_email_data_content": "List of email addresses separated by a comma that will receive a notification when a fax is sent by the faxbox",
 			"custom_smtp_address": "Custom SMTP address",
 			"custom_smtp_address_placeholder": "domain.com",
@@ -541,7 +541,13 @@
 				"words": "Please only enter alphanumeric characters, space or - '"
 			},
 			"number": "Faxbox Number",
-			"can_not_save": "Unable to save settings.<br>Please ensure a Faxbox Number, Inbound Notification Email <br> and SMTP Permission List has been configured."
+			"can_not_save": "Unable to save settings.<br>Please ensure a Faxbox Number, Inbound Notification Email <br> and SMTP Permission List has been configured.",
+			"email": "Email",
+			"add_email": "Add Email Address",
+			"add_email_or_domain": "Add Email Address or Domain",
+			"invalid_email": "The value entered is not a valid email address.",
+			"invalid_email_or_domain_1": "The value entered is not a valid email address or domain.",
+			"invalid_email_or_domain_2": "When adding a domain it should be prefixed with @"
 		},
 		"groups": {
 			"title": "Groups",
@@ -1088,7 +1094,8 @@
 					"title": "Fax to Email",
 					"text1": "Faxes sent to ",
 					"text2": " will be converted to emails and delivered to ",
-					"text3": "the addresses configured in the Notification Emails section under Inbound Faxes."
+					"text3": " unless alternative addresses are configured under the Inbound Faxes section on the Email tab.",
+					"text4": "the addresses configured under the Inbound Faxes section on the Email tab."
 				},
 				"emailToFax": {
 					"title": "Email to Fax",

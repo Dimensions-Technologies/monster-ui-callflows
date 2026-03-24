@@ -82,7 +82,7 @@ define(function(require) {
 					// convert blacklist { numbers: { "<num>": {} } } into an array
 					var initialNumbers = [];
 					if (data && data.numbers && typeof data.numbers === 'object') {
-						initialNumbers = Object.keys(data.numbers).reverse();
+						initialNumbers = Object.keys(data.numbers);
 					}
 
 					var numbersEditor = self.listEditorBind({

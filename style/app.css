@@ -2942,6 +2942,10 @@
 	margin-bottom: 8px;
 }
 
+.list-editor a {
+    color: #2297FF;
+}
+
 /* phone numbers tab formatting */
 .phone-numbers-section .numberRows .row {
 	margin-left: 0px;
