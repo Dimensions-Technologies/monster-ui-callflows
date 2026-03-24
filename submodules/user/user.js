@@ -553,7 +553,6 @@ define(function(require) {
 					});
 				
 				},
-				
 				phoneNumbers: function(next) {
 					self.callApi({
 						resource: 'numbers.listAll',
@@ -629,7 +628,6 @@ define(function(require) {
 					});
 				},
 				media_list: function(callback) {
-
 					var mediaFilters = {
 						paginate: false
 					};
@@ -687,9 +685,7 @@ define(function(require) {
 					}
 				},
 				user_hotdesks: function(callback) {
-
 					if (typeof data === 'object' && data.id) {
-						
 						if (miscSettings.userShowHotdeskStatus) {
 
 							var filters = { 
@@ -744,9 +740,7 @@ define(function(require) {
 									callback(null, defaults);
 								}
 							});
-
 						} else {
-
 							self.callApi({
 								resource: 'user.hotdesks',
 								data: {
@@ -772,13 +766,10 @@ define(function(require) {
 									callback(null, defaults);
 								}
 							});
-
 						}
-
 					} else {
 						callback(null, defaults);
 					}
-					
 				}
 
 			});
@@ -866,48 +857,62 @@ define(function(require) {
 					'emergencyCallerIdNumbers'
 				]));
 
-				// get user callflow if callflow id found before
-				if (userCallflow != null) {
-					self.callApi({
-						resource: 'callflow.get',
-						data: {
-							accountId: self.accountId,
-							callflowId: userCallflow.id
-						},
-						success: function(userCallflow) {
-							if (miscSettings.enableConsoleLogging) {
-								console.log('User Callflow', userCallflow.data);
+				var checkUserCallflow = function() {
+					// get user callflow if callflow id found before
+					if (userCallflow != null) {
+						self.callApi({
+							resource: 'callflow.get',
+							data: {
+								accountId: self.accountId,
+								callflowId: userCallflow.id
+							},
+							success: function(userCallflow) {
+								if (miscSettings.enableConsoleLogging) {
+									console.log('User Callflow', userCallflow.data);
+								}
+								
+								defaults.field_data.user_callflow = userCallflow.data;
+
+								if (defaults.field_data.callflow_features.includes("ring_group")) {
+									//defaults.field_data.callflow_ring_group = userCallflow.data.flow.data;
+									var ringGroupNode = self.userCallflowGetNode({
+											callflow: userCallflow.data,
+											module: 'ring_group'
+										});
+
+									defaults.field_data.callflow_ring_group = ringGroupNode.data;
+								}
+
+								self.userRender(render_data, target, callbacks);
+								
+								if (typeof callbacks.after_render === 'function') {
+									callbacks.after_render();
+								}
 							}
-							
-							defaults.field_data.user_callflow = userCallflow.data;
+			
+						});
 
-							if (defaults.field_data.callflow_features.includes("ring_group")) {
-								//defaults.field_data.callflow_ring_group = userCallflow.data.flow.data;
-								var ringGroupNode = self.userCallflowGetNode({
-										callflow: userCallflow.data,
-										module: 'ring_group'
-									});
-
-								defaults.field_data.callflow_ring_group = ringGroupNode.data;
-							}
-
-							self.userRender(render_data, target, callbacks);
-							
-							if (typeof callbacks.after_render === 'function') {
-								callbacks.after_render();
-							}
-						}
-		
-					});
-
-				}
-
-				else {
-					self.userRender(render_data, target, callbacks);
-					
-					if (typeof callbacks.after_render === 'function') {
-						callbacks.after_render();
 					}
+
+					else {
+						self.userRender(render_data, target, callbacks);
+						
+						if (typeof callbacks.after_render === 'function') {
+							callbacks.after_render();
+						}
+					}
+				};
+
+				var userFaxboxEnabled = _.get(render_data, 'data.smartpbx.faxing.enabled') === true,
+					ownerId = _.get(render_data, 'data.id');
+
+				if (userFaxboxEnabled && ownerId) {
+					self.getUserFaxboxDetails(ownerId, function(faxbox) {
+						defaults.field_data.user_faxbox = faxbox;
+						checkUserCallflow();
+					});
+				} else {
+					checkUserCallflow();
 				}
 
 			});
@@ -979,7 +984,8 @@ define(function(require) {
 						},
 						faxbox: { 
 							realm: monster.apps.auth.currentAccount.realm,
-							email: data.data.email
+							email: data.data.email,
+							number: _.get(data, 'field_data.user_faxbox.phoneNumber', '')
 						}
 					}, _.pick(data.extra, [
 						'phoneNumbers'
@@ -1227,21 +1233,8 @@ define(function(require) {
 			$('#tab_find_me_follow_me', user_html).hide();
 			$('#call_routing_manual', user_html).hide();
 
-			// the following is within monster.waterfall so that faxbox data and the device list is rendered before the page loads
+			// the following is within monster.waterfall so the device list is rendered before the page loads
 			monster.waterfall([
-				function(callback) {
-					// if user faxbox enabled get faxbox details
-					if (userFaxboxEnabled) {
-						var ownerId = data.data.id;
-							
-						self.getUserFaxboxDetails(ownerId, function(faxbox) {
-							data.field_data.user_faxbox = faxbox;
-							callback(null);
-						});
-					} else {
-						callback(null);
-					}
-				},
 				function(callback) {
 					self.userGetDeviceList(data, function(deviceList) {
 						data.field_data.device_list = deviceList;
