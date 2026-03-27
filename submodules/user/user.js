@@ -885,23 +885,31 @@ define(function(require) {
 
 								self.userRender(render_data, target, callbacks);
 								
-								if (typeof callbacks.after_render === 'function') {
-									callbacks.after_render();
+									if (typeof callbacks.after_render === 'function') {
+										callbacks.after_render();
+									}
+
+									if (miscSettings.callflowButtonsWithinHeader) {
+										miscSettings.popupEdit = false;
+									}
 								}
-							}
-			
-						});
+				
+							});
 
 					}
 
 					else {
 						self.userRender(render_data, target, callbacks);
 						
-						if (typeof callbacks.after_render === 'function') {
-							callbacks.after_render();
+							if (typeof callbacks.after_render === 'function') {
+								callbacks.after_render();
+							}
+
+							if (miscSettings.callflowButtonsWithinHeader) {
+								miscSettings.popupEdit = false;
+							}
 						}
-					}
-				};
+					};
 
 				var userFaxboxEnabled = _.get(render_data, 'data.smartpbx.faxing.enabled') === true,
 					ownerId = _.get(render_data, 'data.id');
@@ -925,7 +933,7 @@ define(function(require) {
 				console.log('User Data', data)
 			}
 
-			if (miscSettings.callflowButtonsWithinHeader) {
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				self.userSubmoduleButtons(data);
 			};
 
@@ -1547,9 +1555,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.userSave')
+					.on('click.userSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
@@ -2233,9 +2245,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.userDelete')
+					.on('click.userDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {	
 				ev.preventDefault();

@@ -260,7 +260,7 @@ define(function(require) {
 
 					}
 
-					if (miscSettings.callflowButtonsWithinHeader) {
+					if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 						self.deviceSubmoduleButtons(deviceData);
 					};
 
@@ -1286,11 +1286,13 @@ define(function(require) {
 					saveButtonEvents(ev)
 				});
 
-				$('#submodule-buttons-container .save')
-					.off('click')  // remove any existing click handlers
-					.click(function(ev) {
-						saveButtonEvents(ev);
-				});
+				if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+					$('#submodule-buttons-container .save')
+						.off('click.deviceSave')
+						.on('click.deviceSave', function(ev) {
+							saveButtonEvents(ev);
+						});
+				}
 
 				function saveButtonEvents(ev) {
 
@@ -1371,9 +1373,13 @@ define(function(require) {
 						deleteButtonEvents(ev);
 					});
 		
-					$('#submodule-buttons-container .delete').click(function(ev) {
-						deleteButtonEvents(ev);
-					});
+					if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+						$('#submodule-buttons-container .delete')
+							.off('click.deviceDelete')
+							.on('click.deviceDelete', function(ev) {
+								deleteButtonEvents(ev);
+							});
+					}
 		
 					function deleteButtonEvents(ev) {
 						ev.preventDefault();

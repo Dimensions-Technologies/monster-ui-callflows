@@ -341,9 +341,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.mediaSave')
+					.on('click.mediaSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
@@ -413,9 +417,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.mediaDelete')
+					.on('click.mediaDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();
@@ -481,7 +489,7 @@ define(function(require) {
 					}, data_defaults || {})
 				};
 
-			if (miscSettings.callflowButtonsWithinHeader) {
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				self.mediaSubmoduleButtons(data);
 			};
 
@@ -494,6 +502,11 @@ define(function(require) {
 					if (typeof callbacks.after_render === 'function') {
 						callbacks.after_render();
 					}
+
+					if (miscSettings.callflowButtonsWithinHeader) {
+						miscSettings.popupEdit = false;
+					}
+
 				});
 			} else {
 				self.mediaRender(defaults, target, callbacks);
