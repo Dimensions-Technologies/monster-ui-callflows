@@ -39,6 +39,10 @@ define(function(require) {
 
 			popup_html = $('<div class="inline_popup callflows-port"><div class="main_content inline_content"/></div>');
 
+			if (miscSettings.callflowButtonsWithinHeader) {
+				miscSettings.popupEdit = true;
+			}
+
 			self.temporalsetEdit(data, popup_html, $('.inline_content', popup_html), {
 				save_success: function(_data) {
 					popup.dialog('close');
@@ -89,7 +93,7 @@ define(function(require) {
 					field_data: {}
 				};
 
-			if (miscSettings.callflowButtonsWithinHeader) {
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				self.temporalsetSubmoduleButtons(data);
 			};
 
@@ -102,8 +106,14 @@ define(function(require) {
 				if (typeof callbacks.after_render === 'function') {
 					callbacks.after_render();
 				}
-			});/*
 
+				if (miscSettings.callflowButtonsWithinHeader) {
+					miscSettings.popupEdit = false;
+				}
+
+			});
+
+			/*
 			if (typeof data === 'object' && data.id) {
 				self.temporalSetGet(data.id, function(_data, status) {
 					var oldFormatData = { data: _data };
@@ -122,7 +132,8 @@ define(function(require) {
 				if (typeof callbacks.after_render === 'function') {
 					callbacks.after_render();
 				}
-			}*/
+			}
+			*/
 		},
 
 		temporalSetGetData: function(id, callback) {
@@ -219,9 +230,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.temporalsetSave')
+					.on('click.temporalsetSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
@@ -249,9 +264,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.temporalsetDelete')
+					.on('click.temporalsetDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();

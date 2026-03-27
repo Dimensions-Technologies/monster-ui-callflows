@@ -143,9 +143,13 @@ define(function(require) {
 				saveButtonEvents();
 			});
 
-			$('#submodule-buttons-container .save').click(function() {
-				saveButtonEvents();
-			});
+			if (miscSettings.callflowButtonsWithinHeader) {
+				$('#submodule-buttons-container .save')
+					.off('click.blacklistSave')
+					.on('click.blacklistSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			function saveButtonEvents() {
 				var formData = monster.ui.getFormData('blacklist-form'),
@@ -175,9 +179,13 @@ define(function(require) {
 				deleteButtonEvents();
 			});
 
-			$('#submodule-buttons-container .delete').click(function() {
-				deleteButtonEvents();
-			});
+			if (miscSettings.callflowButtonsWithinHeader) {
+				$('#submodule-buttons-container .delete')
+					.off('click.blacklistDelete')
+					.on('click.blacklistDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents() {
 

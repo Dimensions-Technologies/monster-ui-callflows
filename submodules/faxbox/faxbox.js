@@ -576,8 +576,8 @@ define(function(require) {
 
 			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				$('#submodule-buttons-container .save')
-					.off('click.faxbox')
-					.on('click.faxbox', function(ev) {
+					.off('click.faxboxSave')
+					.on('click.faxboxSave', function(ev) {
 						saveButtonEvents(ev);
 					});
 			}
@@ -833,8 +833,8 @@ define(function(require) {
 
 			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				$('#submodule-buttons-container .delete')
-					.off('click.faxbox')
-					.on('click.faxbox', function(ev) {
+					.off('click.faxboxDelete')
+					.on('click.faxboxDelete', function(ev) {
 						deleteButtonEvents(ev);
 					});
 			}
