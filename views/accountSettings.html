@@ -26,6 +26,9 @@
 						<li class="tab-overview"><a href="#account_settings_blacklist">Blocklist</a></li>
 					{{/unless}}
 					<li class="tab-overview"><a href="#account_settings_misc">Misc</a></li>
+					{{#if miscSettings.enableSmartPbxMainNumber}}
+						<li class="tab-overview"><a href="#account_settings_strategy">Main Number</a></li>
+					{{/if}}
 					<!-- placeholder for call restrictions -->
 					{{#unless miscSettings.hideCallRestictions}}
 						<li class="tab-overview"><a href="#account_settings_call_restrictions">Call Restrictions</a></li>
@@ -164,7 +167,7 @@
 							{{else}}
 								<div class="controls">
 									{{#unless miscSettings.assertedIdNumberDropdown}}
-										<input type="text" class="phone-number" id="caller_id_asserted_number" name="caller_id.asserted.number" value="{{account.caller_id.asserted.number}}"/>
+										<input type="text" class="asserted-phone-number" id="caller_id_asserted_number" name="caller_id.asserted.number" value="{{account.caller_id.asserted.number}}"/>
 									{{/unless}}
 									{{#if miscSettings.assertedIdNumberDropdown}}
 										<select id="caller_id_asserted_number" name="caller_id.asserted.number" class="cid-number-select">
@@ -251,7 +254,7 @@
 											<option value="{{this.id}}" {{#compare ../account.music_on_hold.media_id '===' this.id}}selected{{/compare}}>{{this.name}}</option>
 										{{/each}}
 									</select>
-									<button type="button" class="monster-button-primary upload-toggle" data-toggle="button">{{ i18n.upload }}</button>
+									<button type="button" class="monster-button-primary upload-toggle" data-toggle="button">{{ i18n.callflows.accountSettings.musicOnHold.uploadNewMedia }}</button>
 								</div>
 							</div>
 							<div class="shoutcast-div{{#if extra.isShoutcast}} active{{/if}}">
@@ -261,7 +264,7 @@
 										<input type="text" class="shoutcast-url-input" id="extra_shoutcast_url" name="extra.shoutcastUrl" value="{{account.music_on_hold.media_id}}"/>
 									</div>
 									<div class="shoutcast-warning">
-										{{#monsterText 'warning'}}
+										{{#monsterText}}
 											{{ i18n.callflows.accountSettings.musicOnHold.shoutcastURLWarning }}
 										{{/monsterText}}
 									</div>
@@ -269,17 +272,23 @@
 							</div>
 							<div class="upload-div">
 								<input type="file" class="upload-input" accept="audio/*">
-								<button type="button" class="monster-button-success upload-action upload-submit"><i class="fa fa-upload"></i></button>
-								<button type="button" class="monster-button-danger upload-action upload-cancel"><i class="fa fa-times"></i></button>
-							{{#if showMediaUploadDisclosure}}
-								<div>
-									<br>
-									{{#monsterPanelText i18n.mediaUploadDisclosure.title "info" "fill-width"}}
-										{{i18n.mediaUploadDisclosure.text}}
-									{{/monsterPanelText}}
-									<br>
-								</div>
-							{{/if}}
+								<button type="button" class="monster-button-primary upload-action upload-submit">
+									{{#if miscSettings.enableGoogleIcons}}
+										<span class="material-symbols-medium">upload</span>
+									{{else}}
+										<i class="fa fa-upload"></i>
+									{{/if}}
+									{{ i18n.upload }}
+								</button>
+								<a class="upload-action upload-cancel monster-link blue" href="javascript:void(0);">{{ i18n.cancel }}</a>
+								{{#if showMediaUploadDisclosure}}
+									<div class="media_upload_disclosure">
+										<br>
+										{{#monsterText}}
+											{{i18n.callflows.media.mediaUploadDisclosure.text}}
+										{{/monsterText}}
+									</div>	
+								{{/if}}
 							</div>
 						</div>
 					</div>
@@ -332,6 +341,16 @@
 						</div>
 					</div>
 					{{/unless}}
+				</div>
+
+				<!-- Main Number Section -->
+				<div class="tab-pane" id="account_settings_strategy">
+					<div class="settings-section">
+						<!--<div class="section-title">Strategy</div>-->
+						<div class="section-content">
+							<div class="strategy-parent"></div>
+						</div>
+					</div>
 				</div>
 
 				<div class="tab-pane" id="account_settings_call_restrictions">

@@ -1,8 +1,10 @@
 <div class="dialog_popup callflows-port callflow-action-form">
 	<form name="form" method="post" action="#">
-		{{#monsterPanelText i18n.callflows.after_bridge.warning 'warning' 'fill-width'}}
-			{{{ i18n.callflows.after_bridge.warning_dialog.message }}}
-		{{/monsterPanelText}}
+		<div class="help-text">
+			{{#monsterText}}
+				{{{ i18n.callflows.after_bridge.warning_dialog.message }}}
+			{{/monsterText}}
+		</div>
 	</form>
 	<div class="buttons-center">
 		<button id="ok" class="monster-button monster-button-primary">{{ i18n.dialog.confirmOk }}</button>

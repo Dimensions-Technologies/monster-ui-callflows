@@ -196,6 +196,7 @@ define(function(require) {
 						extension_numbers: [],
 						callflow_numbers: [],
 						hide_owner: data.hide_owner || false,
+						dimensions_provisioned_device: false,
 						outbound_flags: data.outbound_flags ? data.outbound_flags.join(', ') : data.outbound_flags
 					},
 					functions: {
@@ -211,15 +212,25 @@ define(function(require) {
 				
 				parallelRequests = function(deviceData) {
 
+					// format mac_address on device form
+					if (deviceData.mac_address) {
+						var formattedMac = monster.util.formatMacAddress(deviceData.mac_address);
+						deviceData.mac_address = formattedMac
+					}
+
 					// clear dimensionsDeviceType so device page loads correctly when switching between devices
 					dimensionDeviceType = {}
 
 					if (deviceData.hasOwnProperty('dimension') && deviceData.dimension.hasOwnProperty('type')) {
+						
+						defaults.field_data.dimensions_provisioned_device = true;
+						
 						dimensionDeviceType[deviceData.dimension.type] = true;
 						dimensionDeviceType['dimensionsProvisionedDevice'] = true;
 						dimensionDeviceType['preventDelete'] = true;
 						dimensionDeviceType['showDeviceSimplifiedSipSettings'] = false;
-						
+						dimensionDeviceType['hideT38'] = true;
+
 						if (deviceData.dimension.model == 'UCS' || deviceData.dimension.type == 'legacypbx') {
 							dimensionDeviceType['showDeviceSimplifiedSipSettings'] = true;
 						}
@@ -236,6 +247,12 @@ define(function(require) {
 							defaults.field_data.hide_owner = true;
 						}
 
+						if (deviceData.dimension.type == 'sip_device' || deviceData.dimension.type == 'communal') {
+							if (deviceData.dimension.model == 'UCS' || deviceData.dimension.model == 'FXS') {
+								dimensionDeviceType['hideT38'] = false;
+							}
+						}
+						
 						if (miscSettings.enableConsoleLogging) {
 							console.log('Device Details', dimensionDeviceType);
 							console.log('Device Doc Details', deviceData.dimension);
@@ -244,7 +261,6 @@ define(function(require) {
 					}
 
 					if (miscSettings.callflowButtonsWithinHeader) {
-						//debugger;
 						self.deviceSubmoduleButtons(deviceData);
 					};
 
@@ -1029,22 +1045,24 @@ define(function(require) {
 				});
 
 				// add search to dropdown
-				device_html.find('#owner_id').chosen({
-					width: '224px',
-					disable_search_threshold: 0,
-					search_contains: true
-				})
+				if(!data.field_data.dimensions_provisioned_device) {
+					device_html.find('#owner_id').chosen({
+						width: '404px',
+						disable_search_threshold: 0,
+						search_contains: true
+					})
+				}
 
 				// add search to dropdown
 				device_html.find('#music_on_hold_media_id').chosen({
-					width: '224px',
+					width: '404px',
 					disable_search_threshold: 0,
 					search_contains: true
 				})
 
 				// add search to dropdown
 				device_html.find('#billing_code').chosen({
-					width: '224px',
+					width: '404px',
 					disable_search_threshold: 0,
 					search_contains: true
 				})
@@ -1731,6 +1749,10 @@ define(function(require) {
 				}
 			}
 
+			if (data.owner_id_display) {
+				delete data.owner_id_display;
+			}
+
 			return data;
 		},
 
@@ -1887,68 +1909,82 @@ define(function(require) {
 		},
 
 		deviceSave: function(form_data, data, success) {
+			var self = this;
 
-			if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
-				var	self = this, 
-					callflowNumbers = data.field_data.callflow_numbers,
-					formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
-					deviceCallflow = data.field_data.device_callflow;
+			function saveDevice() {
+				var id = (typeof data.data === 'object' && data.data.id) ? data.data.id : undefined,
+					normalized_data = self.deviceFixArrays(self.deviceNormalizeData($.extend(true, {}, data.data, form_data)), form_data);
 
-				if (miscSettings.enableConsoleLogging) {
-					console.log('Numbers on User Callflow', callflowNumbers);
-					console.log('Numbers on User Form', formNumbers);
+				if (id) {
+					self.deviceUpdate(normalized_data, function(_data, status) {
+						success && success(_data, status, 'update');
+					});
+				} else {
+					self.deviceCreate(normalized_data, function(_data, status) {
+						success && success(_data, status, 'create');
+					});
 				}
+			}
 
-				if ('callflow_numbers' in form_data) {
-					delete form_data.callflow_numbers;
-				}
+			function patchDeviceCallflow(saveDevice) {
+				if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
+					var callflowNumbers = data.field_data.callflow_numbers,
+						formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
+						deviceCallflow = data.field_data.device_callflow,
+						callflowNumbersSorted = _.sortBy(callflowNumbers || []),
+						formNumbersSorted = _.sortBy(formNumbers || []),
+						numbersChanged = !_.isEqual(callflowNumbersSorted, formNumbersSorted);
 
-				if ('phone_numbers' in form_data) {
-					delete form_data.phone_numbers;
-				}
+					if (miscSettings.enableConsoleLogging) {
+						console.log('Numbers on Device Callflow', callflowNumbers);
+						console.log('Numbers on Device Form', formNumbers);
+					}
 
-				if ('extension_numbers' in form_data) {
-					delete form_data.extension_numbers;
-				}
+					if ('callflow_numbers' in form_data) {
+						delete form_data.callflow_numbers;
+					}
 
-				// patch users callflow if there is a change to the qty of numbers 
-				if (formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
-					self.callApi({
-						resource: 'callflow.patch',
-						data: {
-							accountId: self.accountId,
-							callflowId: deviceCallflow,
+					if ('phone_numbers' in form_data) {
+						delete form_data.phone_numbers;
+					}
+
+					if ('extension_numbers' in form_data) {
+						delete form_data.extension_numbers;
+					}
+
+					// patch device callflow if there is a change to the assigned numbers 
+					if (numbersChanged) {
+						self.callApi({
+							resource: 'callflow.patch',
 							data: {
-								numbers: formNumbers,
-								ui_metadata: {
-									origin: 'voip'
-								}
+								accountId: self.accountId,
+								callflowId: deviceCallflow,
+								data: {
+									numbers: formNumbers,
+									ui_metadata: {
+										origin: 'voip'
+									}
+								},
+								removeMetadataAPI: true
 							},
-							removeMetadataAPI: true
-						},
-						success: function(_callflow_update) {
-							if (miscSettings.enableConsoleLogging) {
-								console.log('Device Callflow Updated', _callflow_update)
+							success: function(_callflow_update) {
+								if (miscSettings.enableConsoleLogging) {
+									console.log('Device Callflow Updated', _callflow_update);
+								}
+								saveDevice();
+							},
+							error: function() {
+								saveDevice();
 							}
-						}
-					})
+						});
+					} else {
+						return saveDevice();
+					}
+				} else {
+					return saveDevice();
 				}
 			}
-
-			var self = this,
-				id = (typeof data.data === 'object' && data.data.id) ? data.data.id : undefined,
-				normalized_data = self.deviceFixArrays(self.deviceNormalizeData($.extend(true, {}, data.data, form_data)), form_data);
-
-			if (id) {
-				self.deviceUpdate(normalized_data, function(_data, status) {
-					success && success(_data, status, 'update');
-				});
-			} else {
-				self.deviceCreate(normalized_data, function(_data, status) {
-					success && success(_data, status, 'create');
-				});
-			}
-
+			patchDeviceCallflow(saveDevice);
 		},
 
 		deviceList: function(callback, deviceType) {
@@ -2433,6 +2469,11 @@ define(function(require) {
 								'call_forward',
 								'presence_id'
 							]));
+
+							// format MAC address if present 
+							if (enhancedDeviceData && enhancedDeviceData.formattedMac) {
+								enhancedDeviceData.formattedMac = String(enhancedDeviceData.formattedMac).toUpperCase();
+							}
 
 							return _.merge({
 								customEntityTemplate: self.getTemplate({

@@ -8,6 +8,7 @@ define(function(require) {
 		hideFromMenu = {},
 		hideAdd = {},
 		hideCallflowAction = {},
+		userCallflowAction = {},
 		hideFromCallflowAction = {},
 		hideClassifiers = {},
 		billingCodes = {},
@@ -24,8 +25,6 @@ define(function(require) {
 		pusherApps = {},
 		deviceBillingCodeRequired = {},
 		anankeCallbacks = {};
-		//translateX = 0, 
-		//translateY = 0;
 
 	var appSubmodules = [
 		'afterbridge',
@@ -33,6 +32,7 @@ define(function(require) {
 		'branchvariable',
 		'callcenter',
 		'conference',
+		'csvUploader',
 		'device',
 		'directory',
 		'eavesdrop',
@@ -40,10 +40,14 @@ define(function(require) {
 		'featurecodes',
 		'groups',
 		'media',
+		'mediaSelect',
 		'menu',
 		'misc',
 		'qubicle',
 		'resource',
+		'strategy',
+		'strategyHolidays',
+		'strategyHours',
 		'temporalset',
 		'timeofday',
 		'user',
@@ -74,7 +78,9 @@ define(function(require) {
 		},
 
 		// Define the events available for other apps
-		subscribe: {},
+		subscribe: {
+			'callflows.callflow.popupEdit': 'callflowPopupEdit'
+		},
 
 		subModules: appSubmodules,
 
@@ -178,6 +184,10 @@ define(function(require) {
 								} else {
 									hideCallflowAction = data.dimension.dt_callflows.hideCallflowAction;
 								}
+							}
+
+							if (data.dimension.dt_callflows.hasOwnProperty('userCallflowAction')) {															
+								userCallflowAction = data.dimension.dt_callflows.userCallflowAction;
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideFromCallflowAction')) {
@@ -390,6 +400,7 @@ define(function(require) {
 						console.log('hideFromMenu:', hideFromMenu);
 						console.log('hideAdd:', hideAdd);
 						console.log('hideCallflowAction:', hideCallflowAction);
+						console.log('userCallflowAction:', userCallflowAction);
 						console.log('hideFromCallflowAction:', hideFromCallflowAction);
 						console.log('hideClassifiers:', hideClassifiers);
 						console.log('miscSettings:', miscSettings);
@@ -1208,6 +1219,7 @@ define(function(require) {
 			});
 		},
 
+		// submodule list rendering
 		refreshEntityList: function(args) {
 			var self = this,
 				getLowerCasedDisplayName = _.flow(
@@ -1270,6 +1282,7 @@ define(function(require) {
 			});
 		},
 
+		// submodule list formatting
 		formatEntityData: function(entities, entityType) {
 			var self = this,
 				isStringAndNotEmpty = _.overEvery(
@@ -1311,6 +1324,12 @@ define(function(require) {
 						return entityType === 'temporal_route';
 					}
 				},
+				isAcdcMember = function(entity) {
+					return entityType === 'acdc_member' && entity.numbers ;
+				},
+				isFaxbox = function(entity) {
+					return entityType === 'faxbox';
+				},
 				isVoicemail = function(entity) {
 					return entityType === 'voicemail';
 				};
@@ -1344,7 +1363,8 @@ define(function(require) {
 					'call_forward': 'Call Forward FWD',
 					'caller_id': 'Caller ID CLIP',
 					'hotdesk': 'Hotdesk',
-					'voicemail': 'Voicemail VM'
+					'voicemail': 'Voicemail VM',
+					'faxing': 'Faxbox'
 				};
 
 				Object.keys(featureLabels).forEach(feature => {
@@ -1353,8 +1373,19 @@ define(function(require) {
 					}
 				});
 
+				// add faxbox caller id to seach if present
+				if (entityType === 'faxbox' && entity.caller_id) {
+					var formattedCallerId = monster.util.formatPhoneNumber(entity.caller_id).split(' ').join('');
+					searchTerms.push(entity.caller_id);
+					searchTerms.push(formattedCallerId);
+				}
+
 				// add numbers to seach if present
 				if (Array.isArray(entity.numbers)) {
+					var formattedNumbers = _.map(entity.numbers, function(number) {
+						return monster.util.formatPhoneNumber(number).split(' ').join('');
+					});
+					searchTerms.push(...formattedNumbers);
 					searchTerms.push(...entity.numbers);
 				}
 
@@ -1374,9 +1405,11 @@ define(function(require) {
 				const hasFeatureIcon =
 					(entity.features || []).includes('do_not_disturb') ||
 					(entity.features || []).includes('voicemail') ||
+					(entity.features || []).includes('find_me_follow_me') ||
 					(entity.features || []).includes('call_forward') ||
 					(entity.features || []).includes('caller_id') ||
 					(entity.features || []).includes('hotdesk') ||
+					(entity.features || []).includes('faxing') ||
 					entity.numbers;
 
 				return _.merge(enhanced, isMediaSource(entity) && {
@@ -1384,17 +1417,23 @@ define(function(require) {
 				}, isUser(entity) && {
 					additionalInfo: [
 					entity.presence_id,
-					hasFeatureIcon ? '<span style="margin-left: 4px; margin-right: 0;">-</span>'	: '',
+					hasFeatureIcon ? '<span style="margin-left: 4px; margin-right: 0;">-</span>' : '',
 					(entity.features || []).includes('do_not_disturb') ? '<span class="material-symbols-user-state icon-do-not-disturb" title="Do Not Disturb">do_not_disturb_on</span>' : '',
 					(entity.features || []).includes('voicemail') ? '<span class="material-symbols-user-state icon-voicemail" title="Voicemail">voicemail</span>' : '',
-					(entity.features || []).includes('call_forward') ? ' <span class="material-symbols-user-state icon-find-me-follow-me" title="Find Me Follow Me">alt_route</span>' : '',
+					(entity.features || []).includes('find_me_follow_me') ? ' <span class="material-symbols-user-state icon-find-me-follow-me" title="Find Me Follow Me">alt_route</span>' : '',
 					(entity.features || []).includes('call_forward') ? ' <span class="material-symbols-user-state icon-forward" title="Call Forward">phone_forwarded</span>' : '',
 					(entity.features || []).includes('caller_id') ? ' <span class="material-symbols-user-state icon-caller-id" title="Caller ID">outbound</span>' : '',
 					(entity.features || []).includes('hotdesk') ? ' <span class="material-symbols-user-state icon-hotdesk" title="Hotdesk">desk</span>' : '',
+					(entity.features || []).includes('faxing') ? ' <span class="material-symbols-user-state icon-faxing" title="Faxbox">fax</span>' : '',
 					(Array.isArray(entity.numbers) && entity.numbers.length > 0) ? '<span class="material-symbols-user-state icon-numbers" title="Assigned Phone Numbers">numbers</span>' : ''
 				].join(' ')
 				}, isTemporalRoute(entity) && {
 					additionalInfo: entity.dimension?.rule_type === 'manual' ? 'Manual Rule - Feature Code Id: ' + entity.dimension.feature_code_id : 'Time Based Rule'
+				}, isAcdcMember(entity) && {
+					additionalInfo: entity.numbers
+				}, 
+				isFaxbox(entity) && {
+					additionalInfo: monster.util.formatPhoneNumber(entity.caller_id)
 				}, isVoicemail(entity) && {
 					additionalInfo: [
 						entity.mailbox,
@@ -1573,16 +1612,16 @@ define(function(require) {
 					
 					// add search to dropdown
 					template.find('#music_on_hold_media_id').chosen({
-						width: '224px',
+						width: '404px',
 						disable_search_threshold: 0,
 						search_contains: true
-					})
+					});
 
 					monster.ui.tooltips(template);
 		
 					// Setup input fields
 					monster.ui.chosen(template.find('.cid-number-select, .preflow-callflows-dropdown'));
-					monster.ui.mask(template.find('.phone-number'), 'phoneNumber');
+					monster.ui.mask(template.find('.asserted-phone-number'), 'phoneNumber');
 		
 					// Set validation rules
 					monster.ui.validate(template.find('#account_settings_form'), {
@@ -1605,8 +1644,6 @@ define(function(require) {
 				});
 			});
 		},
-		
-
 
 		formatAccountSettingsData: function(data) {
 			var silenceMedia = 'silence_stream://300000',
@@ -1709,10 +1746,19 @@ define(function(require) {
 				e.preventDefault();
 
 				$(this).tab('show');
-			});
 
-			template.find('.media-dropdown').on('change', function() {
-				template.find('.shoutcast-div').toggleClass('active', $(this).val() === 'shoutcast').find('input').val('');
+					// Render Strategy submodule into the Strategy tab the first time it's opened
+					var href = $(this).attr('href');
+					if (miscSettings.enableSmartPbxMainNumber && href === '#account_settings_strategy') {
+						var $parent = template.find('#account_settings_strategy .strategy-parent');
+						if ($parent.length && $parent.find('#strategy_container').length === 0) {
+							monster.pub('callflows.strategy.render', { 
+								parent: $parent,
+								miscSettings: miscSettings
+							});
+						}
+					}
+
 			});
 
 			if (miscSettings.readOnlyCallerIdName) {
@@ -1793,6 +1839,48 @@ define(function(require) {
 									data: mediaToUpload.file
 								},
 								success: function(data, status) {
+
+									var $mediaSelect = template.find('#music_on_hold_media_id');
+
+									if (media && media.id) {
+										var newOption = $('<option/>', {
+											value: media.id,
+											text: media.name
+										});
+
+										// remove any existing option with same id
+										$mediaSelect.find('option[value="' + media.id + '"]').remove();
+
+										// find the correct insertion point (after fixed options)
+										var inserted = false;
+
+										$mediaSelect.find('option').each(function() {
+											var $opt = $(this);
+											var val = $opt.val();
+
+											// skip fixed/system options
+											if (!val || val === 'shoutcast' || val === '{{silenceMedia}}') {
+												return;
+											}
+
+											if ($opt.text().localeCompare(media.name, undefined, { sensitivity: 'base' }) > 0) {
+												$opt.before(newOption);
+												inserted = true;
+												return false;
+											}
+										});
+
+										// if it belongs at the end
+										if (!inserted) {
+											$mediaSelect.append(newOption);
+										}
+
+										// select the new media
+										$mediaSelect.val(media.id);
+
+										// update chosen
+										$mediaSelect.trigger('chosen:updated').trigger('change');
+									}
 									closeUploadDiv(media);
 								},
 								error: function(data, status) {
@@ -1873,27 +1961,43 @@ define(function(require) {
 
 				delete newData.extra;
 
-				self.callApi({
-					resource: 'account.update',
-					data: {
-						accountId: newData.id,
-						data: newData
-					},
-					success: function(data, status) {
-						self.render();
+				var updateAccountSettings = function() {
+					self.callApi({
+						resource: 'account.update',
+							data: {
+								accountId: newData.id,
+								data: newData
+							},
+							success: function(data, status) {
+								self.renderAccountSettings(template.closest('.callflow-edition'));
 
-						/* added toaster for future use
-						monster.ui.toast({
-							type: 'success',
-							message: self.i18n.active().entityManager.changesSaved,
-							options: {
-								positionClass: 'toast-bottom-right',
-								timeOut: 3000,
-								extendedTimeOut: 1000,
+								/* added toaster for future use
+								monster.ui.toast({
+									type: 'success',
+									message: self.i18n.active().entityManager.changesSaved,
+									options: {
+										positionClass: 'toast-bottom-right',
+										timeOut: 3000,
+										extendedTimeOut: 1000,
+									}
+								});
+								*/
+						}
+					});
+				};
+
+				monster.pub('callflows.strategyHours.save', {
+					parent: template,
+					callback: function() {
+						monster.pub('callflows.strategyHolidays.save', {
+							parent: template,
+							callback: function() {
+								monster.pub('callflows.strategyCalls.save', {
+									parent: template,
+									callback: updateAccountSettings
+								});
 							}
 						});
-						*/
-
 					}
 				});
 			});
@@ -2025,7 +2129,6 @@ define(function(require) {
 		hackResize: function(container) {
 			var self = this;
 
-			// Adjusting the layout divs height to always fit the window's size
 			$(window).resize(function(e) {
 				var $listContainer = container.find('.list-container'),
 					$mainContent = container.find('.callflow-content'),
@@ -2035,11 +2138,16 @@ define(function(require) {
 					contentHeightPx = contentHeight + 'px',
 					innerContentHeightPx = (contentHeight - 71) + 'px';
 
-				$listContainer.css('height', window.innerHeight - $listContainer.position().top + 'px');
+				// Only run this if the list container exists
+				if ($listContainer.length) {
+					$listContainer.css('height', window.innerHeight - $listContainer.position().top + 'px');
+				}
+
 				$mainContent.css('height', contentHeightPx);
 				$tools.css('height', innerContentHeightPx);
 				$flowChart.css('height', innerContentHeightPx);
 			});
+
 			$(window).resize();
 		},
 
@@ -2375,11 +2483,14 @@ define(function(require) {
 
 			// check if the action is a webhook or pivot and adjust the caption logic
 			if (json.module == 'webhook' && json.data.hasOwnProperty('dimension')) {
-				var callTagCaption = json.data.dimension.name + ': ' + json.data.dimension.tagValue
-				branch.caption = callTagCaption;
+				var nodeCaption = json.data.dimension.name + ': ' + json.data.dimension.tagValue
+				branch.caption = nodeCaption;
 			} else if (json.module == 'pivot' && json.data.hasOwnProperty('dimension')) {
-				var callTagCaption = json.data.dimension.name
-				branch.caption = callTagCaption;
+				var nodeCaption = json.data.dimension.name
+				branch.caption = nodeCaption;
+			} else if (json.module == 'resources' && json.data.id == 'resources_to_did') {
+				var nodeCaption = json.data.to_did
+				branch.caption = nodeCaption;
 			} else {
 				branch.caption = self.actions.hasOwnProperty(branch.actionName) ? self.actions[branch.actionName].caption(branch, self.flow.caption_map) : '';
 			}
@@ -2679,6 +2790,12 @@ define(function(require) {
 
 			if (miscSettings.enableConsoleLogging) {
 				console.log('callflowFlags', callflowFlags);
+			}
+
+			// if modifying users mainUserCallflow remore SmartPBX's Callflow from callflow name
+			if (self.isUserCallflowPopup) {
+				var cleanedName = (self.dataCallflow.name || '').replace("SmartPBX's Callflow", '');
+				$('.callflow-managerPopup .node[name="root"] .top_bar .name').text(cleanedName);
 			}
 
 			// show callflow on page
@@ -3628,6 +3745,11 @@ define(function(require) {
 					{
 						type: 'dimensionsDirectoryRouting',
 						actionName: 'dimensionsDirectoryRouting[id=*]'
+					},
+					// custom resource actions
+					{
+						type: 'resources_to_did',
+						actionName: 'resources_to_did[id=*]'
 					}
 				];
 				
@@ -3656,9 +3778,8 @@ define(function(require) {
 				});
 
 				// re-render action on load or after save
-				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]' || branch.actionName == 'webhook[]' || branch.actionName == 'pivot[]') {
-					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
-					
+				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]' || branch.actionName == 'webhook[]' || branch.actionName == 'pivot[]' || branch.actionName == 'resources[]') {
+					if (self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
 						// Check if the branch id is contained within the flags array
 						self.dataCallflow.dimension.flags.forEach(function(flag) {
 							var branchId = null,
@@ -3743,12 +3864,34 @@ define(function(require) {
 				if ('category' in data && (!data.hasOwnProperty('isListed') || data.isListed)) {
 					_.set(categories, data.category, _.get(categories, data.category, []));
 					data.key = i;
-					categories[data.category].push(data);
+
+					// default to including the action
+					var includeAction = true;
+
+					// if in user callflow popup, filter actions based on userCallflowAction map
+					if (self.isUserCallflowPopup) {					
+						var allowedMap = (typeof userCallflowAction === 'object' && userCallflowAction !== null)
+							? userCallflowAction
+							: null;
+
+						if (allowedMap && Object.keys(allowedMap).length > 0) {
+							if (Object.prototype.hasOwnProperty.call(allowedMap, data.key)) {
+								includeAction = !!allowedMap[data.key];
+							} else {
+								// treat missing key as not allowed
+								includeAction = false;
+							}
+						}
+					}
+
+					if (includeAction) {
+						categories[data.category].push(data);
+					}
 				}
 			});
 
 			$.each(categories, function(key, val) {
-				if (key !== basic_cat && key !== advanced_cat) {
+				if (key !== basic_cat && key !== advanced_cat && val.length > 0) {
 					dataTemplate.categories.push({ key: key, actions: val });
 				}
 			});
@@ -3757,13 +3900,20 @@ define(function(require) {
 				return a.key < b.key ? 1 : -1;
 			});
 
-			dataTemplate.categories.unshift({
-				key: basic_cat,
-				actions: categories[basic_cat]
-			}, {
-				key: advanced_cat,
-				actions: categories[advanced_cat]
-			});
+			// show basic / advanced ONLY if they have actions
+			if (categories[advanced_cat] && categories[advanced_cat].length > 0) {
+				dataTemplate.categories.unshift({
+					key: advanced_cat,
+					actions: categories[advanced_cat]
+				});
+			}
+
+			if (categories[basic_cat] && categories[basic_cat].length > 0) {
+				dataTemplate.categories.unshift({
+					key: basic_cat,
+					actions: categories[basic_cat]
+				});
+			}
 
 			$.each(categories, function(idx, val) {
 				val.sort(function(a, b) {
@@ -3781,9 +3931,20 @@ define(function(require) {
 				}
 			}));
 
-			// set the basic drawer to open
-			$('#Basic', tools).removeClass('inactive').addClass('active');
-			$('#Basic .content', tools).show(); 
+			// set the basic drawer to open (if it exists), otherwise first category
+			var $basicCategory = $('#Basic', tools);
+
+			if ($basicCategory.length) {
+				$basicCategory.removeClass('inactive').addClass('active');
+				$('#Basic .content', tools).show();
+			} else {
+				// no Basic category – open the first one if present
+				var $firstCategory = tools.find('.category').first();
+				if ($firstCategory.length) {
+					$firstCategory.removeClass('inactive').addClass('active');
+					$firstCategory.find('.content').show();
+				}
+			}
 
 			tools.find('.category .open').each(function() {
 				const $open = $(this);
@@ -4076,7 +4237,17 @@ define(function(require) {
 
 		},
 
-		save: function() {
+		save: function(args) {
+
+			if (miscSettings.enableModifyMainUserCallflow) {
+				var source = null,
+					callback = null;
+
+				if (args && typeof args === 'object') {
+					source = args.source;
+					callback = args.callback;
+				}
+			}
 
 			var hideModule = [];
 			
@@ -4147,8 +4318,28 @@ define(function(require) {
 				var listData = {};
 				
 				if (self.flow.id) {
+					// if main user callflow is being edited from the popup on a user
+					if (miscSettings.enableModifyMainUserCallflow && source == 'callflow-managerPopup') {
+						self.callApi({
+							resource: 'callflow.update',
+							data: {
+								accountId: self.accountId,
+								callflowId: self.flow.id,
+								data: {
+									...data_request,
+									ui_metadata: {
+										...metadata
+									}
+								},
+								removeMetadataAPI: true
+							},
+							success: function() {
+								callback();
+							}
+						});
+					}
 					// if show all callflows is enabled and this is a hidden callflow then retain existing ui_metadata 
-					if (showAllCallflows == true && isHiddenCallflow == true) {
+					else if (showAllCallflows == true && isHiddenCallflow == true) {
 						self.callApi({
 							resource: 'callflow.update',
 							data: {
@@ -4166,11 +4357,10 @@ define(function(require) {
 								listData.selectedItemId = json.data.id
 								self.repaintList(listData);
 								self.editCallflow({ id: json.data.id });
-							
 							}
 						});
 					}
-
+					// normal callflow update
 					else {
 						self.callApi({
 							resource: 'callflow.update',
@@ -4402,7 +4592,299 @@ define(function(require) {
 				}
 			});
 
-		}	
+		},
+
+		// open a callflow editor inside a dialog popup
+		callflowPopupEdit: function(args) {
+			var self       = this,
+				data       = args.data || {},
+				callflowId = data.id,
+				popup_html = $('<div class="callflow-managerPopup"><div class="inline_content main_content"></div></div>'),
+				popup;
+
+			self.isUserCallflowPopup = true;
+
+			// build dialog popup
+			popup = monster.ui.dialog(popup_html, {
+				title: self.i18n.active().callflows.user.user_callflow.popup_title,
+				width: '90%',
+				dialogClass: 'userCallflow-dialog',
+				create: function() {
+					$(this).closest('.ui-dialog-content').addClass('scrollbar-hidden');
+				}
+			});
+
+			var $inline = popup_html.find('.inline_content');
+
+			self.loadCallflowManager($inline, function() {
+				
+				self.editCallflow({ id: callflowId });
+
+				self.syncFlowHeight();
+
+				// observe changes inside the popup's flowchart
+				var flowchart = $inline.find('.flowchart')[0];
+				if (flowchart) {
+					var observer = new MutationObserver(function () {
+						self.syncFlowHeight();
+					});
+					observer.observe(flowchart, {
+						attributes: true,
+						childList: true,
+						subtree: true
+					});
+					popup.data('flowObserver', observer);
+				}
+
+				// build callflow popup layout with save botton
+				var $existingContent = $inline.children().detach(),
+					$body = $('<div class="callflow-body"></div>').append($existingContent),
+					$footer = $(
+					'<div class="callflow-footer buttons-center">' +
+						'<button type="button" class="monster-button monster-button-success save-callflow">' +
+							self.i18n.active().callflows.vmbox.save +
+						'</button>' +
+					'</div>'
+				);
+
+				$inline.empty().append($body).append($footer);
+
+			}, 'callflow-managerPopup');
+
+			// clean up the observer when the dialog closes
+			popup.on('dialogclose', function () {
+				var observer = popup.data('flowObserver');
+				if (observer) {
+					observer.disconnect();
+				}
+
+				self.isUserCallflowPopup = false;
+			});
+
+			popup_html.on('click', '.save-callflow', function (e) {
+				e.preventDefault();
+				self.save({
+					source: 'callflow-managerPopup',
+					callback() {
+						popup.dialog('close');
+					}
+				});
+			});
+
+		},
+
+		// load callflow manager into a given container
+		loadCallflowManager: function(container, done, templateName) {
+			var self = this,
+				callflowsTemplate = $(self.getTemplate({
+					name: templateName,
+					data: {
+						miscSettings: miscSettings
+					}
+				}));
+
+			self.bindCallflowsEvents(callflowsTemplate, container);
+
+			monster.ui.tooltips(callflowsTemplate);
+
+			container.append(callflowsTemplate);
+
+			self.hackResize(callflowsTemplate);
+
+			// hide scrollbar within callflow designer - previously under setting miscSettings.hideScrollbars
+			$('#ws_callflow .tools', callflowsTemplate).addClass('scrollbar-hidden');
+			$('#ws_callflow .flowchart', callflowsTemplate).addClass('scrollbar-hidden');
+
+			// enable zoom control
+			self.setupZoomControls(callflowsTemplate);
+			
+			// enable moving around the callflow workspace
+			self.enableInfinitePanning();
+
+			done && done();
+		},
+
+		// reusable list editor for phone numbers and email addresses
+		listEditorBind: function(opts) {
+			var self = this,
+				$container = opts.container;
+
+			var $placeholder = $container.find('.item-wrapper.placeholder'),
+				$input = $container.find('.list-editor-input'),
+				$add = $container.find('.list-editor-add'),
+				$cancel = $container.find('.list-editor-cancel'),
+				$saved = $container.find('.saved-items'),
+				$error = $container.find('.list-editor-error');
+
+			var valueType = opts.valueType || null, // 'emailAddress' | 'emailAddressOrDomain' | 'phoneNumber' | null
+				normalize = opts.normalize || function(v) { return (v || '').toString().trim(); },
+				unique = opts.unique !== false;
+
+			var validators = {
+				emailAddress: function(v) {
+					// basic shape: name@example.com
+					if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+						return false;
+					}
+					// no double dots anywhere
+					if (/\.\./.test(v)) {
+						return false;
+					}
+					// no leading dot, no trailing dot before @, no domain starting with dot
+					if (/^\.|\.@|@\./.test(v)) {
+						return false;
+					}
+					return true;
+				},
+
+				// accepts either name@example.com or @example.com
+				emailAddressOrDomain: function(v) {
+					if (v.charAt(0) === '@') {
+						// validate domain by prepending a dummy local-part
+						return validators.emailAddress('x' + v);
+					}
+
+					return validators.emailAddress(v);
+				},
+
+				// no spaces, brackets, dots or hyphens
+				phoneNumber: function(v) {
+					return /^\+?\d{6,20}$/.test(v);
+				}
+			};
+
+			function getValues() {
+				var values = [];
+				$saved.find('.item-wrapper').each(function() {
+					var v = $(this).attr('data-value');
+					if (v) values.push(v);
+				});
+				return values;
+			}
+
+			function emitChange() {
+				if (typeof opts.onChange === 'function') {
+					opts.onChange(getValues());
+				}
+			}
+
+			function exists(value) {
+				var found = false;
+				$saved.find('.item-wrapper').each(function() {
+					if ($(this).attr('data-value') === value) {
+						found = true;
+						return false;
+					}
+				});
+				return found;
+			}
+
+			function validate(value) {
+				if (valueType && validators[valueType]) {
+					var ok = validators[valueType](value);
+
+					if (!ok) {
+						var msg = opts.invalidMessage || 'Invalid value';
+						return { ok: false, message: msg };
+					}
+
+					return { ok: true };
+				}
+				return { ok: !!value };
+			}
+
+			function showError(msg) {
+				if (!msg) return;
+				$error.html(msg).show();
+				$input.addClass('monster-invalid');
+			}
+
+			function clearError() {
+				$error.html('').hide();
+				$input.removeClass('monster-invalid');
+			}
+
+			function addValue(raw) {
+				clearError();
+
+				var value = normalize(raw);
+				var v = validate(value);
+
+				if (!v.ok) {
+					showError(opts.invalidMessage || 'Invalid value');
+					return;
+				}
+
+				if (unique && exists(value)) {
+					showError(opts.duplicateMessage || 'The entered value already exists');
+					return;
+				}
+
+				$saved.append(opts.getItemHtml(value));
+				$input.val('');
+				clearError();
+				emitChange();
+			}
+
+			$placeholder.off('click.listEditor').on('click.listEditor', function() {
+				$(this).addClass('active');
+				$input.focus();
+			});
+
+			$add.off('click.listEditor').on('click.listEditor', function(e) {
+				e.preventDefault();
+				addValue($input.val());
+			});
+
+			$container.find('.add-item').off('keypress.listEditor').on('keypress.listEditor', function(e) {
+				var code = e.keyCode || e.which;
+				if (code === 13) {
+					e.preventDefault();
+					addValue($input.val());
+				}
+			});
+
+			$container.off('click.listEditorDelete', '.list-editor-delete')
+			.on('click.listEditorDelete', '.list-editor-delete', function() {
+				$(this).closest('.item-wrapper').remove();
+				emitChange();
+			});
+
+			$input.on('input.listEditor', function() {
+				clearError();
+			});
+
+			$cancel.off('click.listEditor').on('click.listEditor', function(e) {
+				e.stopPropagation();
+				$placeholder.removeClass('active');
+				$input.val('');
+				clearError();
+			});
+
+			// Load initial values
+			_.each(opts.initial || [], function(v) {
+				addValue(v);
+			});
+
+			return {
+				getValues: getValues,
+				setValues: function(values) {
+					$saved.empty();
+					_.each(values || [], function(v) { addValue(v); });
+				},
+				clear: function() {
+					$saved.empty();
+					emitChange();
+				},
+				setEnabled: function(enabled) {
+					$container.toggle(!!enabled);
+					if (!enabled) {
+						$placeholder.removeClass('active');
+						$input.val('');
+					}
+				}
+			};
+		}
 
 	};
 

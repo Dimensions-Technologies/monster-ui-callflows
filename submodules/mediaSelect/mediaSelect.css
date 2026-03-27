@@ -1,0 +1,114 @@
+.callflows-media-selection .media-dropdown {
+    margin-bottom: 0;
+    margin-left: 10px
+}
+
+.callflows-media-selection .upload-toggle {
+    margin-left: 10px;
+    min-width: 117px
+}
+
+.callflows-media-selection .shoutcast-div {
+    margin-top: 20px;
+    margin-bottom: 0
+}
+
+.callflows-media-selection .shoutcast-div .shoutcast-warning {
+    margin-top: 20px
+}
+
+.callflows-media-selection .upload-div {
+    display: none;
+    margin-top: 20px
+}
+
+.callflows-media-selection .upload-div .upload-input {
+    margin: 0;
+    width: 330px
+}
+
+.callflows-media-selection .upload-div button.upload-action {
+    margin-left: 16px;
+    padding-left: 16px;
+    padding-right: 16px
+}
+
+.callflows-media-selection .upload-div .upload-submit {
+    display: inline-flex;
+    align-items: center;
+}
+
+.callflows-media-selection .upload-div button>i {
+    margin-right: 0;
+    padding-right: 0
+}
+
+.callflows-media-selection .upload-div .file-upload {
+    margin: 0;
+    display: inline-block
+}
+
+.callflows-media-selection .upload-div .file-upload button {
+    padding-top: 6px;
+    padding-bottom: 6px
+}
+
+.callflows-media-selection .upload-div .file-upload input {
+    margin: 0;
+    padding: 6px;
+    width: 140px
+}
+
+.callflows-media-selection.monster-media-tabs-skin .upload-div {
+    display: block;
+    margin-top: 0
+}
+
+.callflows-media-selection.monster-media-tabs-skin .upload-div .file-upload>input {
+    width: 200px
+}
+
+.callflows-media-selection.monster-media-tabs-skin .label-media-selection {
+    display: block
+}
+
+.callflows-media-selection.monster-media-tabs-skin [data-tab=use_existing] input,
+.callflows-media-selection.monster-media-tabs-skin select.media-dropdown {
+    box-sizing: border-box;
+    margin: 1px 0;
+    height: auto;
+    width: 100%
+}
+
+.callflows-media-selection.monster-media-tabs-skin .monster-tab-content-tts .custom-greeting-text {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 4px
+}
+
+.callflows-media-selection.monster-media-tabs-skin .monster-tab-content-tts .chars-remaining-counter {
+    font-size: 12px;
+    color: #64646c
+}
+
+.callflows-media-selection.monster-media-tabs-skin .monster-tab-content-tts .chars-remaining-counter span {
+    font-weight: 700;
+    margin-right: 4px
+}
+
+.callflows-media-selection .media_upload_disclosure {
+    width: 458px;
+    margin-left: 0px;
+}
+
+.callflows-media-selection .chosen-container .chosen-drop {
+    width: 460px;
+}
+
+.callflows-media-selection .upload-response.success {
+    color: green;
+}
+
+.callflows-media-selection .upload-response.error {
+    color: red;
+}

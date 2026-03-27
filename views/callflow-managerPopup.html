@@ -1,0 +1,69 @@
+<div>
+
+	<div class="callflow-manager">
+		
+		<div class="callflow-content listing-mode">
+			
+			<div class="callflow-view clearfix">
+				<div class="real-content">
+
+					<div id="ws_callflow" class="clearfix">
+
+						<div id="pending_change">
+							<span>{{ i18n.oldCallflows.you_have_modified_this_callflow_basic }}</span>
+						</div>
+						
+						<div class="callflow-zoom">
+							{{#if miscSettings.enableGoogleIcons}}
+								<div class="google-icons">
+									<button type="button" class="monster-button monster-button-secondary non-fixed reset-view-button">
+										<span class="material-symbols-medium">zoom_out_map</span>
+									</button>
+									<button type="button" class="monster-button monster-button-secondary non-fixed zoom-in-button">
+										<span class="material-symbols-medium">zoom_in</span>
+									</button>
+									<button type="button" class="monster-button monster-button-secondary non-fixed zoom-out-button">
+										<span class="material-symbols-medium">zoom_out</span>
+									</button>
+								</div>
+							{{else}}
+								<div class="fa-icons">
+									<button type="button" class="monster-button monster-button-secondary non-fixed reset-view-button">
+										<span class="fa fa-arrows-alt"></span>
+									</button>
+									<button type="button" class="monster-button monster-button-secondary non-fixed zoom-in-button">
+										<span class="fa fa-search-plus"></span>
+									</button>
+									<button type="button" class="monster-button monster-button-secondary non-fixed zoom-out-button">
+										<span class="fa fa-search-minus"></span>
+									</button>
+								</div>
+							{{/if}}
+						</div>
+
+						<div class="tools">
+							<div id="ws_cf_tools"></div>
+						</div>
+
+						<div class="flowchart">
+							
+							<div class="callflow">
+								<div>
+									<span class="flow">
+										<div id="ws_cf_wrapper">
+											<div id="ws_cf_flow"></div>
+										</div>
+									</span>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+

@@ -21,6 +21,19 @@
 				</select>
 			</div>
 
+			<div class="popup_field">
+				<label for="pivot_body_format_input">{{ i18n.oldCallflows.body_format }} </label>
+				<select id="pivot_body_format_input">
+					{{#compare data_pivot.req_body_format "===" "json"}}
+						<option value="json" selected="selected">JSON</option>
+						<option value="form">FormData</option>
+					{{else}}
+						<option value="json">JSON</option>
+						<option value="form" selected="selected">FormData</option>
+					{{/compare}}
+				</select>
+			</div>
+
 			{{#unless miscSettings.hidePivotRequestFormat}}
 			<div class="popup_field">
 				<label for="pivot_format_input">{{ i18n.oldCallflows.format }} </label>
@@ -42,9 +55,12 @@
 			</div>
 
 			<div id="pivotFallbackMessage">
-				{{#monsterText}}
-					{{ i18n.oldCallflows.pivot_fallback }}
-				{{/monsterText}}
+				<div class="help-text">
+					<br>
+					{{#monsterText}}
+						{{ i18n.oldCallflows.pivot_fallback }}
+					{{/monsterText}}
+				</div>
 			</div>	
 
 		</div>

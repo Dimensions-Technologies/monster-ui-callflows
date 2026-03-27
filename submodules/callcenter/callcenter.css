@@ -20,11 +20,6 @@
 	width: 100%;
 }
 
-
-.callflows-port .add-user-panel .callflow-panel_body {
-	text-align: center;
-}
-
 .callflows-callcenter-popup .inline_content.main_content {
 	width: auto;
 }
@@ -48,9 +43,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 30px;
-    padding: 0 10px;
-    min-width: 60px !important
+    height: 38px;
+    min-width: 70px;
 }
 
 .callflows-port #queue-form .table-and-dropdown {
@@ -93,5 +87,25 @@
 }
 
 .callflows-port #queue-form #queue_moh .chosen-container {
-    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.callflows-port #queue_agents .fa-trash-o {
+    font-size: 20px;
+    line-height: 30px;
+}
+
+.callflows-port #queue_agents .fa-trash-o:hover {
+    color: #05addc;
+    cursor: pointer;
+}
+
+.callflows-port #queue_agents .material-symbols-icon-groups-delete {
+    color: #666666;
+    font-size: 20px;
+}
+
+.callflows-port #queue_agents .material-symbols-icon-groups-delete:hover {
+    color: #05addc;
+    cursor: pointer;
 }

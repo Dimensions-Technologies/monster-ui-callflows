@@ -1,0 +1,144 @@
+#callflow_container #account_settings_form #strategy_container .clearfix:after {
+    clear: right;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer {
+    background: #dedede;
+    border-radius: 2px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner {
+    display: flex;
+    height: 60px;
+    background: #ffffff;
+    margin: 1px;
+    cursor: pointer;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .material-symbols-outlined {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner>div {
+    width: 50%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .title {
+    display: flex;
+    align-items: center;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .title>.svg-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0 20px;
+    color: #22a5ff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .title .text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 18px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 20px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .summary .content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .summary .content i {
+    margin-left: 15px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .summary .icons>* {
+    margin-right: 20px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-header-outer .element-header-inner .summary .icons>:first-child {
+    margin-left: 20px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.open .element-header-outer {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.open .element-header-outer .element-header-inner {
+    margin-bottom: 0;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.open .element-header-outer .element-header-inner .summary .icons>:last-child {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    color: #22a5ff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-content {
+    display: none;
+    border: solid 1px #dedede;
+    background: #ffffff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-content .basic-actions {
+    padding: 20px;
+    border-top: solid 1px #ccc;
+    background-color: #ffffff;
+    text-align: right;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container .element-content .basic-actions .cancel-link {
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container:not(:first-of-type) {
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .element-header-outer .element-header-inner .title>.svg-icon,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .element-header-outer .element-header-inner .title>.svg-icon {
+    color: #33db24;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.helper .fa-info-circle {
+    float: left;
+    margin-right: 10px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.helper p {
+    text-align: justify;
+}
+
+#callflow_container #account_settings_form #strategy_container .monster-select-dropdown-full .dropdown {
+    padding: 8px 15px;
+    margin-right: 10px;
+}
+
+#callflow_container #account_settings_form #strategy_container .monster-select-dropdown-full > li.dropdown {
+	display: flex;
+	align-items: flex-end;
+}
+
+#callflow_container #account_settings_form #strategy_container .monster-select-dropdown-full .dropdown-toggle:hover,
+#callflow_container #account_settings_form #strategy_container .monster-select-dropdown-full .dropdown-toggle:focus {
+    background-color: transparent;
+}

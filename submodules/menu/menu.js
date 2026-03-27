@@ -240,7 +240,7 @@ define(function(require) {
 
 			// add search to dropdown
 			menu_html.find('#media_greeting').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
@@ -586,13 +586,19 @@ define(function(require) {
 						});
 					},
 					listEntities: function(callback) {
+						var menuFilters = {
+								paginate: false
+							};
+
+						if (!miscSettings.menuShowVoipItems) {
+							menuFilters['filter_not_ui_metadata.origin'] = 'voip';
+						}
+						
 						self.callApi({
 							resource: 'menu.list',
 							data: {
 								accountId: self.accountId,
-								filters: {
-									paginate: false
-								}
+								filters: menuFilters
 							},
 							success: function(data, status) {
 								callback && callback(data.data);
@@ -607,13 +613,19 @@ define(function(require) {
 		menuList: function(callback) {
 			var self = this;
 
+			var menuFilters = {
+					paginate: false
+				};
+
+			if (!miscSettings.menuShowVoipItems) {
+				menuFilters['filter_not_ui_metadata.origin'] = 'voip';
+			}
+			
 			self.callApi({
 				resource: 'menu.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: menuFilters
 				},
 				success: function(data) {
 					callback && callback(data.data);

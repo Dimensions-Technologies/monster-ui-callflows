@@ -80,7 +80,8 @@ define(function(require) {
 					'group_pickupDevice[device_id=*]',
 					'group_pickupGroup[group_id=*]',
 					'dimensionsCallTag[id=*]',
-					'dimensionsDirectoryRouting[id=*]'
+					'dimensionsDirectoryRouting[id=*]',
+					'resources_to_did[id=*]'
 				];
 
 				// if custom callflow actions are disabled
@@ -1552,7 +1553,7 @@ define(function(require) {
 							maxSize: '0'
 						}
 					],
-					isTerminating: true,
+					isTerminating: 'true',
 					isUsable: true,
 					isListed: determineIsListed('group_pickupUser[user_id=*]'),
 					weight: 61,
@@ -1681,7 +1682,7 @@ define(function(require) {
 							maxSize: '0'
 						}
 					],
-					isTerminating: true,
+					isTerminating: 'true',
 					isUsable: true,
 					isListed: determineIsListed('group_pickupGroup[group_id=*]'),
 					weight: 62,
@@ -1820,7 +1821,7 @@ define(function(require) {
 							maxSize: '0'
 						}
 					],
-					isTerminating: true,
+					isTerminating: 'true',
 					isUsable: true,
 					isListed: determineIsListed('group_pickupDevice[device_id=*]'),
 					weight: 63,
@@ -2226,6 +2227,7 @@ define(function(require) {
 									'method': node.getMetadata('method') || 'post',
 									'voice_url': node.getMetadata('voice_url') || '',
 									'req_timeout': node.getMetadata('req_timeout') || '5',
+									'req_body_format': node.getMetadata('req_body_format') || 'form',
 									'req_format': node.getMetadata('req_format') || 'kazoo'
 								}
 							},
@@ -2262,6 +2264,7 @@ define(function(require) {
 
 							node.setMetadata('voice_url', $('#pivot_voiceurl_input', popup_html).val());
 							node.setMetadata('method', $('#pivot_method_input', popup_html).val());
+							node.setMetadata('req_body_format', $('#pivot_body_format_input', popup_html).val());
 							node.setMetadata('req_format', requestFormat);
 							node.setMetadata('req_timeout', $('#pivot_timeout_input', popup_html).val());
 
@@ -2635,6 +2638,127 @@ define(function(require) {
 								}
 							}
 						});
+					}
+				},
+				'resources_to_did[id=*]': {
+					name: self.i18n.active().callflows.to_did.name,
+					icon: 'right_arrow_circle',
+					google_icon: 'outbound',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'resources',
+					tip: self.i18n.active().callflows.to_did.tip,
+					data: {},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
+					isTerminating: 'true',
+					isUsable: 'true',
+					isListed: determineIsListed('resources_to_did[id=*]'),
+					weight: 48,
+					caption: function(node) {
+						return '';
+					},
+					edit: function(node, callback) {
+
+						// get no_match callflow id
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_numbers: 'no_match'
+								}
+							},
+							success: function(data) {
+								var callflowData = data.data;
+
+								if (Array.isArray(callflowData) && callflowData.length === 1) {
+
+									var noMatchCallflow = callflowData[0];
+
+									// get no_match callflow details
+									self.callApi({
+										resource: 'callflow.get',
+										data: {
+											accountId: self.accountId,
+											callflowId: noMatchCallflow.id
+										},
+										success: function(data) {
+
+											node.data.data = node.data.data || {};
+											
+											// merge flow data with current node data
+											var flowData = data.data.flow.data;
+											var current = node.data.data;
+
+											var merged = $.extend(true, {}, flowData, current);
+
+											// preserve existing values if they exist
+											merged.to_did = current.to_did ?? merged.to_did ?? '';
+											//merged.timeout = current.timeout ?? merged.timeout ?? ''; // timeout doesn't seem to work
+
+											// clean up nested data object
+											delete merged.data;
+
+											node.data.data = merged;
+
+											var nodeData = node.data.data;
+
+											var popup, popup_html;
+
+											popup_html = $(self.getTemplate({
+												name: 'to_did',
+												data: {
+													data_to_did: { number: nodeData.to_did || '' }
+													//timeout: { value: nodeData.timeout || '' }
+												},
+												submodule: 'misc'
+											}));
+
+											//monster.ui.tooltips(popup_html);
+
+											// enable/disable save button based on input
+											function toggleSaveButton() {
+												var toDid = $('#to_did_input', popup_html).val();
+												$('#add', popup_html).prop('disabled', toDid === '');
+											}
+
+											toggleSaveButton();
+
+											$('#to_did_input', popup_html).on('input change', toggleSaveButton);
+
+											$('#add', popup_html).click(function() {
+												node.setMetadata('to_did', $('#to_did_input', popup_html).val());
+												//node.setMetadata('timeout', $('#timeout_input', popup_html).val());
+												
+												var nodeCaption = $('#to_did_input', popup_html).val();
+												node.caption = nodeCaption;
+												
+												popup.dialog('close');
+											});
+
+											// show the popup dialog
+											var popup = monster.ui.dialog(popup_html, {
+												title: self.i18n.active().callflows.to_did.title,
+												beforeClose: function() {
+													if (typeof callback === 'function') {
+														callback();
+													}
+												}
+											});
+										}
+									});
+
+								} else {
+									monster.ui.alert('warning', self.i18n.active().callflows.to_did.noMatchError);
+								}
+							}
+						});
+					
 					}
 				},
 				'tts[]': {

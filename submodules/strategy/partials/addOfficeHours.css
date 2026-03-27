@@ -1,0 +1,79 @@
+#form_add_office_hours.callflows-strategy {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    max-height: inherit;
+    width: 448px;
+}
+
+#form_add_office_hours.callflows-strategy select {
+    width: 100%;
+    height: 2rem;
+    margin: 0;
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+
+#form_add_office_hours.callflows-strategy .form-content {
+    overflow-y: auto;
+    padding: 1.5rem 1rem;
+}
+
+#form_add_office_hours.callflows-strategy .form-content .no-days-error,
+#form_add_office_hours.callflows-strategy .form-content .overlapping-hours-error {
+    display: none;
+}
+
+#form_add_office_hours.callflows-strategy .form-content>* {
+    margin: 0;
+}
+
+#form_add_office_hours.callflows-strategy .form-content>:not(:first-child) {
+    margin-top: 1rem;
+}
+
+#form_add_office_hours.callflows-strategy .form-content>:first-child>label {
+    margin-bottom: 1rem;
+}
+
+#form_add_office_hours.callflows-strategy .form-content ul.controls {
+    margin: 0;
+    list-style: none;
+}
+
+#form_add_office_hours.callflows-strategy .form-content ul.controls li {
+    margin: 5px 0;
+}
+
+#form_add_office_hours.callflows-strategy .form-content ul.controls li:first-child {
+    margin-top: 0;
+}
+
+#form_add_office_hours.callflows-strategy .form-content ul.controls li:last-child {
+    margin-bottom: 0;
+}
+
+#form_add_office_hours.callflows-strategy .form-content ul.controls .monster-checkbox input[type=checkbox]:checked~span {
+    font-weight: 700;
+}
+
+#form_add_office_hours.callflows-strategy .form-content .ui-timepicker-input {
+    height: 2rem;
+    border-radius: 2px;
+    border: 1px solid #c0c0ca;
+    width: auto;
+    padding: 0 6px;
+}
+
+#form_add_office_hours.callflows-strategy .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0;
+    background-color: transparent;
+    border-top-color: #dbdbde;
+}
+
+#form_add_office_hours.callflows-strategy .form-actions>:not(:last-child) {
+    margin-right: .75rem;
+}

@@ -264,7 +264,7 @@ define(function(require) {
 
 			monster.ui.datepicker(timeofday_html.find('#start_date'));
 			monster.ui.datepicker(timeofday_html.find('#end_date'));
-			monster.ui.timepicker(timeofday_html.find('.timepicker'), {
+			self.timepicker(timeofday_html.find('.timepicker'), {
 				step: 5
 			});
 
@@ -1368,44 +1368,46 @@ define(function(require) {
 		temporalRuleList: function(callback) {
 			var self = this;
 
-			console.log('temporal rule list');
+			var temporalRuleFilters = {
+					paginate: false
+				};
+			
+			if (!miscSettings.temporalRuleShowVoipItems) {
+				temporalRuleFilters['filter_not_ui_metadata.origin'] = 'voip';
+			}
 
 			if (miscSettings.enableEnhancedListData) {
-				self.callApi({
-					resource: 'temporalRule.list',
-					data: {
-						accountId: self.accountId,
-						filters: {
-							paginate: false,
-							fields: ["id", "name", "flags", "features", "dimension"]
-						}
-					},
-					success: function(data) {
-						callback && callback(data.data);
-					}
-				});
-			} else {
-				self.callApi({
-					resource: 'temporalRule.list',
-					data: {
-						accountId: self.accountId,
-						filters: { paginate: false }
-					},
-					success: function(data) {
-						callback && callback(data.data);
-					}
-				});
+				temporalRuleFilters['fields'] = ["id", "name", "flags", "features", "dimension"];
 			}
+
+			self.callApi({
+				resource: 'temporalRule.list',
+				data: {
+					accountId: self.accountId,
+					filters: temporalRuleFilters
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			});
 		},
 
 		temporalSetList: function(callback) {
 			var self = this;
 
+			var temporalRuleSetsFilters = {
+					paginate: false
+				};
+			
+			if (!miscSettings.temporalRuleSetsShowVoipItems) {
+				temporalRuleSetsFilters['filter_not_ui_metadata.origin'] = 'voip';
+			}
+
 			self.callApi({
 				resource: 'temporalSet.list',
 				data: {
 					accountId: self.accountId,
-					filters: { paginate: false }
+					filters: temporalRuleSetsFilters
 				},
 				success: function(data) {
 					callback && callback(data.data);
@@ -1538,6 +1540,19 @@ define(function(require) {
 			if (!data.id) {
 				$('.delete', '.entity-header-buttons').addClass('disabled');
 			}
+		},
+
+		// local timepicker function that formats 24hr as 00:00 opposed to 0:00
+		timepicker: function(target, pOptions) {
+			var self = this,
+				is12hMode = _.get(monster, 'apps.auth.currentUser.ui_flags.twelve_hours_mode', false),
+				defaultOptions = {
+					timeFormat: is12hMode ? 'g:i A' : 'H:i',
+					lang: monster.apps.core.i18n.active().timepicker
+				},
+				options = $.extend(true, {}, defaultOptions, pOptions);
+
+			return target.timepicker(options);
 		}
 
 	};

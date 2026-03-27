@@ -371,6 +371,7 @@
 
 .callflows-port #user-form .presence-profile-warning {
 	margin-left: 40px;
+	margin-bottom: 10px;
 }
 
 /* Hotdesk devices table */
@@ -479,4 +480,18 @@
 
 #call_forward_direct_calls_only {
 	margin-bottom: 20px;
+}
+
+.callflows-port #user-form .edit_reset_user_callflow {
+	margin-left:20px;
+	display:inline;
+}
+
+.callflows-port #user-form .edit_reset_user_callflow .monster-button {
+	margin-right: 10px;;
+}
+
+.callflows-port #user-form .faxbox-help {
+	width: 580px;
+	margin-left: 78px;
 }

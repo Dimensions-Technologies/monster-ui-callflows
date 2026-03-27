@@ -1,0 +1,56 @@
+{{#each numbers}}
+<div class="number-element">
+	<div class="number">
+		<button type="button" class="monster-button monster-button-danger remove-number" data-number="{{this.number}}">
+			{{ @root.i18n.unassign }}
+		</button>
+		<span>{{formatPhoneNumber this.number}}</span>
+	</div>
+</div>
+{{else}}
+<div class="number-element">
+	<div class="no-number-error">{{ i18n.strategy.noFaxingNumMessage }}</div>
+</div>
+{{/each}}
+<div class="number-actions">
+	<div class="action-links nav-bar clearfix">
+	{{#unless actionLinksEnabled}}	
+		<button type="button" class="monster-button-secondary edit-email">
+			<span>
+				{{i18n.strategy.faxing.editFaxbox}}
+			</span>
+		</button>
+	{{/unless}}
+	{{#if actionLinksEnabled}}	
+		<button type="button" class="monster-button-secondary spare-link {{#unless spareLinkEnabled}} disabled{{/unless}}">
+			<span>
+				{{i18n.strategy.numberLinks.spare}}
+			</span>
+		</button>
+		{{#unless @root.hideBuyNumbers}}
+			<ul class="nav pull-left monster-select-dropdown-full">
+				<li class="dropdown">
+					<a data-toggle="dropdown" class="dropdown-toggle" href="javascript:void(0);">
+						{{ i18n.strategy.numberLinks.buy.link }}
+						<i class="icon-telicon-caret-down"></i>
+					</a>
+					<ul class="dropdown-menu">
+						<li>
+							<a href="javascript:void(0);" class="buy-link" data-type="regular">
+								<i class="fa fa-phone"></i>
+								{{ i18n.strategy.numberLinks.buy.regular }}
+							</a>
+						</li>
+						<li>
+							<a href="javascript:void(0);" class="buy-link" data-type="tollfree">
+								<i class="icon-telicon-prioritize"></i>
+								{{ i18n.strategy.numberLinks.buy.tollfree }}
+							</a>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		{{/unless}}
+	{{/if}}
+	</div>
+</div>

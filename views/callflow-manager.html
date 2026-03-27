@@ -44,9 +44,13 @@
 
 					<div class="embedded-buttons">
 						<button type="button" class="monster-button monster-button-secondary non-fixed list-add">
-							<span class="material-symbols-medium">add</span>
+							{{#if miscSettings.enableGoogleIcons}}
+								<span class="material-symbols-medium">add</span>
+							{{else}}
+								{{telicon "plus"}}
+							{{/if}}
 							<span class="button-label">{{ i18n.callflows.addCallflow }}</span>
-						</button>					
+						</button>
 						<button type="button" class="monster-button monster-button-secondary non-fixed back-button">{{ i18n.entityManager.backButton_2 }}</button>
 					</div>
 				{{/if}}

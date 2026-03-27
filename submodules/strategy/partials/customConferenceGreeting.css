@@ -1,0 +1,12 @@
+#strategy_custom_conference_greeting.callflows-strategy .actions button:not(:first-child) {
+    margin-left: 10px;
+}
+
+#strategy_custom_conference_greeting.callflows-strategy .feature-popup-title {
+    padding: 20px;
+}
+
+#strategy_custom_conference_greeting.callflows-strategy .actions {
+    padding: 19px 20px 20px;
+    border-top: 1px solid #dbdbde;
+}

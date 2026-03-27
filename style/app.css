@@ -13,6 +13,24 @@
 @import url('../submodules/temporalset/temporalset.css');
 @import url('../submodules/vmbox/vmbox.css');
 @import url('../style/fonts.css');
+@import url('../submodules/csvUploader/csvUploader.css');
+@import url('../submodules/mediaSelect/mediaSelect.css');
+
+
+@import url('../submodules/strategy/strategy.css');
+@import url('../submodules/strategy/partials/addOfficeHours.css');
+@import url('../submodules/strategy/partials/changeCallerIdPopup.css');
+@import url('../submodules/strategy/partials/customConferenceGreeting.css');
+@import url('../submodules/strategy/partials/faxboxPopup.css');
+@import url('../submodules/strategy/partials/menuPopup.css');
+@import url('../submodules/strategy/partials/number-actions.css');
+@import url('../submodules/strategy/partials/number-element.css');
+@import url('../submodules/strategy/partials/officeHolidaysManagement.css');
+@import url('../submodules/strategy/partials/strategy-calls.css');
+@import url('../submodules/strategy/partials/strategy-confnum.css');
+
+@import url('../submodules/strategyHolidays/strategyHolidays.css');
+@import url('../submodules/strategyHours/strategyHours.css');
 
 /* style.css */
 #ws_callflow {
@@ -76,7 +94,8 @@
 	border-radius: 0px;
 }
 
-.callflow-preview .callflow .root > .content .number_row:last-child:not(:first-child) {
+.callflow-preview .callflow .root > .content .number_row:last-child:not(:first-child),
+.callflow-managerPopup .callflow .root > .content .number_row:last-child:not(:first-child) {
 	display: none !important;
 }
 
@@ -138,12 +157,17 @@
 
 .callflow-preview span.delete,
 .callflow-preview .number_column.empty,
-.callflow-preview span.edit_icon {
+.callflow-preview span.edit_icon,
+.callflow-managerPopup span.delete,
+.callflow-managerPopup .number_column.empty,
+.callflow-managerPopup span.edit_icon {
 	display: none !important;
 }
 
 .callflow-preview .material-symbols-icon-callflow-edit,
-.callflow-preview .material-symbols-icon-number-delete {
+.callflow-preview .material-symbols-icon-number-delete,
+.callflow-managerPopup .material-symbols-icon-callflow-edit,
+.callflow-managerPopup .material-symbols-icon-number-delete {
 	display: none;
 }
 
@@ -968,6 +992,36 @@
 	min-height: 100%;
 }
 
+.callflow-managerPopup {
+	color: #ebebeb;
+	min-height: 100%;
+}
+
+.callflow-managerPopup .callflow-body {
+    max-height: calc(80vh - 60px);
+    overflow-y: hidden;
+	margin: 20px 20px 0px 20px;
+	border: 1px solid #ebebeb
+}
+
+.callflow-managerPopup .callflow-footer {
+	padding: 10px 0;
+	text-align: right;
+	padding-right: 20px;
+}
+
+.callflow-managerPopup #ws_callflow {
+    position: relative;
+}
+
+.callflow-managerPopup #ws_callflow .callflow-zoom {
+    position: absolute;
+    top: 18px; 
+    left: 18px;
+    z-index: 10;
+    margin-left: 0;
+}
+
 #callflow_container .callflow-content {
 	margin-left: 241px;
 	background-color: #fff;
@@ -1629,7 +1683,7 @@
 	display: inline-block;
 	float: none;
 	margin-left: 0;
-	width: 210px;
+	width: 400px;
 }
 
 .callflows-port li {
@@ -1920,7 +1974,7 @@
 	width: -webkit-calc(100% - 241px);
 	width: -moz-calc(100% - 241px);
 	width: -o-calc(100% - 241px);
-	width: calc(100%-241px);
+	width: calc(100% - 241px);
 }
 
 #callflow_container .entity-header {
@@ -1937,7 +1991,7 @@
 	width: -webkit-calc(100% - 241px);
 	width: -moz-calc(100% - 241px);
 	width: -o-calc(100% - 241px);
-	width: calc(100%-241px);
+	width: calc(100% - 241px);
 	z-index: 100;
 }
 
@@ -1950,6 +2004,9 @@
     #callflow_container .entity-header {
 		height: 110px;
     }
+	#callflow_container .callflow-content.callflows-port .entity-content {
+		margin-top: 110px;
+	}
 }
 
 #callflow_container .entity-header .entity-title {
@@ -1987,7 +2044,7 @@
 	width: -moz-calc(100%);
 	width: -o-calc(100%);
 	width: calc(100%);
-	z-index: 100;
+	z-index: 20;
 }
 
 #callflow_container .entity-content:has(> #account_settings_form),
@@ -2042,6 +2099,14 @@
 	margin-left: 10px;
 	min-width: 20px;
 	padding-right: 10px;
+	display: inline-flex;
+    align-items: center;
+    justify-content: center
+}
+#callflow_container .account-settings-container .upload-div .upload-cancel {
+	margin-left: 0.75rem;
+	position: relative;
+	top: 2px;
 }
 #callflow_container .account-settings-container .upload-div .file-upload {
 	margin: 0;
@@ -2050,12 +2115,14 @@
 #callflow_container .account-settings-container .upload-div .file-upload > input {
 	margin: 0;
 	margin-left: 180px;
-	width: 110px;
+	width: 210px;
 	padding: 6px;
 }
 #callflow_container .account-settings-container .upload-div .file-upload > button {
 	width: 100px;
 	min-width: initial;
+	height: 34px;
+	line-height: 0px;
 }
 #callflow_container .account-settings-container .action-bar {
 	padding-top: 15px;
@@ -2068,9 +2135,22 @@
 	display: none;
 }
 
-.media-edit-callflow-popup .shoutcast-div.active,
+.media-edit-callflow-popup .shoutcast-div.active {
+	display: block;
+	padding-left: 20px;
+}
+
 #callflow_container .account-settings-container .shoutcast-div.active {
 	display: block;
+	padding-left: 0px;
+}
+
+#callflow_container .account-settings-container .shoutcast-div.active .shoutcast-url-input {
+	width: 210px;
+}
+
+#callflow_container .account-settings-container .shoutcast-div.active .shoutcast-warning {
+	padding-left: 78px;
 }
 
 /* Blacklist part */
@@ -2451,9 +2531,28 @@
 
 .media_upload_disclosure {
 	width: 580px;
-	margin-left: 20px;
+	margin-left: 78px;
 }
 
+#media-form .player_file.media-player {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-left: 140px;
+	margin-top: 20px;
+}
+
+#media-form .player_file.media-player .media-progress {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-left: 30px;
+}
+
+#media-form .input.player_file.file .uneditable-input {
+	width: 400px;
+}
+ 
 /* branch variable */
 .dialog_popup.callflows-port.callflow-action-form #scope {
 	width: 280px !important;
@@ -2531,15 +2630,15 @@
 #account_settings_form #account_settings_misc .input select,
 #account_settings_form #account_settings_misc .chosen-container-single, 
 #account_settings_form #account_settings_misc .chosen-drop,
+#account_settings_form #account_settings_caller_id .input select,
+#account_settings_form #account_settings_caller_id .chosen-container-single, 
+#account_settings_form #account_settings_caller_id .chosen-drop,
 .callflows-port #conference_form .input select,
 .callflows-port #conference_form .chosen-container-single, 
 .callflows-port #conference_form .chosen-drop,
 .callflows-port #device-form .input select,
 .callflows-port #device-form .chosen-container-single, 
 .callflows-port #device-form .chosen-drop,
-.callflows-port #directory-form .input select,
-.callflows-port #directory-form .chosen-container-single, 
-.callflows-port #directory-form .chosen-drop,
 .callflows-port #faxbox_form .input select,
 .callflows-port #faxbox_form .chosen-container-single, 
 .callflows-port #faxbox_form .chosen-drop,
@@ -2559,6 +2658,29 @@
 .callflows-port #queue-form .input select,
 .callflows-port #queue-form .chosen-container-single, 
 .callflows-port #queue-form .chosen-drop {
+    width: 414px !important;
+}
+
+/* align dropdown field width with input fields */
+#account_settings_caller_id #caller_id_internal_name,
+#account_settings_caller_id #caller_id_external_name,
+#account_settings_caller_id #caller_id_emergency_name,
+#account_settings_caller_id #caller_id_asserted_name {
+	width: 400px;
+}
+
+/* align dropdown field width with input fields */
+#account_settings_caller_id #caller_id_privacy {
+	width: 414px;
+}
+
+/* align dropdown field width with input fields */
+.callflows-port #directory-form .input select,
+.callflows-port #directory-form .chosen-container-single, 
+.callflows-port #directory-form .chosen-drop,
+.callflows-port #queue-form #queue_agents .input select,
+.callflows-port #queue-form #queue_agents .chosen-container-single, 
+.callflows-port #queue-form #queue_agents .chosen-drop {
     width: 224px !important;
 }
 
@@ -2694,6 +2816,27 @@
 	cursor: grabbing;
 }
 
+.shoutcast-warning {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	width: 880px;
+}
+
+.media-edit-callflow-popup .shoutcast-warning {
+	width: 304px;
+	margin: 0 auto;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.callflow-action-info-text {
+	color: #303039;
+    font-size: 12px;
+    line-height: 20px;
+    padding: 5px 30px 20px 30px;
+    text-align: justify;
+}
+
 /* hide monster alert warning triangle and header */
 /*
 .alert-dialog .dialog-content .dialog-header,
@@ -2723,3 +2866,159 @@
     visibility: visible !important;
 }
 */
+
+/* generic list editor */
+.list-editor {
+    display: block;
+    width: 470px;
+	margin-bottom: 20px;
+}
+
+.list-editor .add-item {
+    margin-bottom: 10px;
+}
+
+.list-editor .create-inputs input {
+	width: 210px;
+}
+
+.list-editor .create-inputs input,
+.list-editor .create-inputs button,
+.list-editor .create-inputs a {
+    margin: 0;
+    line-height: normal;
+	margin-right: 20px;
+}
+
+.list-editor .item-wrapper {
+	background: #444;
+	border-top: 1px solid #22ccff;
+	border-right: 1px solid #22ccff;
+	border-left: 1px solid #22ccff;
+	line-height: 30px;
+}
+
+.list-editor .item-wrapper.placeholder > div,
+.list-editor .item-wrapper:not(.placeholder) {
+	padding: 5px 10px;
+}
+
+.list-editor .item-wrapper.placeholder .create-text:hover {
+	background: #222;
+	cursor: pointer;
+}
+
+.list-editor .saved-items .item-wrapper:first-child {
+	border-top-right-radius: 4px;
+	border-top-left-radius: 4px;
+}
+
+.list-editor .saved-items .item-wrapper:last-child {
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	border-bottom: 1px solid #22ccff;
+}
+
+.list-editor .item-wrapper.placeholder {
+	background: none;
+	border: 1px dashed #999;
+}
+
+.list-editor .item-wrapper.placeholder .create-inputs,
+.list-editor .item-wrapper.placeholder.active .create-text {
+	display: none;
+}
+
+.list-editor .item-wrapper.placeholder.active .create-inputs,
+.list-editor .item-wrapper.placeholder .create-text {
+	display: inherit;
+}
+
+.list-editor .list-editor-error {
+	color: orange;
+	margin-top: 10px;
+}
+
+.list-editor .list-editor-delete.icon.medium.trash {
+	margin-bottom: 8px;
+}
+
+.list-editor a {
+    color: #2297FF;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .numberRows .row {
+	margin-left: 0px;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row .number-container {
+    min-width: 237px;
+	display: flex;
+	align-items: center;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row .number-container .number .phone-number-label {
+    text-align: left;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row>* {
+    display: inline-block;
+    padding: 10px;
+    height: 32px;
+    line-height: 32px;
+}
+
+/* phone numbers tab formatting */
+.phone-numbers-section .item-row button {
+    margin-right: 25px;
+	text-align: center;
+	line-height: 14px;
+	min-width: unset;
+	width: 100px;
+}
+
+#phone_numbers_container hr {
+    margin: 0px 0;
+}
+
+/* phone numbers tab formatting */
+.number-addition {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	display: flex;
+    justify-content: flex-end;
+}
+
+#account_settings_main_number .settings-section {
+    padding: 20px;
+    background: #FFF;
+    border: 1px solid #ccc;
+	
+}
+
+/* prevent the popup content from clipping */
+.ui-dialog-content {
+    overflow: visible !important;
+}
+
+.userCallflow-dialog {
+	background: #ffffff;
+}
+
+#callflow_container .chosen-container .chosen-single div b:before,
+.callflows-port .chosen-container .chosen-single div b:before {
+    top: 50%;
+    right: 5px;
+    width: 5px;
+    height: 5px;
+    border: none;                
+    border-right: 2px solid #444; 
+    border-bottom: 2px solid #444;
+    transform: translateY(-65%) rotate(45deg);
+}
+
+

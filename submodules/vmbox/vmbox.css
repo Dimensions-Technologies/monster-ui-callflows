@@ -95,7 +95,6 @@
 
 #tab_callback .list-callback-numbers {
 	display: block;
-	margin-left: 100px;
 	width: 470px;
 }
 
@@ -166,7 +165,7 @@
 #tab_callback .number-wrapper.placeholder .create-inputs #callback_interval,
 #tab_callback .number-wrapper.placeholder .create-inputs #callback_attempts {
 	margin-right: 10px;
-	width: 110px;
+	width: 110px !important;
 }
 
 #tab_callback .number-wrapper.placeholder.disabled {
@@ -176,7 +175,7 @@
 }
 
 #tab_callback .callback-entry {
-	background: #333;
+	background: #444;
 	border: 1px solid #22ccff;
 	border-radius: 4px;
 	padding: 6px 10px;
@@ -200,7 +199,6 @@
 }
 
 #tab_callback .callback-entry .delete-callback {
-	color: #ff6666;
 	margin-left: 10px;
 }
 
@@ -253,6 +251,11 @@
 #tab_callback .callback-entry .delete-callback {
 	flex: 1;
 	text-align: right;
+}
+
+#tab_callback .delete-callback.icon.medium.trash {
+	margin-bottom: 4px;
+	background-position: 10px -64px;
 }
 
 #tab_callback .validation-messages {

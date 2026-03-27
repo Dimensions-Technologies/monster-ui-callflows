@@ -18,6 +18,7 @@
 		<ul class="tabs">
 			<li class="active"><a href="#basic">{{ i18n.callflows.vmbox.basic }}</a></li>
 			<li><a href="#options">{{ i18n.callflows.vmbox.options }}</a></li>
+			<li><a href="#email">{{ i18n.callflows.vmbox.email.title }}</a></li>
 			{{#if miscSettings.enableAnankeCallbacks}}
 				<li><a href="#callback">{{ i18n.callflows.vmbox.callback.title }}</a></li>
 			{{/if}}
@@ -27,92 +28,67 @@
 			<div class="pill-content">
 				<div class="active basic_view" id="basic">
 					
-					{{#unless miscSettings.vmboxPreventDelete}}
-						<div class="clearfix">
-							<label for="name">{{ i18n.callflows.vmbox.name }}</label>
-							<div class="input">
-								<input class="span4" id="name" name="name" type="text" placeholder="{{ i18n.callflows.vmbox.name_placeholder }}" value="{{data.name}}" rel="popover" data-content="{{ i18n.callflows.vmbox.name_data_content }}"/>
-							</div>
-						</div>
-					{{/unless}}
-
-					{{#if miscSettings.vmboxPreventDelete}}
+					{{#if miscSettings.readOnlyMailbox}}
 						<div class="clearfix">
 							<label for="name">{{ i18n.callflows.vmbox.name }}</label>
 							<div class="input">
 								<input disabled class="span4 input-readonly" id="name" name="name" type="text" placeholder="{{ i18n.callflows.vmbox.name_placeholder }}" value="{{data.name}}"/>
 							</div>
 						</div>
-					{{/if}}
-
-					{{#unless miscSettings.vmboxPreventDelete}}
-						<div class="clearfix">
-							<label for="mailbox">{{ i18n.callflows.vmbox.voicemail_number }}</label>
-							<div class="input">
-								<input class="span4" id="mailbox" name="mailbox" type="text" placeholder="{{ i18n.callflows.vmbox.voicemail_number_placeholder }}" value="{{data.mailbox}}" rel="popover" data-content="{{ i18n.callflows.vmbox.voicemail_number_data_content }}"/>
-							</div>
-						</div>
-					{{/unless}}
-
-					{{#if miscSettings.vmboxPreventDelete}}
 						<div class="clearfix">
 							<label for="mailbox">{{ i18n.callflows.vmbox.voicemail_number }}</label>
 							<div class="input">
 								<input disabled class="span4 input-readonly" id="mailbox" name="mailbox" type="text" placeholder="{{ i18n.callflows.vmbox.voicemail_number_placeholder }}" value="{{data.mailbox}}"/>
 							</div>
 						</div>
-					{{/if}}
-
-					{{#unless miscSettings.hideVmboxUserAssignment}}
-					{{#unless miscSettings.vmboxPreventDelete}}
+					{{else}}
 						<div class="clearfix">
-							<label for="owner_id">{{ i18n.callflows.vmbox.assign_to }}</label>
+							<label for="name">{{ i18n.callflows.vmbox.name }}</label>
 							<div class="input">
-								<span rel="popover" data-content="{{ i18n.callflows.vmbox.assign_to_data_content }}">
-									<select name="owner_id" id="owner_id" class="medium" >
-										{{#each field_data.users}}
-											{{#compare ../data.owner_id "==" id}}
-												<option value="{{id}}" id="{{id}}" selected="selected">{{first_name}} {{last_name}}</option>
-											{{else}}
-												<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
-											{{/compare}}
-										{{/each}}
-									</select>
-									{{#unless hideAdd.user}}
-										<div class="edit_create">
-											<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.vmbox.edit }}</a>
-											<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.vmbox.create }}</a>
-										</div>
-									{{/unless}}
-								</span>
+								<input class="span4" id="name" name="name" type="text" placeholder="{{ i18n.callflows.vmbox.name_placeholder }}" value="{{data.name}}" rel="popover" data-content="{{ i18n.callflows.vmbox.name_data_content }}"/>
 							</div>
 						</div>
-					{{/unless}}
-					{{/unless}}
+						<div class="clearfix">
+							<label for="mailbox">{{ i18n.callflows.vmbox.voicemail_number }}</label>
+							<div class="input">
+								<input class="span4" id="mailbox" name="mailbox" type="text" placeholder="{{ i18n.callflows.vmbox.voicemail_number_placeholder }}" value="{{data.mailbox}}" rel="popover" data-content="{{ i18n.callflows.vmbox.voicemail_number_data_content }}"/>
+							</div>
+						</div>
+					{{/if}}
 
-					{{#if miscSettings.vmboxPreventDelete}}
+					{{#if miscSettings.readOnlyMailbox}}
 						<div disabled class="clearfix input-readonly">
 							<label for="owner_id">{{ i18n.callflows.vmbox.assign_to }}</label>
 							<div class="input">
-								<span>
-									<select name="owner_id" id="owner_id" class="medium" >
-										{{#each field_data.users}}
-											{{#compare ../data.owner_id "==" id}}
-												<option value="{{id}}" id="{{id}}" selected="selected">{{first_name}} {{last_name}}</option>
-											{{else}}
-												<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
-											{{/compare}}
-										{{/each}}
-									</select>
-									{{#unless hideAdd.user}}
-										<div class="edit_create">
-											<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.vmbox.edit }}</a>
-											<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.vmbox.create }}</a>
-										</div>
-									{{/unless}}
-								</span>
+								<input disabled class="span4 input-readonly" id="owner_id_display" name="owner_id_display" type="text" value="{{#each field_data.users}}{{#compare id '===' ../data.owner_id}}{{ first_name }} {{ last_name }}{{/compare}}{{/each}}" />
+								<input type="hidden" id="owner_id" name="owner_id" value="{{data.owner_id}}" />
 							</div>
 						</div>
+					{{else}}
+						{{#unless miscSettings.hideVmboxUserAssignment}}
+								<div class="clearfix">
+									<label for="owner_id">{{ i18n.callflows.vmbox.assign_to }}</label>
+									<div class="input">
+										<span rel="popover" data-content="{{ i18n.callflows.vmbox.assign_to_data_content }}">
+											<select name="owner_id" id="owner_id" class="medium" >
+												{{#each field_data.users}}
+													{{#compare ../data.owner_id "==" id}}
+														<option value="{{id}}" id="{{id}}" selected="selected">{{first_name}} {{last_name}}</option>
+													{{else}}
+														<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
+													{{/compare}}
+												{{/each}}
+											</select>
+											{{#unless hideAdd.user}}
+												<div class="edit_create">
+													<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.vmbox.edit }}</a>
+													<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.vmbox.create }}</a>
+												</div>
+											{{/unless}}
+										</span>
+									</div>
+								</div>
+						{{/unless}}
 					{{/if}}
 
 					<div class="clearfix">
@@ -383,6 +359,31 @@
 						</div>
 					</div>
 
+					{{#if miscSettings.enableVoicemailTranscription}}
+						{{#if data.hasTranscribe}}
+						<div class="clearfix">
+							<div class="input">
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.vmbox.transcription.help }}">
+												{{#if data.transcribe}}
+													<input type="checkbox" id="transcribe" name="transcribe" checked="checked" />
+												{{else}}
+													<input type="checkbox" id="transcribe" name="transcribe" />
+												{{/if}}
+												<span>{{ i18n.callflows.vmbox.transcription.label }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+						{{/if}}
+					{{/if}}
+				</div>
+
+				<div id="email">
 					<div class="clearfix">
 						<div class="input">
 							<ul class="inputs-list">
@@ -402,33 +403,28 @@
 						</div>
 					</div>
 
-					{{#if data.hasTranscribe}}
 					<div class="clearfix">
 						<div class="input">
 							<ul class="inputs-list">
-								<li>
-									<label>
-										<span rel="popover" data-content="{{ i18n.callflows.vmbox.transcription.help }}">
-											{{#if data.transcribe}}
-												<input type="checkbox" id="transcribe" name="transcribe" checked="checked" />
-											{{else}}
-												<input type="checkbox" id="transcribe" name="transcribe" />
-											{{/if}}
-											<span>{{ i18n.callflows.vmbox.transcription.label }}</span>
-										</span>
-									</label>
-								</li>
+							<li>
+								<label>
+									<span rel="popover" data-content="{{ i18n.callflows.vmbox.email.override_recipients_content }}">
+										{{#if field_data.vmbox_email_override}}
+										<input type="checkbox" id="vmbox_email_override" name="vmbox.email_override" checked="checked" rel="popover" data-content=""/>
+										{{else}}
+										<input type="checkbox" id="vmbox_email_override" name="vmbox.email_override" rel="popover" data-content=""/>
+										{{/if}}
+										<span>{{ i18n.callflows.vmbox.email.override_recipients }}</span>
+									</span>
+								</label>
+							</li>
 							</ul>
 						</div>
 					</div>
-					{{/if}}
 
 					<div class="clearfix">
-						<label for="timezone">{{ i18n.callflows.vmbox.recipients }}</label>
 						<div class="input">
-							<textarea id="recipients_list">
-								{{data.extra.recipients}}
-							</textarea>
+							<div id="vmbox_recipients_editor_section"></div>
 						</div>
 					</div>
 				</div>
@@ -455,54 +451,59 @@
 								</div>
 							</div>
 
-							<div class="list-callback-numbers">
-								<h4>Callback Numbers</h4>
-								<div class="add-callback-number">
-									<div class="number-wrapper placeholder">
-										<div class="create-text">
-											<i class="icon-plus-sign"></i> Add Callback Number
-										</div>
-
-										<div class="create-inputs">
-											<div class="input-fields">
-												<input type="text" id="callback_number" placeholder="Number" class="input-medium">
-												<input type="number" id="callback_interval" placeholder="Interval (s)">	
-												<select id="callback_attempts">
-													<option value="" disabled selected>Attempts</option>
-													<option value="1">1</option>
-													<option value="2">2</option>
-													<option value="3">3</option>
-													<option value="4">4</option>
-													<option value="5">5</option>
-												</select>
-											</div>
-
-											{{#unless anankeCallbacks.callbackIntervalDropdown}}
-												<div class="validation-messages">
-													<label id="callback_interval-error" class="monster-invalid" for="callback_interval" style="display: none;"></label>
+							<div class="clearfix">
+								<div class="input">
+									<div class="list-callback-numbers">
+										<h4>Callback Numbers</h4>
+										<div class="add-callback-number">
+											<div class="number-wrapper placeholder">
+												<div class="create-text">
+													<i class="icon-plus-sign"></i> Add Callback Number
 												</div>
-											{{/unless}}
 
-											<div class="input-buttons">
-												<button class="monster-button-primary" id="add_callback_number">Add</button>
-												<a href="javascript:void(0);" id="cancel_callback_number">Cancel</a>
+												<div class="create-inputs">
+													<div class="input-fields">
+														<input type="text" id="callback_number" placeholder="Number" class="input-medium">
+														<input type="number" id="callback_interval" placeholder="Interval (s)">	
+														<select id="callback_attempts">
+															<option value="" disabled selected>Attempts</option>
+															<option value="1">1</option>
+															<option value="2">2</option>
+															<option value="3">3</option>
+															<option value="4">4</option>
+															<option value="5">5</option>
+														</select>
+													</div>
+
+													{{#unless anankeCallbacks.callbackIntervalDropdown}}
+														<div class="validation-messages">
+															<label id="callback_interval-error" class="monster-invalid" for="callback_interval" style="display: none;"></label>
+														</div>
+													{{/unless}}
+
+													<div class="input-buttons">
+														<button class="monster-button-primary" id="add_callback_number">Add</button>
+														<a href="javascript:void(0);" id="cancel_callback_number">Cancel</a>
+													</div>
+												</div>
 											</div>
 										</div>
+
+										<div class="callback-list-header">
+											<span class="drag-column">&nbsp;</span>
+											<span class="number-column">Number</span>
+											<span class="interval-column">Interval</span>
+											<span class="attempts-column">Attempts</span>
+											<span class="actions-column">Actions</span>
+										</div>
+
+										<ul class="saved-callback-numbers sortable">
+											<!-- callbackNumbers appended here -->
+										</ul>
 									</div>
 								</div>
-
-								<div class="callback-list-header">
-									<span class="drag-column">&nbsp;</span>
-									<span class="number-column">Number</span>
-									<span class="interval-column">Interval</span>
-									<span class="attempts-column">Attempts</span>
-									<span class="actions-column">Actions</span>
-								</div>
-
-								<ul class="saved-callback-numbers sortable">
-									<!-- callbackNumbers appended here -->
-								</ul>
 							</div>
+							
 						</div>
 					</div>
 				{{/if}}
@@ -555,15 +556,15 @@
 
 		 <div class="buttons-right">
 			{{#unless miscSettings.callflowButtonsWithinHeader}}
-				{{#unless miscSettings.vmboxPreventDelete}}
-				{{#if data.id}}
-					<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
-				{{/if}}
+				{{#unless miscSettings.readOnlyMailbox}}
+					{{#if data.id}}
+						<button class="monster-button monster-button-danger vmbox-delete">{{ i18n.callflows.vmbox.delete }}</button>
+					{{/if}}
 				{{/unless}}
 				<button class="monster-button monster-button-success vmbox-save">{{ i18n.callflows.vmbox.save }}</button>
 			{{/unless}}
 			{{#if miscSettings.callflowButtonsWithinHeader}}
-				{{#unless miscSettings.vmboxPreventDelete}}
+				{{#unless miscSettings.readOnlyMailbox}}
 					{{#if data.id}}
 						{{#if miscSettings.popupEdit}}
 							{{#unless hideAdd.voicemail}}

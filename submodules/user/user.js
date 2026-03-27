@@ -553,7 +553,6 @@ define(function(require) {
 					});
 				
 				},
-				
 				phoneNumbers: function(next) {
 					self.callApi({
 						resource: 'numbers.listAll',
@@ -629,7 +628,6 @@ define(function(require) {
 					});
 				},
 				media_list: function(callback) {
-
 					var mediaFilters = {
 						paginate: false
 					};
@@ -687,9 +685,7 @@ define(function(require) {
 					}
 				},
 				user_hotdesks: function(callback) {
-
 					if (typeof data === 'object' && data.id) {
-						
 						if (miscSettings.userShowHotdeskStatus) {
 
 							var filters = { 
@@ -744,9 +740,7 @@ define(function(require) {
 									callback(null, defaults);
 								}
 							});
-
 						} else {
-
 							self.callApi({
 								resource: 'user.hotdesks',
 								data: {
@@ -772,13 +766,10 @@ define(function(require) {
 									callback(null, defaults);
 								}
 							});
-
 						}
-
 					} else {
 						callback(null, defaults);
 					}
-					
 				}
 
 			});
@@ -866,42 +857,62 @@ define(function(require) {
 					'emergencyCallerIdNumbers'
 				]));
 
-				// get user callflow if callflow id found before
-				if (userCallflow != null) {
-					self.callApi({
-						resource: 'callflow.get',
-						data: {
-							accountId: self.accountId,
-							callflowId: userCallflow.id
-						},
-						success: function(userCallflow) {
-							if (miscSettings.enableConsoleLogging) {
-								console.log('User Callflow', userCallflow.data);
+				var checkUserCallflow = function() {
+					// get user callflow if callflow id found before
+					if (userCallflow != null) {
+						self.callApi({
+							resource: 'callflow.get',
+							data: {
+								accountId: self.accountId,
+								callflowId: userCallflow.id
+							},
+							success: function(userCallflow) {
+								if (miscSettings.enableConsoleLogging) {
+									console.log('User Callflow', userCallflow.data);
+								}
+								
+								defaults.field_data.user_callflow = userCallflow.data;
+
+								if (defaults.field_data.callflow_features.includes("ring_group")) {
+									//defaults.field_data.callflow_ring_group = userCallflow.data.flow.data;
+									var ringGroupNode = self.userCallflowGetNode({
+											callflow: userCallflow.data,
+											module: 'ring_group'
+										});
+
+									defaults.field_data.callflow_ring_group = ringGroupNode.data;
+								}
+
+								self.userRender(render_data, target, callbacks);
+								
+								if (typeof callbacks.after_render === 'function') {
+									callbacks.after_render();
+								}
 							}
-							
-							defaults.field_data.user_callflow = userCallflow.data;
+			
+						});
 
-							if (defaults.field_data.callflow_features.includes("ring_group")) {
-								defaults.field_data.callflow_ring_group = userCallflow.data.flow.data;
-							}
-
-							self.userRender(render_data, target, callbacks);
-							
-							if (typeof callbacks.after_render === 'function') {
-								callbacks.after_render();
-							}
-						}
-		
-					});
-
-				}
-
-				else {
-					self.userRender(render_data, target, callbacks);
-					
-					if (typeof callbacks.after_render === 'function') {
-						callbacks.after_render();
 					}
+
+					else {
+						self.userRender(render_data, target, callbacks);
+						
+						if (typeof callbacks.after_render === 'function') {
+							callbacks.after_render();
+						}
+					}
+				};
+
+				var userFaxboxEnabled = _.get(render_data, 'data.smartpbx.faxing.enabled') === true,
+					ownerId = _.get(render_data, 'data.id');
+
+				if (userFaxboxEnabled && ownerId) {
+					self.getUserFaxboxDetails(ownerId, function(faxbox) {
+						defaults.field_data.user_faxbox = faxbox;
+						checkUserCallflow();
+					});
+				} else {
+					checkUserCallflow();
 				}
 
 			});
@@ -941,7 +952,25 @@ define(function(require) {
 				else {
 					allowAddingExternalCallerId = true
 				}
-				
+
+				var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
+					userFaxboxEnabled = data?.data?.smartpbx?.faxing?.enabled === true,
+					userCallflow = data?.field_data?.user_callflow;
+	
+				if (userCallflow) {
+					var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
+					
+					data.field_data.user_ring_timeout_current = self.userCallflowGetRingTimeout(userCallflow, findMeFollowMeEnabled);
+					data.field_data.user_ring_timeout = data.field_data.user_ring_timeout_current;
+					
+					if (missedCallNode) {
+						data.field_data.missed_call_alert_enabled = !!missedCallNode;
+						data.field_data.missed_call_alert_internal = !!(missedCallNode && missedCallNode.alert_on_internal_calls);
+						data.field_data.missed_call_alert_email_override = !!self.userCallflowHasMissedCallAlertEmailOverride(userCallflow);
+						data.field_data.missed_call_alert_emails = self.userCallflowGetMissedCallAlertEmailRecipients(userCallflow);
+					}
+				}
+
 				user_html = $(self.getTemplate({
 					name: 'edit',
 					data: _.merge({
@@ -952,6 +981,11 @@ define(function(require) {
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
 						data: {
 							vm_to_email_enabled: _.get(data, 'data.vm_to_email_enabled', true)
+						},
+						faxbox: { 
+							realm: monster.apps.auth.currentAccount.realm,
+							email: data.data.email,
+							number: _.get(data, 'field_data.user_faxbox.phoneNumber', '')
 						}
 					}, _.pick(data.extra, [
 						'phoneNumbers'
@@ -986,10 +1020,38 @@ define(function(require) {
 				});
 			}
 
+			if (!findMeFollowMeEnabled) {
+				user_html.find('.information-text.ring-timeout').hide();
+			}
+
+			if (!userFaxboxEnabled) {
+				user_html.find('.smartpbx-faxing .edit_create').hide();
+				user_html.find('.smartpbx-faxing-number').hide();
+				user_html.find('.faxbox-help').hide();
+			}
+
+			user_html.find('#smartpbx\\.faxing\\.enabled').on('change', function() {
+
+				var isEnabled = $(this).val();
+
+				if (isEnabled == 'true') {
+					if (userFaxboxEnabled) {
+						user_html.find('.smartpbx-faxing .edit_create').show();
+						user_html.find('.faxbox-help').show();
+					}
+					user_html.find('.smartpbx-faxing-number').show();
+				} else {
+					user_html.find('.smartpbx-faxing .edit_create').hide();
+					user_html.find('.smartpbx-faxing-number').hide();
+					user_html.find('.faxbox-help').hide();
+				}
+
+			});
+
 			user_html.find('.ring-timeout').on('change', function(event) {
 
 				if (data.field_data.user_callflow != null) {
-					timeoutReset = data.field_data.user_callflow.flow.data.timeout
+					timeoutReset = data.field_data.user_ring_timeout_current
 				} else {
 					timeoutReset = 30
 				}
@@ -1168,9 +1230,10 @@ define(function(require) {
 			
 			self.userRenderNumberList(data, user_html);
 
-			$('#tab_find_me_follow_me', user_html).hide(); // show find me follow me table
+			$('#tab_find_me_follow_me', user_html).hide();
+			$('#call_routing_manual', user_html).hide();
 
-			// the following is within monster.waterfall so that the device list is rendered before the page loads
+			// the following is within monster.waterfall so the device list is rendered before the page loads
 			monster.waterfall([
 				function(callback) {
 					self.userGetDeviceList(data, function(deviceList) {
@@ -1182,16 +1245,64 @@ define(function(require) {
 				},
 				function() {
 					target.empty().append(user_html);
+
+					// should always call this so if faxbox is disabled then enabled the number dropdown is populated
+					self.userRenderFaxboxNumberSelector(data, user_html);
 					
 					var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 						userCallflow = data?.field_data?.user_callflow;
 
 					if (findMeFollowMeEnabled && userCallflow) {
 						$('#tab_find_me_follow_me', user_html).show();
-						data.field_data.ring_group = userCallflow.flow.data;
+						//data.field_data.ring_group = userCallflow.flow.data;
+
+						var ringGroupNode = self.userCallflowGetNode({
+							callflow: userCallflow,
+							module: 'ring_group'
+						});
+
+						data.field_data.ring_group = ringGroupNode.data;
+
 						self.usersRenderFindMeFollowMe(data, data.field_data.device_list, user_html);
 					}
-					
+
+					// mainUserCallflow modification support
+					if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
+						var mainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true,
+							userCallflow = data?.field_data?.user_callflow;
+
+						// disable edit and reset user callflow button on page load - only allow modification if mainUserCallflowModified is true on user doc
+						var $userCallflowButtons = $(user_html).find('#edit_user_callflow, #reset_user_callflow');
+
+						$userCallflowButtons
+							.prop('disabled', true)
+							.addClass('button-disabled');
+
+						if (mainUserCallflowModified && userCallflow) {
+
+							$('#call_routing_user', user_html).hide();
+							$('#call_routing_manual', user_html).show();
+							
+							$userCallflowButtons
+								.prop('disabled', false)
+								.removeClass('button-disabled');
+
+							// disable voicemail and find me follow me settings on form if mainUserCallflowModified is true on user doc
+							var $userVoicemailSettings = $(user_html).find('#user_voicemail, #ring_timeout, #vm_to_email_enabled');
+
+							$userVoicemailSettings
+								.prop('disabled', true)
+								.addClass('input-readonly');
+
+							$(user_html).find('#edit_link_vmbox').hide();
+
+							$(user_html).find('#smartpbx\\.find_me_follow_me\\.enabled')
+								.prop('disabled', true)
+								.addClass('input-readonly');
+
+						}
+					}
+
 					// if user the user is logged into a hotdesk device update the table
 					if (data.field_data.device_list) {
 						self.userRenderHotdeskList(data, user_html);
@@ -1293,14 +1404,15 @@ define(function(require) {
 
 						ev.preventDefault();
 
-						var field_data = data.field_data;
+							var field_data = data.field_data;
 
 						self.listNumbers(function(phoneNumbers) {
-							var parsedNumbers = [];
+							var parsedNumbers = [],
+								selectedFaxingNumber = _.get(field_data, 'user_faxbox.phoneNumber');
 
 							// filter out numbers already added to the form but not yet saved
 							_.each(phoneNumbers, function(number) {
-								if ($.inArray(number.phoneNumber, field_data.phone_numbers) < 0) {	
+								if ($.inArray(number.phoneNumber, field_data.phone_numbers) < 0 && number.phoneNumber !== selectedFaxingNumber) {	
 									parsedNumbers.push(number);
 								}
 							});
@@ -1366,6 +1478,7 @@ define(function(require) {
 								}
 
 								self.userRenderNumberList(data, user_html)
+								self.userRenderFaxboxNumberSelector(data, user_html);
 							
 								popup.dialog('close');
 
@@ -1373,7 +1486,7 @@ define(function(require) {
 
 						});
 					});
-					
+
 					self.winkstartTabs(user_html);
 					self.winkstartLinkForm(user_html);
 
@@ -1451,329 +1564,664 @@ define(function(require) {
 							field_data = data.field_data,
 							callflowNumbers = data.field_data.callflow_numbers,
 							formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
+							faxboxData = data.field_data.user_faxbox || {},
+							selectedFaxingNumber = $('#user_faxing_number', user_html).val() || '',
 							userCallflow = data.field_data.user_callflow,
 							userVoicemail = form_data.user_voicemail,
+							currentRingTimeout = data.field_data.user_ring_timeout_current,
 							ringTimeout = parseInt(form_data.ring_timeout, 10),
+							currentFaxingEnabled = data?.data?.smartpbx?.faxing?.enabled === true,
+							faxingEnabled = form_data.smartpbx.faxing.enabled === "true",
 							findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 							findMeFollowMe = form_data.smartpbx.find_me_follow_me.enabled === "true",
 							callflowRingGroup = data.field_data.callflow_ring_group,
-							ringGroup = data.field_data.ring_group;
+							ringGroup = data.field_data.ring_group,
+							mainUserCallflowReset = false,
+							missedCallAlertEnabled = $('#missed_call_alert_enabled', user_html).is(':checked'),
+							missedCallAlertInternalEnabled = $('#missed_call_alert_internal', user_html).is(':checked'),
+							missedCallAlertOverrideEmail = $('#missed_call_alert_email_override', user_html).is(':checked'),
+							missedCallAlertEmailEditor = data.field_data.missed_call_email_editor;
 
-						if (miscSettings.enableConsoleLogging) {
-							console.log('Numbers on User Callflow', callflowNumbers);
-							console.log('Numbers on User Form', formNumbers);
+						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
+							var dataMainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true,
+								formMainUserCallflowModified = form_data.dimension.main_user_callflow_modified === "true";
 						}
 
-						if ('callflow_numbers' in form_data) {
-							delete form_data.callflow_numbers;
+						// show warning message opposed to error if find me follow me is enabled but no devices are set to ring
+						if (findMeFollowMe) {
+							var endpoints = Array.isArray(ringGroup && ringGroup.endpoints) ? ringGroup.endpoints : [];
+							if (endpoints.length === 0) {
+								monster.ui.alert('warning', self.i18n.active().callflows.user.find_me_follow_me.can_not_save);
+								return
+							}
 						}
 
-						if ('phone_numbers' in form_data) {
-							delete form_data.phone_numbers;
+						// show warning message opposed to error if missed call alert is enabled with email override but not emails are set
+						if (missedCallAlertOverrideEmail) {
+							var emails = missedCallAlertEmailEditor ? missedCallAlertEmailEditor.getValues() : [];
+							if (!emails.length) {
+								monster.ui.alert('warning', self.i18n.active().callflows.user.missed_call_alert.no_override_recipients);
+								return;
+							}
 						}
 
-						if ('extension_numbers' in form_data) {
-							delete form_data.extension_numbers;
+						// show warning message if personal fax box is enabled but no faxbox number is selected
+						if (faxingEnabled && selectedFaxingNumber == '') {
+							monster.ui.alert('warning', self.i18n.active().callflows.user.faxbox.no_faxbox_number);
+							return;
 						}
 
-						if ('user_voicemail' in form_data) {
-							delete form_data.user_voicemail;
-						}
+						function continueSave() {
 
-						if ('ring_timeout' in form_data) {
-							delete form_data.ring_timeout;
-						}
+							if (miscSettings.enableConsoleLogging) {
+								console.log('Numbers on User Callflow', callflowNumbers);
+								console.log('Numbers on User Form', formNumbers);
+							}
 
-						if (form_data.enable_pin === false) {
-							delete data.data.queue_pin;
-							delete data.data.record_call;
-						}
+							if ('callflow_numbers' in form_data) {
+								delete form_data.callflow_numbers;
+							}
 
-						if (form_data.music_on_hold.media_id === 'shoutcast') {
-							form_data.music_on_hold.media_id = user_html.find('.shoutcast-url-input').val();
-						}
+							if ('phone_numbers' in form_data) {
+								delete form_data.phone_numbers;
+							}
 
-						self.userCleanFormData(form_data);
+							if ('extension_numbers' in form_data) {
+								delete form_data.extension_numbers;
+							}
 
-						if ('field_data' in data) {
-							delete data.field_data;
-						}
+							if ('user_voicemail' in form_data) {
+								delete form_data.user_voicemail;
+							}
 
-						monster.waterfall([
-				
-							function(callback) {
-								// voicemail update function 
-								if (userCallflow != null) {
+							if ('ring_timeout' in form_data) {
+								delete form_data.ring_timeout;
+							}
 
-									var voicemailFormValue,
-										voicemailEnabled;
-		
-									if (userVoicemail == 'enabled') {
-										voicemailFormValue = true
-									} else {
-										voicemailFormValue = false
+							if (form_data.enable_pin === false) {
+								delete data.data.queue_pin;
+								delete data.data.record_call;
+							}
+
+							if (form_data.music_on_hold.media_id === 'shoutcast') {
+								form_data.music_on_hold.media_id = user_html.find('.shoutcast-url-input').val();
+							}
+
+							self.userCleanFormData(form_data);
+
+							if ('field_data' in data) {
+								delete data.field_data;
+							}
+
+							monster.waterfall([
+
+								function(callback) {
+
+									if (!userCallflow || !userCallflow.flow) {
+										return callback(null);
 									}
-		
-									if (field_data.callflow_features.includes('voicemail')) {
-										voicemailEnabled = true
-									} else {
-										voicemailEnabled = false
-									}
-		
-									// check if there is a difference between the current state and form state
-									if (voicemailEnabled != voicemailFormValue ) {
-										if (miscSettings.enableConsoleLogging) {
-											console.log('Setting Voicemail State:', userVoicemail);
-										}
-										self.usersUpdateVMBoxStatusInCallflow({
-											callflow: userCallflow,
-											enabled: voicemailFormValue,
-											ringTimeout: ringTimeout
-										}, callback);
-									} else {
-										if (findMeFollowMe == false && userCallflow.flow.data.timeout != ringTimeout) {
-											if (miscSettings.enableConsoleLogging) {
-												console.log('Updating Callflow Timeout:', ringTimeout);
-											}
-											self.callApi({
-												resource: 'callflow.patch',
-												data: {
-													accountId: self.accountId,
-													callflowId: userCallflow.id,
-													data: {
-														flow: {
-															data: { 
-																timeout: ringTimeout
-															}
-														},
-														ui_metadata: {
-															origin: 'voip'
-														}
-													},
-													removeMetadataAPI: true
-												},
-												success: function(_callflow_update) {
-													if (miscSettings.enableConsoleLogging) {
-														console.log('User Callflow Updated', _callflow_update)
-													}
-													callback(null);
+
+									var missedCallData = self.userCallflowHasMissedCallAlert(userCallflow);
+
+									// build recipients list
+									function buildRecipients() {
+										if (!missedCallAlertOverrideEmail) {
+											return [
+												{ 
+													type: 'user', 
+													id: userCallflow.owner_id 
 												}
-											})
-										} else {
-											callback(null)
+											];
 										}
-									}
-									
-								} else {
-									callback(null)
-								}
 
-							},
+										var emails = (missedCallAlertEmailEditor.getValues());
 
-							function(callback) {
-								
-								if (miscSettings.enableConsoleLogging) {
-									console.log('Find Me Follow Me Enabled:', findMeFollowMe);
-									console.log('callflowRingGroup', callflowRingGroup);
-									console.log('ringGroup', ringGroup);
-								}
-
-								var updateUserCallflow = false,
-									callflowNode = {};
-								
-								// check if find me follow me is enabled
-								if (findMeFollowMe == true) {
-									
-									// function to compare callflowRingGroup and ringGroup
-									function areRingGroupsEqual(group1, group2) {
-										if (
-											group1.timeout !== group2.timeout ||
-											group1.strategy !== group2.strategy ||
-											group1.repeats !== group2.repeats ||
-											group1.ignore_forward !== group2.ignore_forward
-										) {
-											return false;
-										}
-									
-										// check if both have an endpoints array with the same length
-										if (!Array.isArray(group1.endpoints) || !Array.isArray(group2.endpoints) ||
-											group1.endpoints.length !== group2.endpoints.length) {
-											return false;
-										}
-									
-										// sort the endpoints arrays by id for a consistent comparison
-										const sortedEndpoints1 = [...group1.endpoints].sort((a, b) => a.id.localeCompare(b.id));
-										const sortedEndpoints2 = [...group2.endpoints].sort((a, b) => a.id.localeCompare(b.id));
-									
-										return sortedEndpoints1.every((endpoint1, index) => {
-											const endpoint2 = sortedEndpoints2[index];
-											return (
-												endpoint1.id === endpoint2.id &&
-												endpoint1.endpoint_type === endpoint2.endpoint_type &&
-												endpoint1.delay === endpoint2.delay &&
-												endpoint1.timeout === endpoint2.timeout
-											);
+										return _.map(emails, function(e) {
+											return { 
+												type: 'email', 
+												id: e 
+											};
 										});
 									}
 
-									// check if find me follow me is currently enabled
-									if (findMeFollowMeEnabled == true) {
-										// check if there are differences between the existing ring group and what is on the form
-										if (!areRingGroupsEqual(callflowRingGroup, ringGroup)) {
+									// disable missed call alert
+									if (!missedCallAlertEnabled) {
+										if (!missedCallData) {
+											return callback(null);
+										}
+
+										self.userCallflowDisableMissedCallAlert(userCallflow);
+
+										return self.userUpdateCallflow(userCallflow, callback, function() {
+											callback(null);
+										});
+									}
+
+									// enable missed call alert
+									if (!missedCallData) {
+										self.userCallflowEnableMissedCallAlert(userCallflow, {
+											alert_on_internal_calls: !!missedCallAlertInternalEnabled
+										});
+
+										missedCallData = self.userCallflowHasMissedCallAlert(userCallflow);
+									}
+
+									// update recipients and alert on internal calls
+									var recipients = buildRecipients();
+									
+									if (recipients === null) {
+										return callback(null);
+									}
+
+									missedCallData.alert_on_internal_calls = !!missedCallAlertInternalEnabled;
+									missedCallData.recipients = recipients;
+
+									return self.userUpdateCallflow(userCallflow, callback, function() {
+										callback(null);
+									});
+								},
+
+								function(callback) {
+									
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Find Me Follow Me Enabled:', findMeFollowMe);
+										console.log('callflowRingGroup', callflowRingGroup);
+										console.log('ringGroup', ringGroup);
+									}
+
+									var updateUserCallflow = false,
+										callflowNode = {};
+
+									// disable find me follow me if currently enabled and routing type is being set to manually configured
+									if (formMainUserCallflowModified && findMeFollowMe) {
+										findMeFollowMe = false;
+										form_data.smartpbx.find_me_follow_me.enabled = false;
+									}
+									
+									// check if find me follow me is enabled
+									if (findMeFollowMe == true) {
+										
+										// function to compare callflowRingGroup and ringGroup
+										function areRingGroupsEqual(group1, group2) {
+											if (
+												group1.timeout !== group2.timeout ||
+												group1.strategy !== group2.strategy ||
+												group1.repeats !== group2.repeats ||
+												group1.ignore_forward !== group2.ignore_forward
+											) {
+												return false;
+											}
+										
+											// check if both have an endpoints array with the same length
+											if (!Array.isArray(group1.endpoints) || !Array.isArray(group2.endpoints) ||
+												group1.endpoints.length !== group2.endpoints.length) {
+												return false;
+											}
+										
+											// sort the endpoints arrays by id for a consistent comparison
+											const sortedEndpoints1 = [...group1.endpoints].sort((a, b) => a.id.localeCompare(b.id));
+											const sortedEndpoints2 = [...group2.endpoints].sort((a, b) => a.id.localeCompare(b.id));
+										
+											return sortedEndpoints1.every((endpoint1, index) => {
+												const endpoint2 = sortedEndpoints2[index];
+												return (
+													endpoint1.id === endpoint2.id &&
+													endpoint1.endpoint_type === endpoint2.endpoint_type &&
+													endpoint1.delay === endpoint2.delay &&
+													endpoint1.timeout === endpoint2.timeout
+												);
+											});
+										}
+
+										// check if find me follow me is currently enabled
+										if (findMeFollowMeEnabled == true) {
+											// check if there are differences between the existing ring group and what is on the form
+											if (!areRingGroupsEqual(callflowRingGroup, ringGroup)) {
+												// update user callflow
+												updateUserCallflow = true;
+												
+												callflowNode.module = 'ring_group';
+												callflowNode.data = {
+													strategy: 'simultaneous',
+													timeout: ringGroup.timeout,
+													repeats: 1,
+													ignore_forward: true,
+													endpoints: ringGroup.endpoints											
+												};
+												callback(null, updateUserCallflow, callflowNode);
+											} else {
+												callback(null, updateUserCallflow, callflowNode);
+											}
+										} else {
 											// update user callflow
 											updateUserCallflow = true;
-											
+												
 											callflowNode.module = 'ring_group';
 											callflowNode.data = {
 												strategy: 'simultaneous',
 												timeout: ringGroup.timeout,
 												repeats: 1,
-                								ignore_forward: true,
-												endpoints: ringGroup.endpoints											
+												ignore_forward: true,
+												endpoints: ringGroup.endpoints
+											};
+											callback(null, updateUserCallflow, callflowNode);
+										}
+									} else {
+										// check if find me follow me state has been changed
+										if (findMeFollowMeEnabled != findMeFollowMe) {
+											// update user callflow
+											updateUserCallflow = true;
+
+											// set used module on callflow
+											callflowNode.module = 'user';
+											callflowNode.data = {
+												can_call_self: false,
+												id: data.data.id,
+												timeout: ringTimeout,
+												delay: 0,
+												strategy: "simultaneous"
 											};
 											callback(null, updateUserCallflow, callflowNode);
 										} else {
 											callback(null, updateUserCallflow, callflowNode);
 										}
+									}
+
+								},
+
+								function(updateUserCallflow, callflowNode, callback) {
+
+									// does the users callflow needs to be updated it
+									if (updateUserCallflow) {
+										// update the flow section of the users callflow
+										var flow = userCallflow.flow;
+										while (flow.hasOwnProperty('module') && ['ring_group', 'user'].indexOf(flow.module) < 0) {
+											flow = flow.children._;
+										}
+										flow.module = callflowNode.module;
+										flow.data = callflowNode.data;
+
+										self.userUpdateCallflow(userCallflow, callback, function() {
+											callback(null);
+										});
 									} else {
-										// update user callflow
-										updateUserCallflow = true;
-											
-										callflowNode.module = 'ring_group';
-										callflowNode.data = {
-											strategy: 'simultaneous',
-											timeout: ringGroup.timeout,
-											repeats: 1,
-											ignore_forward: true,
-											endpoints: ringGroup.endpoints
-										};
-										callback(null, updateUserCallflow, callflowNode);
-									}
-								} else {
-									// check if find me follow me state has been changed
-									if (findMeFollowMeEnabled != findMeFollowMe) {
-										// update user callflow
-										updateUserCallflow = true;
-
-										// set used module on callflow
-										callflowNode.module = 'user';
-										callflowNode.data = {
-											can_call_self: false,
-											id: data.data.id,
-											timeout: ringTimeout,
-											delay: 0,
-                							strategy: "simultaneous"
-										};
-										callback(null, updateUserCallflow, callflowNode);
-									} else {
-										callback(null, updateUserCallflow, callflowNode);
-									}
-								}
-
-							},
-
-							function(updateUserCallflow, callflowNode, callback) {
-
-								// does the users callflow needs to be updated it
-								if (updateUserCallflow) {
-									// update the flow section of the users callflow
-									var flow = userCallflow.flow;
-									while (flow.hasOwnProperty('module') && ['ring_group', 'user'].indexOf(flow.module) < 0) {
-										flow = flow.children._;
-									}
-									flow.module = callflowNode.module;
-									flow.data = callflowNode.data;
-
-									self.usersUpdateCallflow(userCallflow, callback, function() {
 										callback(null);
-									});
-								} else {
-									callback(null);
-								}
+									}
 
-							},
+								},
+					
+								function(callback) {
+									// voicemail update function - do this after updating find me follow me
+									if (userCallflow != null) {
 
-							function(callback) {
-								// patch users callflow if there is a change to the qty of numbers
-								if (userCallflow != null && formNumbers.length > 0 && formNumbers.length != callflowNumbers.length) {
+										var voicemailFormValue,
+											voicemailEnabled;
+			
+										if (userVoicemail == 'enabled') {
+											voicemailFormValue = true
+										} else {
+											voicemailFormValue = false
+										}
+			
+										if (field_data.callflow_features.includes('voicemail')) {
+											voicemailEnabled = true
+										} else {
+											voicemailEnabled = false
+										}
+
+										// skip mainUserCallflow is being reset
+										if (!mainUserCallflowReset) {
+
+											var ringTimeoutChanged = ringTimeout !== currentRingTimeout,
+												voicemailChanged = voicemailEnabled != voicemailFormValue;
+
+											if (voicemailChanged || (findMeFollowMe == false && ringTimeoutChanged)) {
+
+												if (miscSettings.enableConsoleLogging) {
+													console.log('Updating Voicemail/Timeout:', {
+														voicemailChanged: voicemailChanged,
+														ringTimeoutChanged: ringTimeoutChanged,
+														ringTimeout: ringTimeout,
+														currentRingTimeout: currentRingTimeout
+													});
+												}
+												
+												// updates voicemail skip_module (if needed) and sets timeout on the user node
+												self.usersUpdateVMBoxStatusInCallflow({
+													callflow: userCallflow,
+													enabled: voicemailFormValue,
+													ringTimeout: ringTimeout
+												}, callback);
+
+											} else {
+												callback(null);
+											}
+
+										} else {
+											callback(null);
+										}
+
+									} else {
+										callback(null)
+									}
+
+								},
+
+								function(callback) {
+									// patch user callflow if there is a change to the assigned numbers 
+									var callflowNumbersSorted = _.sortBy(callflowNumbers || []),
+										formNumbersSorted = _.sortBy(formNumbers || []),
+										numbersChanged = !_.isEqual(callflowNumbersSorted, formNumbersSorted);
+
+									if (userCallflow != null && numbersChanged) {
+										self.callApi({
+											resource: 'callflow.patch',
+											data: {
+												accountId: self.accountId,
+												callflowId: userCallflow.id,
+												data: {
+													numbers: formNumbers,
+													ui_metadata: {
+														origin: 'voip'
+													}
+												},
+												removeMetadataAPI: true
+											},
+											success: function(_callflow_update) {
+												if (miscSettings.enableConsoleLogging) {
+													console.log('User Callflow Updated', _callflow_update)
+												}
+												callback(null);
+											}
+										})
+									} else {
+										callback(null);
+									}
+
+								},
+
+								function(callback) {
+									// function for personal faxbox support 
+									function clearFaxboxState() {
+										faxboxData.id = null;
+										faxboxData.callflowId = null;
+										faxboxData.callflow_numbers = [];
+										faxboxData.phoneNumber = '';
+										faxboxData.doc = null;
+									}
+
+									function getFaxboxCallerName() {
+										return _.trim([
+											form_data.first_name || data.data.first_name,
+											form_data.last_name || data.data.last_name
+										].join(' '));
+									}
+
+									function createFaxboxCallflow(faxboxId, faxboxDoc) {
+										self.callApi({
+											resource: 'callflow.create',
+											data: {
+												accountId: self.accountId,
+												data: {
+													type: 'faxing',
+													owner_id: data.data.id,
+													numbers: [
+														selectedFaxingNumber
+													],
+													flow: {
+														module: 'faxbox',
+														children: {},
+														data: {
+															id: faxboxId
+														}
+													},
+													ui_metadata: {
+														origin: 'voip'
+													}
+												},
+												removeMetadataAPI: true
+											},
+												success: function(callflowResponse) {
+													faxboxData.id = faxboxId;
+													faxboxData.callflowId = callflowResponse.data.id;
+													faxboxData.callflow_numbers = [selectedFaxingNumber];
+													faxboxData.phoneNumber = selectedFaxingNumber;
+													faxboxData.doc = faxboxDoc;
+													callback(null);
+												},
+												error: function() {
+													callback(null);
+											}
+										});
+									}
+
+									function deleteFaxboxCallflow() {
+										if (!faxboxData.callflowId) {
+											clearFaxboxState();
+											callback(null);
+											return;
+										}
+
+										self.callApi({
+											resource: 'callflow.delete',
+											data: {
+												accountId: self.accountId,
+												callflowId: faxboxData.callflowId
+											},
+											success: function() {
+												clearFaxboxState();
+												callback(null);
+											},
+											error: function() {
+												callback(null);
+											}
+										});
+									}
+
+									if (currentFaxingEnabled && !faxingEnabled) {
+										self.callApi({
+											resource: 'faxbox.delete',
+											data: {
+												accountId: self.accountId,
+												faxboxId: faxboxData.id
+											},
+											success: function() {
+												deleteFaxboxCallflow();
+											}
+										});
+										
+										return;
+									}
+
+									if (!currentFaxingEnabled && faxingEnabled && !faxboxData.id && selectedFaxingNumber && data.data.id) {
+										var	faxIdentity = monster.util.formatPhoneNumber(selectedFaxingNumber).split(' ').join(''),
+											callerName = getFaxboxCallerName(),
+											faxboxName = callerName ? callerName + '\'s Faxbox' : 'Faxbox';
+
+										if (miscSettings.readOnlyCallerIdName) {
+											callerName = faxIdentity;
+										}
+
+										self.callApi({
+											resource: 'faxbox.create',
+											data: {
+												accountId: self.accountId,
+												data: {
+													retries: 3,
+													name: faxboxName,
+													caller_name: callerName,
+													fax_header: 'Fax Printer',
+													owner_id: data.data.id,
+													caller_id: selectedFaxingNumber,
+													fax_identity: faxIdentity,
+													ui_metadata: {
+														origin: 'voip'
+													}
+												}
+											},
+											success: function(faxboxResponse) {
+												createFaxboxCallflow(faxboxResponse.data.id, faxboxResponse.data);
+											},
+											error: function() {
+												callback(null);
+											}
+										});
+
+										return;
+									}
+
+									if (!faxingEnabled) {
+										callback(null);
+										return;
+									}
+
+									var currentFaxboxNumbers = _.sortBy(faxboxData.callflow_numbers || []),
+										nonPhoneFaxboxNumbers = _.filter(faxboxData.callflow_numbers || [], function(number) {
+											if (miscSettings.fixedExtensionLength) {
+												return number.length <= 7;
+											}
+
+											return !_.startsWith(number, '+');
+										}),
+										nextFaxboxNumbers = selectedFaxingNumber
+											? [selectedFaxingNumber].concat(nonPhoneFaxboxNumbers)
+											: nonPhoneFaxboxNumbers,
+										nextFaxboxNumbersSorted = _.sortBy(nextFaxboxNumbers),
+										faxboxNumbersChanged = !_.isEqual(currentFaxboxNumbers, nextFaxboxNumbersSorted);
+
+									if (!faxboxData.callflowId || !faxboxNumbersChanged) {
+										callback(null);
+										return;
+									}
+
 									self.callApi({
 										resource: 'callflow.patch',
 										data: {
 											accountId: self.accountId,
-											callflowId: userCallflow.id,
+											callflowId: faxboxData.callflowId,
 											data: {
-												numbers: formNumbers,
+												numbers: nextFaxboxNumbers,
 												ui_metadata: {
 													origin: 'voip'
 												}
 											},
 											removeMetadataAPI: true
 										},
-										success: function(_callflow_update) {
-											if (miscSettings.enableConsoleLogging) {
-												console.log('User Callflow Updated', _callflow_update)
+										success: function() {
+											var	faxIdentity = monster.util.formatPhoneNumber(selectedFaxingNumber).split(' ').join('');
+
+											faxboxData.callflow_numbers = nextFaxboxNumbers;
+											faxboxData.phoneNumber = selectedFaxingNumber;
+
+											if (!faxboxData.id || !faxboxData.doc || !selectedFaxingNumber) {
+												callback(null);
+												return;
 											}
+
+											var	callerName = getFaxboxCallerName();
+
+											if (miscSettings.readOnlyCallerIdName) {
+												callerName = faxIdentity;
+											}
+
+											self.callApi({
+												resource: 'faxbox.update',
+												data: {
+													accountId: self.accountId,
+													faxboxId: faxboxData.id,
+													data: _.merge({}, faxboxData.doc, {
+														caller_name: callerName,
+														caller_id: selectedFaxingNumber,
+														fax_identity: faxIdentity,
+														ui_metadata: {
+															origin: 'voip'
+														}
+													})
+												},
+												success: function(data) {
+													faxboxData.doc = data.data;
+													callback(null);
+												},
+												error: function() {
+													callback(null);
+												}
+											});
+										},
+										error: function() {
 											callback(null);
 										}
-									})
-								} else {
-									callback(null);
-								}
+									});
+								},
 
-							},
-
-							function() {
-								self.callApi({
-									resource: 'account.get',
-									data: {
-										accountId: self.accountId
-									},
-									success: function(_data, status) {
-										if (form_data.priv_level === 'admin') {
-											form_data.apps = form_data.apps || {};
-											if (!('voip' in form_data.apps) && $.inArray('voip', (_data.data.available_apps || [])) > -1) {
-												form_data.apps.voip = {
-													label: self.i18n.active().callflows.user.voip_services_label,
-													icon: 'device',
-													api_url: monster.config.api.default
-												};
+								function() {
+									self.callApi({
+										resource: 'account.get',
+										data: {
+											accountId: self.accountId
+										},
+										success: function(_data, status) {
+											if (form_data.priv_level === 'admin') {
+												form_data.apps = form_data.apps || {};
+												if (!('voip' in form_data.apps) && $.inArray('voip', (_data.data.available_apps || [])) > -1) {
+													form_data.apps.voip = {
+														label: self.i18n.active().callflows.user.voip_services_label,
+														icon: 'device',
+														api_url: monster.config.api.default
+													};
+												}
+											} else if (form_data.priv_level === 'user' && $.inArray('userportal', (_data.data.available_apps || [])) > -1) {
+												form_data.apps = form_data.apps || {};
+												if (!('userportal' in form_data.apps)) {
+													form_data.apps.userportal = {
+														label: self.i18n.active().callflows.user.user_portal_label,
+														icon: 'userportal',
+														api_url: monster.config.api.default
+													};
+												}
 											}
-										} else if (form_data.priv_level === 'user' && $.inArray('userportal', (_data.data.available_apps || [])) > -1) {
-											form_data.apps = form_data.apps || {};
-											if (!('userportal' in form_data.apps)) {
-												form_data.apps.userportal = {
-													label: self.i18n.active().callflows.user.user_portal_label,
-													icon: 'userportal',
-													api_url: monster.config.api.default
-												};
-											}
-										}
-		
-										self.userSave(form_data, data, function(data, status, action) {
-											if (action === 'create') {
-												self.userAcquireDevice(data, function() {
+			
+											self.userSave(form_data, data, function(data, status, action) {
+												if (action === 'create') {
+													self.userAcquireDevice(data, function() {
+														if (typeof callbacks.save_success === 'function') {
+															callbacks.save_success(data, status, action);
+														}
+													}, function() {
+														if (typeof callbacks.save_error === 'function') {
+															callbacks.save_error(data, status, action);
+														}
+													});
+												} else {
 													if (typeof callbacks.save_success === 'function') {
 														callbacks.save_success(data, status, action);
 													}
-												}, function() {
-													if (typeof callbacks.save_error === 'function') {
-														callbacks.save_error(data, status, action);
-													}
-												});
-											} else {
-												if (typeof callbacks.save_success === 'function') {
-													callbacks.save_success(data, status, action);
 												}
-											}
-										}, function() {
-											$this.removeClass('disabled');
-										});
-									}
+											}, function() {
+												$this.removeClass('disabled');
+											});
+										}
+									});
+
+								}
+
+							],);
+						}
+
+						if (miscSettings.userShowCallRoutingTab && miscSettings.enableModifyMainUserCallflow) {
+							// routing type changed from manually configured to user based on form - show confirm dialog
+							if (dataMainUserCallflowModified && !formMainUserCallflowModified) {
+								monster.ui.confirm(self.i18n.active().callflows.user.call_routing.disable_warning, function() {
+									self.resetUserCallflow(data, function() {
+										mainUserCallflowReset = true;
+										continueSave();
+									});
 								});
-
+								return;
 							}
+						}
 
-						],);
+						continueSave();
+
 					} else {
 						$this.removeClass('disabled');
 						monster.ui.alert(self.i18n.active().callflows.user.there_were_errors_on_the_form);
@@ -1804,7 +2252,7 @@ define(function(require) {
 			});
 
 			$('.inline_action_vmbox', user_html).click(function(ev) {
-				var flow = self.usersExtractDataFromCallflow({
+				var flow = self.userCallflowGetNode({
 					callflow: data.field_data.user_callflow,
 					module: 'voicemail'
 					})
@@ -1821,6 +2269,25 @@ define(function(require) {
 					});
 				}
 
+			});
+
+			$('.inline_action_faxbox', user_html).click(function(ev) {
+				var ownerId = data.data.id,
+					action = $(this).data('action');
+
+				ev.preventDefault();
+
+				self.getUserFaxbox(ownerId, function(faxboxId) {
+					if (action === 'edit' && !faxboxId) {
+						monster.ui.alert('warning', self.i18n.active().callflows.user.faxbox.no_faxbox);
+						return;
+					}
+
+					monster.pub('callflows.faxbox.editPopup', {
+						data: action === 'edit' ? { id: faxboxId } : {},
+						callback: function() {}
+					});
+				});
 			});
 
 			$('.inline_action_media', user_html).click(function(ev) {
@@ -1853,14 +2320,14 @@ define(function(require) {
 
 			// add search to dropdown
 			user_html.find('#timezone').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
 
 			// add search to dropdown
 			user_html.find('#music_on_hold_media_id').chosen({
-				width: '224px',
+				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
 			})
@@ -1936,14 +2403,93 @@ define(function(require) {
 
 			});
 
+			function missedCallAlertState() {
+
+				var missedCallAlertEnabled  = user_html.find('#missed_call_alert_enabled'),
+					missedCallInternal = user_html.find('#missed_call_alert_internal'),
+					enabled = missedCallAlertEnabled.is(':checked'),
+					overrideEmail = user_html.find('#missed_call_alert_email_override');
+
+				if (!enabled) {
+					missedCallInternal.prop('disabled', true).toggleClass('input-readonly', true);
+					missedCallInternal.prop('checked', false);
+					overrideEmail.prop('disabled', true).toggleClass('input-readonly', true);
+					overrideEmail.prop('checked', false);
+					$('.list-editor-input', user_html).val('');
+					$('#missed_call_email_editor_section', user_html).hide();
+					$('.list-editor-error', user_html).hide();
+				} else {
+					missedCallInternal.prop('disabled', false).toggleClass('input-readonly', false);
+					overrideEmail.prop('disabled', false).toggleClass('input-readonly', false);
+				}
+
+			}
+
+			missedCallAlertState();
+
+			$('#missed_call_alert_enabled', user_html).on('change', missedCallAlertState);
+
+			function missedCallAlertOverrideEmail() {
+
+				var overrideEmail = user_html.find('#missed_call_alert_email_override'),
+					enabled = overrideEmail.is(':checked');
+					
+				if (!enabled) {
+					$('.list-editor-input', user_html).val('');
+					$('#missed_call_email_editor_section', user_html).hide();
+					$('.list-editor-error', user_html).hide();
+				} else {
+					$('#missed_call_email_editor_section', user_html).show();
+				}
+
+			}
+
+			missedCallAlertOverrideEmail()
+
+			$('#missed_call_alert_email_override', user_html).on('change', missedCallAlertOverrideEmail);
+
+			var $missedCallAlertEmailOverride = user_html.find('#missed_call_email_editor_section');
+
+			var listEditorHtml = $(self.getTemplate({
+				name: 'listEditor',
+				data: {
+					title: self.i18n.active().callflows.user.missed_call_alert.recipients,
+					addLabel: self.i18n.active().callflows.user.missed_call_alert.add_email,
+					placeholder: 'Email Address'
+				}
+			}));
+
+			$missedCallAlertEmailOverride.append(listEditorHtml);
+
+			var emailEditor = self.listEditorBind({
+				container: listEditorHtml,
+				initial: data.field_data.missed_call_alert_emails || [],
+				valueType: 'emailAddress',
+				getItemHtml: function(value) {
+					return $(self.getTemplate({
+					name: 'listEditorItem',
+					data: {
+						value: value,
+						miscSettings: miscSettings
+					}
+					}));
+				},
+				normalize: function(v) {
+					return (v || '').trim().toLowerCase();
+				},
+				invalidMessage: self.i18n.active().callflows.user.missed_call_alert.invalid_email
+			});
+
+			data.field_data.missed_call_email_editor = emailEditor;
+
 			var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true;
 			const $ringTimeoutInput = $(user_html).find('#ring_timeout');
 
 			if (findMeFollowMeEnabled) {
 				$ringTimeoutInput.prop('disabled', true);
-        		$ringTimeoutInput.addClass('input-readonly'); 	
-			} 
-			
+        		$ringTimeoutInput.addClass('input-readonly');
+			}
+
 			user_html.find('.smart-pbx-find-me-follow-me').on('change', function(event) {
 				var state = $('.smart-pbx-find-me-follow-me select[name="smartpbx.find_me_follow_me.enabled"]').val();
 
@@ -1956,17 +2502,96 @@ define(function(require) {
 		
 						if (userCallflow) {
 							$('#tab_find_me_follow_me', user_html).show(); // show find me follow me table
-							data.field_data.ring_group = userCallflow.flow.data;
+							
+							var ringGroupNode = self.userCallflowGetNode({
+								callflow: userCallflow,
+								module: 'ring_group'
+							});
+
+							data.field_data.ring_group = ringGroupNode
+								? ringGroupNode.data
+								: {
+									strategy: 'simultaneous',
+									timeout: 30,
+									repeats: 1,
+									ignore_forward: true,
+									endpoints: []
+								};
+
+							//data.field_data.ring_group = userCallflow.flow.data;
+
 							self.usersRenderFindMeFollowMe(data, deviceList, user_html);
 						}
 					});
 					$ringTimeoutInput.prop('disabled', true);
-        			$ringTimeoutInput.addClass('input-readonly'); 
+        			$ringTimeoutInput.addClass('input-readonly');
+					user_html.find('.information-text.ring-timeout').show();
 				} else {
 					$('#tab_find_me_follow_me', user_html).hide();
 					$ringTimeoutInput.prop('disabled', false);
         			$ringTimeoutInput.removeClass('input-readonly');
+					user_html.find('.information-text.ring-timeout').hide();
 				}
+			});
+
+			user_html.find('.modify-main-user-callflow').on('change', function() {
+				var state = $('.modify-main-user-callflow select[name="dimension.main_user_callflow_modified"]').val(),
+					dataMainUserCallflowModified = data?.data?.dimension?.main_user_callflow_modified === true;
+
+				if (state == 'true') {	
+					$('#call_routing_user', user_html).hide();
+					$('#call_routing_manual', user_html).show();
+				} else {
+					$('#call_routing_user', user_html).show();
+					$('#call_routing_manual', user_html).hide();
+
+					if (dataMainUserCallflowModified) {
+						$('#ring_timeout', user_html).val(20);
+					}
+				}
+			});
+
+			$('.edit-user-callflow', user_html).click(function(ev) {
+
+				ev.preventDefault();
+
+				// check if user callflow exists
+				var userCallflow = data.field_data && data.field_data.user_callflow;
+
+				if (!userCallflow) {
+					monster.ui.alert('warning', self.i18n.active().oldCallflows.this_callflow_has_not_been_created);
+					return;
+				}
+
+				var callflowId = userCallflow.id;
+
+				// load mainUserCallflow editor popup
+				monster.pub('callflows.callflow.popupEdit', {
+					data: { id: callflowId }
+				});
+
+			});
+
+			$('.reset-user-callflow', user_html).click(function(ev) {
+
+				ev.preventDefault();
+
+				monster.ui.confirm(self.i18n.active().callflows.user.user_callflow.confirm_reset, function() {
+
+					// check if user callflow exists
+					var userCallflow = data.field_data && data.field_data.user_callflow;
+
+					if (!userCallflow) {
+						monster.ui.alert('warning', self.i18n.active().oldCallflows.this_callflow_has_not_been_created);
+						return;
+					}
+
+					self.resetUserCallflow(data, function() {
+
+					});
+
+				});
+
 			});
 
 			$(user_html).delegate('.action_device.edit', 'click', function() {
@@ -2106,6 +2731,7 @@ define(function(require) {
 
 		userRenderNumberList: function(data, parent) {
 			var self = this,
+				user_html = parent,
 				parent = $('#phone_numbers_container', parent);
 
 				if (miscSettings.enableConsoleLogging) {
@@ -2151,9 +2777,72 @@ define(function(require) {
 						console.log('Phone Number Being Removed:', phoneNumberValue);
 						console.log('Field Data', field_data);
 					}
+
+					self.userRenderFaxboxNumberSelector(data, user_html);
 					
 				})
 				
+		},
+
+		userGetAvailableFaxNumbers: function(data, callback) {
+			var self = this,
+				selectedFaxingNumber = _.get(data, 'field_data.user_faxbox.phoneNumber', ''),
+				assignedPhoneNumbers = _.get(data, 'field_data.phone_numbers', []);
+
+			self.listNumbers(function(phoneNumbers) {
+				var availableNumbers = _.filter(phoneNumbers, function(number) {
+					return $.inArray(number.phoneNumber, assignedPhoneNumbers) < 0;
+				});
+
+				if (selectedFaxingNumber && !_.some(availableNumbers, { phoneNumber: selectedFaxingNumber })) {
+					availableNumbers.unshift({
+						phoneNumber: selectedFaxingNumber
+					});
+				}
+
+				callback && callback(availableNumbers);
+			});
+		},
+
+		userRenderFaxboxNumberSelector: function(data, parent) {
+			var self = this,
+				$select = $('#user_faxing_number', parent);
+
+			if (!$select.length) {
+				return;
+			}
+
+			var renderSelector = function() {
+				var selectedFaxingNumber = _.get(data, 'field_data.user_faxbox.phoneNumber', '');
+
+				self.userGetAvailableFaxNumbers(data, function(phoneNumbers) {
+					$select.empty().append($('<option>', { value: '' }));
+
+					_.each(phoneNumbers, function(number) {
+						$select.append($('<option>', {
+							value: number.phoneNumber,
+							text: monster.util.formatPhoneNumber(number.phoneNumber)
+						}));
+					});
+
+					$select.prop('disabled', phoneNumbers.length === 0 && !selectedFaxingNumber);
+					$select.val(selectedFaxingNumber || '');
+
+					if ($select.data('chosen')) {
+						$select.trigger('chosen:updated');
+					} else {
+						monster.ui.chosen($select, {
+							width: '220px'
+						});
+
+						$select.change(function() {
+							data.field_data.user_faxbox.phoneNumber = $(this).val() || '';
+						});
+					}
+				});
+			};
+
+			renderSelector();
 		},
 
 		userGetDeviceList: function(data, callback) {
@@ -2514,6 +3203,11 @@ define(function(require) {
 				enabled: data.smartpbx.find_me_follow_me.enabled === "true"
 			}
 
+			// add support for setting faxbox state
+			data.smartpbx.faxing = {
+				enabled: data.smartpbx.faxing.enabled === "true"
+			}
+
 			// add support for setting dnd on user doc
 			data.do_not_disturb = {
 				enabled: data.do_not_disturb.enabled === "true"
@@ -2523,7 +3217,15 @@ define(function(require) {
 			if (data.caller_id_options.outbound_privacy === 'default') {
 				delete data.caller_id_options;
 			}
-			
+
+			// add support for mainUserCallflowModified
+			if (data.dimension && data.dimension.hasOwnProperty('main_user_callflow_modified')) {
+				data.dimension.main_user_callflow_modified = data.dimension.main_user_callflow_modified === "true";
+			}
+
+			if (data.full_name) {
+				delete data.full_name
+			}
 
 			return data;
 		},
@@ -2683,53 +3385,269 @@ define(function(require) {
 			});
 		},
 
-		usersExtractDataFromCallflow: function(args) {
-			var self = this,
-				flow = _.get(args, 'callflow.flow'),
-				cfModule = args.module;
+		resetUserCallflow: function(data, callback) {
 
-			if (_.isNil(flow)) {
+			var self = this;
+
+			var owner_id = data.data.id,
+				presence_id = data.data.presence_id,
+				userCallflow = data.field_data.user_callflow;
+
+			self.callApi({
+				resource: 'voicemail.list',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						paginate: false,
+						filter_owner_id: owner_id,
+						filter_mailbox: presence_id
+					}
+				},
+				success: function(_data, status) {
+					
+					var list = _data.data || [],
+						mailbox = list.length > 0 ? list[0] : null;
+
+					var callflow = {
+						contact_list: {
+							exclude: false
+						},
+						flow: {
+							children: {},
+							data: {
+								id: data.data.id,
+								can_call_self: false,
+								timeout: 20
+							},
+							module: 'user'
+						},
+						name: userCallflow.name,
+						numbers: userCallflow.numbers,
+						owner_id: data.data.id,
+						id: userCallflow.id,
+						type: 'mainUserCallflow',
+						ui_metadata: userCallflow.ui_metadata
+					};
+
+					if (mailbox) {
+						callflow.flow.children._ = {
+							children: {},
+							data: {
+								id: mailbox.id
+							},
+							module: 'voicemail'
+						};
+					}
+
+					self.userUpdateCallflow(callflow, function() {
+						callback(null);
+					});
+	
+				}
+			});
+
+		},
+		
+		userCallflowGetRingTimeout: function(callflow, findMeFollowMeEnabled) {
+			var self = this;
+
+			var targetModule = findMeFollowMeEnabled === true ? 'ring_group' : 'user';
+
+			var node = self.userCallflowGetNode({
+				callflow: callflow,
+				module: targetModule
+			});
+
+			return _.get(node, 'data.timeout');
+		},
+
+		userCallflowSetRingTimeout: function(callflow, ringTimeout) {
+			var self = this;
+				
+			var userNode = self.userCallflowGetNode({
+				callflow: callflow,
+				module: 'user'
+			});
+
+			if (!userNode) {
+				return false;
+			}
+
+			userNode.data.timeout = ringTimeout;
+			return true;
+		},
+
+		userCallflowGetNode: function(args) {
+			var root = _.get(args, 'callflow.flow'),
+				targetModule = args.module,
+				dataPath = args.dataPath,
+				found;
+
+			if (!root) {
 				return undefined;
 			}
 
-			while (flow.module !== cfModule && _.has(flow.children, '_')) {
-				flow = flow.children._;
+			(function walk(node) {
+				if (!node || found) {
+					return;
+				}
+
+				if (node.module === targetModule) {
+					found = node;
+					return;
+				}
+
+				if (node.children && typeof node.children === 'object') {
+					_.each(node.children, function(child) {
+						walk(child);
+					});
+				}
+			})(root);
+
+			if (!found) {
+				return undefined;
 			}
 
-			if (flow.module !== cfModule) {
-				return undefined;
-			} else if (_.has(args, 'dataPath')) {
-				return _.get(flow, args.dataPath);
-			} else {
-				return flow;
+			if (!_.isNil(dataPath)) {
+				return _.get(found, dataPath);
 			}
+
+			return found;
+		},
+
+		getUserFaxbox: function(ownerId, callback) {
+			var self = this;
+
+			self.getUserFaxboxDetails(ownerId, function(faxbox) {
+				callback && callback(faxbox?.id);
+			});
+		},
+
+		getUserFaxboxDetails: function(ownerId, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.list',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						paginate: false,
+						filter_owner_id: ownerId,
+						filter_type: 'faxing'
+					}
+				},
+				success: function(data) {
+					if (data.data.length > 0) {
+
+						var callflowId = data.data[0].id;
+
+						self.callApi({
+							resource: 'callflow.get',
+							data: {
+								accountId: self.accountId,
+								callflowId: callflowId
+							},
+							success: function(data) {
+								var callflow = data.data,
+									faxboxId = callflow.flow.data.id,
+									faxboxNumbers = callflow.numbers || [],
+									faxboxPhoneNumber = faxboxNumbers;
+							
+								self.callApi({
+									resource: 'faxbox.get',
+									data: {
+										accountId: self.accountId,
+										faxboxId: faxboxId,
+										generateError: false
+									},
+									success: function(faxboxData) {
+										callback && callback({
+											id: faxboxId,
+											callflowId: callflow.id,
+											callflow_numbers: faxboxNumbers,
+											phoneNumber: faxboxPhoneNumber,
+											doc: faxboxData.data
+										});
+									},
+									error: function() {
+										callback && callback(null);
+									}
+								});
+							},
+							error: function() {
+								callback && callback(null);
+							}
+						});
+					} else {
+						callback && callback(null);
+					}
+				},
+				error: function() {
+					callback && callback(null);
+				}
+			});
 		},
 
 		usersUpdateVMBoxStatusInCallflow: function(args, callback) {
 			var self = this,
 				callflow = args.callflow,
 				enabled = args.enabled,
-				ringTimeout = args.ringTimeout;
+				ringTimeout = args.ringTimeout,
+				unavailableText = self.i18n.active().callflows.user.unavailable_message;
 
-			var flow = self.usersExtractDataFromCallflow({
+			var vmNode = self.userCallflowGetNode({
 				callflow: callflow,
 				module: 'voicemail'
 			});
 
-			if (flow) {
-				flow.data.skip_module = !enabled;
-				callflow.flow.data.timeout = ringTimeout;
-
-				self.usersUpdateCallflow(callflow, callback, function() {
-					callback(null);
-				});
-			} else {
-				callback(null);
+			// toggle voicemail
+			if (vmNode) {
+				vmNode.data = vmNode.data || {};
+				vmNode.data.skip_module = !enabled;
 			}
 
+			// set ring timeout on the user node
+			if (ringTimeout) {
+				self.userCallflowSetRingTimeout(callflow, ringTimeout);
+			}
+
+			// ensure children container exists - handles existing callflows before TTS was added
+			if (!vmNode.children || typeof vmNode.children !== 'object') {
+				vmNode.children = {};
+			}
+
+			var ttsNode = vmNode.children._;
+
+			// if missing or not TTS, create/replace it
+			if (!ttsNode || ttsNode.module !== 'tts') {
+				vmNode.children._ = {
+					module: 'tts',
+					data: {
+						endless_playback: false,
+						skip_module: true,
+						text: unavailableText,
+						terminators: []
+					},
+					children: {}
+				};
+				ttsNode = vmNode.children._;
+			} else {
+				ttsNode.data = ttsNode.data || {};
+				ttsNode.data.text = unavailableText;
+				if (!ttsNode.data.hasOwnProperty('skip_module')) {
+					ttsNode.data.skip_module = true;
+				}
+			}
+
+			// when voicemail is disabled, enable TTS; when voicemail enabled, disable TTS
+			ttsNode.data.skip_module = enabled ? true : false;
+			
+			self.userUpdateCallflow(callflow, callback, function() {
+				callback && callback(null);
+			});
 		},
 
-		usersUpdateCallflow: function(callflow, callback) {
+		userUpdateCallflow: function(callflow, callback) {
 			var self = this;
 
 			self.callApi({
@@ -2755,6 +3673,77 @@ define(function(require) {
 					callback(null);
 				}
 			});
+		},
+
+		userCallflowHasMissedCallAlert: function(callflow) {
+			var flow = _.get(callflow, 'flow');
+
+			if (!flow || flow.module !== 'missed_call_alert') {
+				return null;
+			}
+
+			return flow.data;
+		},
+		
+		userCallflowEnableMissedCallAlert: function(callflow, opts) {
+			if (callflow.flow.module === 'missed_call_alert') { 
+				return callflow; 
+			}
+
+			opts = opts || {};
+
+			var oldRoot = _.cloneDeep(callflow.flow);
+
+			callflow.flow = {
+				module: 'missed_call_alert',
+				data: {
+					recipients: [
+						{
+							type: 'user',
+							id: callflow.owner_id
+						}
+					],
+					alert_on_internal_calls: !!opts.alert_on_internal_calls
+				},
+				children: {
+					_: oldRoot
+				}
+			};
+
+			return callflow;
+		},
+
+		userCallflowDisableMissedCallAlert: function(callflow) {
+			if (callflow.flow.module !== 'missed_call_alert') { 
+				return callflow; 
+			}
+
+			var child = _.get(callflow, 'flow.children._');
+			
+			if (!child) { 
+				return callflow; 
+			}
+
+			callflow.flow = child;
+
+			return callflow;
+		},
+
+		userCallflowGetMissedCallAlertEmailRecipients: function(callflow) {
+			var data = this.userCallflowHasMissedCallAlert(callflow);
+			if (!data || !Array.isArray(data.recipients)) {
+				return [];
+			}
+
+			return _.chain(data.recipients)
+				.filter({ type: 'email' })
+				.map('id')
+				.filter(Boolean)
+				.value();
+		},
+
+		userCallflowHasMissedCallAlertEmailOverride: function(callflow) {
+			return this.userCallflowGetMissedCallAlertEmailRecipients(callflow).length > 0;
 		},
 
 		userSubmoduleButtons: function(data) {
@@ -2791,7 +3780,7 @@ define(function(require) {
 
 			var scaleSections = 6,
 				scaleMaxSeconds = 120,
-				ringGroup = data.field_data.user_callflow.flow.data;
+				ringGroup = data.field_data.ring_group;
 			
 			var sliderTooltip = function(event, ui, deviceId) {
 				// update delay and timeout values in the respective columns

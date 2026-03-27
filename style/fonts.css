@@ -6,6 +6,12 @@
     src: url(../style/MaterialSymbolsOutlined.woff2) format('woff2');
 }
 
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* callflow toolbox search */
 #ws_cf_tools .material-symbols-icon-search-small {
     font-family: 'Material Symbols Outlined';
@@ -48,8 +54,18 @@
     cursor: pointer;
 }
 
-/* blocklist delete icon */
-.material-symbols-icon-blocklist-delete {
+/* list data delete icon */
+.material-symbols-icon-delete {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+/* list data edit icon */
+.material-symbols-icon-edit {
     font-family: 'Material Symbols Outlined';
     font-weight: normal;
     font-style: normal;
@@ -223,7 +239,10 @@
     color: #ff7a22;
 }
 
+.material-symbols-user-state.icon-faxing {
+    color: #ff0000;
+}
+
 .selected-element .material-symbols-user-state  {
     color: #ffffff;
 }
-
