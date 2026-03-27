@@ -902,10 +902,12 @@ define(function(require) {
 
 		queueRender: function(data, target, callbacks) {
 
-			fieldReadOnly = false;
+			var fieldReadOnly = {};
+
+			fieldReadOnly.strategy = false;
 
 			if (data.data.hasOwnProperty('strategy')) {
-				fieldReadOnly = true
+				fieldReadOnly.strategy = true
 			}
 
 			var self = this;
@@ -1518,6 +1520,24 @@ define(function(require) {
 			delete form_data.extension;
 			delete form_data.timeout_callflow_id;
 			delete form_data.strategy_display;
+
+			if (form_data.enter_when_empty === 'true') {
+				form_data.enter_when_empty = true;
+			} else if (form_data.enter_when_empty === 'false') {
+				form_data.enter_when_empty = false;
+			} else {
+				delete form_data.enter_when_empty;
+			}
+
+			if (form_data.record_caller === 'true') {
+				form_data.record_caller = true;
+			} else if (form_data.record_caller === 'false') {
+				form_data.record_caller = false;
+			} else if (miscSettings.enabledAcdcRecordCaller) {
+				form_data.record_caller = true;
+			} else {
+				delete form_data.record_caller;
+			}
 
 			// remove blank fields and let Kazoo set the defaults
 			$.each(form_data, function(key, value){

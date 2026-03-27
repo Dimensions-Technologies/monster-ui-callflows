@@ -17,7 +17,6 @@
 		<li><a href="#queue_moh">{{ i18n.callflows.acdc.moh.title }}</a></li>
 		<li><a href="#queue_announcements">{{ i18n.callflows.acdc.announcements.title }}</a></li>
 		<li><a href="#queue_agents">{{ i18n.callflows.acdc.agents.title }}</a></li>
-        <!--<li><a href="#queue_advanced_settings">{{ i18n.callflows.acdc.advancedSettings.title }}</a></li>-->
 	</ul>
 	<form id="queue-form" action="#" method="post">
         <div class="pill-content">
@@ -43,7 +42,7 @@
                     </div>
                 </div>
 
-                {{#if fieldReadOnly}}
+                {{#if fieldReadOnly.strategy}}
                     <div class="clearfix">
                         <label for="strategy">{{ i18n.callflows.acdc.settings.strategy }}</label>
                         <div class="input">
@@ -89,6 +88,19 @@
                         <!--<span class="help-block">{{ i18nApp.enter_when_empty }}</span>-->
                     </div>
                 </div>
+
+                {{#unless miscSettings.hideAcdcRecordCaller}}
+                    <div class="clearfix">
+                        <label for="record_caller">{{ i18n.callflows.acdc.settings.recordCaller }}</label>
+                        <div class="input">
+                            <select name="record_caller" id="record_caller" class="medium" >
+                                <option value="true" {{#if data.record_caller}} selected{{/if}}>Yes</option>
+                                <option value="false" {{#compare data.record_caller "===" false}} selected{{/compare}}>No</option>
+                            </select>
+                        </div>
+                    </div>
+                {{/unless}}
+
                 <!--
                 <div class="clearfix">
                     <label for="caller_exit_key">Caller Exit Key</label>
@@ -263,31 +275,6 @@
                 </div>
             </div>
 
-            <div id="queue_advanced_settings">
-                <div class="clearfix">
-                    <label for="record_caller">{{ i18n.callflows.acdc.advancedSettings.recordCaller }}</label>
-                    <div class="input">
-                        <select name="record_caller" id="record_caller" class="medium" >
-                            <option value=""></option>
-                            <option value="true" {{#if data.record_caller}} selected{{/if}}>Yes</option>
-                            <option value="false" {{#compare data.record_caller "===" false}} selected{{/compare}}>No</option>
-                        </select>
-                        <!--<span class="help-block">{{ i18nApp.record_caller }}</span>-->
-                    </div>
-                </div>
-                <div class="clearfix">
-                    <label for="recording_url">{{ i18n.callflows.acdc.advancedSettings.recordingUrl }}</label>
-                    <div class="input">
-                        <input id="recording_url" name="recording_url" type="text" value="{{ data.recording_url }}" rel="popover" data-content="{{ i18nApp.recording_url }}" />
-                    </div>
-                </div>
-                <div class="clearfix">
-                    <label for="cdr_url">{{ i18n.callflows.acdc.advancedSettings.cdrUrl }}</label>
-                    <div class="input">
-                        <input id="cdr_url" name="cdr_url" type="text" value="{{ data.cdr_url }}" rel="popover" data-content="{{ i18nApp.cdr_url }}" />
-                    </div>
-                </div>
-            </div>
         </div>
     </form>
 

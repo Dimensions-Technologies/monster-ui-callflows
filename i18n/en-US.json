@@ -1633,7 +1633,8 @@
 				"timeout": "Queue Timeout",
 				"callLimit": "Queue Call Limit",
 				"enterWhenEmpty": "Enter When Empty",
-				"timeoutCallflow": "Timeout Callflow"
+				"timeoutCallflow": "Timeout Callflow",
+				"recordCaller": "Record Calls"
 			},
 			"moh": {
 				"title": "Music On Hold"
@@ -1664,12 +1665,6 @@
 				"agentWrapupInvalid": "Invalid Value <br> The entered value must be between 0 and 300",
 				"agentRingTimeout": "Agent Connect Timeout",
 				"agentWrapTimeout": "Agent Wrap-up Time"
-			},
-			"advancedSettings": {
-				"title": "Advanced Settings",
-				"recordCaller": "Record Caller",
-				"recordingUrl": "Recording URL",
-				"cdrUrl": "CDR URL"
 			},
 			"extension": {
 				"extensionNumber": "Queue extension number",

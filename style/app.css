@@ -1991,7 +1991,7 @@
 	width: -moz-calc(100% - 241px);
 	width: -o-calc(100% - 241px);
 	width: calc(100% - 241px);
-	z-index: 100;
+	z-index: 20;
 }
 
 #callflow_container .callflow-content.callflows-port .entity-content {
