@@ -20,7 +20,8 @@ define(function(require) {
 		deviceVideoCodecs = {},
 		afterBridgeTransfer = {},
 		callflowFlags = [],
-		callTags = {};
+		callTags = {},
+		contactDirectories = [];
 
 	var appSubmodules = [
 		'afterbridge',
@@ -214,6 +215,19 @@ define(function(require) {
 						}
 					}
 
+					// set miscSettings.enableDimensionsCallTagAction check account doc for call tag data
+					if (miscSettings.enableDimensionsDirectoryRoutingAction) {
+						if (accountData.hasOwnProperty('dimension') && accountData.dimension.hasOwnProperty('directories')) {
+							contactDirectories = accountData.dimension.directories;
+							// sort contactDirectories alphabetically by name
+							contactDirectories.sort((a, b) => {
+								return a.name.localeCompare(b.name);
+							});
+						} else {
+							contactDirectories = [];
+						}
+					}
+
 					// set miscSettings.hideCallRestictions based on account type if not explicitly set
 					if (miscSettings.hideCallRestictions == undefined) {
 
@@ -239,10 +253,11 @@ define(function(require) {
 						console.log('deviceVideoCodecs:', deviceVideoCodecs);
 						console.log('afterBridgeTransfer:', afterBridgeTransfer);
 						console.log('callTags:', callTags);
+						console.log('contactDirectories', contactDirectories);
 						console.log('accountData:', accountData);
 					}
 
-					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags });
+					monster.pub('callflows.fetchActions', { actions: self.actions, hideAdd, hideCallflowAction, hideFromCallflowAction, hideClassifiers, miscSettings, hideDeviceTypes, ttsLanguages, deviceAudioCodecs, deviceVideoCodecs, afterBridgeTransfer, callTags, contactDirectories });
 					self.renderEntityManager(parent);
 
 					// show warning message if emergency caller id has not been set on the account
@@ -1533,9 +1548,12 @@ define(function(require) {
 			branch.key = key;
 			branch.disabled = _.get(json, 'data.skip_module');
 
-			// check if the action is a webhook and adjust the caption logic
+			// check if the action is a webhook or pivot and adjust the caption logic
 			if (json.module == 'webhook' && json.data.hasOwnProperty('dimension')) {
 				var callTagCaption = json.data.dimension.name + ': ' + json.data.dimension.tagValue
+				branch.caption = callTagCaption;
+			} else if (json.module == 'pivot' && json.data.hasOwnProperty('dimension')) {
+				var callTagCaption = json.data.dimension.name
 				branch.caption = callTagCaption;
 			} else {
 				branch.caption = self.actions.hasOwnProperty(branch.actionName) ? self.actions[branch.actionName].caption(branch, self.flow.caption_map) : '';
@@ -1557,25 +1575,28 @@ define(function(require) {
 		},
 		
 		construct_action: function(json) {
-			var action = '';
+			var self = this,
+				actionParams = '';
 
 			if ('data' in json) {
 				if ('id' in json.data) {
-					action = 'id=*,';
+					actionParams = 'id=*,';
 				}
 
 				if ('action' in json.data) {
-					action += 'action=' + json.data.action + ',';
+					actionParams += 'action=' + json.data.action + ',';
 				}
 			}
 
-			if (action !== '') {
-				action = '[' + action.replace(/,$/, ']');
+			if (actionParams !== '') {
+				actionParams = '[' + actionParams.replace(/,$/, ']');
 			} else {
-				action = '[]';
+				actionParams = '[]';
 			}
 
-			return json.module + action;
+			return _.has(self.actions, json.module + actionParams)
+				? json.module + actionParams
+				: json.module + '[]';
 		},
 
 		resetFlow: function() {
@@ -2625,6 +2646,11 @@ define(function(require) {
 						type: 'dimensionsCallTag',
 						actionName: 'dimensionsCallTag[id=*]'
 					},
+					// custom pivot actions
+					{
+						type: 'dimensionsDirectoryRouting',
+						actionName: 'dimensionsDirectoryRouting[id=*]'
+					}
 				];
 				
 				// render action and set callflowFlags when adding custom action to callflow
@@ -2652,7 +2678,7 @@ define(function(require) {
 				});
 
 				// re-render action on load or after save
-				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]' || branch.actionName == 'webhook[]') {
+				if (branch.actionName == 'callflow[id=*]' || branch.actionName == 'device[id=*]' || branch.actionName == 'play[id=*]' || branch.actionName == 'group_pickup[]' || branch.actionName == 'webhook[]' || branch.actionName == 'pivot[]') {
 					if(self.dataCallflow.hasOwnProperty('dimension') && self.dataCallflow.dimension.hasOwnProperty('flags')) {
 					
 						// Check if the branch id is contained within the flags array

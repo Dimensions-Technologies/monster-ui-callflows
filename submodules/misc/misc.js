@@ -4,7 +4,8 @@ define(function(require) {
 		monster = require('monster'),
 		miscSettings = {},
 		ttsLanguages = {},
-		callTags = {};
+		callTags = {},
+		contactDirectories = [];
 
 	var app = {
 		requests: {},
@@ -62,8 +63,11 @@ define(function(require) {
 			// set variables for use elsewhere
 			miscSettings = args.miscSettings,
 			ttsLanguages = args.ttsLanguages,
-			callTags = args.callTags;
-
+			callTags = args.callTags,
+			contactDirectories = args.contactDirectories && args.contactDirectories.length > 0 ? args.contactDirectories.filter(function(directory) {
+				return directory.name !== 'User Contact Directory';
+			}): [];
+			
 			// function to determine if an action should be listed
 			var determineIsListed = function(key) {
 				// custom callflow actions
@@ -75,7 +79,8 @@ define(function(require) {
 					'group_pickupUser[user_id=*]',
 					'group_pickupDevice[device_id=*]',
 					'group_pickupGroup[group_id=*]',
-					'dimensionsCallTag[id=*]'
+					'dimensionsCallTag[id=*]',
+					'dimensionsDirectoryRouting[id=*]'
 				];
 
 				// if custom callflow actions are disabled
@@ -2519,6 +2524,24 @@ define(function(require) {
 					edit: function(node, callback) {
 						self.miscRenderEditCallTag(node, callback);
 					}
+				},
+				'dimensionsDirectoryRouting[id=*]': {
+					name: self.i18n.active().callflows.directoryRouting.title,
+					icon: 'book',
+					category: self.i18n.active().oldCallflows.advanced_cat,
+					module: 'pivot',
+					tip: self.i18n.active().callflows.directoryRouting.tip,
+					data: {},
+					rules: [],
+					isUsable: 'true',
+					isListed: miscSettings.enableDimensionsDirectoryRoutingAction && determineIsListed('dimensionsDirectoryRouting[id=*]'),
+					weight: 78,
+					caption: function() {
+						return '';
+					},
+					edit: function(node, callback) {
+						self.miscRenderEditDirectoryRouting(node, callback);
+					}
 				}
 			}
 
@@ -3197,8 +3220,146 @@ define(function(require) {
 			});
 	
 		},
-		
 
+		miscRenderEditDirectoryRouting: function(node, callback) {
+			var self = this,
+				selectedDirectory,
+				dimensionData = node.getMetadata('dimension', ''),
+				data = {			
+					contactDirectories: contactDirectories,
+					dimension: dimensionData
+				},
+				popup_html = $(self.getTemplate({
+					name: 'pivotDirectoryRouting',
+					data: data,
+					submodule: 'misc'					
+				})),
+				popup;
+
+			$('#directoryFallbackMessage', popup_html).show();
+			$('#directoryDeletedMessage', popup_html).hide();
+
+			// populate the directory field with the existing dimension.directoryValue if present
+			var directoryValue = dimensionData.directoryValue || '';
+			popup_html.find('#directoryValue').val(directoryValue);
+
+			// get directory data
+			function getDirectoryData() {
+				var selectedDirectoryId = popup_html.find('#name').val();
+					selectedDirectory = _.find(contactDirectories, { id: selectedDirectoryId }),
+					nodeData = node.data.data;
+				
+				$('#directoryDescription', popup_html).prop('disabled', true);
+				$('#directoryValue', popup_html).prop('disabled', true);
+				$('#add', popup_html).prop('disabled', true);
+
+				if (miscSettings.enableConsoleLogging) {
+					console.log('selectedDirectory', selectedDirectory);
+				}
+
+				if (selectedDirectory) {
+					$('#directoryDescription', popup_html).val(selectedDirectory.description || null);
+				}
+				
+				// handle scenario where selectedDirectory is not found due to the directory being deleted
+				if (!selectedDirectory && nodeData.hasOwnProperty('dimension')) {
+
+					var $directoryField = popup_html.find('#name'), 
+						$routingValueField = popup_html.find('#routingValue');
+					
+					var callTagInput = $('<input>', {
+						type: 'text',
+						id: 'name',
+						name: 'name',
+						value: dimensionData.name
+					});
+					
+					$directoryField.replaceWith(callTagInput);
+
+					function formatRoutingValue(routingValue) {
+						const numberPart = routingValue.replace("field", "");
+						return `Field ${numberPart}`;
+					}
+
+					var tagValueInput = $('<input>', {
+						type: 'text',
+						id: 'routingValue',
+						name: 'routingValue',
+						value: formatRoutingValue(dimensionData.routingValue)
+					});
+					
+					$routingValueField.replaceWith(tagValueInput);
+
+					$('#name', popup_html).prop('disabled', true);
+					$('#routingValue', popup_html).prop('disabled', true);
+					$('#add', popup_html).prop('disabled', true);
+
+					$('#directoryFallbackMessage', popup_html).hide();
+					$('#directoryDeletedMessage', popup_html).show();
+					
+				}
+
+			}
+				
+			getDirectoryData();
+
+			popup_html.find('#name').on('change', getDirectoryData);
+
+			// enable or disable the save button
+			function toggleSaveButton() {
+
+				if (selectedDirectory) {
+					
+					var routingValue = popup_html.find('#routingValue').val();
+
+					if (routingValue == 'null') {
+						$('#add', popup_html).prop('disabled', true);
+					} else {
+						$('#add', popup_html).prop('disabled', false);
+					}
+				}				
+			}
+
+			toggleSaveButton();
+
+			popup_html.on('change', '#name', toggleSaveButton);
+			popup_html.on('change', '#routingValue', toggleSaveButton);
+
+			$('#add', popup_html).click(function() {
+
+				var routingValue = $('#routingValue', popup_html).val(),
+					directoryUri = selectedDirectory.endpoint + '/' + routingValue;
+				
+				node.setMetadata('voice_url', directoryUri);
+				node.setMetadata('method', 'POST');
+				node.setMetadata('req_format', 'kazoo');
+				node.setMetadata('req_timeout', '6');
+				node.setMetadata('dimension', {
+					'id': selectedDirectory.id,
+					'name': selectedDirectory.name,
+					'description': selectedDirectory.description,
+					'endpoint': selectedDirectory.endpoint,
+					'routingValue': $('#routingValue', popup_html).val()
+				});
+
+				var callTagCaption = selectedDirectory.name;
+				node.caption = callTagCaption;
+
+				popup.dialog('close');
+
+			});
+
+			popup = monster.ui.dialog(popup_html, {
+				title: self.i18n.active().callflows.directoryRouting.popupTitle,
+				beforeClose: function() {
+					if (typeof callback === 'function') {
+						callback();
+					}
+				}
+			});
+	
+		},
+		
 		/* API helpers */
 		miscDeviceList: function(callback) {
 			var self = this;
