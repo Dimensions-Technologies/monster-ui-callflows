@@ -721,7 +721,7 @@ define(function(require) {
 				self.userSubmoduleButtons(data);
 			};
 
-			var self = this,				
+			var self = this,
 				user_html = $(self.getTemplate({
 					name: 'edit',
 					data: _.merge({
@@ -746,7 +746,7 @@ define(function(require) {
 			// Setup input fields
 			monster.ui.chosen(user_html.find('.cid-number-select, .preflow-callflows-dropdown'));
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				user_html.find('.caller-id-external-number').on('change', function(event) {
 					phoneNumber = $('.caller-id-external-number select[name="caller_id.external.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -754,7 +754,7 @@ define(function(require) {
 				});
 			}
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				user_html.find('.caller-id-emergency-number').on('change', function(event) {
 					phoneNumber = $('.caller-id-emergency-number select[name="caller_id.emergency.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -762,7 +762,7 @@ define(function(require) {
 				});
 			}
 
-			if (miscSettings.readOnlyCallerIdName == true || false) {
+			if (miscSettings.readOnlyCallerIdName) {
 				user_html.find('.caller-id-asserted-number').on('change', function(event) {
 					phoneNumber = $('.caller-id-asserted-number select[name="caller_id.asserted.number"]').val();
 					formattedNumber = phoneNumber.replace(/^\+44/, '0');

@@ -2214,7 +2214,7 @@ define(function(require) {
 						monster.ui.tooltips(popup_html);
 
 						// set tts languages based on dt-callflows whitelabel configuration
-						if(miscSettings.ttsSetLanguages == true || false) {
+						if(miscSettings.ttsSetLanguages) {
 
 							var languages = {};
 							var voices = {};

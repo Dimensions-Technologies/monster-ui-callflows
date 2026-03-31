@@ -104,7 +104,7 @@ define(function(require) {
 
 			/*
 			// set tts languages based on dt-callflows whitelabel configuration
-			if(miscSettings.ttsSetLanguages == true || false) {
+			if(miscSettings.ttsSetLanguages) {
 
 				var ttsVoiceSelect = $('#tts_voice', media_html);
 				ttsLanguages.forEach(function(voice) {
@@ -120,7 +120,7 @@ define(function(require) {
 			*/
 
 			// set tts languages based on dt-callflows whitelabel configuration
-			if (miscSettings.ttsSetLanguages == true || false) {
+			if (miscSettings.ttsSetLanguages) {
 				var languages = {};
 				var voices = {};
 
@@ -287,7 +287,7 @@ define(function(require) {
 				
 				form_data.description = 'tts file';
 
-				if(miscSettings.ttsSetLanguages == true || false) {
+				if(miscSettings.ttsSetLanguages) {
 					if (form_data.tts && form_data.tts.voice && form_data.tts.language) {
 						form_data.tts.voice = form_data.tts.voice + '/' + form_data.tts.language;
 						delete form_data.tts.language;

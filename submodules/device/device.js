@@ -236,7 +236,7 @@ define(function(require) {
 						get_callflow: function(callback) {
 
 							// if the device is classed as a communal get associated callflow
-							if ((dimensionDeviceType.communal == true || false) && (miscSettings.deviceShowCommunalPhoneNumbers == true || false)) {
+							if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
 
 								self.callApi({
 									resource: 'callflow.list',
@@ -495,7 +495,7 @@ define(function(require) {
 					defaults.data.device_type = 'sip_device';
 
 					// support distinctive ringtone dropdown if enabled
-					if (miscSettings.deviceDistinctiveRingtones == true || false) { 
+					if (miscSettings.deviceDistinctiveRingtones) { 
 						if (_data.ringtones && _data.ringtones.external == 'alert-external' && _data.ringtones.internal == 'alert-internal') {
 							defaults.data.ringtones.distinctive = 'enabled';
 						} else {
@@ -724,7 +724,7 @@ define(function(require) {
 					};
 				}
 
-				if (miscSettings.readOnlyCallerIdName == true || false) {
+				if (miscSettings.readOnlyCallerIdName) {
 					device_html.find('.caller-id-external-number').on('change', function(event) {
 						phoneNumber = $('.caller-id-external-number select[name="caller_id.external.number"]').val();
 						formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -732,7 +732,7 @@ define(function(require) {
 					});
 				}
 	
-				if (miscSettings.readOnlyCallerIdName == true || false) {
+				if (miscSettings.readOnlyCallerIdName) {
 					device_html.find('.caller-id-emergency-number').on('change', function(event) {
 						phoneNumber = $('.caller-id-emergency-number select[name="caller_id.emergency.number"]').val();
 						formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -740,7 +740,7 @@ define(function(require) {
 					});
 				}
 	
-				if (miscSettings.readOnlyCallerIdName == true || false) {
+				if (miscSettings.readOnlyCallerIdName) {
 					device_html.find('.caller-id-asserted-number').on('change', function(event) {
 						phoneNumber = $('.caller-id-asserted-number select[name="caller_id.asserted.number"]').val();
 						formattedNumber = phoneNumber.replace(/^\+44/, '0');
@@ -754,7 +754,7 @@ define(function(require) {
 					self.deviceSetProvisionerStuff(device_html, data);
 				}
 
-				if ((dimensionDeviceType.communal == true || false) && (miscSettings.deviceShowCommunalPhoneNumbers == true || false)) {
+				if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
 					self.deviceRenderNumberList(data, device_html);
 				}
 				
@@ -810,7 +810,7 @@ define(function(require) {
 				trigger: 'focus'
 			});
 
-			if ((dimensionDeviceType.communal == true || false) && (miscSettings.deviceShowCommunalPhoneNumbers == true || false)) {
+			if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
 				$('.add-phone-number', device_html).click(function(ev) {
 
 					ev.preventDefault();
@@ -1363,7 +1363,7 @@ define(function(require) {
 			}
 
 			// support distinctive ringtone dropdown if enabled
-			if (miscSettings.deviceDistinctiveRingtones == true || false) {
+			if (miscSettings.deviceDistinctiveRingtones) {
 
 				if (data.ringtones.distinctive == 'enabled') {
 					data.ringtones.internal = 'alert-internal';
@@ -1405,7 +1405,7 @@ define(function(require) {
 			}
 
 			// add support for setting dnd doc for phone only devices
-			if ((dimensionDeviceType.communal == true || false) && (miscSettings.deviceShowCommunalPhoneNumbers == true || false)) {
+			if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
 				data.do_not_disturb = {
 					enabled: data.do_not_disturb.enabled
 				}
@@ -1537,7 +1537,7 @@ define(function(require) {
 
 		deviceSave: function(form_data, data, success) {
 
-			if ((dimensionDeviceType.communal == true || false) && (miscSettings.deviceShowCommunalPhoneNumbers == true || false)) {
+			if ((dimensionDeviceType.communal && miscSettings.deviceShowCommunalPhoneNumbers)) {
 				var	self = this, 
 					callflowNumbers = data.field_data.callflow_numbers,
 					formNumbers = (data.field_data.extension_numbers || []).concat(form_data.phone_numbers || []),
