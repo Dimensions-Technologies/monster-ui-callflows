@@ -175,10 +175,15 @@ define(function(require) {
 								});
 							}
 
-							if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {															
-								data.dimension.dt_callflows.miscSettings.forEach(function(action) {
-									miscSettings[action] = true;
-								});
+							if (data.dimension.dt_callflows.hasOwnProperty('miscSettings')) {
+								// support for original miscSettings format
+								if (Array.isArray(data.dimension.dt_callflows.miscSettings)) {
+									data.dimension.dt_callflows.miscSettings.forEach(function(action) {
+										miscSettings[action] = true;
+									});
+								} else {
+									miscSettings = data.dimension.dt_callflows.miscSettings;
+								}
 							}
 
 							if (data.dimension.dt_callflows.hasOwnProperty('hideDeviceTypes')) {															
