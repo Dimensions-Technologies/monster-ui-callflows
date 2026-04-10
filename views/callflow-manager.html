@@ -2,7 +2,11 @@
 	<div class="left-bar-container">
 		{{#unless miscSettings.embeddedListView}}
 			<div class="search-box">
-				<i class="fa fa-search"></i>
+				{{#if miscSettings.enableGoogleIcons}}
+					<i class="material-symbols-icon-search-small">search</i>
+				{{else}}
+					<i class="fa fa-search"></i>
+				{{/if}}
 				<input type="text" class="search-query" placeholder="{{ i18n.search }}">
 			</div>
 			<div class="list-add">
@@ -29,13 +33,17 @@
 			{{/unless}}
 			{{#if miscSettings.embeddedListView}}
 				<div class="search-box">
-					<i class="fa fa-search"></i>
+					{{#if miscSettings.enableGoogleIcons}}
+						<i class="material-symbols-icon-search-small">search</i>
+					{{else}}
+						<i class="fa fa-search"></i>
+					{{/if}}
 					<input type="text" class="search-query" placeholder="{{ i18n.search }}">
 				</div>
 
 				<div class="embedded-buttons">
 					<button type="button" class="monster-button monster-button-secondary non-fixed list-add">
-						<span class="material-symbols-outlined material-symbols-medium">add</span>
+						<span class="material-symbols-medium">add</span>
 						<span class="button-label">{{ i18n.callflows.addCallflow }}</span>
 					</button>					
 					<button type="button" class="monster-button monster-button-secondary non-fixed back-button">{{ i18n.entityManager.backButton_2 }}</button>

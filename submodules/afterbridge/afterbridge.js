@@ -25,6 +25,7 @@ define(function(require) {
 				'after_bridge[action=park]': {
 					name: self.i18n.active().callflows.after_bridge.park.nodeName,
 					icon: 'minus_circle',
+					google_icon: 'pending',
 					category: self.i18n.active().callflows.after_bridge.category,
 					module: 'after_bridge',
 					tip: self.i18n.active().callflows.after_bridge.park.tooltip,
@@ -73,6 +74,7 @@ define(function(require) {
 				'after_bridge[action=transfer]': {
 					name: self.i18n.active().callflows.after_bridge.transfer.nodeName,
 					icon: 'check_circle',
+					google_icon: 'arrow_circle_right',
 					category: self.i18n.active().callflows.after_bridge.category,
 					module: 'after_bridge',
 					tip: self.i18n.active().callflows.after_bridge.transfer.tooltip,
@@ -162,6 +164,7 @@ define(function(require) {
 				'after_bridge[action=hangup]': {
 					name: self.i18n.active().callflows.after_bridge.hangup.nodeName,
 					icon: 'x_circle',
+					google_icon: 'cancel',
 					category: self.i18n.active().callflows.after_bridge.category,
 					module: 'after_bridge',
 					tip: self.i18n.active().callflows.after_bridge.hangup.tooltip,

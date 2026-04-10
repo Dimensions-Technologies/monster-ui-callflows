@@ -1839,6 +1839,7 @@ define(function(require) {
 				'device[id=*]': {
 					name: self.i18n.active().callflows.device.device,
 					icon: 'phone',
+					google_icon: 'deskphone',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.device.device_tip,
@@ -2031,6 +2032,7 @@ define(function(require) {
 				'cellphoneDevice[id=*]': {
 					name: self.i18n.active().callflows.cellphoneDevice.device,
 					icon: 'active_phone',
+					google_icon: 'smartphone',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.cellphoneDevice.device_tip,
@@ -2160,6 +2162,7 @@ define(function(require) {
 				'smartphoneDevice[id=*]': {
 					name: self.i18n.active().callflows.smartphoneDevice.device,
 					icon: 'active_phone',
+					google_icon: 'smartphone',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.smartphoneDevice.device_tip,
@@ -2289,6 +2292,7 @@ define(function(require) {
 				'landlineDevice[id=*]': {
 					name: self.i18n.active().callflows.landlineDevice.device,
 					icon: 'active_phone',
+					google_icon: 'home_work',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.landlineDevice.device_tip,
@@ -2418,6 +2422,7 @@ define(function(require) {
 				'softphoneDevice[id=*]': {
 					name: self.i18n.active().callflows.softphoneDevice.device,
 					icon: 'phone',
+					google_icon: 'devices',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.softphoneDevice.device_tip,
@@ -2547,6 +2552,7 @@ define(function(require) {
 				'faxDevice[id=*]': {
 					name: self.i18n.active().callflows.faxDevice.device,
 					icon: 'phone',
+					google_icon: 'fax',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.faxDevice.device_tip,
@@ -2676,6 +2682,7 @@ define(function(require) {
 				'ataDevice[id=*]': {
 					name: self.i18n.active().callflows.ataDevice.device,
 					icon: 'phone',
+					google_icon: 'settop_component',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.ataDevice.device_tip,
@@ -2805,6 +2812,7 @@ define(function(require) {
 				'sipUriDevice[id=*]': {
 					name: self.i18n.active().callflows.sipUriDevice.device,
 					icon: 'phone',
+					google_icon: 'sip',
 					category: deviceCategory,
 					module: 'device',
 					tip: self.i18n.active().callflows.sipUriDevice.device_tip,

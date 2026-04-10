@@ -519,6 +519,7 @@ define(function(require) {
 					var action = {
 						name: self.i18n.active().callflows.vmbox.voicemail,
 						icon: 'voicemail',
+						google_icon: 'voicemail',
 						module: 'voicemail',
 						tip: self.i18n.active().callflows.vmbox.voicemail_tip,
 						data: {
@@ -651,6 +652,7 @@ define(function(require) {
 				'voicemail[action=check]': {
 					name: self.i18n.active().callflows.vmbox.check_voicemail,
 					icon: 'voicemail',
+					google_icon: 'voicemail',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'voicemail',
 					tip: self.i18n.active().callflows.vmbox.check_voicemail_tip,

@@ -475,6 +475,7 @@ define(function(require) {
 				'play[id=*]': {
 					name: self.i18n.active().callflows.media.play_media,
 					icon: 'play',
+					google_icon: 'library_music', 
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'play',
 					tip: self.i18n.active().callflows.media.play_media_tip,
@@ -632,6 +633,7 @@ define(function(require) {
 				'mailboxMedia[id=*]': {
 					name: self.i18n.active().callflows.media.play_mailbox_media,
 					icon: 'play',
+					google_icon: 'library_music', 
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'play',
 					tip: self.i18n.active().callflows.media.play_mailbox_media_tip,
