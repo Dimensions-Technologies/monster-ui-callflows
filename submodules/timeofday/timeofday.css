@@ -71,3 +71,7 @@
 	width: 80px;
 	margin: 0 10px;
 }
+
+.callflows-port #timeofday-form .input-medium {
+	width: 224px !important;
+}
