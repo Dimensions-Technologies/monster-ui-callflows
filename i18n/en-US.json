@@ -980,7 +980,18 @@
 					"disabled": "Disabled"
 				},
 				"warning": "Note: Find Me Follow Me settings will be updated based on the Presence Profile selected by the user"
-			} 
+			},
+			"hotdesk": {
+				"title": "Hotdesk Settings",
+				"devices": "Hotdesk Devices",
+				"is_hotdesking": "This user is currently hot desking on the following device",
+				"not_hotdesking": "This user is not currently hot desking on any device",
+				"table": {
+					"device": "Device Name",
+					"mac_address": "MAC Address",
+					"status": "Status"
+				}
+			}
 		},
 		"vmbox": {
 			"voicemail": "Voicemail",
