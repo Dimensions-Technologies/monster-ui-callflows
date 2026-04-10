@@ -510,6 +510,7 @@ define(function(require) {
 				'directory[id=*]': {
 					name: self.i18n.active().callflows.directory.directory,
 					icon: 'book',
+					google_icon: 'folder_shared',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'directory',
 					tip: self.i18n.active().callflows.directory.directory_tip,

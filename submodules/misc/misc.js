@@ -109,6 +109,7 @@ define(function(require) {
 				'callflow[id=*]': {
 					name: self.i18n.active().oldCallflows.callflow,
 					icon: 'callflow',
+					google_icon: 'alt_route',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
 					tip: self.i18n.active().oldCallflows.callflow_tip,
@@ -246,6 +247,7 @@ define(function(require) {
 				'userCallflow[id=*]': {
 					name: self.i18n.active().callflows.userCallflow.callflow,
 					icon: 'user',
+					google_icon: 'person',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
 					tip: self.i18n.active().callflows.userCallflow.callflow_tip,
@@ -353,6 +355,7 @@ define(function(require) {
 				'phoneOnlyCallflow[id=*]': {
 					name: self.i18n.active().callflows.phoneOnlyCallflow.callflow,
 					icon: 'phone',
+					google_icon: 'deskphone',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
 					tip: self.i18n.active().callflows.phoneOnlyCallflow.callflow_tip,
@@ -455,6 +458,7 @@ define(function(require) {
 				'callCentreCallflow[id=*]': {
 					name: self.i18n.active().callflows.callCentreCallflow.callflow,
 					icon: 'support',
+					google_icon: 'support_agent',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'callflow',
 					tip: self.i18n.active().callflows.callCentreCallflow.callflow_tip,
@@ -576,6 +580,7 @@ define(function(require) {
 				'legacyPbxCallflow[id=*]': {
 					name: self.i18n.active().callflows.legacyPbxCallflow.callflow,
 					icon: 'phone',
+					google_icon: 'hard_drive',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'callflow',
 					tip: self.i18n.active().callflows.legacyPbxCallflow.callflow_tip,
@@ -678,6 +683,7 @@ define(function(require) {
 				'do_not_disturb[action=activate]': {
 					name: self.i18n.active().callflows.doNotDisturb.activate.label,
 					icon: 'x_circle',
+					google_icon: 'do_not_disturb_on',
 					category: self.i18n.active().callflows.doNotDisturb.categoryName,
 					module: 'do_not_disturb',
 					tip: self.i18n.active().callflows.doNotDisturb.activate.tip,
@@ -705,6 +711,7 @@ define(function(require) {
 				'do_not_disturb[action=deactivate]': {
 					name: self.i18n.active().callflows.doNotDisturb.deactivate.label,
 					icon: 'x_circle',
+					google_icon: 'do_not_disturb_off',
 					category: self.i18n.active().callflows.doNotDisturb.categoryName,
 					module: 'do_not_disturb',
 					tip: self.i18n.active().callflows.doNotDisturb.deactivate.tip,
@@ -732,6 +739,7 @@ define(function(require) {
 				'do_not_disturb[action=toggle]': {
 					name: self.i18n.active().callflows.doNotDisturb.toggle.label,
 					icon: 'x_circle',
+					google_icon: 'restart_alt',
 					category: self.i18n.active().callflows.doNotDisturb.categoryName,
 					module: 'do_not_disturb',
 					tip: self.i18n.active().callflows.doNotDisturb.toggle.tip,
@@ -759,6 +767,7 @@ define(function(require) {
 				'call_forward[action=activate]': {
 					name: self.i18n.active().oldCallflows.enable_call_forwarding,
 					icon: 'rightarrow',
+					google_icon: 'phone_forwarded',
 					category: self.i18n.active().oldCallflows.call_forwarding_cat,
 					module: 'call_forward',
 					tip: self.i18n.active().oldCallflows.enable_call_forwarding_tip,
@@ -786,6 +795,7 @@ define(function(require) {
 				'call_forward[action=deactivate]': {
 					name: self.i18n.active().oldCallflows.disable_call_forwarding,
 					icon: 'rightarrow',
+					google_icon: 'phone_paused',
 					category: self.i18n.active().oldCallflows.call_forwarding_cat,
 					module: 'call_forward',
 					tip: self.i18n.active().oldCallflows.disable_call_forwarding_tip,
@@ -813,6 +823,7 @@ define(function(require) {
 				'call_forward[action=update]': {
 					name: self.i18n.active().oldCallflows.update_call_forwarding,
 					icon: 'rightarrow',
+					google_icon: 'phone_forwarded',
 					category: self.i18n.active().oldCallflows.call_forwarding_cat,
 					module: 'call_forward',
 					tip: self.i18n.active().oldCallflows.update_call_forwarding_tip,
@@ -840,6 +851,7 @@ define(function(require) {
 				'dynamic_cid[]': {
 					name: self.i18n.active().oldCallflows.dynamic_cid,
 					icon: 'rightarrow',
+					google_icon: 'playlist_add_check_circle',
 					category: self.i18n.active().oldCallflows.caller_id_cat,
 					module: 'dynamic_cid',
 					tip: self.i18n.active().oldCallflows.dynamic_cid_tip,
@@ -858,6 +870,7 @@ define(function(require) {
 				'prepend_cid[action=prepend]': {
 					name: self.i18n.active().oldCallflows.prepend,
 					icon: 'plus_circle',
+					google_icon: 'add_circle',
 					category: self.i18n.active().oldCallflows.caller_id_cat,
 					module: 'prepend_cid',
 					tip: self.i18n.active().oldCallflows.prepend_tip,
@@ -949,6 +962,7 @@ define(function(require) {
 				'prepend_cid[action=reset]': {
 					name: self.i18n.active().oldCallflows.reset_prepend,
 					icon: 'loop2',
+					google_icon: 'change_circle',
 					category: self.i18n.active().oldCallflows.caller_id_cat,
 					module: 'prepend_cid',
 					tip: self.i18n.active().oldCallflows.reset_prepend_tip,
@@ -976,6 +990,7 @@ define(function(require) {
 				'set_alert_info[]': {
 					name: self.i18n.active().callflows.setAlertInfo.name,
 					icon: 'play',
+					google_icon: 'notifications_active',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'set_alert_info',
 					tip: self.i18n.active().callflows.setAlertInfo.tip,
@@ -1044,6 +1059,7 @@ define(function(require) {
 				'manual_presence[]': {
 					name: self.i18n.active().oldCallflows.manual_presence,
 					icon: 'lightbulb_on',
+					google_icon: 'online_prediction',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'manual_presence',
 					tip: self.i18n.active().oldCallflows.manual_presence_tip,
@@ -1112,6 +1128,7 @@ define(function(require) {
 				'language[]': {
 					name: self.i18n.active().oldCallflows.language,
 					icon: 'earth',
+					google_icon: 'language',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'language',
 					tip: self.i18n.active().oldCallflows.language_tip,
@@ -1178,6 +1195,7 @@ define(function(require) {
 				'group_pickup[]': {
 					name: self.i18n.active().oldCallflows.group_pickup,
 					icon: 'sip',
+					google_icon: 'step_out',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'group_pickup',
 					tip: self.i18n.active().oldCallflows.group_pickup_tip,
@@ -1255,6 +1273,7 @@ define(function(require) {
 				'group_pickupUser[user_id=*]': {
 					name: self.i18n.active().oldCallflows.user_pickup,
 					icon: 'sip',
+					google_icon: 'step_out',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'group_pickup',
 					tip: self.i18n.active().oldCallflows.user_pickup_tip,
@@ -1342,6 +1361,7 @@ define(function(require) {
 				'group_pickupGroup[group_id=*]': {
 					name: self.i18n.active().oldCallflows.group_pickup,
 					icon: 'sip',
+					google_icon: 'step_out',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'group_pickup',
 					tip: self.i18n.active().oldCallflows.group_pickup_tip,
@@ -1438,6 +1458,7 @@ define(function(require) {
 				'group_pickupDevice[device_id=*]': {
 					name: self.i18n.active().oldCallflows.device_pickup,
 					icon: 'sip',
+					google_icon: 'step_out',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'group_pickup',
 					tip: self.i18n.active().oldCallflows.device_pickup_tip,
@@ -1534,6 +1555,7 @@ define(function(require) {
 				'receive_fax[]': {
 					name: self.i18n.active().oldCallflows.receive_fax,
 					icon: 'sip',
+					google_icon: 'fax',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'receive_fax',
 					tip: self.i18n.active().oldCallflows.receive_fax_tip,
@@ -1633,6 +1655,7 @@ define(function(require) {
 				'record_call[action=start]': {
 					name: self.i18n.active().oldCallflows.start_call_recording,
 					icon: 'conference',
+					google_icon: 'volume_up',
 					category: self.i18n.active().oldCallflows.call_recording_cat,
 					module: 'record_call',
 					tip: self.i18n.active().oldCallflows.start_call_recording_tip,
@@ -1700,6 +1723,7 @@ define(function(require) {
 				'record_call[action=stop]': {
 					name: self.i18n.active().oldCallflows.stop_call_recording,
 					icon: 'conference',
+					google_icon: 'volume_off',
 					category: self.i18n.active().oldCallflows.call_recording_cat,
 					module: 'record_call',
 					tip: self.i18n.active().oldCallflows.stop_call_recording_tip,
@@ -1727,6 +1751,7 @@ define(function(require) {
 				'pivot[]': {
 					name: self.i18n.active().oldCallflows.pivot,
 					icon: 'conference',
+					google_icon: 'cloud_upload',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'pivot',
 					tip: self.i18n.active().oldCallflows.pivot_tip,
@@ -1832,6 +1857,7 @@ define(function(require) {
 				'disa[]': {
 					name: self.i18n.active().oldCallflows.disa,
 					icon: 'conference',
+					google_icon: 'login',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'disa',
 					tip: self.i18n.active().oldCallflows.disa_tip,
@@ -1969,6 +1995,7 @@ define(function(require) {
 				'collect_dtmf[]': {
 					name: self.i18n.active().callflows.collectDTMF.title,
 					icon: 'conference',
+					google_icon: 'pin',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'collect_dtmf',
 					tip: self.i18n.active().callflows.collectDTMF.tip,
@@ -2101,6 +2128,7 @@ define(function(require) {
 				'sleep[]': {
 					name: self.i18n.active().callflows.sleep.name,
 					icon: 'dot_chat',
+					google_icon: 'pause',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'sleep',
 					tip: self.i18n.active().callflows.sleep.tip,
@@ -2177,6 +2205,7 @@ define(function(require) {
 				'tts[]': {
 					name: self.i18n.active().callflows.tts.name,
 					icon: 'chat_circle',
+					google_icon: 'text_to_speech',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'tts',
 					tip: self.i18n.active().callflows.tts.tip,
@@ -2314,6 +2343,7 @@ define(function(require) {
 				'response[]': {
 					name: self.i18n.active().oldCallflows.response,
 					icon: 'rightarrow',
+					google_icon: 'reply',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'response',
 					tip: self.i18n.active().oldCallflows.response_tip,
@@ -2447,6 +2477,7 @@ define(function(require) {
 				'missed_call_alert[]': {
 					name: self.i18n.active().callflows.missedCallAlert.title,
 					icon: 'bell1',
+					google_icon: 'call_missed',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'missed_call_alert',
 					tip: self.i18n.active().callflows.missedCallAlert.tip,
@@ -2472,6 +2503,7 @@ define(function(require) {
 				'set_variables[]': {
 					name: self.i18n.active().callflows.setCav.title,
 					icon: 'settings2',
+					google_icon: 'manufacturing',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'set_variables',
 					tip: self.i18n.active().callflows.setCav.tip,
@@ -2491,7 +2523,8 @@ define(function(require) {
 				},
 				'webhook[]': {
 					name: self.i18n.active().callflows.webhook.title,
-					icon: 'to_cloud',	//graph2
+					icon: 'to_cloud',
+					google_icon: 'webhook',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'webhook',
 					tip: self.i18n.active().callflows.webhook.tip,
@@ -2510,6 +2543,7 @@ define(function(require) {
 				'dimensionsCallTag[id=*]': {
 					name: self.i18n.active().callflows.callTag.title,
 					icon: 'to_cloud',
+					google_icon: 'sell',
 					category: self.i18n.active().oldCallflows.basic_cat,
 					module: 'webhook',
 					tip: self.i18n.active().callflows.callTag.tip,
@@ -2528,6 +2562,7 @@ define(function(require) {
 				'dimensionsDirectoryRouting[id=*]': {
 					name: self.i18n.active().callflows.directoryRouting.title,
 					icon: 'book',
+					google_icon: 'folder_data',
 					category: self.i18n.active().oldCallflows.advanced_cat,
 					module: 'pivot',
 					tip: self.i18n.active().callflows.directoryRouting.tip,
