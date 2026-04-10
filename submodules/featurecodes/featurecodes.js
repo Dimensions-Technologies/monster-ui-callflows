@@ -2,7 +2,10 @@ define(function(require) {
 	var $ = require('jquery'),
 		_ = require('lodash'),
 		monster = require('monster'),
-		miscSettings = {};
+		miscSettings = {},
+		hideFeatureCode = {},
+		currentFeatureCodes = {},
+		reservedFeatureCodesCallflow = null;
 
 	var app = {
 		requests: {},
@@ -12,13 +15,18 @@ define(function(require) {
 		},
 
 		featureCodeRender: function(args) {
+			
 			var self = this,
-				container = args.target || $('.callflow-edition');
+				container = args?.target || $('.callflow-edition');
 
-			// set variables for use elsewhere
-			miscSettings = args.data.miscSettings;
+			// set variables for use elsewhere - only set variables is args is present
+			if (args?.data) {
+				miscSettings = args.data.miscSettings;
+				hideFeatureCode = args.data.hideFeatureCode;
+			}
 
 			self.featureCodeGetData(function(featureCodes) {
+
 				var formattedData = self.featureCodeFormatData(featureCodes),
 					template = $(self.getTemplate({
 						name: 'view',
@@ -40,23 +48,46 @@ define(function(require) {
 		featureCodeGetData: function(callback) {
 			var self = this;
 
+			if (miscSettings.enableDimensionsFeatureCodes) {
+				self.dimensionsReservedFeatureCodes(function(data) {
+					reservedFeatureCodesCallflow = data[0]?.id;
+				});
+			}
+
 			self.featureCodeList(function(data) {
 				callback && callback(data);
 			});
+
 		},
 
 		featureCodeFormatData: function(data) {
 			var self = this,
-				actions = self.featureCodesDefine();
+				actions = self.featureCodesDefine(data);
 
 			return {
-				actions: _.transform(data, function(object, callflow) {
-					_.merge(object[callflow.featurecode.name], {
-						id: callflow.id,
-						enabled: true,
-						number: callflow.featurecode.number.replace('\\', '')
-					});
+				
+				actions: _.transform(data, function (object, callflow) {
+					// check featurecode.name, fallback to callflow.name, then check if callflow.featurecode.name matches object.name
+					const actionKey = object[callflow.featurecode.name]
+						? callflow.featurecode.name
+						: callflow.name
+						? callflow.name
+						: Object.keys(object).find(
+							key => key.replace(/_/g, ' ').toLowerCase() === callflow.featurecode.name?.toLowerCase()
+						);
+					
+					if (actionKey) {
+
+						var isFeatureCodeDisabled = object[actionKey]?.dimensionsDisabled || false;
+
+						_.merge(object[actionKey], {
+							id: callflow.id,
+							enabled: !isFeatureCodeDisabled,
+							number: callflow.featurecode.number.replace('\\', '')
+						});
+					}
 				}, actions),
+				
 				categories: _
 					.chain(actions)
 					.map(function(value, key) {
@@ -105,7 +136,9 @@ define(function(require) {
 				var action_wrapper = $(this).parents('.action_wrapper'),
 					number_field = action_wrapper.find('.featurecode-number');
 
-				!$(this).is(':checked') ? $(number_field).attr('disabled', '') : $(number_field).removeAttr('disabled');
+				if (!miscSettings.readOnlyFeatureCodeNumber) {
+					!$(this).is(':checked') ? $(number_field).attr('disabled', '') : $(number_field).removeAttr('disabled');
+				}
 			});
 
 			template.find('.featurecode-number').on('blur keyup focus', function() {
@@ -117,7 +150,6 @@ define(function(require) {
 			});
 
 			template.find('.featurecode_enabled').on('change', function() {
-			//$('.featurecode_enabled', template).change(function() {
 				var $this = $(this),
 					action_wrapper = $this.parents('.action_wrapper'),
 					number_field = action_wrapper.find('.featurecode-number');
@@ -131,13 +163,17 @@ define(function(require) {
 					action_wrapper.removeClass('disabled');
 				}
 
-				!$this.is(':checked') ? number_field.attr('disabled', '') : number_field.removeAttr('disabled');
+				if (!miscSettings.readOnlyFeatureCodeNumber) {
+					!$this.is(':checked') ? number_field.attr('disabled', '') : number_field.removeAttr('disabled');
+				}
+				
 			});
 
 			template.find('.featurecode-save').on('click', function(e) {
 				var $this = $(this);
 				e.preventDefault();
 				if (!$this.hasClass('disabled')) {
+
 					var formData = self.featureCodeCleanFormData(template, actions);
 
 					$this.addClass('disabled');
@@ -184,6 +220,24 @@ define(function(require) {
 			});
 		},
 
+		dimensionsReservedFeatureCodes: function(callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.list',
+				data: {
+					accountId: self.accountId,
+					filters: {
+						filter_name: 'Dimensions_ReservedFeatureCodes',
+						paginate: false
+					}
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			});
+		},
+
 		featureCodeGet: function(id, callback) {
 			var self = this;
 
@@ -218,9 +272,6 @@ define(function(require) {
 					module: actions[callflow.action].module,
 					children: {}
 				};
-
-				// if (callflow.type === 'number') { callflow.type = 'numbers'}
-				// if (callflow.type === 'pattern') { callflow.type = 'patterns'}
 
 				/* if a star is in the pattern, then we need to escape it */
 				if (callflow.type === 'patterns' && typeof callflow.number === 'string') {
@@ -312,60 +363,302 @@ define(function(require) {
 			});
 		},
 
+		dimensionsFeatureCodeStateUpdate: function(callflowId, moduleState, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.patch',
+				data: {
+					accountId: self.accountId,
+					callflowId: callflowId,
+					data: {
+						flow: {
+							data: {
+								'skip_module': moduleState
+							}
+						},
+						ui_metadata: {
+							origin: 'voip'
+						}
+					},
+					removeMetadataAPI: true
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			})
+
+		},
+
+		dimensionsFeatureCodeUpdate: function(callflowId, featureCode, featureCodePattern, callback) {
+			var self = this;
+				
+			self.callApi({
+				resource: 'callflow.patch',
+				data: {
+					accountId: self.accountId,
+					callflowId: callflowId,
+					data: {
+						featurecode: {
+            				number: featureCode
+        				},
+						numbers: [
+							`*${featureCode}`
+						],
+						patterns: [
+							featureCodePattern
+						],
+						ui_metadata: {
+							origin: 'voip'
+						}
+					},
+					removeMetadataAPI: true
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			})
+				
+		},
+
+		dimensionsReservedFeatureCodesUpdate: function(reservedFeatureCodes, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'callflow.patch',
+				data: {
+					accountId: self.accountId,
+					callflowId: reservedFeatureCodesCallflow,
+					data: {
+						numbers: [
+							...reservedFeatureCodes
+						],
+						ui_metadata: {
+							origin: 'voip'
+						}
+					},
+					removeMetadataAPI: true
+				},
+				success: function(data) {
+					callback && callback(data.data);
+				}
+			});
+
+		},
+
 		featureCodeMassUpdate: function(form_data, callback, errorCallback) {
 			var self = this,
-				count = form_data.created_callflows.length + form_data.deleted_callflows.length + form_data.updated_callflows.length;
+				count = form_data.created_callflows.length + form_data.deleted_callflows.length + form_data.updated_callflows.length,
+				dimensionsFeatureCodeRemove = [],
+				dimensionsFeatureCodeAdd = [],
+				reservedFeatureCodes = [];
 
 			if (count) {
-				var parallelRequests = {};
+				
+				monster.waterfall([
 
-				_.each(form_data.created_callflows, function(callflow) {
-					parallelRequests['create_' + callflow.action] = function(callback) {
-						var dataCallflow = {
-							flow: callflow.flow,
-							patterns: callflow.patterns,
-							numbers: callflow.numbers,
-							featurecode: {
-								name: callflow.action,
-								number: callflow.number
+					function(callback) {
+		
+						_.each(form_data.updated_callflows, function(callflow) {
+		
+							if (callflow.action.includes('DimensionsFeatureCode')) {
+								
+								if (callflow.number >= 100 && callflow.number <= 199) {
+									dimensionsFeatureCodeRemove.push(callflow.number);
+								}
+
+								callflow.numbers = callflow.numbers.map(pattern => {
+									const match = pattern.match(/\\\*([0-9]+)/);
+									return match ? match[1] : null;
+								}).filter(Boolean);
+		
+								var number = callflow.numbers[0];
+		
+								if (number >= 100 && number <= 199) {
+									dimensionsFeatureCodeAdd.push(number);
+								}
+		
 							}
-						};
-
-						self.featureCodeCreate(dataCallflow, function(data) {
-							callback && callback(null, data);
+		
 						});
-					};
-				});
 
-				_.each(form_data.updated_callflows, function(callflow) {
-					parallelRequests['update_' + callflow.action] = function(callback) {
-						var dataCallflow = {
-							flow: callflow.flow,
-							patterns: callflow.patterns,
-							numbers: callflow.numbers,
-							featurecode: {
-								name: callflow.action,
-								number: callflow.number
+						if (dimensionsFeatureCodeRemove.length !== 0 && reservedFeatureCodesCallflow != null) {
+					
+							self.callApi({
+								resource: 'callflow.get',
+								data: {
+									accountId: self.accountId,
+									callflowId: reservedFeatureCodesCallflow
+								},
+								success: function(data) {
+		
+									reservedFeatureCodes = data.data.numbers;
+		
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Original Reserved Feature Codes:', reservedFeatureCodes);
+									}
+									
+									dimensionsFeatureCodeRemove = dimensionsFeatureCodeRemove.map(number => `*${number}`);
+									reservedFeatureCodes = reservedFeatureCodes.filter(number => !dimensionsFeatureCodeRemove.includes(number));
+						
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Updated Reserved Feature Codes:', reservedFeatureCodes);
+									}
+		
+									self.dimensionsReservedFeatureCodesUpdate(reservedFeatureCodes, function(data) {
+										callback && callback(null, data);
+									});
+		
+								}
+							});
+		
+						} else {
+							callback(null);
+						}
+		
+					},
+
+					function() {
+
+						var parallelRequests = {};
+
+						_.each(form_data.created_callflows, function(callflow) {
+							parallelRequests['create_' + callflow.action] = function(callback) {
+								
+								if (callflow.action.includes('DimensionsFeatureCode')) {
+									
+									var callflowId = callflow.id,
+										moduleState = false;
+		
+									self.dimensionsFeatureCodeStateUpdate(callflowId, moduleState, function(data) {
+										callback && callback(null, data);
+									});
+		
+								} else {
+								
+									var dataCallflow = {
+										flow: callflow.flow,
+										patterns: callflow.patterns,
+										numbers: callflow.numbers,
+										featurecode: {
+											name: callflow.action,
+											number: callflow.number
+										}
+									};
+		
+									self.featureCodeCreate(dataCallflow, function(data) {
+										callback && callback(null, data);
+									});
+								
+								}
+							};
+						});
+		
+						_.each(form_data.updated_callflows, function(callflow) {
+		
+							parallelRequests['update_' + callflow.action] = function(callback) {
+								
+								if (callflow.action.includes('DimensionsFeatureCode')) {
+		
+									let callflowId = callflow.id,
+										oldFeatureCode = callflow.numbers[0],
+										newFeatureCode = callflow.number;
+		
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Current Feature Codes', currentFeatureCodes);
+										console.log('Callflow Id', callflowId);
+										console.log('Old Feature Code', oldFeatureCode);
+										console.log('New Feature Code', newFeatureCode);
+									}
+		
+									let featureCodeCallflow = currentFeatureCodes.find(item => item.id === callflowId);
+		
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Feature Code found:', featureCodeCallflow);
+									}
+		
+									let featureCodePattern = featureCodeCallflow.patterns[0],
+										updatedFeatureCodePattern = featureCodePattern.replace(oldFeatureCode, newFeatureCode);
+		
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Feature Code Pattern', featureCodePattern);
+										console.log('Updated Feature Code Pattern', updatedFeatureCodePattern);
+									}
+		
+									self.dimensionsFeatureCodeUpdate(callflowId, newFeatureCode, updatedFeatureCodePattern, function(data) {
+										callback && callback(null, data);
+									});
+									
+		
+								} else {
+								
+									var dataCallflow = {
+										flow: callflow.flow,
+										patterns: callflow.patterns,
+										numbers: callflow.numbers,
+										featurecode: {
+											name: callflow.action,
+											number: callflow.number
+										}
+									};
+		
+									self.featureCodeUpdate(callflow.id, dataCallflow, function(data) {
+										callback && callback(null, data);
+									});
+		
+								}
+							};
+						});
+		
+						_.each(form_data.deleted_callflows, function(callflow) {
+							parallelRequests['delete_' + callflow.action] = function(callback) {
+		
+								if (callflow.action.includes('DimensionsFeatureCode')) {
+									
+									var callflowId = callflow.id,
+										moduleState = true;
+		
+									self.dimensionsFeatureCodeStateUpdate(callflowId, moduleState, function(data) {
+										callback && callback(null, data);
+									});
+		
+								} else {
+		
+									self.featureCodeDelete(callflow.id, function(data) {
+										callback && callback(null, data);
+									});
+		
+								}
+		
+							};
+						});
+		
+						monster.parallel(parallelRequests, function(err, results) {
+							
+							if (dimensionsFeatureCodeAdd.length !== 0 && reservedFeatureCodesCallflow != null) {
+
+								dimensionsFeatureCodeAdd = dimensionsFeatureCodeAdd.map(number => `*${number}`);
+	
+								dimensionsFeatureCodeAdd.forEach(number => {
+									if (!reservedFeatureCodes.includes(number)) {
+										reservedFeatureCodes.push(number);
+									}
+								});
+	
+								self.dimensionsReservedFeatureCodesUpdate(reservedFeatureCodes, function(data) {
+									callback && callback(null, data);
+								});
+
+							} else {
+								callback && callback();
 							}
-						};
 
-						self.featureCodeUpdate(callflow.id, dataCallflow, function(data) {
-							callback && callback(null, data);
 						});
-					};
-				});
 
-				_.each(form_data.deleted_callflows, function(callflow) {
-					parallelRequests['delete_' + callflow.action] = function(callback) {
-						self.featureCodeDelete(callflow.id, function(data) {
-							callback && callback(null, data);
-						});
-					};
-				});
+					}
 
-				monster.parallel(parallelRequests, function(err, results) {
-					callback && callback();
-				});
+				])
+								
 			} else {
 				errorCallback && errorCallback();
 				monster.ui.toast({
@@ -378,7 +671,15 @@ define(function(require) {
 		featureCodesDefine: function(featurecodes) {
 			var self = this;
 
-			return {
+			// set variable with featurecodes for use elsewhere
+			currentFeatureCodes = featurecodes;
+
+			if (miscSettings.enableConsoleLogging) {
+				console.log('Feature Codes', featurecodes);
+			}
+
+			// default feature codes
+			var baseFeatureCodes = {
 				directed_ext_pickup: {
 					name: self.i18n.active().callflows.featureCodes.directed_ext_pickup,
 					category: self.i18n.active().callflows.featureCodes.miscellaneous_cat,
@@ -518,7 +819,7 @@ define(function(require) {
 				'voicemail[action=check]': {
 					name: self.i18n.active().callflows.featureCodes.check_voicemail,
 					icon: 'phone',
-					category: self.i18n.active().callflows.featureCodes.miscellaneous_cat,
+					category: self.i18n.active().callflows.featureCodes.voicemail_cat,
 					module: 'voicemail',
 					number_type: 'patterns',
 					data: {
@@ -535,7 +836,7 @@ define(function(require) {
 				'voicemail[single_mailbox_login]': {
 					name: self.i18n.active().callflows.featureCodes.single_mailbox_login,
 					icon: 'phone',
-					category: self.i18n.active().callflows.featureCodes.miscellaneous_cat,
+					category: self.i18n.active().callflows.featureCodes.voicemail_cat,
 					module: 'voicemail',
 					number_type: 'patterns',
 					data: {
@@ -552,7 +853,7 @@ define(function(require) {
 				},
 				'voicemail[action="direct"]': {
 					name: self.i18n.active().callflows.featureCodes.direct_to_voicemail,
-					category: self.i18n.active().callflows.featureCodes.miscellaneous_cat,
+					category: self.i18n.active().callflows.featureCodes.voicemail_cat,
 					module: 'voicemail',
 					number_type: 'patterns',
 					data: {
@@ -670,6 +971,78 @@ define(function(require) {
 					number: this.default_number,
 					build_regex: function(number) {
 						return number;
+					}
+				},
+				'qubicle_login': {
+					name: self.i18n.active().callflows.featureCodes.agent_login,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'qubicle_recipient',
+					number_type: 'patterns',
+					data: {
+						link_method: "device",
+                		action: "login"
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '20',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '^\\*'+number+'([0-9]*)$';
+					}
+				},
+				'qubicle_set_ready': {
+					name: self.i18n.active().callflows.featureCodes.agent_ready,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'qubicle_recipient',
+					number_type: 'patterns',
+					data: {
+						link_method: "device",
+                		action: "ready"
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '21',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '^\\*'+number+'([0-9]*)$';
+					}
+				},
+				'qubicle_set_away': {
+					name: self.i18n.active().callflows.featureCodes.agent_away,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'qubicle_recipient',
+					number_type: 'patterns',
+					data: {
+						link_method: "device",
+                		action: "away"
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '22',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '^\\*'+number+'([0-9]*)$';
+					}
+				},
+				'qubicle_logout': {
+					name: self.i18n.active().callflows.featureCodes.agent_logout,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'qubicle_recipient',
+					number_type: 'patterns',
+					data: {
+						link_method: "device",
+                		action: "logout"
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '23',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '^\\*'+number+'([0-9]*)$';
 					}
 				}
 				/*'call_forward[action=on_busy_enable]': {
@@ -894,7 +1267,73 @@ define(function(require) {
 						return '^\\*'+number+'([0-9]*)$';
 					}
 				}*/
+				
 			};
+
+			if (miscSettings.enableDimensionsFeatureCodes) {
+
+				var dynamicFeatureCodes = [];
+
+				featurecodes.forEach(function(fc) {
+
+					dynamicFeatureCodes.push(fc.featurecode.name);
+
+					if (fc.name && fc.name.startsWith('DimensionsFeatureCode')) {
+						
+						var formattedName = fc.name
+							.replace('DimensionsFeatureCode_', '')
+							.replace(/([A-Z])/g, ' $1')
+							.replace('Fwd', 'Call Forward')
+							.replace('Acd', 'ACD')
+							.replace('Dnd', 'Do Not Disturb')
+							.replace(' Id', ' ID')
+							.trim();
+
+						// set category of custom feature codes
+						var category = 'Miscellaneous';
+						
+						if (fc.name.includes('Acd') || fc.name.includes('SilentMonitor') || fc.name.includes('Eavesdrop')) {
+							category = self.i18n.active().callflows.featureCodes.call_center_cat;
+						} else if (fc.name.includes('Fwd')) {
+							category = self.i18n.active().callflows.featureCodes.call_forward_cat;
+						} else if (fc.name.includes('CallerId')) {
+							category = self.i18n.active().callflows.featureCodes.caller_id_cat;
+						}
+
+						// check module length to handle disabled feature code
+						var moduleState = false
+
+						if (fc.modules.length === 0) {
+							moduleState = true
+						}
+
+						baseFeatureCodes[fc.name] = {
+							name: formattedName,
+							category: category,
+							number: fc.featurecode.number || '',
+							module: fc.modules[0] || 'unknown',
+							number_type: fc.numbers.length ? 'numbers' : 'patterns',
+							data: fc.data || {},
+							enabled: false,
+							dimensionsDisabled: moduleState,
+							hasStar: true,
+							build_regex: function(number) {
+								return fc.patterns.length ? fc.patterns[0] : '*' + number;
+							}
+						};
+					}
+				});
+			}
+
+			// remove feature code if present in hideFeatureCode
+			Object.keys(baseFeatureCodes).forEach(function(key) {
+				if (hideFeatureCode[key]) {
+					delete baseFeatureCodes[key];
+				}
+			});
+		
+			return baseFeatureCodes;
+
 		},
 
 		featureCodesEditParkingParkAndRetrieve: function(featureCode) {
@@ -906,7 +1345,10 @@ define(function(require) {
 					template = $(self.getTemplate({
 						name: 'parking-parkandretrieve',
 						submodule: 'featurecodes',
-						data: formattedData
+						data: {
+							...formattedData,
+							miscSettings: miscSettings
+						}
 					}));
 
 				monster.ui.validate(template.find('#form_park_retrieve'), {
@@ -920,6 +1362,28 @@ define(function(require) {
 					}
 				});
 
+				if (miscSettings.enableParkDefaultTimeout) {
+					
+					// enable or disable the save button based on the input value
+					function toggleSaveButton() {
+
+						var ringbackValue = $('#default_ringback_timeout', template).val(),
+							timeoutValue = $('#default_callback_timeout', template).val();
+						
+						if (ringbackValue == '' || timeoutValue == '') {
+							$('#save', template).prop('disabled', true);
+						} else {
+							$('#save', template).prop('disabled', false);
+						}
+					}
+
+					toggleSaveButton();
+
+					$('#default_ringback_timeout', template).change(toggleSaveButton);
+					$('#default_callback_timeout', template).change(toggleSaveButton);
+
+				}
+				
 				monster.ui.tooltips(template);
 
 				template.find('#save').on('click', function(e) {
@@ -954,7 +1418,10 @@ define(function(require) {
 					template = $(self.getTemplate({
 						name: 'parking-valet',
 						submodule: 'featurecodes',
-						data: formattedData
+						data: {
+							...formattedData,
+							miscSettings: miscSettings
+						}
 					}));
 
 				monster.ui.validate(template.find('#form_valet'), {
@@ -967,6 +1434,28 @@ define(function(require) {
 						}
 					}
 				});
+
+				if (miscSettings.enableParkDefaultTimeout) {
+					
+					// enable or disable the save button based on the input value
+					function toggleSaveButton() {
+
+						var ringbackValue = $('#default_ringback_timeout', template).val(),
+							timeoutValue = $('#default_callback_timeout', template).val();
+						
+						if (ringbackValue == '' || timeoutValue == '') {
+							$('#save', template).prop('disabled', true);
+						} else {
+							$('#save', template).prop('disabled', false);
+						}
+					}
+
+					toggleSaveButton();
+
+					$('#default_ringback_timeout', template).change(toggleSaveButton);
+					$('#default_callback_timeout', template).change(toggleSaveButton);
+
+				}
 
 				monster.ui.tooltips(template);
 
