@@ -2,6 +2,7 @@
 	<!--<h1>{{ i18n.oldCallflows.pivot }}</h1>-->
 	<form name="form" method="post" action="#">
 		<div class="form_content">
+			
 			<div class="popup_field">
 				<label for="pivot_voiceurl_input">{{ i18n.oldCallflows.voice_url }} </label>
 				<input type="text" id="pivot_voiceurl_input" class="medium" value="{{data_pivot.voice_url}}"/>
@@ -33,13 +34,19 @@
 					{{/compare}}
 				</select>
 			</div>
-			{{/unless}}
-			
+			{{/unless}}		
 
 			<div class="popup_field">
 				<label for="pivot_timeout_input">{{ i18n.oldCallflows.pivot_timeout }} </label>
 				<input type="number" min="5" step="1" max="20" id="pivot_timeout_input" class="medium" value="{{data_pivot.req_timeout}}"/>
 			</div>
+
+			<div id="pivotFallbackMessage">
+				{{#monsterText}}
+					{{ i18n.oldCallflows.pivot_fallback }}
+				{{/monsterText}}
+			</div>	
+
 		</div>
 	</form>
 	<div class="buttons-center">
