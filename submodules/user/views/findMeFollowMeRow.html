@@ -1,0 +1,35 @@
+<div class="row"{{#if id}} id="{{id}}"{{/if}}>
+    {{#if id}}
+        
+        <div class="column first">{{name}}</div>
+
+        <div class="column second">
+            <div class="slider-labels">
+                <span id="delay_value_{{id}}">{{delay_value}}s</span>
+            </div>
+        </div>
+
+        <div class="column third">
+            {{#if show_slider}}
+                <div class="slider-container" data-device_id="{{id}}">
+                    <div id="slider_{{id}}" class="slider"></div>
+                </div>
+            {{/if}}
+        </div>
+           
+        <div class="column fourth">
+            <div class="slider-labels">
+                <span id="timeout_value_{{id}}">{{timeout_value}}s</span>
+            </div>
+        </div>
+   
+        <div class="column fifth">
+            <input type="checkbox" class="enabled_checkbox" data-device_id="{{id}}" {{checkbox_checked}} />
+        </div>
+
+    {{else}}
+        <!-- Message if there are no devices -->
+        <div class="column merged">{{ i18n.callflows.user.there_is_currently_no_devices }}</div>
+    {{/if}}
+    <div class="clear"></div>
+</div>

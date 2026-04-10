@@ -263,7 +263,11 @@
 
 #group-form .add_endpoint_wrapper{
     float: right;
-    width: 230px;
+    width: 250px;
+}
+
+#group-form .add_endpoint { 
+	width: 250px;
 }
 
 #group-form .add_endpoint {

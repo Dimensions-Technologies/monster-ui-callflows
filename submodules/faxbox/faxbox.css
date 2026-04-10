@@ -1,18 +1,20 @@
-/*.callflows-port form .input a {
+/*
+.callflows-port form .input a {
 	color: #05ADDC;
 	font-size: 13px;
 	line-height: 30px;
-}*/
+}
 
-.callflows-port #faxbox-form .tooltip {
+.callflows-port #faxbox_form .tooltip {
 	display: inline-block;
 	float: none;
 	margin-left: 5px;
 }
 
-.callflows-port #faxbox-form span.text {
+.callflows-port #faxbox_form span.text {
 	color: #22a5ff;
 	font-size: 13px;
 	font-weight: bold;
 	line-height: 30px;
 }
+*/
