@@ -111,39 +111,125 @@ define(function(require) {
 			};
 
 			$('.add_user_div', directory_html).click(function() {
-				var $user = $('#select_user_id', directory_html);
-				var $callflow = $('#callflow_id', directory_html);
+				var $user = $('#select_user_id', directory_html),
+					$callflowType = $('#callflow_type', directory_html),
+					$callflow = $('#callflow_id', directory_html),
+					$userCallflow = $('#userCallflow_id', directory_html),
+					$phoneOnlyCallflow = $('#phoneOnlyCallflow_id', directory_html),
+					$callCentreCallflow = $('#callCentreCallflow_id', directory_html);
 
-				if ($user.val() !== 'empty_option_user' && $callflow.val() !== 'empty_option_callflow') {
-					var user_id = $user.val(),
-						user_data = {
-							user_id: user_id,
-							user_name: $('#option_user_' + user_id, directory_html).text(),
-							callflow_id: $callflow.val(),
-							field_data: {
-								callflows: data.field_data.callflows
-							},
-							_t: function(param) {
-								return window.translate.directory[param];
-							}
-						};
+				if (miscSettings.enableDirectoryCallflowFilter) {
 
-					if ($('#row_no_data', directory_html).size() > 0) {
-						$('#row_no_data', directory_html).remove();
+					if ($user.val() !== 'empty_option_user' && $callflow.val() !== 'empty_option_callflow' || $user.val() !== 'empty_option_user' && $userCallflow.val() !== 'empty_option_callflow' || $user.val() !== 'empty_option_user' && $phoneOnlyCallflow.val() !== 'empty_option_callflow' || $user.val() !== 'empty_option_user' && $callCentreCallflow.val() !== 'empty_option_callflow') {
+									
+						var selectedType = $callflowType.val(),
+							callflowId;
+
+						switch (selectedType) {
+							case "callflow":
+								callflowId = $callflow.val();
+								break;
+							case "userCallflow":
+								callflowId = $userCallflow.val();
+								break;
+							case "phoneOnlyCallflow":
+								callflowId = $phoneOnlyCallflow.val();
+								break;
+							case "callCentreCallflow":
+								callflowId = $callCentreCallflow.val();
+								break;
+						}
+		
+						var user_id = $user.val(),
+							user_data = {
+								user_id: user_id,
+								user_name: $('#option_user_' + user_id, directory_html).text(),
+								callflow_id: callflowId,
+								field_data: {
+									callflows: data.field_data.allCallflows
+								},
+								_t: function(param) {
+									return window.translate.directory[param];
+								}
+							};
+	
+						if ($('#row_no_data', directory_html).size() > 0) {
+							$('#row_no_data', directory_html).remove();
+						}
+
+						$('.rows', directory_html)
+							.prepend($(self.getTemplate({
+								name: 'userRow',
+								data: {
+									...user_data,
+									miscSettings: miscSettings
+								},
+								submodule: 'directory'
+							})));
+
+						$('#option_user_' + user_id, directory_html).hide();
+	
+						$user.val('empty_option_user');
+						$callflowType.val('null');
+						$callflow.val('empty_option_callflow');
+
+						$callflowType.val('null');
+						$('#callflow_type', directory_html).prop('disabled', true);
+						$('#callflow_type', directory_html).addClass('input-readonly');
+
+						$('#userCallflow_id', directory_html).hide();
+						$userCallflow.val('empty_option_callflow');
+						$('#phoneOnlyCallflow_id', directory_html).hide();
+						$phoneOnlyCallflow.val('empty_option_callflow');
+						$('#callCentreCallflow_id', directory_html).hide();
+						$callCentreCallflow.val('empty_option_callflow');
+
+						$('#callflow_id', directory_html).show();
+						$callflow.val('empty_option_callflow');
+						$('#callflow_id', directory_html).prop('disabled', true);
+						$('#callflow_id', directory_html).addClass('input-readonly');
+
+						$('.add_user_div', directory_html).prop('disabled', true);
+
+					} else {
+						monster.ui.alert('warning', self.i18n.active().callflows.directory.noDataSelected);
 					}
 
-					$('.rows', directory_html)
-						.prepend($(self.getTemplate({
-							name: 'userRow',
-							data: user_data,
-							submodule: 'directory'
-						})));
-					$('#option_user_' + user_id, directory_html).hide();
-
-					$user.val('empty_option_user');
-					$callflow.val('empty_option_callflow');
 				} else {
-					monster.ui.alert('warning', self.i18n.active().callflows.directory.noDataSelected);
+					if ($user.val() !== 'empty_option_user' && $callflow.val() !== 'empty_option_callflow') {
+						var user_id = $user.val(),
+							user_data = {
+								user_id: user_id,
+								user_name: $('#option_user_' + user_id, directory_html).text(),
+								callflow_id: $callflow.val(),
+								field_data: {
+									callflows: data.field_data.callflows
+								},
+								_t: function(param) {
+									return window.translate.directory[param];
+								}
+							};
+	
+						if ($('#row_no_data', directory_html).size() > 0) {
+							$('#row_no_data', directory_html).remove();
+						}
+	
+						$('.rows', directory_html)
+							.prepend($(self.getTemplate({
+								name: 'userRow',
+								data: {
+									...user_data,
+									miscSettings: miscSettings
+								},
+								submodule: 'directory'
+							})));
+						$('#option_user_' + user_id, directory_html).hide();
+	
+						$user.val('empty_option_user');
+						$callflow.val('empty_option_callflow');
+					} else {
+						monster.ui.alert('warning', self.i18n.active().callflows.directory.noDataSelected);
+					}
 				}
 			});
 
@@ -163,6 +249,81 @@ define(function(require) {
 				}
 			});
 
+
+			if (miscSettings.enableDirectoryCallflowFilter) {
+
+				$('#callflow_type', directory_html).prop('disabled', true);
+				$('#callflow_type', directory_html).addClass('input-readonly');
+
+				$('#callflow_id', directory_html).prop('disabled', true);
+				$('#callflow_id', directory_html).addClass('input-readonly');
+
+				$('.add_user_div', directory_html).prop('disabled', true);
+
+				$('#userCallflow_id', directory_html).hide();
+				$('#phoneOnlyCallflow_id', directory_html).hide();
+				$('#callCentreCallflow_id', directory_html).hide();
+
+				$(directory_html).find('#select_user_id').on('change', function() {				
+					var selectedType = this.value;
+					
+					if (selectedType != null) {
+						$('#callflow_type', directory_html).prop('disabled', false);
+						$('#callflow_type', directory_html).removeClass('input-readonly');
+					}
+
+				});
+			
+				$(directory_html).find('#callflow_type').on('change', function() {				
+					var selectedType = this.value;
+					
+					$('#callflow_id', directory_html).prop('disabled', false);
+					$('#callflow_id', directory_html).removeClass('input-readonly');
+
+					$('#callflow_id', directory_html).hide();
+					$('#userCallflow_id', directory_html).hide();
+					$('#phoneOnlyCallflow_id', directory_html).hide();
+					$('#callCentreCallflow_id', directory_html).hide();
+
+					$('.add_user_div', directory_html).prop('disabled', true);
+				
+					switch (selectedType) {
+						case "callflow":
+							$('#callflow_id', directory_html).show();
+							break;
+						case "userCallflow":
+							$('#userCallflow_id', directory_html).show();
+							break;
+						case "phoneOnlyCallflow":
+							$('#phoneOnlyCallflow_id', directory_html).show();
+							break;
+						case "callCentreCallflow":
+							$('#callCentreCallflow_id', directory_html).show();
+							break;
+					}
+
+				});
+
+				$(directory_html).find('#callflow_id, #userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id').on('change', function() {				
+					var selectedType = this.value;
+
+					if (selectedType != null) {
+						$('.add_user_div', directory_html).prop('disabled', false);
+					}
+
+				});
+			
+			}
+
+			if (miscSettings.enableDirectoryCallflowFilter) {
+				$('.rows .row:not(#row_no_data)', directory_html).each(function() {
+					var userCallflowId = $('#user_callflow_id', $(this));
+					if (userCallflowId.val() === '_empty') {
+						userCallflowId.addClass('deleted-callflow');
+					}
+				});
+			}	
+			
 			(target)
 				.empty()
 				.append(directory_html);
@@ -173,7 +334,15 @@ define(function(require) {
 
 			if (data.data.id) {
 				if ('users' in data.data && data.data.users.length > 0) {
-					var user_item;
+					var user_item,
+						callflowData;
+
+					if (miscSettings.enableDirectoryCallflowFilter) {
+						callflowData = data.field_data.allCallflows
+					} else {
+						callflowData = data.field_data.callflows
+					}
+
 					$.each(data.field_data.users, function(k, v) {
 						if (v.id in data.field_data.old_list) {
 							user_item = {
@@ -181,14 +350,17 @@ define(function(require) {
 								user_name: v.first_name + ' ' + v.last_name,
 								callflow_id: data.field_data.old_list[v.id],
 								field_data: {
-									callflows: data.field_data.callflows
+									callflows: callflowData
 								}
 							};
 
 							$('.rows', parent)
 								.append($(self.getTemplate({
 									name: 'userRow',
-									data: user_item,
+									data: {
+										...user_item,
+										miscSettings: miscSettings
+									},
 									submodule: 'directory'
 								})));
 							$('#option_user_' + v.id, parent).hide();
@@ -250,35 +422,269 @@ define(function(require) {
 			};
 
 			monster.parallel({
+							
 				callflow_list: function(callback) {
-					self.callApi({
-						resource: 'callflow.list',
-						data: {
-							accountId: self.accountId,
-							filters: {
-								paginate: 'false'
+					if (miscSettings.enableDirectoryCallflowFilter) {
+
+						var callflowFilters = {
+							paginate: false,
+							filter_not_numbers: 'no_match',
+							filter_not_name: 'Dimensions_ReservedFeatureCodes'
+						};
+
+						var hideDimensionDeviceCallflow = [],
+							hideCallCentreCallflow = [];
+
+						// are custom callflow actions are enabled
+						if (miscSettings.enableCustomCallflowActions) {
+							if (miscSettings.callflowActionHideSmartPbxCallflows) {
+								callflowFilters['filter_not_type'] = 'mainUserCallflow';
 							}
-						},
-						success: function(callflows) {
-							var list_callflows = [];
-							$.each(callflows.data, function() {
-								if (this.featurecode === false) {
-									list_callflows.push(this);
-								}
-							});
-
-							list_callflows.sort(function(a, b) {
-								var aName = (a.name || (a.numbers[0] + '')).toLowerCase(),
-									bName = (b.name || (b.numbers[0] + '')).toLowerCase();
-
-								return aName > bName ? 1 : -1;
-							});
-
-							defaults.field_data.callflows = list_callflows;
-
-							callback(null, callflows);
+							if (miscSettings.callflowActionHideOriginVoip) {
+								callflowFilters['filter_not_ui_metadata.origin'] = 'voip';
+							}
+							if (miscSettings.callflowActionHideQubicleCallflows) {
+								hideCallCentreCallflow.push('qubicle');
+							}
+							if (miscSettings.callflowActionHideAcdcCallflows) {
+								hideCallCentreCallflow.push('acdc_member');
+							}
+							if (hideCallCentreCallflow.length > 0) {
+								callflowFilters['filter_not_flow.module'] = hideCallCentreCallflow;
+							}
+							if (miscSettings.callflowActionHidePhoneOnlyCallflows) {
+								hideDimensionDeviceCallflow.push('communal');
+							}
+							if (miscSettings.callflowActionHideLegacyPbxCallflows) {
+								hideDimensionDeviceCallflow.push('legacypbx');
+							}
+							if (hideDimensionDeviceCallflow.length > 0) {
+								callflowFilters['filter_not_dimension.type'] = hideDimensionDeviceCallflow;
+							}
 						}
-					});
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: callflowFilters
+							},
+							success: function(callflows) {
+								var list_callflows = [];
+								$.each(callflows.data, function() {
+									if (this.featurecode === false) {
+										list_callflows.push(this);
+									}
+								});
+
+								list_callflows.sort(function(a, b) {
+									var aName = (a.name || (a.numbers[0] + '')).toLowerCase(),
+										bName = (b.name || (b.numbers[0] + '')).toLowerCase();
+
+									return aName > bName ? 1 : -1;
+								});
+
+								defaults.field_data.callflows = list_callflows;
+
+								callback(null, callflows);
+							}
+						});
+					
+					} else {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match'
+								}
+							},
+							success: function(callflows) {
+								var list_callflows = [];
+								$.each(callflows.data, function() {
+									if (this.featurecode === false) {
+										list_callflows.push(this);
+									}
+								});
+
+								list_callflows.sort(function(a, b) {
+									var aName = (a.name || (a.numbers[0] + '')).toLowerCase(),
+										bName = (b.name || (b.numbers[0] + '')).toLowerCase();
+
+									return aName > bName ? 1 : -1;
+								});
+
+								defaults.field_data.callflows = list_callflows;
+
+								callback(null, callflows);
+							}
+						});
+					}
+				},
+				userCallflow_list: function(callback) {
+					if (miscSettings.enableDirectoryCallflowFilter) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match',
+									filter_type: 'mainUserCallflow'
+								}
+							},
+							success: function(callflows) {
+								var list_callflows = [];
+								
+								$.each(callflows.data, function() {
+									if (this.name) {
+										this.name = this.name.replace("SmartPBX's Callflow", '');
+										list_callflows.push(this);
+									}									
+								});
+
+								// Sort list_callflows alphabetically by name
+								list_callflows.sort(function(a, b) {
+									return a.name.localeCompare(b.name);
+								});
+															
+								defaults.field_data.userCallflows = list_callflows;
+
+								callback(null, callflows);
+							}
+						});
+					} else {
+						callback(null)
+					}
+				},
+				phoneOnlyCallflow_list: function(callback) {
+					if (miscSettings.enableDirectoryCallflowFilter) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match',
+									'filter_dimension.type': 'communal'
+								}
+							},
+							success: function(callflows) {
+								var list_callflows = [];
+								$.each(callflows.data, function() {
+									if (this.featurecode === false) {
+										list_callflows.push(this);
+									}
+								});
+
+								list_callflows.sort(function(a, b) {
+									var aName = (a.name || (a.numbers[0] + '')).toLowerCase(),
+										bName = (b.name || (b.numbers[0] + '')).toLowerCase();
+
+									return aName > bName ? 1 : -1;
+								});
+
+								defaults.field_data.phoneOnlyCallflows = list_callflows;
+
+								callback(null, callflows);
+							}
+						});
+					} else {
+						callback(null)
+					}
+				}, 
+				callCentreCallflow_list: function(callback) {
+					if (miscSettings.enableDirectoryCallflowFilter) {
+						var callflowFilters = {
+							paginate: false,
+							filter_not_numbers: 'no_match'
+						};
+
+						var callCentreCallflow = [];
+
+						if (!miscSettings.callCentreActionHideQubicle) {
+							callCentreCallflow.push('qubicle');
+						}
+						if (miscSettings.callCentreActionShowAcdc) {
+							callCentreCallflow.push('acdc_member');
+						}
+						if (callCentreCallflow.length > 0) {
+							callflowFilters['filter_flow.module'] = callCentreCallflow;
+						}
+						
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: callflowFilters
+							},
+							success: function(callflows) {
+								var list_callflows = [];
+
+								$.each(callflows.data, function() {
+									if (this.name) {
+										this.name = this.name.replace("Qubicle Callflow", '');
+										list_callflows.push(this);
+									}									
+								});
+
+								list_callflows.sort(function(a, b) {
+									var aName = (a.name || (a.numbers[0] + '')).toLowerCase(),
+										bName = (b.name || (b.numbers[0] + '')).toLowerCase();
+
+									return aName > bName ? 1 : -1;
+								});
+
+								defaults.field_data.callCentreCallflows = list_callflows;
+
+								callback(null, callflows);
+							}
+						});
+					} else {
+						callback(null)
+					}
+				},
+				fullCallflow_list: function(callback) {
+					if (miscSettings.enableDirectoryCallflowFilter) {
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false,
+									filter_not_numbers: 'no_match'
+								}
+							},
+							success: function(callflows) {
+								var list_callflows = [];
+								$.each(callflows.data, function() {
+									if (this.featurecode === false) {
+										if (this.name) {
+											if (this.name.includes("SmartPBX's Callflow")) {
+												var userCallflow = this.name.replace("SmartPBX's Callflow", '');
+												this.name = 'User Callflow - ' + userCallflow;
+											}
+											this.name = this.name.replace("Qubicle Callflow", 'Call Center Queue - ');
+											list_callflows.push(this);
+										}
+									}
+								});
+
+								list_callflows.sort(function(a, b) {
+									var aName = (a.name || (a.numbers[0] + '')).toLowerCase(),
+										bName = (b.name || (b.numbers[0] + '')).toLowerCase();
+
+									return aName > bName ? 1 : -1;
+								});
+
+								defaults.field_data.allCallflows = list_callflows;
+
+								callback(null, callflows);
+							}
+						});
+					} else {
+						callback(null)
+					}
 				},
 				user_list: function(callback) {
 					self.callApi({
@@ -321,6 +727,7 @@ define(function(require) {
 					}
 				}
 			}, function(err, results) {
+
 				var render_data = defaults;
 
 				if (typeof data === 'object' && data.id) {
@@ -387,6 +794,8 @@ define(function(require) {
 				delete form_data.max_dtmf;
 			}
 
+			delete form_data.callflow_type;
+			delete form_data.select_user_id;
 			delete form_data.user_callflow_id;
 			delete form_data.user_id;
 			delete form_data.callflow_id;
