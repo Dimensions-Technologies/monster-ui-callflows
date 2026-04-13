@@ -5,8 +5,8 @@
 			<div class="popup_field">
 				<!--<label for="queue_selector">{{ i18n.callflows.qubicle.which_queue}}</label>-->
 				<div class="select_wrapper">
-					<select id="queue_selector">
-					<option value="null" hidden>Select a queue</option>
+					<select id="queue_selector" data-placeholder="Select a queue...">
+					<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 					{{#select selected}}
 						{{#each items}}
 							<option value="{{id}}">{{name}}</option>

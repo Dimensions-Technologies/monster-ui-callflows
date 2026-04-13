@@ -395,6 +395,27 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
+			// add search to dropdown
+			vmbox_html.find('#media_unavailable').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
+			// add search to dropdown
+			vmbox_html.find('#media_temporary_unavailable').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
+			// add search to dropdown
+			vmbox_html.find('#timezone').chosen({
+				width: '224px',
+				disable_search_threshold: 0,
+				search_contains: true
+			})
+
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
@@ -558,6 +579,17 @@ define(function(require) {
 									},
 									submodule: 'vmbox'
 								}));
+
+								// add search to dropdown
+								popup_html.find('#vmbox_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
+
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
 								// enable or disable the save button based on the dropdown value
 								function toggleSaveButton() {
