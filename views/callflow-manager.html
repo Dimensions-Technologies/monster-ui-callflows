@@ -69,12 +69,39 @@
 
 			<div class="callflow-view clearfix">
 				<div class="real-content">
-
 					{{#unless miscSettings.hideCallflowHelp}}
-						<div class="callflow-help"/>
+						<div class="callflow-help"></div>
 					{{/unless}}
-
 					<div id="ws_callflow" class="clearfix">
+						<div class="button-bar">
+							{{#unless miscSettings.callflowButtonsWithinHeader}}
+								<div class="buttons"></div>
+							{{/unless}}
+							<div class="callflow-zoom">
+								<button type="button" class="monster-button monster-button-secondary non-fixed reset-view-button">{{ i18n.callflows.resetView }}</button>
+								{{#if miscSettings.enableGoogleIcons}}
+									<div class="google-icons">	
+										<button type="button" class="monster-button monster-button-secondary non-fixed zoom-in-button">
+											<span class="material-symbols-medium">zoom_in</span>
+											<span class="button-label">{{ i18n.callflows.zoomIn }}</span>
+										</button>
+										<button type="button" class="monster-button monster-button-secondary non-fixed zoom-out-button">
+											<span class="material-symbols-medium">zoom_out</span>
+											<span class="button-label">{{ i18n.callflows.zoomOut }}</span>
+										</button>
+									</div>
+								{{else}}
+									<button type="button" class="monster-button monster-button-secondary non-fixed zoom-in-button">
+										<span class="fa fa-search-plus"></span>
+										<span class="button-label">{{ i18n.callflows.zoomIn }}</span>
+									</button>
+									<button type="button" class="monster-button monster-button-secondary non-fixed zoom-out-button">
+										<span class="fa fa-search-minus"></span>
+										<span class="button-label">{{ i18n.callflows.zoomOut }}</span>
+									</button>
+								{{/if}}
+							</div>
+						</div>
 						<div class="tools">
 							<div id="ws_cf_tools"></div>
 						</div>
@@ -88,10 +115,9 @@
 							<div class="callflow">
 								<div>
 									<span class="flow">
-										{{#unless miscSettings.callflowButtonsWithinHeader}}
-											<div class="buttons"></div>
-										{{/unless}}
-										<div id="ws_cf_flow"></div>
+										<div id="ws_cf_wrapper">
+											<div id="ws_cf_flow"></div>
+										</div>
 									</span>
 								</div>
 							</div>
