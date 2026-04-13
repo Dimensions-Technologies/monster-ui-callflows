@@ -5,8 +5,8 @@
 			<div class="popup_field">
 				<!--<label for="endpoint_selector">{{ i18n.oldCallflows.which_endpoint }}</label>-->
 				<div class="select_wrapper">
-					<select id="endpoint_selector">
-						<option value="null" hidden>Select a device</option>
+					<select id="endpoint_selector" data-placeholder="Select a device...">
+						<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 						{{#select data.selected}}
 							{{#each data.items}}
 								{{#each this}}

@@ -5,8 +5,8 @@
 			<div class="popup_field">
 				<!--<label for="conference_selector">{{ i18n.callflows.conference.which_conference}}</label>-->
 				<div class="select_wrapper">
-					<select id="conference_selector">
-					<option value="null" hidden>Select a conference</option>
+					<select id="conference_selector" data-placeholder="Select a conference...">
+					<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
 					{{#select selected}}
 						{{#each items}}
 							<option value="{{id}}">{{name}}</option>
