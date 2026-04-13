@@ -1044,6 +1044,78 @@ define(function(require) {
 					build_regex: function(number) {
 						return '^\\*'+number+'([0-9]*)$';
 					}
+				},
+				'acdc_agent_login': {
+					name: self.i18n.active().callflows.featureCodes.agent_login,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'acdc_agent',
+					number_type: 'numbers',
+					data: {
+                		action: "login",
+						retries: 3
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '44',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '*' + number;
+					}
+				},
+				'acdc_agent_logout': {
+					name: self.i18n.active().callflows.featureCodes.agent_logout,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'acdc_agent',
+					number_type: 'numbers',
+					data: {
+                		action: "logout",
+						retries: 3
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '45',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '*' + number;
+					}
+				},
+				'acdc_agent_pause': {
+					name: self.i18n.active().callflows.featureCodes.agent_pause,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'acdc_agent',
+					number_type: 'numbers',
+					data: {
+                		action: "paused",
+						retries: 3
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '48',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '*' + number;
+					}
+				},
+				'acdc_agent_resume': {
+					name: self.i18n.active().callflows.featureCodes.agent_resume,
+					icon: 'phone',
+					category: self.i18n.active().callflows.featureCodes.call_center_cat,
+					module: 'acdc_agent',
+					number_type: 'numbers',
+					data: {
+                		action: "resume",
+						retries: 3
+					},
+					enabled: false,
+					hasStar: true,
+					default_number: '49',
+					number: this.default_number,
+					build_regex: function(number) {
+						return '*' + number;
+					}
 				}
 				/*'call_forward[action=on_busy_enable]': {
 					name: 'Enable Call-Forward on Busy',
