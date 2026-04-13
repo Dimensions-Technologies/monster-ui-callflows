@@ -30,6 +30,8 @@
 			"qubicle_tip": "Route to a queue",
 			"which_queue": "Which queue?"
 		},
+		"previewError": "Failed to load callflow preview.",
+		"previewError404": "Failed to load callflow preview: the target callflow no longer exists.",
 		"after_bridge": {
 			"category": "After Bridge",
 			"park": {

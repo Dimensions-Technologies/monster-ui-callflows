@@ -61,81 +61,113 @@ define(function(require) {
 					},
 					edit: function(node, callback) {
 						self.conferenceList(function(data, status) {
-							var popup_html = $(self.getTemplate({
-									name: 'callflowEdit',
-									data: {
-										hideFromCallflowAction: args.hideFromCallflowAction,
-										hideAdd: args.hideAdd,
-										items: _.sortBy(data, 'name'),
-										selected: node.getMetadata('id') || ''
-									},
-									submodule: 'conference'
-								})),
-								popup;
 
-							// add search to dropdown
-							popup_html.find('#conference_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(data, { id: selectedId });	
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: data,
+									resource: 'conference',
+									resourceId: 'conferenceId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#conference_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
-									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
+							function renderPopup(itemNotFound) {
+								var popup_html = $(self.getTemplate({
+										name: 'callflowEdit',
+										data: {
+											hideFromCallflowAction: args.hideFromCallflowAction,
+											hideAdd: args.hideAdd,
+											items: _.sortBy(data, 'name'),
+											selected: node.getMetadata('id') || ''
+										},
+										submodule: 'conference'
+									})),
+									popup;
+
+								var selector = popup_html.find('#conference_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Conference Not Found").addClass("item-not-found").trigger("chosen:updated");
 								}
-							}
 
-							toggleSaveButton();
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
 
-							$('#conference_selector', popup_html).change(toggleSaveButton);
-							
-							if ($('#conference_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
+								// add search to dropdown
+								popup_html.find('#conference_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#conference_selector', popup_html).val() } : {};
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-								ev.preventDefault();
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#conference_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
 
-								self.conferencePopupEdit(_data, function(_data) {
-									node.setMetadata('id', _data.id || 'null');
+								toggleSaveButton();
 
-									node.caption = _data.name || '';
+								$('#conference_selector', popup_html).change(toggleSaveButton);
+								
+								if ($('#conference_selector option:selected', popup_html).val() === undefined) {
+									$('#edit_link', popup_html).hide();
+								}
+
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#conference_selector', popup_html).val() } : {};
+
+									ev.preventDefault();
+
+									self.conferencePopupEdit(_data, function(_data) {
+										node.setMetadata('id', _data.id || 'null');
+
+										node.caption = _data.name || '';
+
+										popup.dialog('close');
+									});
+								});
+
+								$('#add', popup_html).click(function() {
+									node.setMetadata('id', $('#conference_selector', popup_html).val());
+
+									node.caption = $('#conference_selector option:selected', popup_html).text();
 
 									popup.dialog('close');
 								});
-							});
 
-							$('#add', popup_html).click(function() {
-								node.setMetadata('id', $('#conference_selector', popup_html).val());
-
-								node.caption = $('#conference_selector option:selected', popup_html).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.conference.conference,
-								minHeight: '0',
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.conference.conference,
+									minHeight: '0',
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								}
-							});
+								});
+							}
 						});
 					},
 					listEntities: function(callback) {
