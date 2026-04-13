@@ -13,14 +13,16 @@
 		<ul class="tabs" data-tabs="tabs">
 			<li class="active"><a href="#basic">{{ i18n.callflows.device.basic }}</a></li>
 			<li><a href="#caller_id">{{ i18n.callflows.device.caller_id }}</a></li>
-			{{#unless miscSettings.hideDeviceSipSettings}}
+			{{#unless dimensionDeviceType.dimensionsProvisionedDevice}}
 				<li><a href="#sip_settings">{{ i18n.callflows.device.sip_settings }}</a></li>
 			{{/unless}}
 			{{#unless miscSettings.hideDeviceAudioCodecsSoftphone}}
 				<li><a href="#audio_settings">{{ i18n.callflows.device.audio_settings }}</a></li>
 			{{/unless}}
 			{{#unless miscSettings.hideDeviceVideoCodecsSoftphone}}
+			{{#unless dimensionDeviceType.hideDeviceVideoCodecsSoftphone}}
 				<li><a href="#video_settings">{{ i18n.callflows.device.video_settings }}</a></li>
+			{{/unless}}
 			{{/unless}}
 			<li><a href="#options">{{ i18n.callflows.device.options }}</a></li>
 			<li><a href="#restrictions">{{ i18n.callflows.device.restrictions }}</a></li>
@@ -29,7 +31,7 @@
 			<div class="pill-content">
 				<div class="active basic_view" id="basic">
 					<h3>{{ i18n.callflows.device.basic_settings }}</h3>
-					{{#unless miscSettings.deviceReadOnlyFields}}
+					{{#unless dimensionDeviceType.dimensionsProvisionedDevice}}
 						<div class="clearfix">
 							<label for="name">{{ i18n.callflows.device.device_nickname }}</label>
 							<div class="input">
@@ -37,7 +39,7 @@
 							</div>
 						</div>
 					{{/unless}}
-					{{#if miscSettings.deviceReadOnlyFields}}
+					{{#if dimensionDeviceType.dimensionsProvisionedDevice}}
 						<div class="clearfix">
 							<label for="name">{{ i18n.callflows.device.device_nickname }}</label>
 							<div class="input">
@@ -45,8 +47,9 @@
 							</div>
 						</div>
 					{{/if}}
-					{{#unless miscSettings.devicePreventUserAssignment}}
+
 					{{#unless field_data.hide_owner}}
+					{{#unless dimensionDeviceType.dimensionsProvisionedDevice}}
 						<div class="clearfix">
 							<label for="owner_id">{{ i18n.callflows.device.assign_to }}</label>
 							<div class="input">
@@ -69,7 +72,8 @@
 						</div>
 					{{/unless}}
 					{{/unless}}
-					{{#if miscSettings.devicePreventUserAssignment}}
+
+					{{#if dimensionDeviceType.dimensionsProvisionedDevice}}
 						<div class="clearfix">
 							<label for="owner_id">{{ i18n.callflows.device.assign_to }}</label>
 							<div class="input">
@@ -122,29 +126,6 @@
 
 						</div>
 					{{/if}}
-
-					<!--
-					<div class="clearfix">
-						<label for="sip_realm">{{ i18n.callflows.device.realm }}</label>
-						<div class="input">
-							<span class="uneditable-input">{{ field_data.sip.realm }}</span>
-						</div>
-					</div>
-
-					<div class="clearfix">
-						<label for="sip_username">{{ i18n.callflows.device.username }}</label>
-						<div class="input">
-							<input class="span4" id="sip_username" name="sip.username" type="text" placeholder="{{ i18n.callflows.device.username }}" value="{{ data.sip.username }}" rel="popover" data-content="{{ i18n.callflows.device.username_data_content }}" required/>
-						</div>
-					</div>
-
-					<div class="clearfix">
-						<label for="sip_password">{{ i18n.callflows.device.password }}</label>
-						<div class="input">
-							<input class="span4" id="sip_password" name="sip.password" autocomplete="new-password" type="text" placeholder="" value="{{ data.sip.password }}" required/>
-						</div>
-					</div>
-					-->
 
 					<div class="clearfix">
 						<div class="input">
@@ -201,49 +182,29 @@
 				</div>
 
 				<div id="caller_id">
+
 				{{#unless dimensionDeviceType.hotdesk}}
 				{{#unless dimensionDeviceType.softphone}}
 					<div class="clearfix">
 						<label for="name">{{ i18n.callflows.device.presence_id }}</label>
-						{{#unless miscSettings.deviceReadOnlyFields}}
-							<div class="input">
-								<input class="span4" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.device.presence_id_placeholder }}" value="{{data.presence_id}}" rel="popover" data-content="{{ i18n.callflows.device.presence_id_help }}"/>
-							</div>
-						{{/unless}}
-						{{#if miscSettings.deviceReadOnlyFields}}
-							<div class="input">
-								<input disabled class="span4 input-readonly" id="presence_id" name="presence_id" type="text" />
-							</div>
-						{{/if}}
+						<div class="input">
+							<input class="span4" id="presence_id" name="presence_id" type="text" placeholder="{{ i18n.callflows.device.presence_id_placeholder }}" value="{{data.presence_id}}" rel="popover" data-content="{{ i18n.callflows.device.presence_id_help }}"/>
+						</div>
 					</div>
 					<!-- internal / on-net caller id -->
 					<h3>{{ i18n.callflows.device.in_house_calls }}</h3>
 					<div class="clearfix">
 						<label for="caller_id_name_internal">{{ i18n.callflows.device.caller_id_name }}</label>
-						{{#unless miscSettings.deviceReadOnlyFields}}
-							<div class="input">
-								<input class="span4" id="caller_id_name_internal" name="caller_id.internal.name" type="text" placeholder="{{ i18n.callflows.device.caller_id_name_placeholder }}" value="{{data.caller_id.internal.name}}"  rel="popover" data-content="{{ i18n.callflows.device.caller_id_name_data_content }}" />
-							</div>
-						{{/unless}}
-						{{#if miscSettings.deviceReadOnlyFields}}
-							<div class="input">
-								<input disabled class="span4 input-readonly" id="caller_id_name_internal" name="caller_id.internal.name" type="text" />
-							</div>
-						{{/if}}
+						<div class="input">
+							<input class="span4" id="caller_id_name_internal" name="caller_id.internal.name" type="text" placeholder="{{ i18n.callflows.device.caller_id_name_placeholder }}" value="{{data.caller_id.internal.name}}"  rel="popover" data-content="{{ i18n.callflows.device.caller_id_name_data_content }}" />
+						</div>
 					</div>
 
 					<div class="clearfix">
 						<label for="caller_id_number_internal">{{ i18n.callflows.device.caller_id_number }}</label>
-						{{#unless miscSettings.deviceReadOnlyFields}}
-							<div class="input">
-								<input class="span4" id="caller_id_number_internal" name="caller_id.internal.number" type="text" placeholder="+15555555555" value="{{data.caller_id.internal.number}}" rel="popover" data-content="{{ i18n.callflows.device.caller_id_number_data_content }}" data-mask="phoneNumber" />
-							</div>
-						{{/unless}}
-						{{#if miscSettings.deviceReadOnlyFields}}
-							<div class="input">
-								<input disabled class="span4 input-readonly" id="caller_id_number_internal" name="caller_id.internal.number" />
-							</div>
-						{{/if}}
+						<div class="input">
+							<input class="span4" id="caller_id_number_internal" name="caller_id.internal.number" type="text" placeholder="+15555555555" value="{{data.caller_id.internal.number}}" rel="popover" data-content="{{ i18n.callflows.device.caller_id_number_data_content }}" data-mask="phoneNumber" />
+						</div>
 					</div>
 
 					<hr />
@@ -648,7 +609,7 @@
 							</div>
 						</div>
 					{{/unless}}
-
+					
 					{{#each field_data.call_restriction}}
 					<div class="clearfix label-wide">
 						<label>{{ this.friendly_name }}</label>
