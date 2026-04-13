@@ -39,8 +39,9 @@
                         <label for="strategy">Ring Strategy</label>
                         <div class="input strategy">
                             <select name="strategy" id="strategy" class="medium" >
-                                <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>Round Robin</option>
                                 <option value="most_idle" {{#compare data.strategy "===" "most_idle"}} selected{{/compare}}>Most Idle</option>
+                                <option value="ring_all" {{#compare data.strategy "===" "ring_all"}} selected{{/compare}}>Ring All</option>
+                                <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>Round Robin</option>
                             </select>
                             <!--<span class="help-block">{{ i18nApp.strategy }}</span>-->
                         </div>
@@ -52,8 +53,9 @@
                         <label for="strategy">Ring Strategy</label>
                         <div class="input">
                             <select disabled name="strategy" id="strategy" class="medium input-readonly" >
-                                <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>Round Robin</option>
                                 <option value="most_idle" {{#compare data.strategy "===" "most_idle"}} selected{{/compare}}>Most Idle</option>
+                                <option value="ring_all" {{#compare data.strategy "===" "ring_all"}} selected{{/compare}}>Ring All</option>
+                                <option value="round_robin" {{#compare data.strategy "===" "round_robin"}} selected{{/compare}}>Round Robin</option>
                             </select>
                             <!--<span class="help-block">{{ i18nApp.strategy }}</span>-->
                         </div>
