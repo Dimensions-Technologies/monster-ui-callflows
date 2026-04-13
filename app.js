@@ -3343,6 +3343,14 @@ define(function(require) {
 
 					if (activate) {
 						$(this).addClass('active');
+
+						if (miscSettings.enableCallflowActionAnimation) {
+							$(this).addClass('node-pulse');
+
+							setTimeout(() => {
+								$(this).removeClass('node-pulse');
+							}, 3000);
+						}
 					} else {
 						$(this).addClass('inactive');
 						$(this).droppable('disable');
@@ -3370,6 +3378,14 @@ define(function(require) {
 
 						if (activate) {
 							$(this).addClass('active');
+
+							if (miscSettings.enableCallflowActionAnimation) {
+								$(this).addClass('node-pulse');
+	
+								setTimeout(() => {
+									$(this).removeClass('node-pulse');
+								}, 3000);
+							}
 						} else {
 							$(this).addClass('inactive');
 							$(this).droppable('disable');
