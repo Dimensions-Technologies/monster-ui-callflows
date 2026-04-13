@@ -77,6 +77,11 @@
 							{{#unless miscSettings.callflowButtonsWithinHeader}}
 								<div class="buttons"></div>
 							{{/unless}}
+
+							<div id="pending_change">
+								<span>{{ i18n.oldCallflows.you_have_modified_this_callflow_basic }}</span>
+							</div>
+
 							<div class="callflow-zoom">
 								<button type="button" class="monster-button monster-button-secondary non-fixed reset-view-button">{{ i18n.callflows.resetView }}</button>
 								{{#if miscSettings.enableGoogleIcons}}
@@ -101,16 +106,19 @@
 									</button>
 								{{/if}}
 							</div>
+
 						</div>
 						<div class="tools">
 							<div id="ws_cf_tools"></div>
 						</div>
 						<div class="flowchart">
+							<!--
 							<div id="callflow_header">
 								<div id="pending_change">
 									<span>{{ i18n.oldCallflows.you_have_modified_this_callflow }}</span>
 								</div>
 							</div>
+							-->
 							<div id="hidden_callflow_warning">{{ i18n.callflows.hiddenCallflowWarning }}</div>
 							<div class="callflow">
 								<div>
