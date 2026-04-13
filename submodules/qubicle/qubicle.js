@@ -36,6 +36,7 @@ define(function(require) {
 							maxSize: '1'
 						}
 					],
+					isTerminating: 'true',
 					isUsable: 'true',
 					isListed: determineIsListed('qubicle[id=*]'),
 					weight: 30,

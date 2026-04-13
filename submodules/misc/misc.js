@@ -2987,7 +2987,12 @@ define(function(require) {
 					data: {
 						custom_application_vars: {}
 					},
-					rules: [],
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
 					isUsable: 'true',
 					isListed: determineIsListed('set_variables[]'),
 					weight: 31,
@@ -3006,7 +3011,12 @@ define(function(require) {
 					module: 'webhook',
 					tip: self.i18n.active().callflows.webhook.tip,
 					data: {},
-					rules: [],
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
 					isUsable: 'true',
 					isListed: determineIsListed('webhook[]'),
 					weight: 170,
@@ -3025,7 +3035,12 @@ define(function(require) {
 					module: 'webhook',
 					tip: self.i18n.active().callflows.callTag.tip,
 					data: {},
-					rules: [],
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						}
+					],
 					isUsable: 'true',
 					isListed: miscSettings.enableDimensionsCallTagAction && determineIsListed('dimensionsCallTag[id=*]'),
 					weight: 90,
@@ -3044,7 +3059,18 @@ define(function(require) {
 					module: 'pivot',
 					tip: self.i18n.active().callflows.directoryRouting.tip,
 					data: {},
-					rules: [],
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '1'
+						},
+						{
+							type: 'allowedChildren',
+							action: [
+								'callflow[id=*]'
+							]
+						}
+					],
 					isUsable: 'true',
 					isListed: miscSettings.enableDimensionsDirectoryRoutingAction && determineIsListed('dimensionsDirectoryRouting[id=*]'),
 					weight: 78,
