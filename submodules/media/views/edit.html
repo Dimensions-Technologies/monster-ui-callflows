@@ -52,33 +52,23 @@
 							<div class="input player_file">
 								<span class="uneditable-input">{{data.description}}</span>
 							</div>
-					</div>
-						<div class="clearfix player_file file">
-							<div class="input">
-								<button class="monster-button" id="change_link">{{ i18n.callflows.media.change_file }}</button>
-								<button class="monster-button" id="download_link">{{ i18n.callflows.media.download_file }}</button>
+							
+							<div class="clearfix player_file file">
+								<div class="input">
+									<button class="monster-button" id="change_link">{{ i18n.callflows.media.change_file }}</button>
+									<button class="monster-button" id="download_link">{{ i18n.callflows.media.download_file }}</button>
+								</div>
 							</div>
-						</div>
-					{{#if showMediaUploadDisclosure}}
-						<div>
-							<br>
-							{{#monsterText}}
-								{{i18n.mediaUploadDisclosure.text}}
-							{{/monsterText}}
-						</div>
-					{{/if}}
-						{{else}}
-					{{#if showMediaUploadDisclosure}}
-						<div>
-							<br>
-							{{#monsterText}}
-								{{i18n.mediaUploadDisclosure.text}}
-							{{/monsterText}}
-						</div>
-					{{/if}}
-					</div>
 						{{/if}}
 
+						<div class="media_upload_disclosure">
+							<br>
+							{{#monsterText}}
+								{{i18n.callflows.media.mediaUploadDisclosure.text}}
+							{{/monsterText}}
+						</div>	
+					</div>
+					
 					<div class="clearfix tts">
 						<label for="tts_text">{{ i18n.callflows.media.text }}</label>
 						<div class="input">

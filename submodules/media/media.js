@@ -23,8 +23,8 @@ define(function(require) {
 					data: _.merge({
 						hideAdd: hideAdd,
 						miscSettings: miscSettings,
-						ttsLanguages: ttsLanguages,
-						showMediaUploadDisclosure: monster.config.whitelabel.showMediaUploadDisclosure
+						ttsLanguages: ttsLanguages
+						//showMediaUploadDisclosure: monster.config.whitelabel.showMediaUploadDisclosure
 					}, data),
 					submodule: 'media'
 				})),
@@ -84,14 +84,20 @@ define(function(require) {
 			});
 
 			function changeType($select) {
-				var type = $select.val();
-
+				var type = $select.val(),
+					mediaDisclosure = monster.config.whitelabel.showMediaUploadDisclosure;
+					
+				$('.media_upload_disclosure', media_html).hide();
+			
 				if (type === 'tts') {
 					$('.tts', media_html).show();
 					$('.file', media_html).hide();
 				} else if (type === 'upload') {
 					$('.tts', media_html).hide();
 					$('.file', media_html).show();
+					if (mediaDisclosure) {
+						$('.media_upload_disclosure', media_html).show();
+					}
 				}
 			}
 
