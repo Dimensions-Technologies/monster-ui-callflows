@@ -571,81 +571,112 @@ define(function(require) {
 							self.vmboxList(function(data) {
 								var popup, popup_html;
 
-								popup_html = $(self.getTemplate({
-									name: 'callflowEdit',
-									data: {
-										items: _.sortBy(data, 'name'),
-										selected: node.getMetadata('id') || ''
-									},
-									submodule: 'vmbox'
-								}));
+								var selectedId = node.getMetadata('id') || '',
+									selectedItem = _.find(data, { id: selectedId });
 
-								// add search to dropdown
-								popup_html.find('#vmbox_selector').chosen({
-									width: '100%',
-									disable_search_threshold: 0,
-									search_contains: true
-								}).on('chosen:showing_dropdown', function() {
-									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-								});
-
-								popup_html.find('.select_wrapper').addClass('dialog_popup');
-
-								// enable or disable the save button based on the dropdown value
-								function toggleSaveButton() {
-									var selectedValue = $('#vmbox_selector', popup_html).val();
-									
-									if (selectedValue == 'null') {
-										$('#add', popup_html).prop('disabled', true);
-										$('#edit_link', popup_html).hide();
-									} else {
-										$('#add', popup_html).prop('disabled', false);
-										$('#edit_link', popup_html).show();
-									}
-								}
-
-								toggleSaveButton();
-
-								$('#vmbox_selector', popup_html).change(toggleSaveButton);
-
-								if ($('#vmbox_selector option:selected', popup_html).val() === undefined) {
-									$('#edit_link', popup_html).hide();
-								}
-
-								$('.inline_action', popup_html).click(function(ev) {
-									var _data = ($(this).data('action') === 'edit') ? { id: $('#vmbox_selector', popup_html).val() } : {};
-
-									ev.preventDefault();
-
-									self.vmboxPopupEdit({
-										data: _data,
-										callback: function(vmbox) {
-											node.setMetadata('id', vmbox.id || 'null');
-
-											node.caption = vmbox.name || '';
-
-											popup.dialog('close');
+								if (!selectedItem && selectedId) {
+									self.checkItemExists({
+										selectedId: selectedId,
+										itemList: data,
+										resource: 'voicemail',
+										resourceId: 'voicemailId',
+										callback: function(itemNotFound) { 
+											renderPopup(itemNotFound);
 										}
 									});
-								});
+								} else {
+									renderPopup(false);
+								}
 
-								$('#add', popup_html).click(function() {
-									node.setMetadata('id', $('#vmbox_selector', popup_html).val());
+								function renderPopup(itemNotFound) {
+									popup_html = $(self.getTemplate({
+										name: 'callflowEdit',
+										data: {
+											items: _.sortBy(data, 'name'),
+											selected: node.getMetadata('id') || ''
+										},
+										submodule: 'vmbox'
+									}));
 
-									node.caption = $('#vmbox_selector option:selected', popup_html).text();
+									var selector = popup_html.find('#vmbox_selector');
 
-									popup.dialog('close');
-								});
+									if (itemNotFound) {
+										selector.attr("data-placeholder", "Configured Voicemail Not Found").addClass("item-not-found").trigger("chosen:updated");
+									}
 
-								popup = monster.ui.dialog(popup_html, {
-									title: self.i18n.active().callflows.vmbox.voicemail_title,
-									minHeight: '0',
-									beforeClose: function() {
-										if (typeof callback === 'function') {
-											callback();
+									selector.on("change", function() {
+										if ($(this).val() !== null) {
+											$(this).removeClass("item-not-found");
+										}
+									});
+
+									// add search to dropdown
+									popup_html.find('#vmbox_selector').chosen({
+										width: '100%',
+										disable_search_threshold: 0,
+										search_contains: true
+									}).on('chosen:showing_dropdown', function() {
+										popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+									});
+
+									popup_html.find('.select_wrapper').addClass('dialog_popup');
+
+									// enable or disable the save button based on the dropdown value
+									function toggleSaveButton() {
+										var selectedValue = $('#vmbox_selector', popup_html).val();
+										
+										if (selectedValue == 'null') {
+											$('#add', popup_html).prop('disabled', true);
+											$('#edit_link', popup_html).hide();
+										} else {
+											$('#add', popup_html).prop('disabled', false);
+											$('#edit_link', popup_html).show();
 										}
 									}
-								});
+
+									toggleSaveButton();
+
+									$('#vmbox_selector', popup_html).change(toggleSaveButton);
+
+									if ($('#vmbox_selector option:selected', popup_html).val() === undefined) {
+										$('#edit_link', popup_html).hide();
+									}
+
+									$('.inline_action', popup_html).click(function(ev) {
+										var _data = ($(this).data('action') === 'edit') ? { id: $('#vmbox_selector', popup_html).val() } : {};
+
+										ev.preventDefault();
+
+										self.vmboxPopupEdit({
+											data: _data,
+											callback: function(vmbox) {
+												node.setMetadata('id', vmbox.id || 'null');
+
+												node.caption = vmbox.name || '';
+
+												popup.dialog('close');
+											}
+										});
+									});
+
+									$('#add', popup_html).click(function() {
+										node.setMetadata('id', $('#vmbox_selector', popup_html).val());
+
+										node.caption = $('#vmbox_selector option:selected', popup_html).text();
+
+										popup.dialog('close');
+									});
+
+									popup = monster.ui.dialog(popup_html, {
+										title: self.i18n.active().callflows.vmbox.voicemail_title,
+										minHeight: '0',
+										beforeClose: function() {
+											if (typeof callback === 'function') {
+												callback();
+											}
+										}
+									});
+								}
 							});
 						},
 						listEntities: function(callback) {

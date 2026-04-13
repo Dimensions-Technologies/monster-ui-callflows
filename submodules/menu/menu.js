@@ -482,76 +482,107 @@ define(function(require) {
 						self.menuList(function(menus) {
 							var popup, popup_html;
 
-							popup_html = $(self.getTemplate({
-								name: 'callflowEdit',
-								data: {
-									items: _.sortBy(menus, 'name'),
-									selected: node.getMetadata('id') || ''
-								},
-								submodule: 'menu'
-							}));
+							var selectedId = node.getMetadata('id') || '',
+								selectedItem = _.find(menus, { id: selectedId });
 
-							// add search to dropdown
-							popup_html.find('#menu_selector').chosen({
-								width: '100%',
-								disable_search_threshold: 0,
-								search_contains: true
-							}).on('chosen:showing_dropdown', function() {
-								popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
-							});
+							if (!selectedItem && selectedId) {
+								self.checkItemExists({
+									selectedId: selectedId,
+									itemList: menus,
+									resource: 'menu',
+									resourceId: 'menuId',
+									callback: function(itemNotFound) { 
+										renderPopup(itemNotFound);
+									}
+								});
+							} else {
+								renderPopup(false);
+							}
 
-							popup_html.find('.select_wrapper').addClass('dialog_popup');
+							function renderPopup(itemNotFound) {
+								popup_html = $(self.getTemplate({
+									name: 'callflowEdit',
+									data: {
+										items: _.sortBy(menus, 'name'),
+										selected: node.getMetadata('id') || ''
+									},
+									submodule: 'menu'
+								}));
 
-							// enable or disable the save button based on the dropdown value
-							function toggleSaveButton() {
-								var selectedValue = $('#menu_selector', popup_html).val();
-								
-								if (selectedValue == 'null') {
-									$('#add', popup_html).prop('disabled', true);
-									$('#edit_link', popup_html).hide();
-								} else {
-									$('#add', popup_html).prop('disabled', false);
-									$('#edit_link', popup_html).show();
+								var selector = popup_html.find('#menu_selector');
+
+								if (itemNotFound) {
+									selector.attr("data-placeholder", "Configured Menu Not Found").addClass("item-not-found").trigger("chosen:updated");
 								}
-							}
 
-							toggleSaveButton();
+								selector.on("change", function() {
+									if ($(this).val() !== null) {
+										$(this).removeClass("item-not-found");
+									}
+								});
 
-							$('#menu_selector', popup_html).change(toggleSaveButton);
+								// add search to dropdown
+								popup_html.find('#menu_selector').chosen({
+									width: '100%',
+									disable_search_threshold: 0,
+									search_contains: true
+								}).on('chosen:showing_dropdown', function() {
+									popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+								});
 
-							if ($('#menu_selector option:selected', popup_html).val() === undefined) {
-								$('#edit_link', popup_html).hide();
-							}
+								popup_html.find('.select_wrapper').addClass('dialog_popup');
 
-							$('.inline_action', popup_html).click(function(ev) {
-								var _data = ($(this).data('action') === 'edit') ? { id: $('#menu_selector', popup_html).val() } : {};
+								// enable or disable the save button based on the dropdown value
+								function toggleSaveButton() {
+									var selectedValue = $('#menu_selector', popup_html).val();
+									
+									if (selectedValue == 'null') {
+										$('#add', popup_html).prop('disabled', true);
+										$('#edit_link', popup_html).hide();
+									} else {
+										$('#add', popup_html).prop('disabled', false);
+										$('#edit_link', popup_html).show();
+									}
+								}
 
-								ev.preventDefault();
+								toggleSaveButton();
 
-								self.menuPopupEdit(_data, function(menu) {
-									node.setMetadata('id', menu.id || 'null');
-									node.caption = menu.name || '';
+								$('#menu_selector', popup_html).change(toggleSaveButton);
+
+								if ($('#menu_selector option:selected', popup_html).val() === undefined) {
+									$('#edit_link', popup_html).hide();
+								}
+
+								$('.inline_action', popup_html).click(function(ev) {
+									var _data = ($(this).data('action') === 'edit') ? { id: $('#menu_selector', popup_html).val() } : {};
+
+									ev.preventDefault();
+
+									self.menuPopupEdit(_data, function(menu) {
+										node.setMetadata('id', menu.id || 'null');
+										node.caption = menu.name || '';
+
+										popup.dialog('close');
+									});
+								});
+
+								popup_html.find('#add').on('click', function() {
+									node.setMetadata('id', $('#menu_selector', popup).val());
+									node.caption = $('#menu_selector option:selected', popup).text();
 
 									popup.dialog('close');
 								});
-							});
 
-							popup_html.find('#add').on('click', function() {
-								node.setMetadata('id', $('#menu_selector', popup).val());
-								node.caption = $('#menu_selector option:selected', popup).text();
-
-								popup.dialog('close');
-							});
-
-							popup = monster.ui.dialog(popup_html, {
-								title: self.i18n.active().callflows.menu.menu_title,
-								minHeight: '0',
-								beforeClose: function() {
-									if (typeof callback === 'function') {
-										callback();
+								popup = monster.ui.dialog(popup_html, {
+									title: self.i18n.active().callflows.menu.menu_title,
+									minHeight: '0',
+									beforeClose: function() {
+										if (typeof callback === 'function') {
+											callback();
+										}
 									}
-								}
-							});
+								});
+							}
 						});
 					},
 					listEntities: function(callback) {
