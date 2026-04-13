@@ -114,6 +114,7 @@
 				</div>
 
 				<div id="caller_id">
+				
 				{{#unless miscSettings.hideDeviceAtaPresenceId}}
 					<div class="clearfix">
 						<label for="name">{{ i18n.callflows.device.presence_id }}</label>
@@ -291,7 +292,7 @@
 					<div class="clearfix">
 						<label for="sip_realm">{{ i18n.callflows.device.realm }}</label>
 						<div class="input">
-							<span class="uneditable-input">{{ field_data.sip.realm }}</span>
+							<input disabled class="span4 input-readonly" type="text" value="{{ field_data.sip.realm }}" />
 						</div>
 					</div>
 
@@ -398,23 +399,7 @@
 				</div>
 
 				<div id="restrictions">
-					<!--
-					<div class="clearfix">
-						<div class="input">
-							<ul class="inputs-list">
-								<li>
-									<label>
-										<span rel="popover" data-content="{{ i18n.callflows.device.closed_groups_data_content }}">
-												<input type="checkbox" name="extra.closed_groups"{{#compare data.call_restriction.closed_groups.action "===" "deny"}} checked="checked"{{/compare}}/>
-											<span>{{ i18n.callflows.device.closed_groups }}</span>
-										</span>
-									</label>
-								</li>
-							</ul>
-						</div>
-					</div>
-					-->
-
+					
 					{{#unless miscSettings.hideClosedGroups}}
 						<div class="clearfix label-wide">
 							<label>{{ i18n.callflows.device.closed_groups }}</label>
