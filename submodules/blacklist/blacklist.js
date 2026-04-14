@@ -197,6 +197,14 @@ define(function(require) {
 					}
 				};
 
+			$('*[rel=popover]:not([type="text"])', template).popover({
+				trigger: 'hover'
+			});
+
+			$('*[rel=popover][type="text"]', template).popover({
+				trigger: 'focus'
+			});
+
 			$('.number-wrapper.placeholder:not(.active)', template).click(function() {
 				var $this = $(this);
 
