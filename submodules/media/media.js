@@ -31,6 +31,10 @@ define(function(require) {
 				mediaForm = media_html.find('#media-form'),
 				file;
 
+			if (typeof window.cleanupMediaPlayer === 'function') {
+				window.cleanupMediaPlayer();
+			}
+
 			monster.ui.validate(mediaForm, {
 				rules: {
 					'name': {
@@ -55,6 +59,7 @@ define(function(require) {
 
 			$('#change_link', media_html).click(function(ev) {
 				ev.preventDefault();
+				cleanupPlayer();
 				$('#upload_div', media_html).show();
 				$('.player_file', media_html).hide();
 			});
@@ -65,6 +70,145 @@ define(function(require) {
 										+ 'accounts/' + self.accountId + '/media/' + data.data.id
 										+ '/raw?auth_token=' + self.getAuthToken();
 			});
+
+			// embedded media player support
+			var $audio   = $('#media_player', media_html),
+				$source  = $('#media_player_source', media_html),
+				$playBtn = $('#play_link', media_html),
+				$seek = $('.media-seek', media_html),
+				audioEl = $audio.get(0),
+				mediaVersion = 0,
+				currentUrl = '',
+				isScrubbing = false,
+				currentMediaId = data.data.id,
+				urlNonce = Date.now();
+
+			function buildRawUrl() {
+				var url = self.apiUrl
+					+ (self.apiUrl.slice(-1) !== '/' ? '/' : '')
+					+ 'accounts/' + self.accountId + '/media/' + currentMediaId
+					+ '/raw?auth_token=' + self.getAuthToken()
+					+ '&v=' + mediaVersion
+					+ '&t=' + urlNonce;
+				return url;
+			}
+
+			function ensureSrc() {
+				if (!currentUrl) {
+					currentUrl = buildRawUrl();
+					$source.attr('src', currentUrl);
+					$seek.prop('disabled', false);
+					audioEl.load();
+				}
+			}
+
+			function resetPlayer() {
+
+				if (!audioEl || !$source.length || !$playBtn.length) {
+					return;
+				}
+
+				mediaVersion++;
+				currentUrl = '';
+				audioEl.pause();
+				audioEl.currentTime = 0;
+				$source.attr('src', '');
+				audioEl.load();
+				
+				$playBtn.text(self.i18n.active().callflows.media.play_file).removeClass('is-playing');
+			}
+
+			function fmt(t) {
+				t = isFinite(t) ? Math.max(0, t) : 0;
+				var m = Math.floor(t / 60), 
+					s = Math.floor(t % 60);
+				return m + ':' + (s < 10 ? '0' : '') + s;
+			}
+
+			if (audioEl && $source.length && $playBtn.length && data?.data?.id) {
+				var	$cur  = $('.media-time-current', media_html),
+					$dur  = $('.media-time-duration', media_html);
+
+				if ($seek.length && $cur.length && $dur.length) {
+					// track scrubbing state
+					$seek.on('mousedown.mediaScrub touchstart.mediaScrub', function () {
+						isScrubbing = true;
+					});
+
+					$(document).on('mouseup.mediaScrubDoc touchend.mediaScrubDoc touchcancel.mediaScrubDoc', function () {
+						isScrubbing = false;
+					});
+
+					// update UI during playback
+					$(audioEl).on('loadedmetadata.mediaProgress durationchange.mediaProgress', function () {
+						$dur.text(fmt(audioEl.duration));
+					})
+					.on('timeupdate.mediaProgress', function () {
+						if (isScrubbing || !isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+						
+						$cur.text(fmt(audioEl.currentTime));
+						$seek.val(Math.round((audioEl.currentTime / audioEl.duration) * 1000));
+					});
+
+					// seek on user input
+					$seek.on('input.mediaSeek change.mediaSeek', function () {
+						if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+							audioEl.currentTime = (this.value / 1000) * audioEl.duration;
+						}
+					});
+				}
+
+				// update button state on play/pause/end
+				$(audioEl).on('playing.media', function () {
+					$playBtn.text(self.i18n.active().callflows.media.pause_file)
+							.addClass('is-playing');
+				})
+				.on('pause.media ended.media', function () {
+					if (!isScrubbing) {
+						$playBtn.text(self.i18n.active().callflows.media.play_file).removeClass('is-playing');
+					}
+				});
+
+				// play/pause toggle
+				$playBtn.on('click.media', function(e) {
+					e.preventDefault();
+					
+					if (audioEl.paused) {
+						ensureSrc();
+						$audio.show();
+						
+						var playPromise = audioEl.play();
+						if (playPromise && typeof playPromise.catch === 'function') {
+							playPromise.catch(function(err) {
+								console.error('Audio play failed:', err);
+							});
+						}
+					} else {
+						audioEl.pause();
+					}
+				});
+			}
+
+			function cleanupPlayer() {
+				if (!audioEl) return; // guard against calling when player doesn't exist
+				
+				$(audioEl).off('.mediaProgress .media');
+				if ($seek && $seek.length) {
+					$seek.off('.mediaScrub .mediaSeek');
+				}
+				if ($playBtn && $playBtn.length) {
+					$playBtn.off('.media');
+				}
+				$(document).off('.mediaScrubDoc');
+				
+				// reset player state
+				if (audioEl.pause) {
+					audioEl.pause();
+				}
+				$source.attr('src', '');
+			}
+			
+			window.cleanupMediaPlayer = cleanupPlayer;
 
 			$('#file', media_html).bind('change', function(evt) {
 				var files = evt.target.files;
@@ -222,12 +366,14 @@ define(function(require) {
 										$this.removeClass('disabled');
 									} else {
 										self.mediaUpload(file, _data.id, function() {
+											resetPlayer();
 											if (typeof callbacks.save_success === 'function') {
 												callbacks.save_success(_data, status);
 											}
 										}, function() {
 											if (data && data.data && data.data.id) {
 												self.mediaSave({}, data, function() {
+													resetPlayer();
 													if (typeof callbacks.save_success === 'function') {
 														callbacks.save_success(_data, status);
 													}
@@ -244,11 +390,13 @@ define(function(require) {
 										});
 									}
 								} else {
+									resetPlayer();
 									if (typeof callbacks.save_success === 'function') {
 										callbacks.save_success(_data, status);
 									}
 								}
 							} else {
+								resetPlayer();
 								if (typeof callbacks.save_success === 'function') {
 									callbacks.save_success(_data, status);
 								}		
@@ -426,6 +574,9 @@ define(function(require) {
 
 			self.mediaEdit(data, popup_html, $('.inline_content', popup_html), {
 				save_success: function(_data) {
+					if (typeof window.cleanupMediaPlayer === 'function') {
+						window.cleanupMediaPlayer();
+					}
 					popup.dialog('close');
 
 					if (typeof callback === 'function') {
@@ -433,6 +584,9 @@ define(function(require) {
 					}
 				},
 				delete_success: function() {
+					if (typeof window.cleanupMediaPlayer === 'function') {
+						window.cleanupMediaPlayer();
+					}
 					popup.dialog('close');
 
 					if (typeof callback === 'function') {
@@ -441,7 +595,12 @@ define(function(require) {
 				},
 				after_render: function() {
 					popup = monster.ui.dialog(popup_html, {
-						title: (data.id) ? self.i18n.active().callflows.media.edit_media : self.i18n.active().callflows.media.create_media
+						title: (data.id) ? self.i18n.active().callflows.media.edit_media : self.i18n.active().callflows.media.create_media,
+						close: function() {
+							if (typeof window.cleanupMediaPlayer === 'function') {
+								window.cleanupMediaPlayer();
+							}
+						}
 					});
 				}
 			}, data_defaults);
