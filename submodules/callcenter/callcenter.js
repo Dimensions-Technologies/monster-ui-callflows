@@ -439,6 +439,10 @@ define(function(require) {
 				data = args.data,
 				data_defaults = args.data_defaults;
 
+			if (miscSettings.callflowButtonsWithinHeader) {
+				miscSettings.popupEdit = true;
+			}
+
 			popup_html.css({
 				height: 500,
 				'overflow-y': 'scroll'
@@ -512,7 +516,7 @@ define(function(require) {
 					}
 				}
 
-			if (miscSettings.callflowButtonsWithinHeader) {
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				self.queueSubmoduleButtons(data);
 			};
 
@@ -648,6 +652,11 @@ define(function(require) {
 							if (typeof callbacks.after_render === 'function') {
 								callbacks.after_render();
 							}
+
+							if (miscSettings.callflowButtonsWithinHeader) {
+								miscSettings.popupEdit = false;
+							}
+							
 						});
 		
 					});
@@ -662,6 +671,11 @@ define(function(require) {
 				if (typeof callbacks.after_render === 'function') {
 					callbacks.after_render();
 				}
+
+				if (miscSettings.callflowButtonsWithinHeader) {
+					miscSettings.popupEdit = false;
+				}
+
 			});
 
 		},
@@ -921,9 +935,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.queueSave')
+					.on('click.queueSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
@@ -1001,9 +1019,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.queueDelete')
+					.on('click.queueDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();

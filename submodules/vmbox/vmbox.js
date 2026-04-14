@@ -154,7 +154,7 @@ define(function(require) {
 					render_data = $.extend(true, defaults, { data: results.get_vmbox });
 				}
 
-				if (miscSettings.callflowButtonsWithinHeader) {
+				if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 					self.vmboxSubmoduleButtons(data);
 				};
 
@@ -465,9 +465,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.vmboxSave')
+					.on('click.vmboxSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			// add search to dropdown
 			vmbox_html.find('#media_unavailable').chosen({
@@ -590,9 +594,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.vmboxDelete')
+					.on('click.vmboxDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();

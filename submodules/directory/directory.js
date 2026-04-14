@@ -50,9 +50,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.directorySave')
+					.on('click.directorySave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			// add search to default visible dropdowns
 			const chosenSelectors = [
@@ -111,9 +115,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.directoryDelete')
+					.on('click.directoryDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();
@@ -456,7 +464,7 @@ define(function(require) {
 					}
 				};
 
-			if (miscSettings.callflowButtonsWithinHeader) {
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				self.directorySubmoduleButtons(data);
 			};
 
