@@ -15,14 +15,19 @@
 							</div>
 						</div>
 						<div class="clearfix">
-							<label for="should_block_anonymous">{{ i18n.callflows.blacklist.blockAnonymous }}</label>
 							<div class="input">
-							{{#monsterSwitch}}
-								<input type="checkbox" id="should_block_anonymous" name="should_block_anonymous"{{#if data.should_block_anonymous}} checked{{/if}}>
-							{{/monsterSwitch}}
+								<ul class="inputs-list">
+									<li>
+										<label>
+											<span rel="popover" data-content="{{ i18n.callflows.blacklist.blockAnonymousHelp }}">
+												<input type="checkbox" id="should_block_anonymous" name="should_block_anonymous"{{#if data.should_block_anonymous}} checked="checked"{{/if}}>
+												<span>{{ i18n.callflows.blacklist.blockAnonymous }}</span>
+											</span>
+										</label>
+									</li>
+								</ul>
 							</div>
 						</div>
-
 						<div class="list-numbers">
 							<h4>{{ i18n.callflows.blacklist.listNumbers }}</h4>
 							<div class="add-number">
