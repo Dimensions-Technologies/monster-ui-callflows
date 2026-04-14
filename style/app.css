@@ -1664,7 +1664,7 @@
 	display: inline-block;
 	float: none;
 	margin-left: 0;
-	width: 210px;
+	width: 400px;
 }
 
 .callflows-port li {
@@ -2677,7 +2677,7 @@
 .callflows-port #queue-form .input select,
 .callflows-port #queue-form .chosen-container-single, 
 .callflows-port #queue-form .chosen-drop {
-    width: 224px !important;
+    width: 414px !important;
 }
 
 .callflows-port #user-form .chosen-container,
@@ -2688,7 +2688,8 @@
 	margin-bottom: 8px;
 }
 
-.callflows-port #user-form .chosen-container-single {
+.callflows-port #user-form #caller_id .chosen-container-single,
+.callflows-port #device-form #caller_id .chosen-container-single {
 	margin-left: 20px;
 }
 
