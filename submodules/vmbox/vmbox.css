@@ -1,0 +1,94 @@
+#tab_messages  {
+	border: 2px solid #666666;
+	border-radius: 15px 15px 15px 15px;
+	color: #666666;
+	margin: 20px 60px;
+	max-width: 920px;
+}
+
+#tab_messages .column:not(.fifth) {
+	border-right: 1px solid #A6A6A6;
+}
+
+#tab_messages .column {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 6px 0;
+	text-align: center;
+	white-space: normal;
+	align-self: stretch;
+}
+
+#tab_messages .column.first {
+	width: 25% !important;
+	overflow: hidden;
+	text-align: left;
+	text-indent: 25px;
+}
+
+#tab_messages .column.second {
+	width: 20% !important;
+}
+
+#tab_messages .column.third {
+	width: 20% !important;
+}
+
+#tab_messages .column.fourth {
+	width: 15% !important;
+}
+
+#tab_messages .column.fifth {
+	width: 18% !important;
+}
+
+#tab_messages .column.merged {
+	width: 560px;
+	border-right: none;
+}
+
+#tab_messages .row {
+	margin-left: 0px;
+	display: flex;
+	align-items: stretch;
+}
+
+#tab_messages .row.title {
+	background-color: #dddddd !important;
+	border-bottom: 2px solid #666666 !important;
+	border-radius: 15px 15px 0px 0px;
+	font-weight: bold;
+}
+
+#tab_messages .column.first.title{
+	text-align: center;
+	text-indent: 0px;
+}
+
+#tab_messages .row.title .icon.medium {
+	display: none
+}
+
+#tab_messages .row:not(:last-child) {
+	border-bottom: 1px solid #A6A6A6;
+}
+
+#tab_messages .row:last-child {
+	border-radius: 0px 0px 15px 15px;
+}
+
+#tab_messages .row:nth-child(odd) {
+	background-color: #eeeeee;
+}
+
+#tab_messages .row:nth-child(even) {
+	background-color: #dddddd;
+}
+
+#tab_messages .no-messages {
+	text-align: center;
+	padding: 10px;
+	width: 100%;
+}

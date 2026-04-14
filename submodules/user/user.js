@@ -215,8 +215,51 @@ define(function(require) {
 									paginate: false
 								}
 							},
-							success: function(data, status) {
-								callback && callback(data.data);
+							success: function(userData, status) {
+
+								self.callApi({
+									resource: 'callflow.list',
+									data: {
+										accountId: self.accountId,
+										filters: {
+											paginate: false,
+											filter_type: 'mainUserCallflow'
+										}
+									},
+									success: function(callflowData, status) {
+										// build map of owner_id callflow info
+										const callflowMap = {};
+
+										callflowData.data.forEach(callflow => {
+											if (callflow.owner_id) {
+												callflowMap[callflow.owner_id] = {
+													hasVoicemail: Array.isArray(callflow.modules) && callflow.modules.includes('voicemail'),
+													numbers: Array.isArray(callflow.numbers) ? callflow.numbers : []
+												};
+											}
+										});
+
+										// enhance each user object
+										userData.data.forEach(user => {
+											const callflow = callflowMap[user.id];
+
+											if (callflow) {
+												// add voicemail to features if applicable
+												if (callflow.hasVoicemail) {
+													user.features = user.features || [];
+													if (!user.features.includes('voicemail')) {
+														user.features.push('voicemail');
+													}
+												}
+
+												// add numbers to user object
+												user.numbers = callflow.numbers.filter(number => number !== user.presence_id);
+											}
+										});
+
+										callback && callback(userData.data);
+									}
+								});
 							}
 						});
 					},

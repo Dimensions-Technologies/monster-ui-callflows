@@ -177,3 +177,55 @@
     background-color: #666666;
     margin-top: -48px !important;
 }
+
+
+/* callflow root edit icon */
+/*
+.material-symbols-user-state {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 16px;
+}
+*/
+
+/* user features */
+.material-symbols-user-state {
+    font-family: 'Material Symbols Outlined';
+    font-size: 14px;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.material-symbols-user-state.icon-do-not-disturb {
+    color: #ff3d24;
+}
+
+.material-symbols-user-state.icon-voicemail {
+    color: #33db24;
+}
+
+.material-symbols-user-state.icon-find-me-follow-me {
+    color: #d2e;
+}
+
+.material-symbols-user-state.icon-forward {
+    color: #fc3;
+}
+
+.material-symbols-user-state.icon-caller-id {
+    color: #2297ff;
+}
+
+.material-symbols-user-state.icon-hotdesk {
+    color: #f8a506;
+}
+
+.material-symbols-user-state.icon-numbers {
+    color: #ff7a22;
+}
+
+.selected-element .material-symbols-user-state  {
+    color: #ffffff;
+}
+

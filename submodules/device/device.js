@@ -2144,67 +2144,275 @@ define(function(require) {
 
 					},
 					listEntities: function(callback) {
-						monster.parallel({
-							device: function(callback) {
-								self.callApi({
-									resource: 'device.list',
-									data: {
-										accountId: self.accountId,
-										filters: {
-											paginate: false
-										}
-									},
-									success: function(data, status) {
-										callback && callback(null, data.data);
+						var getDeviceWithTemplate = function(device, registeredDevices) {
+
+							var type = device.device_type,
+								isSipDevice = false,
+								formattedType = formatDeviceType(type) + ' ',
+								enhancedDeviceData = {};
+
+							if (type == 'sip_device' && device.mac_address) {
+								enhancedDeviceData.formattedMac = ' (' + monster.util.formatMacAddress(device.mac_address) + ')';
+								isSipDevice = true;
+							}
+
+							if (device.call_forward && device.call_forward.number) {
+								enhancedDeviceData.forwardingNumber = ' (' + device.call_forward?.number + ')';
+							}
+							
+							/*
+							if (device.dimension && device.presence_id) {
+								enhancedDeviceData.presenceId = ' (' + device.presence_id + ')'
+							}
+							*/
+							
+							/* switch out device name for dimensions terms */
+							if (device.dimension) {
+								if (device.presence_id) {
+									enhancedDeviceData.presenceId = ' (' + device.presence_id + ')'
+								}
+
+								if (device.dimension?.type) {
+									if (device.dimension.type == 'hotdesk') {
+										formattedType = 'Hotdesk Base'
 									}
+									if (device.dimension.type == 'communal') {
+										formattedType = 'Phone Only'	
+									}
+									formattedType = formattedType + ' ';
+								}
+
+								if (device.dimension?.model) {
+									if (device.dimension.model == 'UCB') {
+										formattedType = 'WebRTC Client'
+									}
+									if (device.dimension.model == 'UCM') {
+										formattedType = 'Mobile Client'	
+									}
+									if (device.dimension.model == 'UCD') {
+										formattedType = 'Desktop Client'	
+									}
+									if (device.dimension.model == 'UCW') {
+										formattedType = 'CRM Client'	
+									}
+									formattedType = formattedType + ' ';	
+								}
+							}
+							
+							var dataToTemplate = _.merge({
+								iconCssClass: getIconCssClass(type),
+								statusCssClass: getStatusCssClass(device, registeredDevices),
+								type: type,
+								isSipDevice: isSipDevice,
+								formattedType: formattedType,
+								enhancedDeviceData: enhancedDeviceData
+							}, _.pick(device, [
+								'name',
+								'mac_address',
+								'device_type',
+								'call_forward',
+								'presence_id'
+							]));
+
+							return _.merge({
+								customEntityTemplate: self.getTemplate({
+									name: 'entity-element',
+									data: dataToTemplate,
+									submodule: 'device'
+								}),
+								formattedType: formattedType,
+								enhancedDeviceData: enhancedDeviceData
+							}, device);
+						},
+
+						formatDeviceType = function(type) {
+							if (!type) return '';
+
+							const typeMap = {
+								sip_device: 'SIP Device',
+								sip_uri: 'SIP URI',
+								softphone: 'Softphone',
+								cellphone: 'Cellphone',
+								smartphone: 'Smartphone',
+								landline: 'Landline',
+								mobile: 'Mobile',
+								teammate: 'Teammate',
+								fax: 'Fax',
+								ata: 'ATA'
+							};
+
+							// Return mapped label or a fallback with formatting
+							return typeMap[type] || type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+						};
+
+						getIconCssClass = function(type) {
+							return _.get({
+								'cellphone': 'phone',
+								'smartphone': 'device-mobile',
+								'landline': 'home',
+								'mobile': 'device-sprint-phone',
+								'softphone': 'device-soft-phone',
+								'sip_device': 'device-voip-phone',
+								'sip_uri': 'device-voip-phone',
+								'teammate': 'device-mst',
+								'fax': 'device-fax',
+								'ata': 'device-ata'
+							}, type, 'dot');
+						},
+
+						getStatusCssClass = function(device, registeredDevices) {
+							var registrationRequiredDeviceTypes = ['sip_device', 'smartphone', 'softphone', 'fax', 'ata'],
+								isRegistrationRequired = registrationRequiredDeviceTypes.indexOf(device.device_type) >= 0,
+								isRegistered = isRegistrationRequired ? registeredDevices.indexOf(device.id) >= 0 : true;
+
+							return !device.enabled ? ''
+								: isRegistered ? 'monster-green'
+								: 'monster-red';
+						};
+
+						monster.waterfall([
+							function(callback) {
+								monster.parallel({
+									devices: function(cb) {
+										self.callApi({
+											resource: 'device.list',
+											data: {
+												accountId: self.accountId,
+												filters: {
+													paginate: false
+												}
+											},
+											success: function(data) {
+												cb(null, data.data);
+											}
+										});
+									},
+									statuses: function(cb) {
+										self.callApi({
+											resource: 'device.getStatus',
+											data: {
+												accountId: self.accountId,
+												filters: {
+													paginate: false
+												}
+											},
+											success: function(data) {
+												cb(null, data.data);
+											}
+										});
+									}
+								}, function(err, results) {
+									callback(err, {
+										devices: _.get(results, 'devices', []),
+										statuses: _.get(results, 'statuses', [])
+									});
 								});
 							},
-							status: function(callback) {
-								self.callApi({
-									resource: 'device.getStatus',
-									data: {
-										accountId: self.accountId,
-										filters: {
-											paginate: false
-										}
+							function(results, callback) {
+								var devices = results.devices,
+									statuses = results.statuses;
+
+								if (!miscSettings.enableEnhancedListData) {
+									return callback(null, {
+										devices: devices,
+										statuses: statuses
+									}); // enhanced filtering is only support on 5.x
+								}
+
+								monster.parallel({
+									forwarding: function(cb) {
+										self.callApi({
+											resource: 'device.list',
+											data: {
+												accountId: self.accountId,
+												filters: {
+													paginate: false,
+													fields: ["id", "call_forward.number"],
+													filter_any_device_type: ["landline", "cellphone"],
+													has_value: 'call_forward.number'
+												}
+											},
+											success: function(data) {
+												const forwardingMap = {};
+												data.data.forEach(item => {
+													if (item.id && item.call_forward) {
+														forwardingMap[item.id] = item.call_forward;
+													}
+												});
+												cb(null, forwardingMap);
+											}
+										});
 									},
-									success: function(data, status) {
-										callback && callback(null, data.data);
+									dimensions: function(cb) {
+										self.callApi({
+											resource: 'device.list',
+											data: {
+												accountId: self.accountId,
+												filters: {
+													paginate: false,
+													fields: ["id", "dimension", "presence_id"],
+													has_key: 'dimension'
+												}
+											},
+											success: function(data) {
+												const dimensionMap = {};
+												data.data.forEach(item => {
+													if (item.id) {
+														dimensionMap[item.id] = {
+															dimension: item.dimension || {},
+															presence_id: item.hasOwnProperty('presence_id') ? item.presence_id : null
+														};
+													}
+												});
+												cb(null, dimensionMap);
+											}
+										});
 									}
+								},
+								function(err, results) {
+									const forwardingMap = results.forwarding;
+									const dimensionMap = results.dimensions;
+
+									const enhancedDevices = devices.map(device => {
+										const id = device.id;
+
+										if (forwardingMap[id]) {
+											device.call_forward = forwardingMap[id];
+										}
+
+										if (dimensionMap[id]) {
+											device.dimension = dimensionMap[id].dimension;
+											if (dimensionMap[id].presence_id !== null && dimensionMap[id].presence_id !== undefined) {
+												device.presence_id = dimensionMap[id].presence_id;
+											}
+										}
+
+										return device;
+									});
+
+									callback(null, {
+										devices: enhancedDevices,
+										statuses: statuses
+									});
 								});
 							}
-						},
+						],
 						function(err, results) {
-							var registeredDevices = _.map(results.status, function(registration) { if (registration.registered === true) { return registration.device_id; } }),
-								deviceIcons = {
-									'cellphone': 'fa fa-phone',
-									'smartphone': 'icon-telicon-mobile-phone',
-									'landline': 'icon-telicon-home',
-									'mobile': 'icon-telicon-sprint-phone',
-									'softphone': 'icon-telicon-soft-phone',
-									'sip_device': 'icon-telicon-voip-phone',
-									'sip_uri': 'icon-telicon-voip-phone',
-									'fax': 'icon-telicon-fax',
-									'ata': 'icon-telicon-ata',
-									'unknown': 'fa fa-circle'
-								};
+							var registeredDevices = _.chain(_.get(results, 'statuses', []))
+								.filter(function(registration) {
+									return registration.registered === true;
+								})
+								.map(function(registration) {
+									return registration.device_id;
+								})
+								.value();
 
-							_.each(results.device, function(device) {
-								var dataTemplate = device;
-								dataTemplate.extra = {
-									deviceIcon: deviceIcons.hasOwnProperty(device.device_type) ? deviceIcons[device.device_type] : deviceIcons.unknown,
-									isRegistered: device.enabled ? (['sip_device', 'smartphone', 'softphone', 'fax', 'ata'].indexOf(device.device_type) >= 0 ? registeredDevices.indexOf(device.id) >= 0 : true) : false
-								};
-								// no jQuery wrapper since this template will be inserted directly with Handlebars
-								device.customEntityTemplate = self.getTemplate({
-									name: 'entity-element',
-									data: dataTemplate,
-									submodule: 'device'
-								});
-							});
-
-							callback && callback(results.device);
+							callback && callback(_.map(_.get(results, 'devices', []), function(device) {
+								return getDeviceWithTemplate(device, registeredDevices);
+							}));
 						});
+
 					},
 					editEntity: 'callflows.device.edit'
 				},
