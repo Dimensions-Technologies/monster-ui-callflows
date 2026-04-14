@@ -1,0 +1,20 @@
+<div class="list-editor {{wrapperClass}}">
+	<h4>{{ title }}</h4>
+	<div class="add-item">
+		<div class="item-wrapper placeholder">
+			<div class="create-text">
+			<i class="icon-plus-sign"></i>
+			{{ addLabel }}
+		</div>
+
+		<div class="create-inputs">
+			<input type="text" class="input-medium list-editor-input" placeholder="{{ placeholder }}">
+			<button class="monster-button-primary list-editor-add">{{ i18n.add }}</button>
+			<a href="javascript:void(0);" class="list-editor-cancel">{{ i18n.cancel }}</a>
+			</div>
+		</div>
+		
+		<div class="list-editor-error" style="display:none;"></div>
+	</div>
+	<div class="saved-items"></div>
+</div>

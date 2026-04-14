@@ -48,8 +48,8 @@
     cursor: pointer;
 }
 
-/* blocklist delete icon */
-.material-symbols-icon-blocklist-delete {
+/* list data delete icon */
+.material-symbols-icon-delete {
     font-family: 'Material Symbols Outlined';
     font-weight: normal;
     font-style: normal;
