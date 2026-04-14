@@ -2161,6 +2161,7 @@
 .media-edit-callflow-popup .shoutcast-div.active,
 #callflow_container .account-settings-container .shoutcast-div.active {
 	display: block;
+	padding-left: 20px;
 }
 
 /* Blacklist part */
@@ -2791,6 +2792,13 @@
 .shoutcast-warning {
 	padding-top: 20px;
 	width: 880px;
+}
+
+.media-edit-callflow-popup .shoutcast-warning {
+	width: 304px;
+	margin: 0 auto;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 /* hide monster alert warning triangle and header */
