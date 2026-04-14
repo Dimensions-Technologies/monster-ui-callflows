@@ -61,7 +61,7 @@ define(function(require) {
 						});
 			
 						popup = monster.ui.dialog(popup_html, {
-							title: self.i18n.active().callflows.after_bridge.park.nodeName,
+							title: self.i18n.active().callflows.after_bridge.park.dialog_title,
 							minHeight: '0',
 							beforeClose: function() {
 								if (typeof callback === 'function') {
@@ -200,7 +200,7 @@ define(function(require) {
 						});
 			
 						popup = monster.ui.dialog(popup_html, {
-							title: self.i18n.active().callflows.after_bridge.hangup.nodeName,
+							title: self.i18n.active().callflows.after_bridge.hangup.dialog_title,
 							minHeight: '0',
 							beforeClose: function() {
 								if (typeof callback === 'function') {
