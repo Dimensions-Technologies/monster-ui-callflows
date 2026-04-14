@@ -47,7 +47,7 @@ define(function(require) {
 					}
 				};
 
-			if (miscSettings.callflowButtonsWithinHeader) {
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 				self.menuSubmoduleButtons(data);
 			};
 
@@ -249,9 +249,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .save')
+					.off('click.menuSave')
+					.on('click.menuSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
@@ -284,9 +288,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+				$('#submodule-buttons-container .delete')
+					.off('click.menuDelete')
+					.on('click.menuDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();

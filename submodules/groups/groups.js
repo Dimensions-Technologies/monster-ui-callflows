@@ -58,9 +58,13 @@ define(function(require) {
 				saveButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .save').click(function(ev) {
-				saveButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader) {
+				$('#submodule-buttons-container .save')
+					.off('click.groupSave')
+					.on('click.groupSave', function(ev) {
+						saveButtonEvents(ev);
+					});
+			}
 
 			// add search to dropdown
 			groups_html.find('#select_user_id').chosen({
@@ -112,9 +116,13 @@ define(function(require) {
 				deleteButtonEvents(ev);
 			});
 
-			$('#submodule-buttons-container .delete').click(function(ev) {
-				deleteButtonEvents(ev);
-			});
+			if (miscSettings.callflowButtonsWithinHeader) {
+				$('#submodule-buttons-container .delete')
+					.off('click.groupDelete')
+					.on('click.groupDelete', function(ev) {
+						deleteButtonEvents(ev);
+					});
+			}
 
 			function deleteButtonEvents(ev) {
 				ev.preventDefault();
