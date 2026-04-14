@@ -1,4 +1,8 @@
 <div class="dialog_popup callflow-preview">
-  <button class="monster-button" id="callflow_jump">Go to this callflow</button>
+  {{#if (eq origin "voip")}}
+    <div class="info-message">This callflow is read-only</div>
+  {{else}}
+    <button class="monster-button" id="callflow_jump">Go to this callflow</button>
+  {{/if}}
   <div id="preview-{{id}}" class="callflow-preview-section callflow"></div>
 </div>
