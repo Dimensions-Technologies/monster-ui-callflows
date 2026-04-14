@@ -4466,7 +4466,7 @@ define(function(require) {
 				$saved = $container.find('.saved-items'),
 				$error = $container.find('.list-editor-error');
 
-			var valueType = opts.valueType || null, // 'emailAddress' | 'phoneNumber' | null
+			var valueType = opts.valueType || null, // 'emailAddress' | 'emailAddressOrDomain' | 'phoneNumber' | null
 				normalize = opts.normalize || function(v) { return (v || '').toString().trim(); },
 				unique = opts.unique !== false;
 
@@ -4485,6 +4485,16 @@ define(function(require) {
 						return false;
 					}
 					return true;
+				},
+
+				// accepts either name@example.com or @example.com
+				emailAddressOrDomain: function(v) {
+					if (v.charAt(0) === '@') {
+						// validate domain by prepending a dummy local-part
+						return validators.emailAddress('x' + v);
+					}
+
+					return validators.emailAddress(v);
 				},
 
 				// no spaces, brackets, dots or hyphens
@@ -4535,12 +4545,12 @@ define(function(require) {
 
 			function showError(msg) {
 				if (!msg) return;
-				$error.text(msg).show();
+				$error.html(msg).show();
 				$input.addClass('monster-invalid');
 			}
 
 			function clearError() {
-				$error.text('').hide();
+				$error.html('').hide();
 				$input.removeClass('monster-invalid');
 			}
 
@@ -4560,7 +4570,7 @@ define(function(require) {
 					return;
 				}
 
-				$saved.prepend(opts.getItemHtml(value));
+				$saved.append(opts.getItemHtml(value));
 				$input.val('');
 				clearError();
 				emitChange();
