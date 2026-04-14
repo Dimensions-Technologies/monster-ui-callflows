@@ -18,6 +18,9 @@
 		<ul class="tabs">
 			<li class="active"><a href="#basic">{{ i18n.callflows.vmbox.basic }}</a></li>
 			<li><a href="#options">{{ i18n.callflows.vmbox.options }}</a></li>
+			{{#if miscSettings.enableAnankeCallbacks}}
+				<li><a href="#callback">{{ i18n.callflows.vmbox.callback.title }}</a></li>
+			{{/if}}
 			<li><a href="#messages">{{ i18n.callflows.vmbox.messages }}</a></li>
 		</ul>
 		<form id="vmbox-form" action="" method="post">
@@ -429,6 +432,80 @@
 						</div>
 					</div>
 				</div>
+
+				{{#if miscSettings.enableAnankeCallbacks}}
+					<div id="callback">
+						<div id="tab_callback">
+							<div class="clearfix">
+								<div class="input">
+									<ul class="inputs-list">
+										<li>
+											<label>
+												<span rel="popover" data-content="{{ i18n.callflows.vmbox.not_configurable_data_content }}">
+													{{#if data.notify.callback.length}}
+														<input type="checkbox" id="callback_enabled" name="extra.callback_enabled" checked/>
+													{{else}}
+														<input type="checkbox" id="callback_enabled" name="extra.callback_enabled" />
+													{{/if}}
+													<span>{{ i18n.callflows.vmbox.callback.enabled }}</span>
+												</span>
+											</label>
+										</li>
+									</ul>
+								</div>
+							</div>
+
+							<div class="list-callback-numbers">
+								<h4>Callback Numbers</h4>
+								<div class="add-callback-number">
+									<div class="number-wrapper placeholder">
+										<div class="create-text">
+											<i class="icon-plus-sign"></i> Add Callback Number
+										</div>
+
+										<div class="create-inputs">
+											<div class="input-fields">
+												<input type="text" id="callback_number" placeholder="Number" class="input-medium">
+												<input type="number" id="callback_interval" placeholder="Interval (s)">	
+												<select id="callback_attempts">
+													<option value="" disabled selected>Attempts</option>
+													<option value="1">1</option>
+													<option value="2">2</option>
+													<option value="3">3</option>
+													<option value="4">4</option>
+													<option value="5">5</option>
+												</select>
+											</div>
+
+											{{#unless anankeCallbacks.callbackIntervalDropdown}}
+												<div class="validation-messages">
+													<label id="callback_interval-error" class="monster-invalid" for="callback_interval" style="display: none;"></label>
+												</div>
+											{{/unless}}
+
+											<div class="input-buttons">
+												<button class="monster-button-primary" id="add_callback_number">Add</button>
+												<a href="javascript:void(0);" id="cancel_callback_number">Cancel</a>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="callback-list-header">
+									<span class="drag-column">&nbsp;</span>
+									<span class="number-column">Number</span>
+									<span class="interval-column">Interval</span>
+									<span class="attempts-column">Attempts</span>
+									<span class="actions-column">Actions</span>
+								</div>
+
+								<ul class="saved-callback-numbers sortable">
+									<!-- callbackNumbers appended here -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				{{/if}}
 
 				<div id="messages">
 					<div class="clearfix">

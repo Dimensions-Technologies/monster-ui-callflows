@@ -4,7 +4,8 @@ define(function(require) {
 		monster = require('monster'),
 		timezone = require('monster-timezone'),
 		hideAdd = false,
-		miscSettings = {};
+		miscSettings = {},
+		anankeCallbacks = {};
 
 	var app = {
 		requests: {
@@ -501,6 +502,55 @@ define(function(require) {
 						var form_data = monster.ui.getFormData('vmbox-form'),
 							$skipInstructionsInput = vmbox_html.find('#skip_instructions_input').val();
 
+						if (miscSettings.enableAnankeCallbacks) {
+
+							// clear any previous values
+							if ('notify' in data.data) {
+								delete data.data.notify;
+							}
+
+							var callbackEnabled = vmbox_html.find('#callback_enabled').is(':checked');
+
+							if (callbackEnabled) {
+
+								form_data.notify = {};
+								form_data.notify.callback = [];
+					
+								// build callback list
+								vmbox_html.find('.saved-callback-numbers .callback-entry').each(function () {
+									var $entry = $(this);
+
+									form_data.notify.callback.push({
+										timeout_s: anankeCallbacks.callbackTimeout || 30,
+										number: String($entry.data('number')),
+										interval_s: parseInt($entry.data('interval'), 10),
+										attempts: parseInt($entry.data('attempts'), 10),
+										disabled: false
+									});
+								});
+
+								// create schedule if not present already
+								if (!('schedule' in data.data)) {
+									data.data.schedule = {
+										action: {
+											type: "check_voicemail"
+										},
+										minutes: anankeCallbacks.scheduleMinutes || 5,
+										type: "periodic"
+									};
+								}
+
+							} else {
+
+								// delete schedule if callback is disabled
+								if ('schedule' in data.data) {
+									delete data.data.schedule;
+								}
+
+							}							
+
+						}
+						
 						form_data.notify_email_addresses = getRecipients();
 
 						if (form_data.announcement_only) {
@@ -537,6 +587,199 @@ define(function(require) {
 				});
 
 			};
+
+			if (miscSettings.enableAnankeCallbacks) {
+
+				function toggleCallbackListHeader() {
+					var hasEntries = vmbox_html.find('.list-callback-numbers .callback-entry').length > 0;
+
+					if (hasEntries) {
+						vmbox_html.find('.callback-list-header').attr('style', 'display: flex !important;');
+					} else {
+						vmbox_html.find('.callback-list-header').attr('style', 'display: none !important;');
+					}
+
+				}
+
+				function toggleCallbackNumbers() {
+					var isEnabled = vmbox_html.find('#callback_enabled').is(':checked');
+					vmbox_html.find('.list-callback-numbers').toggle(isEnabled);
+					toggleCallbackListHeader()
+				}
+
+				toggleCallbackNumbers();
+
+				vmbox_html.find('#callback_enabled').on('change', function () {
+					toggleCallbackNumbers();
+				});
+
+				// render callback numbers if present
+				if (Array.isArray(data.data.notify?.callback)) {
+					var callback_html;
+
+					data.data.notify.callback.forEach(function (entry) {
+						callback_html = $(self.getTemplate({
+							name: 'callbackNumbers',
+							data: {
+								number: entry.number,
+								interval: entry.interval_s,
+								attempts: entry.attempts
+							},
+							submodule: 'vmbox'
+						}));
+
+						vmbox_html.find('.list-callback-numbers .saved-callback-numbers').append(callback_html);
+					});
+					toggleCallbackListHeader();
+				}
+				
+				var addCallback = function () {
+					var callback_html;
+						
+					var number = vmbox_html.find('#callback_number').val().trim(),
+						interval = vmbox_html.find('#callback_interval').val().trim(),
+						attempts = vmbox_html.find('#callback_attempts').val().trim();
+
+					if (number && interval && attempts) {
+
+						var exists = false;
+
+						// check if the number has already been added to the list
+						vmbox_html.find('.saved-callback-numbers .callback-entry').each(function () {
+							if (String($(this).data('number')) === number) {
+								exists = true;
+								return false;
+							}
+						});
+
+						// prevent adding the number again if it exists
+						if (exists) {
+							monster.ui.alert('warning', self.i18n.active().callflows.vmbox.callback.numberExists);	
+							return;
+						}
+
+						// check if number is in the deny list
+						if (Array.isArray(anankeCallbacks?.denyNumbers) && anankeCallbacks.denyNumbers.includes(number)) {
+							monster.ui.alert('warning', self.i18n.active().callflows.vmbox.callback.denyNumbers + anankeCallbacks.denyNumbers);
+							return;
+						}
+
+						callback_html = $(self.getTemplate({
+							name: 'callbackNumbers',
+							data: { 
+								number, 
+								interval, 
+								attempts 
+							},
+							submodule: 'vmbox'
+						}));
+
+						vmbox_html.find('.list-callback-numbers .saved-callback-numbers').append(callback_html);
+
+						toggleCallbackListHeader();
+						updateAddButtonState();
+
+						vmbox_html.find('#callback_number, #callback_interval, #callback_attempts').val('');
+						$('#tab_callback .number-wrapper.placeholder').removeClass('active');
+
+					}
+				};
+
+				$('.number-wrapper.placeholder', vmbox_html).on('click', function (e) {
+					if ($(this).hasClass('disabled')) return;
+					if (!$(e.target).closest('.create-text').length) return;
+					$(this).addClass('active');
+					vmbox_html.find('#callback_number').focus();
+					validateCallbackInputs();
+				});
+
+				$('#add_callback_number', vmbox_html).on('click', function (e) {
+					e.preventDefault();
+					addCallback();
+				});
+
+				$('.add-callback-number', vmbox_html).on('keypress', function (e) {
+					if ((e.keyCode || e.which) === 13) {
+						addCallback();
+					}
+				});
+
+				vmbox_html.on('click', '.delete-callback', function () {
+					$(this).closest('.callback-entry').remove();
+					toggleCallbackListHeader();
+					updateAddButtonState();
+				});
+
+				$('#cancel_callback_number', vmbox_html).on('click', function (e) {
+					e.stopPropagation();
+					$('.number-wrapper.placeholder.active', vmbox_html).removeClass('active');
+					$('#callback_number, #callback_interval, #callback_attempts', vmbox_html).val('');
+				});
+
+				$('.saved-callback-numbers', vmbox_html).sortable({
+					handle: '.drag-handle',
+					placeholder: 'sortable-placeholder'
+				});
+
+				// function to set a limit on the number of callbacks that can be added
+				function updateAddButtonState() {
+					var callbackCount = vmbox_html.find('.saved-callback-numbers .callback-entry').length,
+						$placeholder = vmbox_html.find('.number-wrapper.placeholder'),
+						maxAllowedNumbers = anankeCallbacks.maxAllowedNumbers || 5;
+
+					if (callbackCount >= maxAllowedNumbers) {
+						$placeholder.addClass('disabled');
+					} else {
+						$placeholder.removeClass('disabled');
+					}
+
+				}
+
+				updateAddButtonState();
+
+				var $intervalInput = $('#callback_interval', vmbox_html),
+					intervalMin = anankeCallbacks.callbackIntervalMin || 40,
+					intervalMax = anankeCallbacks.callbackIntervalMax || 360
+					intervalValue = parseInt($intervalInput.val(), 10);
+
+				// set min/max attributes
+				$intervalInput.attr('min', intervalMin).attr('max', intervalMax);
+
+				// validation message
+				if ($intervalInput.val().trim() !== '' && (isNaN(intervalValue) || intervalValue < intervalMin || intervalValue > intervalMax)) {
+					$intervalInput.addClass('monster-invalid').attr('aria-invalid', 'true');
+				} else {
+					$('#callback_interval-error', vmbox_html).hide();
+					$intervalInput.removeClass('monster-invalid').attr('aria-invalid', 'false');
+				}
+
+				// disable add button if inputs not valid
+				function validateCallbackInputs() {
+					var $numberInput = $('#callback_number', vmbox_html),
+						$intervalInput = $('#callback_interval', vmbox_html),
+						$attemptsSelect = $('#callback_attempts', vmbox_html),
+						$addButton = $('#add_callback_number', vmbox_html);
+
+					var numberVal = $numberInput.val().trim(),
+						intervalVal = parseInt($intervalInput.val(), 10),
+						attemptsVal = $attemptsSelect.val();
+
+					var isNumberValid = numberVal !== '',
+						isIntervalValid = !isNaN(intervalVal) && intervalVal >= intervalMin && intervalVal <= intervalMax,
+						isAttemptsValid = !!attemptsVal;
+
+					if (isNumberValid && isIntervalValid && isAttemptsValid) {
+						$addButton.prop('disabled', false);
+					} else {
+						$addButton.prop('disabled', true);
+					}
+				}
+
+				$('#callback_number', vmbox_html).on('input blur', validateCallbackInputs);
+				$('#callback_interval', vmbox_html).on('input blur change', validateCallbackInputs);
+				$('#callback_attempts', vmbox_html).on('change', validateCallbackInputs);
+
+			}
 
 			(target)
 				.empty()
@@ -606,8 +849,9 @@ define(function(require) {
 				callflow_nodes = args.actions;
 
 			// set variables for use elsewhere
-			hideAdd = args.hideAdd;
+			hideAdd = args.hideAdd,
 			miscSettings = args.miscSettings,
+			anankeCallbacks = args.anankeCallbacks;
 				
 				getVoicemailNode = function(hasCategory) {
 					var action = {
