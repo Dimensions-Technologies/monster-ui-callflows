@@ -1785,7 +1785,7 @@ define(function(require) {
 			var self = this,
 				default_timeout = '20',
 				default_delay = '0';
-		
+
 			monster.parallel({
 				unfilteredDevices: function(callback) {
 					self.groupsRequestDeviceList({
@@ -1822,14 +1822,14 @@ define(function(require) {
 					self.groupsMediaList(function(data) {
 						callback(null, data);
 					});
-				}			
+				}
 			}, function(err, results) {
-				
+
 				if (err) {
 					console.error('Error occurred while fetching data:', err);
 					return;
 				}
-		
+
 				var popup,
 					popup_html,
 					endpoints = node.getMetadata('endpoints'),
@@ -1848,8 +1848,7 @@ define(function(require) {
 					media = results.media;
 
 				if (endpoints) {
-					// We need to translate the endpoints to prevent nasty O(N^2) time complexities,
-					// we also need to clone to prevent managing of objects
+					// Translate & clone endpoints to avoid O(N^2) and side-effects
 					$.each($.extend(true, {}, endpoints), function(i, obj) {
 						obj.name = self.i18n.active().oldCallflows.undefined_device;
 						selected_endpoints[obj.id] = obj;
@@ -1989,68 +1988,46 @@ define(function(require) {
 					submodule: 'groups'
 				}));
 
-				// append unselected groups without filter
-				$.each(unselected_groups, function() {
-					$('#groups_pane .connect.left', popup_html)
-						.append($(self.getTemplate({
+				// performance improvement, batch-render each pane 
+				function renderListHtml(list) {
+					var html = '';
+					$.each(list, function() {
+						html += self.getTemplate({
 							name: 'ring_group_element',
 							data: this,
 							submodule: 'groups'
-						})));
-				});
+						});
+					});
+					return html;
+				}
 
-				// append unselected groups with filter
-				$.each(unselected_filtered_groups, function() {
-					$('#personal_ring_groups_pane .connect.left', popup_html)
-						.append($(self.getTemplate({
-							name: 'ring_group_element',
-							data: this,
-							submodule: 'groups'
-						})));
-				})
+				// left panes
+				$('#groups_pane .connect.left', popup_html).html(renderListHtml(unselected_groups));
+				$('#personal_ring_groups_pane .connect.left', popup_html).html(renderListHtml(unselected_filtered_groups));
+				$('#devices_pane .connect.left', popup_html).html(renderListHtml(unselected_devices));
+				$('#phone_only_devices_pane .connect.left', popup_html).html(renderListHtml(unselected_filtered_devices));
+				$('#users_pane .connect.left', popup_html).html(renderListHtml(unselected_users));
 
-				// append unselected devices without filter
-				$.each(unselected_devices, function() {
-					$('#devices_pane .connect.left', popup_html)
-						.append($(self.getTemplate({
-							name: 'ring_group_element',
-							data: this,
-							submodule: 'groups'
-						})));
-				});
+				$('.column.left .options', popup_html).hide();
+				$('.column.left .actions', popup_html).hide();
 
-				// append unselected devices with filter
-				$.each(unselected_filtered_devices, function() {
-					$('#phone_only_devices_pane .connect.left', popup_html)
-						.append($(self.getTemplate({
-							name: 'ring_group_element',
-							data: this,
-							submodule: 'groups'
-						})));
-				});
-
-				$.each(unselected_users, function() {
-					$('#users_pane .connect.left', popup_html)
-						.append($(self.getTemplate({
-							name: 'ring_group_element',
-							data: this,
-							submodule: 'groups'
-						})));
-				});
-
-				$.each(selected_endpoints, function() {
-					//Check if user/device exists.
-					if (this.endpoint_type) {
-						$('.connect.right', popup_html)
-							.append($(self.getTemplate({
+				// right (selected) pane
+				(function() {
+					var html = '';
+					$.each(selected_endpoints, function() {
+						// check if user/device exists.
+						if (this.endpoint_type) {
+							html += self.getTemplate({
 								name: 'ring_group_element',
 								data: this,
 								submodule: 'groups'
-							})));
-					}
-				});
+							});
+						}
+					});
+					$('.connect.right', popup_html).html(html);
+				})();
 
-				//Hide delay column if ring strategy is set to 'In order'
+				// hide delay column if ring strategy is set to 'In order'
 				if (strategy === 'single') {
 					$('.options .option.delay', popup_html).hide();
 				}
@@ -2091,19 +2068,19 @@ define(function(require) {
 					});
 				});
 
-				// Listen for change events on the dropdown
+				// listen for change events on the dropdown
 				$('#settings-dropdown', popup_html).change(function() {
-					// Hide all pane contents
+					// hide all pane contents
 					$('.pane_content', popup_html).hide();
 
-					// Reset Search field
+					// reset Search field
 					$('.searchfield', popup_html).val('');
 					$('.column.left li', popup_html).show();
 
-					// Get the selected value from the dropdown
+					// get the selected value from the dropdown
 					var selectedValue = $(this).val();
 
-					// Show the appropriate pane based on the selected value
+					// show the appropriate pane based on the selected value
 					if (selectedValue === 'users_pane') {
 						$('#users_pane', popup_html).show();
 					} else if (selectedValue === 'devices_pane') {
@@ -2117,74 +2094,39 @@ define(function(require) {
 					}
 				});
 
-				// Trigger change event on page load to show the first pane
+				// trigger change event on page load to show the first pane
 				$('#settings-dropdown', popup_html).trigger('change');
-				
 
 				$('.searchsubmit2', popup_html).click(function() {
 					$('.searchfield', popup_html).val('');
 					$('.column li', popup_html).show();
 				});
+			
+				// improved search function
+				(function () {
+					function debounce(fn, wait) {
+						var t; return function () { clearTimeout(t); var a=arguments, c=this; t=setTimeout(function(){ fn.apply(c,a); }, wait); };
+					}
 
-				$('#devices_pane .searchfield', popup_html).keyup(function() {
-					$('#devices_pane .column.left li').each(function() {
-						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#devices_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-							$(this).hide();
-						} else {
-							$(this).show();
-						}
-					});
-				});
+					$(popup_html)
+						.off('input.fastSearch')
+						.on('input.fastSearch', '.pane_content .searchfield', debounce(function () {
+							var $pane  = $(this).closest('.pane_content');
+							var $items = $('.column.left li', $pane);
+							var q = this.value.trim().toLowerCase();
 
-				$('#phone_only_devices_pane .searchfield', popup_html).keyup(function() {
-					$('#phone_only_devices_pane .column.left li').each(function() {
-						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#phone_only_devices_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-							$(this).hide();
-						} else {
-							$(this).show();
-						}
-					});
-				});
+							if (q.length < 2) { // 2 character minimum
+								$items.show();
+								return;
+							}
 
-				$('#groups_pane .searchfield', popup_html).keyup(function() {
-					$('#groups_pane .column.left li').each(function() {
-						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#groups_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-							$(this).hide();
-						} else {
-							$(this).show();
-						}
-					});
-				});
-
-				$('#personal_ring_groups_pane .searchfield', popup_html).keyup(function() {
-					$('#personal_ring_groups_pane .column.left li').each(function() {
-						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#personal_ring_groups_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-							$(this).hide();
-						} else {
-							$(this).show();
-						}
-					});
-				});
-
-				$('#users_pane .searchfield', popup_html).keyup(function() {
-					$('#users_pane .column.left li').each(function() {
-						if ($('.item_name', $(this)).html().toLowerCase().indexOf($('#users_pane .searchfield', popup_html).val().toLowerCase()) === -1) {
-							$(this).hide();
-						} else {
-							$(this).show();
-						}
-					});
-				});
-
-				if ($.isEmptyObject(selected_endpoints)) {
-					$('.column.right .connect', popup_html).addClass('no_element');
-				} else {
-					$('.column.right .connect', popup_html).removeClass('no_element');
-				}
-
-				$('.column.left .options', popup_html).hide();
-				$('.column.left .actions', popup_html).hide();
-
+							$items.each(function () {
+								var nameLower = this._nameLower || (this._nameLower = ($('.item_name', this).text() || '').toLowerCase());
+								$(this).toggle(nameLower.indexOf(q) !== -1);
+							});
+						}, 200)); // 200ms debounce
+				})();
+				
 				$('.options .option.delay', popup_html).bind('keyup', function() {
 					$(this).parents('li').data('delay', $(this).val());
 				});
@@ -2281,12 +2223,8 @@ define(function(require) {
 					}
 				});
 
-				// $('.scrollable', popup).jScrollPane({
-				// 	horizontalDragMinWidth: 0,
-				// 	horizontalDragMaxWidth: 0
-				// });
-
 				$('.connect', popup).sortable({
+					items: '> li.sortable_li:visible', // only visible items participate
 					connectWith: $('.connect.right', popup),
 					zIndex: 2000,
 					helper: 'clone',
@@ -2342,15 +2280,14 @@ define(function(require) {
 				});
 
 				$('.pane_content', popup_html).hide();
-				
+
 				// set the default tab when loaded
 				if (miscSettings.filterRingGroupLists) {
 					$('#personal_ring_groups_pane', popup_html).show();
 				} else {
 					$('#users_pane', popup_html).show();
 				}
-				//$('#users_pane', popup_html).show();
-				//$('#personal_ring_groups_pane', popup_html).show();
+
 				if ($('#ringback option:selected').hasClass('uneditable')) {
 					$('.media_action[data-action="edit"]', popup_html).hide();
 				} else {
@@ -2380,7 +2317,7 @@ define(function(require) {
 
 				// alert for invalid ring attempts per member
 				$('#repeats', popup_html).change(function() {
-								
+
 					repeatsValue = $('#repeats', popup_html).val();
 
 					if (repeatsValue < 1 || repeatsValue > 99) {
@@ -2392,8 +2329,8 @@ define(function(require) {
 
 				// enable or disable the save button based on the dropdown value
 				function toggleSaveButton() {
-    				var ulElement = document.querySelector('ul.connect.right.ui-sortable'),
-    					numberOfItems = ulElement.querySelectorAll('li.sortable_li').length,
+					var ulElement = document.querySelector('ul.connect.right.ui-sortable'),
+						numberOfItems = ulElement.querySelectorAll('li.sortable_li').length,
 						groupName = document.querySelector('#name').value;
 
 					if (numberOfItems > 0 && groupName != '') {
