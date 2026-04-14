@@ -1,25 +1,30 @@
 <div class="child">
 	{{#compare node.actionName "!==" "root"}}
-		{{#if miscSettings.enableGoogleIcons}}
-			{{#if display_key}}
-				<div class="material-symbols-callflow-arrow-small">straight</div>
-			{{else}}
-				<div class="material-symbols-callflow-arrow">straight</div>
-			{{/if}}
+		{{#if miscSettings.enableDynamicConnectors}}
+			<div class="branch_spacer"></div>
+			<div class="dynamic_line"></div>
 		{{else}}
-			{{#if display_key}}
-			<div class="span_arrow small"></div>
+			{{#if miscSettings.enableGoogleIcons}}
+				{{#if display_key}}
+					<div class="material-symbols-callflow-arrow-small">straight</div>
+				{{else}}
+					<div class="material-symbols-callflow-arrow">straight</div>
+				{{/if}}
 			{{else}}
-				<div class="span_arrow large"></div>
+				{{#if display_key}}
+				<div class="span_arrow small"></div>
+				{{else}}
+					<div class="span_arrow large"></div>
+				{{/if}}
 			{{/if}}
-		{{/if}}
 
-		<div class="clear"></div>
+			<div class="clear"></div>
 
-		{{#if miscSettings.enableGoogleIcons}}
-			<div class="div_line material-symbols-callflow-line" id="divLine{{ node.id }}"></div>
-		{{else}}
-			<div class="div_line" id="divLine{{ node.id }}"/>
+			{{#if miscSettings.enableGoogleIcons}}
+				<div class="div_line material-symbols-callflow-line" id="divLine{{ node.id }}"></div>
+			{{else}}
+				<div class="div_line" id="divLine{{ node.id }}"/>
+			{{/if}}
 		{{/if}}
 
 		<div class="clear"></div>
