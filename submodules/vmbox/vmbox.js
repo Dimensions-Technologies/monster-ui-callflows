@@ -451,16 +451,16 @@ define(function(require) {
 					.prop('disabled', isDisabled);
 			});
 
-			var validateEmail = function(email) {
-					var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-					return re.test(email);
-				},
-				getRecipients = function() {
-					var list = $('#recipients_list', vmbox_html).val().replace(/\s+/g, '').split(',');
-
-					return list.filter(function(email) { return validateEmail(email); });
-				};
-
+			var getRecipients = function() {
+				var editor = data.field_data.vmbox_recipients_editor;
+		
+				if (editor) {
+					return editor.getValues() || [];
+				} 
+				
+				return []; // fallback
+			};
+			
 			$('.vmbox-save', vmbox_html).click(function(ev) {
 				saveButtonEvents(ev);
 			});
@@ -500,7 +500,18 @@ define(function(require) {
 
 					if (monster.ui.valid(vmboxForm)) {
 						var form_data = monster.ui.getFormData('vmbox-form'),
-							$skipInstructionsInput = vmbox_html.find('#skip_instructions_input').val();
+							$skipInstructionsInput = vmbox_html.find('#skip_instructions_input').val(),
+							vmboxOverrideEmail = $('#vmbox_email_override', vmbox_html).is(':checked'),
+							vmboxRecipientsEditor = data.field_data.vmbox_recipients_editor;
+
+						// show warning message if email override is checked but not emails are set
+						if (vmboxOverrideEmail) {
+							var emails = vmboxRecipientsEditor ? vmboxRecipientsEditor.getValues() : [];
+							if (!emails.length) {
+								monster.ui.alert('warning', self.i18n.active().callflows.vmbox.email.no_override_recipients);
+								return;
+							}
+						}
 
 						if (miscSettings.enableAnankeCallbacks) {
 
@@ -550,11 +561,15 @@ define(function(require) {
 							}							
 
 						}
-						
-						form_data.notify_email_addresses = getRecipients();
-
+					
 						if (form_data.announcement_only) {
 							form_data.skip_instructions = $skipInstructionsInput === 'true' ? true : false;
+						}
+
+						if (vmboxOverrideEmail) {
+							form_data.notify_email_addresses = getRecipients();
+						} else {
+							delete form_data.notify_email_addresses;
 						}
 
 						/* self.clean_form_data(form_data); */
@@ -587,6 +602,70 @@ define(function(require) {
 				});
 
 			};
+
+			function voicemailOverrideEmail() {
+
+				var overrideEmail = vmbox_html.find('#vmbox_email_override'),
+					enabled = overrideEmail.is(':checked');
+					
+				if (!enabled) {
+					$('.list-editor-input', vmbox_html).val('');
+					$('#vmbox_recipients_editor_section', vmbox_html).hide();
+					$('.list-editor-error', vmbox_html).hide();
+				} else {
+					$('#vmbox_recipients_editor_section', vmbox_html).show();
+				}
+
+			}
+
+			voicemailOverrideEmail()
+
+			$('#vmbox_email_override', vmbox_html).on('change', voicemailOverrideEmail);
+
+			var $recipientsEditorSection = vmbox_html.find('#vmbox_recipients_editor_section');
+
+			var listEditorHtml = $(self.getTemplate({
+				name: 'listEditor',
+				data: {
+					title: self.i18n.active().callflows.vmbox.email.recipients,
+					addLabel: self.i18n.active().callflows.vmbox.email.add_email,
+					placeholder: 'Email Address'
+				}
+			}));
+
+			$recipientsEditorSection.empty().append(listEditorHtml);
+
+			var emailRecipients = [];
+			
+			if (data.data.notify_email_addresses) {
+				emailRecipients = data.data.notify_email_addresses;
+
+				if (emailRecipients.length > 0) {
+					$('#vmbox_email_override', vmbox_html).prop('checked', true);
+					voicemailOverrideEmail();
+				}
+			}
+
+			var recipientsEditor = self.listEditorBind({
+				container: listEditorHtml,
+				initial: emailRecipients || [],
+				valueType: 'emailAddress',
+				getItemHtml: function(value) {
+					return $(self.getTemplate({
+						name: 'listEditorItem',
+						data: {
+							value: value,
+							miscSettings: miscSettings
+						}
+					}));
+				},
+				normalize: function(v) {
+					return (v || '').trim().toLowerCase();
+				},
+				invalidMessage: self.i18n.active().callflows.vmbox.email.invalid_email
+			});
+
+			data.field_data.vmbox_recipients_editor = recipientsEditor;
 
 			if (miscSettings.enableAnankeCallbacks) {
 
@@ -623,7 +702,8 @@ define(function(require) {
 							data: {
 								number: entry.number,
 								interval: entry.interval_s,
-								attempts: entry.attempts
+								attempts: entry.attempts,
+								miscSettings: miscSettings
 							},
 							submodule: 'vmbox'
 						}));
@@ -669,7 +749,8 @@ define(function(require) {
 							data: { 
 								number, 
 								interval, 
-								attempts 
+								attempts,
+								miscSettings
 							},
 							submodule: 'vmbox'
 						}));
