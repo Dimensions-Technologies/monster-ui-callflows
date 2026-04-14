@@ -43,32 +43,6 @@
 						</div>
 					</div>
 
-					<div class="clearfix file">
-						<label for="fileInput">{{ i18n.callflows.media.file_input }}</label>
-						<div id="upload_div" class="input">
-							<input class="input-file" id="file" name="upload_media" type="file">
-						</div>
-						{{#if data.id }}
-							<div class="input player_file">
-								<span class="uneditable-input">{{data.description}}</span>
-							</div>
-							
-							<div class="clearfix player_file file">
-								<div class="input">
-									<button class="monster-button" id="change_link">{{ i18n.callflows.media.change_file }}</button>
-									<button class="monster-button" id="download_link">{{ i18n.callflows.media.download_file }}</button>
-								</div>
-							</div>
-						{{/if}}
-
-						<div class="media_upload_disclosure">
-							<br>
-							{{#monsterText}}
-								{{i18n.callflows.media.mediaUploadDisclosure.text}}
-							{{/monsterText}}
-						</div>	
-					</div>
-					
 					<div class="clearfix tts">
 						<label for="tts_text">{{ i18n.callflows.media.text }}</label>
 						<div class="input">
@@ -151,6 +125,45 @@
 								{{/if}}
 							</select>
 						</div>
+					</div>
+
+					<div class="clearfix">
+						<label for="fileInput" class="file">{{ i18n.callflows.media.file_input }}</label>
+						<div id="upload_div" class="input">
+							<input class="input-file file" id="file" name="upload_media" type="file">
+						</div>
+						
+						{{#if data.id }}
+							<div class="input player_file file">
+								<span class="uneditable-input">{{data.description}}</span>
+							</div>
+							
+							<div class="clearfix player_file file">
+								<div class="input">
+									<button class="monster-button" id="change_link">{{ i18n.callflows.media.change_file }}</button>
+									<button class="monster-button" id="download_link">{{ i18n.callflows.media.download_file }}</button>
+								</div>
+							</div>
+
+							<div class="clearfix player_file media-player">
+								<button class="monster-button" id="play_link">{{ i18n.callflows.media.play_file }}</button>
+								<div class="media-progress">
+									<span class="media-time-current">0:00</span>
+									<input class="media-seek" type="range" min="0" max="1000" value="0" disabled>
+									<span class="media-time-duration">0:00</span>
+								</div>
+								<audio id="media_player" preload="none">
+									<source id="media_player_source" src="" type="audio/mpeg">
+								</audio>
+							</div>
+						{{/if}}
+
+						<div class="media_upload_disclosure">
+							<br>
+							{{#monsterText}}
+								{{i18n.callflows.media.mediaUploadDisclosure.text}}
+							{{/monsterText}}
+						</div>	
 					</div>
 
 					<input name="auth_token" id="auth_token" type="hidden" value="{{auth_token}}"/>
