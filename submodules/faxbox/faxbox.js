@@ -567,8 +567,6 @@ define(function(require) {
 					} else {
 						fax_identity.val(number.replace(/^([0-9]{3})([0-9]{3})([0-9]{4})$/, '+1 ($1) $2-$3'));
 					}
-				} else {
-					fax_identity.val('');
 				}
 			});
 
@@ -604,22 +602,162 @@ define(function(require) {
 					}
 				});
 			}
-			
+
+			var notificationEmailListEditor = function(options) {
+				var $notificationEditorSection = faxbox_html.find(options.sectionSelector),
+					listEditorHtml = $(self.getTemplate({
+						name: 'listEditor',
+						data: {
+							title: options.title,
+							addLabel: self.i18n.active().callflows.faxbox.add_email,
+							placeholder: 'Email Address'
+						}
+					})),
+					emailRecipients = _.get(data, options.dataPath, []);
+
+				if (_.isString(emailRecipients)) {
+					emailRecipients = _.chain(emailRecipients.split(','))
+						.map(function(value) {
+							return (value || '').trim().toLowerCase();
+						})
+						.compact()
+						.value();
+				}
+
+				if (!_.isArray(emailRecipients)) {
+					emailRecipients = [];
+				}
+
+				$notificationEditorSection.empty().append(listEditorHtml);
+
+				data[options.editorKey] = self.listEditorBind({
+					container: listEditorHtml,
+					initial: emailRecipients || [],
+					valueType: 'emailAddress',
+					getItemHtml: function(value) {
+						return $(self.getTemplate({
+							name: 'listEditorItem',
+							data: {
+								value: value,
+								miscSettings: miscSettings
+							}
+						}));
+					},
+					normalize: function(v) {
+						return (v || '').trim().toLowerCase();
+					},
+					invalidMessage: self.i18n.active().callflows.faxbox.invalid_email
+				});
+			};
+
+			notificationEmailListEditor({
+				sectionSelector: '#inbound_notification_email_editor_section',
+				dataPath: 'faxbox.notifications.inbound.email.send_to',
+				editorKey: 'inbound_email_notification', 
+				title: self.i18n.active().callflows.faxbox.inbound_notification_email
+			});
+
+			notificationEmailListEditor({
+				sectionSelector: '#outbound_notification_email_editor_section',
+				dataPath: 'faxbox.notifications.outbound.email.send_to',
+				editorKey: 'outbound_email_notification',
+				title: self.i18n.active().callflows.faxbox.outbound_notification_email
+			});
+
+			var smtpPermissionListEditor = function() {
+				var $smtpPermissionListEditorSection = faxbox_html.find('#smtp_permission_list_editor_section'),
+					smtpListEditorHtml = $(self.getTemplate({
+						name: 'listEditor',
+						data: {
+							title: self.i18n.active().callflows.faxbox.smtp_permission_list,
+							addLabel: self.i18n.active().callflows.faxbox.add_email_or_domain,
+							placeholder: 'Email Address or Domain'
+						}
+					})),
+					smtpPermissionList = _.get(data, 'faxbox.smtp_permission_list', []);
+
+				if (_.isString(smtpPermissionList)) {
+					smtpPermissionList = _.chain(smtpPermissionList.split(','))
+						.map(function(value) {
+							return (value || '').trim().toLowerCase();
+						})
+						.compact()
+						.value();
+				}
+
+				if (!_.isArray(smtpPermissionList)) {
+					smtpPermissionList = [];
+				}
+
+				$smtpPermissionListEditorSection.empty().append(smtpListEditorHtml);
+
+				data.smtp_permission_list_editor = self.listEditorBind({
+					container: smtpListEditorHtml,
+					initial: smtpPermissionList || [],
+					valueType: 'emailAddressOrDomain',
+					getItemHtml: function(value) {
+						return $(self.getTemplate({
+							name: 'listEditorItem',
+							data: {
+								value: value,
+								miscSettings: miscSettings
+							}
+						}));
+					},
+					normalize: function(v) {
+						return (v || '').trim().toLowerCase();
+					},
+					invalidMessage: self.i18n.active().callflows.faxbox.invalid_email_or_domain_1 + '<br />' + self.i18n.active().callflows.faxbox.invalid_email_or_domain_2
+				});
+			};
+
+			smtpPermissionListEditor();
+
+			var getNotificationRecipients = function(editorKey) {
+				var editor = data[editorKey];
+
+				if (editor) {
+					var values = editor.getValues();
+
+					if (_.isArray(values)) {
+						return values;
+					}
+
+					if (_.isString(values) && values !== '') {
+						return [values];
+					}
+				}
+
+				return [];
+			};
+				
 			function saveButtonEvents(ev) {
 				ev.preventDefault();
 
 				var form_html = $('#faxbox_form', faxbox_html),
 					form_data = monster.ui.getFormData('faxbox_form'),
 					faxboxNumber = form_data.faxbox_number || $('#faxbox_number', faxbox_html).val() || _.get(renderData, 'selected_faxbox_number', '') || '',
+					hasOwnerId = !!_.get(form_data, 'owner_id'),
+					readOnlyCallerId = miscSettings.readOnlyFaxboxCallerId,
 					word_reg = /^[\w\s'-]+/;
 
+					_.set(form_data, 'notifications.inbound.email.send_to', getNotificationRecipients('inbound_email_notification'));
+					_.set(form_data, 'notifications.outbound.email.send_to', getNotificationRecipients('outbound_email_notification'));
+					form_data.smtp_permission_list = getNotificationRecipients('smtp_permission_list_editor').join(',');
+
+				// for non user-associated faxboxes, always keep caller_id aligned with selected fax number.
+				if (!hasOwnerId && readOnlyCallerId) {
+					form_data.caller_id = faxboxNumber || '_disabled';
+				}
+
 				// prevent save if this is a non user associated faxbox and not all required fields are set
-				if (!form_data.hasOwnProperty('owner_id')) {
+				if (!hasOwnerId) {
 					var faxboxNumber = form_data.faxbox_number,
 						inboundEmail = form_data.notifications.inbound.email.send_to,
-						permissionList = form_data.smtp_permission_list;
+						permissionList = form_data.smtp_permission_list,
+						hasInboundEmail = _.isArray(inboundEmail) ? inboundEmail.length > 0 : inboundEmail !== '';
 
-					if (faxboxNumber == '' || inboundEmail == '' || permissionList == '') {
+					if (faxboxNumber == '' || !hasInboundEmail || permissionList == '') {
 						monster.ui.alert('warning', self.i18n.active().callflows.faxbox.can_not_save);
 						return
 					}
@@ -918,7 +1056,18 @@ define(function(require) {
 
 		faxboxSave: function(form_data, data, success, error) {
 			var self = this,
-				normalized_data = self.faxboxNormalizedData($.extend(true, {}, data, form_data));
+				mergedData = $.extend(true, {}, data, form_data);
+
+			// force notification recipients from form_data to replace renderData values.
+			if (_.has(form_data, 'notifications.inbound.email.send_to')) {
+				_.set(mergedData, 'notifications.inbound.email.send_to', _.get(form_data, 'notifications.inbound.email.send_to'));
+			}
+
+			if (_.has(form_data, 'notifications.outbound.email.send_to')) {
+				_.set(mergedData, 'notifications.outbound.email.send_to', _.get(form_data, 'notifications.outbound.email.send_to'));
+			}
+
+			var normalized_data = self.faxboxNormalizedData(mergedData);
 
 			if (typeof data === 'object' && data.id) {
 				self.faxboxUpdate(normalized_data, function(_data, status) {
@@ -944,26 +1093,6 @@ define(function(require) {
 		},
 
 		faxboxNormalizedData: function(form_data) {
-			if (form_data.hasOwnProperty('notifications')) {
-				if (form_data.notifications.hasOwnProperty('inbound') && form_data.notifications.inbound.hasOwnProperty('email') && form_data.notifications.inbound.email.hasOwnProperty('send_to')) {
-					if (form_data.notifications.inbound.email.send_to.length) {
-						var inbound = form_data.notifications.inbound.email.send_to;
-						form_data.notifications.inbound.email.send_to = inbound instanceof Array ? inbound.join(',') : inbound.replace(/\s/g, '').split(',');
-					} else {
-						delete form_data.notifications.inbound.email.send_to;
-					}
-				}
-
-				if (form_data.notifications.hasOwnProperty('outbound') && form_data.notifications.outbound.hasOwnProperty('email') && form_data.notifications.outbound.email.hasOwnProperty('send_to')) {
-					if (form_data.notifications.outbound.email.send_to.length) {
-						var outbound = form_data.notifications.outbound.email.send_to;
-						form_data.notifications.outbound.email.send_to = outbound instanceof Array ? outbound.join(',') : outbound.replace(/\s/g, '').split(',');
-					} else {
-						delete form_data.notifications.outbound.email.send_to;
-					}
-				}
-			}
-
 			if (form_data.hasOwnProperty('smtp_permission_list')) {
 				if (form_data.smtp_permission_list === '') {
 					delete form_data.smtp_permission_list;
