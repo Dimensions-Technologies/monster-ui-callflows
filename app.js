@@ -1213,6 +1213,7 @@ define(function(require) {
 			});
 		},
 
+		// submodule list rendering
 		refreshEntityList: function(args) {
 			var self = this,
 				getLowerCasedDisplayName = _.flow(
@@ -1275,6 +1276,7 @@ define(function(require) {
 			});
 		},
 
+		// submodule list formatting
 		formatEntityData: function(entities, entityType) {
 			var self = this,
 				isStringAndNotEmpty = _.overEvery(
@@ -1313,6 +1315,9 @@ define(function(require) {
 					if (miscSettings.enableEnhancedListData) {
 						return entityType === 'temporal_route';
 					}
+				},
+				isAcdcMember = function(entity) {
+					return entityType === 'acdc_member' && entity.numbers ;
 				},
 				isVoicemail = function(entity) {
 					return entityType === 'vmbox' || entityType === 'voicemail';
@@ -1399,6 +1404,8 @@ define(function(require) {
 				].join(' ')
 				}, isTemporalRoute(entity) && {
 					additionalInfo: entity.dimension?.rule_type === 'manual' ? 'Manual Rule - Feature Code Id: ' + entity.dimension.feature_code_id : 'Time Based Rule'
+				}, isAcdcMember(entity) && {
+					additionalInfo: entity.numbers
 				}, isVoicemail(entity) && {
 					additionalInfo: [
 						entity.mailbox,

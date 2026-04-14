@@ -18,6 +18,7 @@
 	color: #666666;
 	cursor: pointer;
 	line-height: 32px;
+	font-size: 20px;
 }
 
 .callflows-port #directory-form #basic #tab_users .action_user:not(:first-child) {
