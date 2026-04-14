@@ -1,0 +1,23 @@
+<div class="dialog_popup callflows-port callflow-action-form">
+	<form name="form" method="post" action="#">
+		<div class="form_content">
+			<div class="popup_field">
+				<label for="to_did_input">{{ i18n.callflows.to_did.number.label }}</label>
+				<input type="tel" id="to_did_input" value="{{ data_to_did.number }}" 
+					pattern="^\+?[0-9]{6,20}$" inputmode="tel"
+					onkeypress="return event.charCode === 43 || (event.charCode >= 48 && event.charCode <= 57)"
+				/>		
+			</div>
+
+			<!-- timeout doesn't seem to work
+			<div class="timeout_div">
+				{{ i18n.callflows.to_did.ring_this_number_for }} <input type="text" class="size2" name="timeout_input" id="timeout_input" value="{{ timeout.value }}"/> {{ i18n.callflows.to_did.seconds }}.
+			</div>
+			-->
+
+		</div>
+	</form>
+	<div class="buttons-center">
+		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>
+	</div>
+</div>
