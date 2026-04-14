@@ -948,6 +948,10 @@ define(function(require) {
 				});
 			}
 
+			if (!findMeFollowMeEnabled) {
+				user_html.find('.information-text.ring-timeout').hide();
+			}
+
 			user_html.find('.ring-timeout').on('change', function(event) {
 
 				if (data.field_data.user_callflow != null) {
@@ -1816,8 +1820,8 @@ define(function(require) {
 			if (findMeFollowMeEnabled) {
 				$ringTimeoutInput.prop('disabled', true);
         		$ringTimeoutInput.addClass('input-readonly');
-			} 
-			
+			}
+
 			user_html.find('.smart-pbx-find-me-follow-me').on('change', function(event) {
 				var state = $('.smart-pbx-find-me-follow-me select[name="smartpbx.find_me_follow_me.enabled"]').val();
 
@@ -1852,11 +1856,13 @@ define(function(require) {
 						}
 					});
 					$ringTimeoutInput.prop('disabled', true);
-        			$ringTimeoutInput.addClass('input-readonly'); 
+        			$ringTimeoutInput.addClass('input-readonly');
+					user_html.find('.information-text.ring-timeout').show();
 				} else {
 					$('#tab_find_me_follow_me', user_html).hide();
 					$ringTimeoutInput.prop('disabled', false);
         			$ringTimeoutInput.removeClass('input-readonly');
+					user_html.find('.information-text.ring-timeout').hide();
 				}
 			});
 
@@ -2761,15 +2767,17 @@ define(function(require) {
 			var self = this,
 				callflow = args.callflow,
 				enabled = args.enabled,
-				ringTimeout = args.ringTimeout;
+				ringTimeout = args.ringTimeout,
+				unavailableText = self.i18n.active().callflows.user.unavailable_message;
 
 			var vmNode = self.userCallflowGetNode({
 				callflow: callflow,
 				module: 'voicemail'
 			});
-	
+
 			// toggle voicemail
 			if (vmNode) {
+				vmNode.data = vmNode.data || {};
 				vmNode.data.skip_module = !enabled;
 			}
 
@@ -2777,6 +2785,37 @@ define(function(require) {
 			if (ringTimeout) {
 				self.userCallflowSetRingTimeout(callflow, ringTimeout);
 			}
+
+			// ensure children container exists - handles existing callflows before TTS was added
+			if (!vmNode.children || typeof vmNode.children !== 'object') {
+				vmNode.children = {};
+			}
+
+			var ttsNode = vmNode.children._;
+
+			// if missing or not TTS, create/replace it
+			if (!ttsNode || ttsNode.module !== 'tts') {
+				vmNode.children._ = {
+					module: 'tts',
+					data: {
+						endless_playback: false,
+						skip_module: true,
+						text: unavailableText,
+						terminators: []
+					},
+					children: {}
+				};
+				ttsNode = vmNode.children._;
+			} else {
+				ttsNode.data = ttsNode.data || {};
+				ttsNode.data.text = unavailableText;
+				if (!ttsNode.data.hasOwnProperty('skip_module')) {
+					ttsNode.data.skip_module = true;
+				}
+			}
+
+			// when voicemail is disabled, enable TTS; when voicemail enabled, disable TTS
+			ttsNode.data.skip_module = enabled ? true : false;
 			
 			self.userUpdateCallflow(callflow, callback, function() {
 				callback && callback(null);
