@@ -5,7 +5,8 @@ define(function(require) {
 		footable = require('footable'),
 		Papa = require('papaparse'),
 		sugar = require('sugar-date'),
-		DateHolidays = require('date-holidays').default;
+		DateHolidays = require('date-holidays').default,
+		miscSettings = {};
 
 	return {
 		subscribe: {
@@ -73,6 +74,10 @@ define(function(require) {
 		},
 
 		strategyHolidaysRender: function(args) {
+			
+			// set variables for use elsewhere
+			miscSettings = args.miscSettings;
+			
 			var self = this,
 				$container = args.container,
 				strategyData = args.strategyData,
@@ -104,7 +109,8 @@ define(function(require) {
 					name: 'layout',
 					data: {
 						enabled: !_.isEmpty(strategyData.temporalRules.holidays),
-						years: getYearOptions()
+						years: getYearOptions(),
+						miscSettings: miscSettings
 					},
 					submodule: 'strategyHolidays'
 				}));
@@ -220,7 +226,8 @@ define(function(require) {
 								dateToDisplay: _.get(dateToDisplay, 'text'),
 								timestamp: _.get(dateToDisplay, 'timestamp'),
 								key: key,
-								isEditable: !isExpiredYearsSelected
+								isEditable: !isExpiredYearsSelected,
+								miscSettings: miscSettings
 							},
 							submodule: 'strategyHolidays'
 						}));
@@ -250,14 +257,13 @@ define(function(require) {
 				template = $(self.getTemplate({
 					name: 'deleteHolidayDialog',
 					data: {
-						holidayName: data.holidayName
+						holidayName: data.holidayName,
+						miscSettings: miscSettings
 					},
 					submodule: 'strategyHolidays'
 				})),
 				optionsPopup = {
-					position: ['center', 20],
-					title: '<i class="fa fa-warning monster-red"></i><div class="title">' + self.i18n.active().strategy.holidays.dialogs.delete.title + '</div>',
-					dialogClass: 'monster-alert holiday-delete-dialog'
+					title: '<div class="title">' + self.i18n.active().strategy.holidays.dialogs.delete.title + '</div>',
 				},
 				popup = monster.ui.dialog(template, optionsPopup);
 
@@ -721,7 +727,7 @@ define(function(require) {
 				},
 				allHolidays = self.appFlags.strategyHolidays.allHolidays;
 
-			monster.pub('common.csvUploader.renderPopup', {
+			monster.pub('callflows.csvUploader.renderPopup', {
 				title: i18n.importOfficeHolidays.title,
 				file: blob,
 				dataLabel: i18n.importOfficeHolidays.dataLabel,

@@ -1,0 +1,34 @@
+.e911-change-wrapper {
+    padding: 15px;
+    width: 400px;
+}
+
+.e911-change-wrapper .cancel-link {
+    margin-right: 5px;
+}
+
+.e911-change-wrapper .list-choices {
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.e911-change-wrapper .list-choices .choice {
+    background: #eee;
+    padding: 20px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+}
+
+.e911-change-wrapper .list-choices .choice:hover {
+    background: #fff;
+    cursor: pointer;
+}
+
+.e911-change-wrapper .list-choices .choice.active {
+    background: #fff;
+    border: 1px solid #22a5ff;
+}
+
+.e911-change-wrapper .actions {
+    margin-top: 10px;
+}

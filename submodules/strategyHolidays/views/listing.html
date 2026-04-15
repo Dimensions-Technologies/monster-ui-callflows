@@ -7,8 +7,16 @@
 	</td>
 	<td class="action-cell">
 	{{#if isEditable}}
-		<span class="edit-holiday">{{telicon "edit"}}</span>
+		{{#if miscSettings.enableGoogleIcons}}
+			<a class="material-symbols-icon-edit edit-holiday">edit</a>
+		{{else}}
+			<span class="edit-holiday">{{telicon "edit"}}</span>
+		{{/if}}
 	{{/if}}
-		<span class="delete-holiday">{{telicon "trash"}}</span>
+		{{#if miscSettings.enableGoogleIcons}}
+			<a class="material-symbols-icon-delete delete-holiday">clear</a>
+		{{else}}
+			<span class="delete-holiday">{{telicon "trash"}}</span>
+		{{/if}}
 	</td>
 </tr>

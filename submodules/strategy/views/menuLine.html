@@ -30,5 +30,9 @@
 			{{/each}}
 		</select>
 	</div>
-	<i class="remove-btn fa fa-times monster-lightgrey"></i>
+	{{#if miscSettings.enableGoogleIcons}}
+		<i class="remove-btn material-symbols-outlined">clear</i>
+	{{else}}
+		<i class="remove-btn fa fa-times monster-lightgrey"></i>
+	{{/if}}
 </div>
