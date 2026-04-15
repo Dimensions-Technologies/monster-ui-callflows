@@ -2852,9 +2852,10 @@ define(function(require) {
 						});
 
 						$select.change(function() {
-							data.field_data.user_faxbox.phoneNumber = $(this).val() || '';
+							_.set(data, 'field_data.user_faxbox.phoneNumber', $(this).val() || '');
 						});
 					}
+
 				});
 			};
 
