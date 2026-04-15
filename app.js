@@ -26,7 +26,13 @@ define(function(require) {
 		deviceBillingCodeRequired = {},
 		anankeCallbacks = {};
 
-	var appSubmodules = [
+	var strategySubmodules = [
+		'strategy',
+		'strategyHolidays',
+		'strategyHours'
+	];
+
+	var baseSubmodules = [
 		'afterbridge',
 		'blacklist',
 		'branchvariable',
@@ -45,18 +51,44 @@ define(function(require) {
 		'misc',
 		'qubicle',
 		'resource',
-		'strategy',
-		'strategyHolidays',
-		'strategyHours',
 		'temporalset',
 		'timeofday',
 		'user',
 		'vmbox'
 	];
 
+	var strategyEnabled = _.get(monster, 'config.whitelabel.dimension.dt_callflows.miscSettings.enableSmartPbxMainNumber', false),
+		appSubmodules = baseSubmodules.concat(
+			strategyEnabled ? strategySubmodules : []
+		);
+
 	require(_.map(appSubmodules, function(name) {
 		return './submodules/' + name + '/' + name;
 	}));
+	
+	if (strategyEnabled) {
+		var strategyCssFiles = [
+			'submodules/strategy/strategy.css',
+			'submodules/strategy/partials/addOfficeHours.css',
+			'submodules/strategy/partials/changeCallerIdPopup.css',
+			'submodules/strategy/partials/customConferenceGreeting.css',
+			'submodules/strategy/partials/faxboxPopup.css',
+			'submodules/strategy/partials/menuPopup.css',
+			'submodules/strategy/partials/number-actions.css',
+			'submodules/strategy/partials/number-element.css',
+			'submodules/strategy/partials/officeHolidaysManagement.css',
+			'submodules/strategy/partials/strategy-calls.css',
+			'submodules/strategy/partials/strategy-confnum.css',
+			'submodules/strategyHolidays/strategyHolidays.css',
+			'submodules/strategyHours/strategyHours.css'
+		];
+		_.forEach(strategyCssFiles, function(cssFile) {
+			var link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = 'apps/dt-callflows/' + cssFile;
+			document.head.appendChild(link);
+		});
+	}
 
 	var app = {
 		name: 'dt-callflows',
