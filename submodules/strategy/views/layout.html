@@ -1,0 +1,174 @@
+<div id="strategy_container">
+	<div class="element-container helper">
+		<i class="fa fa-info-circle"></i>
+		<p>{{ i18n.strategy.noNumberHelp }}</p>
+	</div>
+	<div class="element-container main-number" data-template="numbers">
+		<div class="element-header-outer clearfix">
+			<div class="element-header-inner">
+				<div class="title">
+					{{#if miscSettings.enableGoogleIcons}}
+						<div class="material-symbols-outlined" style="font-size: 32px;">numbers</div>
+					{{else}}
+						{{telicon "number"}}
+					{{/if}}
+					<div class="text">
+						{{ i18n.strategy.sectionTitles.numbers }}
+					</div>
+				</div>
+				<div class="summary">
+					<div class="content">
+						{{formatPhoneNumber mainNumbers.[0]}}
+						{{#if mainNumbers.[1]}}
+							{{#if mainNumbers.[2]}}
+								<i class="icon-telicon-multiple-items icon-small"></i>
+							{{else}}
+								, {{formatPhoneNumber mainNumbers.[1]}}
+							{{/if}}
+						{{/if}}
+					</div>
+					<div class="icons">
+						<i class="fa fa-play"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="element-content"></div>
+	</div>
+	<div class="element-container strategy-hours" data-template="hours">
+		<div class="element-header-outer clearfix">
+			<div class="element-header-inner">
+				<div class="title">
+					{{#if miscSettings.enableGoogleIcons}}
+						<div class="material-symbols-outlined" style="font-size: 32px;">nest_clock_farsight_analog</div>
+					{{else}}
+						{{telicon "clock"}}
+					{{/if}}
+					<div class="text">
+						{{ i18n.strategy.sectionTitles.hours }}
+					</div>
+				</div>
+				<div class="summary">
+					<div class="content"></div>
+					<div class="icons">
+						<i class="fa fa-play"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="element-content"></div>
+	</div>
+	<div class="element-container strategy-holidays" data-template="holidays">
+		<div class="element-header-outer clearfix">
+			<div class="element-header-inner">
+				<div class="title">
+					{{#if miscSettings.enableGoogleIcons}}
+						<div class="material-symbols-outlined" style="font-size: 32px;">calendar_month</div>
+					{{else}}
+						{{telicon "calendar"}}
+					{{/if}}
+					<div class="text">
+						{{ i18n.strategy.sectionTitles.holidays }}
+					</div>
+				</div>
+				<div class="summary">
+					<div class="content"></div>
+					<div class="icons">
+						<i class="fa fa-play"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="element-content"></div>
+	</div>
+	<div class="element-container strategy-calls" data-template="calls">
+		<div class="element-header-outer clearfix">
+			<div class="element-header-inner">
+				<div class="title">
+					{{#if miscSettings.enableGoogleIcons}}
+						<div class="material-symbols-outlined" style="font-size: 32px;">call_received</div>
+					{{else}}
+						{{telicon "phone-inbound"}}
+					{{/if}}
+					<div class="text">
+						{{ i18n.strategy.sectionTitles.calls }}
+					</div>
+				</div>
+				<div class="summary">
+					<div class="content"></div>
+					<div class="icons">
+						<i class="fa fa-play"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="element-content"></div>
+	</div>
+{{#isFeatureAvailable "smartpbx.mainNumber.mainConferenceNumber.manage"}}
+	<div class="element-container strategy-confnum" data-template="confnum">
+		<div class="element-header-outer clearfix">
+			<div class="element-header-inner">
+				<div class="title">
+					{{#if miscSettings.enableGoogleIcons}}
+						<div class="material-symbols-outlined" style="font-size: 32px;">comment</div>
+					{{else}}
+						{{telicon "comments"}}
+					{{/if}}
+					<div class="text">
+						{{ i18n.strategy.sectionTitles.confnum }}
+					</div>
+				</div>
+				<div class="summary">
+					<div class="content">
+						{{formatPhoneNumber confNumbers.[0]}}
+						{{#if confNumbers.[1]}}
+							{{#if confNumbers.[2]}}
+								<i class="icon-telicon-multiple-items icon-small"></i>
+							{{else}}
+								, {{formatPhoneNumber confNumbers.[1]}}
+							{{/if}}
+						{{/if}}
+					</div>
+					<div class="icons">
+						<i class="fa fa-volume-up monster-primary-color custom-greeting-icon" title="{{i18n.strategy.customConferenceGreeting.tooltip}}" data-toggle="tooltip" {{#unless customConfGreeting}}style="display:none"{{/unless}}></i>
+						<i class="fa fa-play"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="element-content"></div>
+	</div>
+{{/isFeatureAvailable}}
+	<div class="element-container strategy-faxingnum" data-template="faxingnum">
+		<div class="element-header-outer clearfix">
+			<div class="element-header-inner">
+				<div class="title">
+					{{#if miscSettings.enableGoogleIcons}}
+						<div class="material-symbols-outlined" style="font-size: 32px;">fax</div>
+					{{else}}
+						{{telicon "device-fax"}}
+					{{/if}}
+					<div class="text">
+						{{ i18n.strategy.sectionTitles.faxingnum }}
+					</div>
+				</div>
+				<div class="summary">
+					<div class="content">
+						{{formatPhoneNumber faxingNumbers.[0]}}
+						{{#if faxingNumbers.[1]}}
+							{{#if faxingNumbers.[2]}}
+								<i class="icon-telicon-multiple-items icon-small"></i>
+							{{else}}
+								, {{formatPhoneNumber faxingNumbers.[1]}}
+							{{/if}}
+						{{/if}}
+					</div>
+					<div class="icons">
+						<i class="fa fa-play"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="element-content"></div>
+	</div>
+</div>

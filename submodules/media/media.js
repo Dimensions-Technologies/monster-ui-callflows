@@ -834,6 +834,10 @@ define(function(require) {
 							mediaFilters['filter_not_media_source'] = 'recording';
 						}
 
+						if (!miscSettings.mediaShowVoipItems) {
+							mediaFilters['filter_not_ui_metadata.origin'] = 'voip';
+						}
+
 						self.callApi({
 							resource: 'media.list',
 							data: {
@@ -1055,6 +1059,10 @@ define(function(require) {
 				if (mediaAction == 'mailboxMedia') {
 					mediaFilters['filter_media_source'] = 'recording';
 				}
+			}
+
+			if (!miscSettings.mediaShowVoipItems) {
+				mediaFilters['filter_not_ui_metadata.origin'] = 'voip';
 			}
 			
 			self.callApi({

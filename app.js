@@ -47,7 +47,10 @@ define(function(require) {
 		'temporalset',
 		'timeofday',
 		'user',
-		'vmbox'
+		'vmbox',
+		'strategy',
+		'strategyHolidays',
+		'strategyHours'
 	];
 
 	require(_.map(appSubmodules, function(name) {
@@ -1481,7 +1484,7 @@ define(function(require) {
 						width: '404px',
 						disable_search_threshold: 0,
 						search_contains: true
-					})
+					});
 
 					monster.ui.tooltips(template);
 		
@@ -1618,10 +1621,19 @@ define(function(require) {
 				e.preventDefault();
 
 				$(this).tab('show');
-			});
 
-			template.find('.media-dropdown').on('change', function() {
-				template.find('.shoutcast-div').toggleClass('active', $(this).val() === 'shoutcast').find('input').val('');
+					// Render Strategy submodule into the Strategy tab the first time it's opened
+					var href = $(this).attr('href');
+					if (miscSettings.enableSmartPbxMainNumber && href === '#account_settings_strategy') {
+						var $parent = template.find('#account_settings_strategy .strategy-parent');
+						if ($parent.length && $parent.find('#strategy_container').length === 0) {
+							monster.pub('callflows.strategy.render', { 
+								parent: $parent,
+								miscSettings: miscSettings
+							});
+						}
+					}
+
 			});
 
 			if (miscSettings.readOnlyCallerIdName) {
