@@ -146,7 +146,7 @@ define(function(require) {
 
 				if (results.get_vmbox.hasOwnProperty('owner_id') && results.get_vmbox.owner_id != null) {
 					if (miscSettings.vmboxPreventDeletingUserAssociated) {
-						miscSettings.vmboxPreventDelete = true;
+						miscSettings.readOnlyMailbox = true;
 					}
 				}
 
@@ -923,6 +923,10 @@ define(function(require) {
 				delete mergedData.announcement_only;
 			}
 
+			if (mergedData.owner_id_display) {
+				delete mergedData.owner_id_display;
+			}
+
 			mergedData.not_configurable = !mergedData.extra.allow_configuration;
 
 			// extend doesn't override arrays...
@@ -1295,7 +1299,7 @@ define(function(require) {
 				existingItem = false;
 			}
 
-			if (hideAdd.voicemail || miscSettings.vmboxPreventDelete) {
+			if (hideAdd.voicemail || miscSettings.readOnlyMailbox) {
 				hideDelete = true;
 			}
 			

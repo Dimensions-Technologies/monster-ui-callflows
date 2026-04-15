@@ -4,7 +4,6 @@
 
 .callflows-port #timeofday-form .time-wrapper-field {
 	height: 50px;
-	padding: 10px 20px 0 0;
 }
 
 .callflows-port #timeofday-form #days_checkboxes .fake_checkbox {
@@ -73,5 +72,27 @@
 }
 
 .callflows-port #timeofday-form .input-medium {
-	width: 224px !important;
+	width: 414px !important;
+}
+
+.callflows-port #timeofday-form #ordinal,
+.callflows-port #timeofday-form #weekdays #wday,
+.callflows-port #timeofday-form #specific_day {
+	width: 200px !important;
+}
+
+.callflows-port #timeofday-form #weekdays #wday,
+.callflows-port #timeofday-form #specific_day {
+	margin-left: 14px !important;
+}
+
+.callflows-port #timeofday-form #on .input {
+	display: flex;
+}
+
+.callflows-port #timeofday-form .interval-month-label,
+.callflows-port #timeofday-form .interval-week-label {
+	position: relative;
+	top: -4px;
+	margin-left: 6px;
 }
