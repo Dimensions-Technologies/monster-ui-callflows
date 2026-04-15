@@ -341,14 +341,20 @@ define(function(require) {
 		temporalSetGetAllRules: function(callback) {
 			var self = this;
 
+			var temporalRuleSetsFilters = {
+					paginate: false,
+					key_missing: 'dimension.feature_code_id'
+				};
+			
+			if (!miscSettings.temporalRuleSetsShowVoipItems) {
+				temporalRuleSetsFilters['filter_not_ui_metadata.origin'] = 'voip';
+			}
+
 			self.callApi({
 				resource: 'temporalRule.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false,
-						key_missing: 'dimension.feature_code_id'
-					}
+					filters: temporalRuleSetsFilters
 				},
 				success: function(data) {
 					callback && callback(data.data);
@@ -359,13 +365,19 @@ define(function(require) {
 		temporalSetList: function(callback) {
 			var self = this;
 
+			var temporalRuleSetsFilters = {
+					paginate: false
+				};
+			
+			if (!miscSettings.temporalRuleSetsShowVoipItems) {
+				temporalRuleSetsFilters['filter_not_ui_metadata.origin'] = 'voip';
+			}
+
 			self.callApi({
 				resource: 'temporalSet.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						paginate: false
-					}
+					filters: temporalRuleSetsFilters
 				},
 				success: function(data) {
 					callback && callback(data.data);

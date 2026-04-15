@@ -12,6 +12,9 @@
 @import url('../submodules/temporalset/temporalset.css');
 @import url('../submodules/vmbox/vmbox.css');
 @import url('../style/fonts.css');
+@import url('../submodules/strategy/strategy.css');
+@import url('../submodules/strategyHolidays/strategyHolidays.css');
+@import url('../submodules/strategyHours/strategyHours.css');
 
 /* style.css */
 #ws_callflow {
@@ -2944,10 +2947,6 @@
 	margin-bottom: 8px;
 }
 
-.list-editor a {
-    color: #2297FF;
-}
-
 /* phone numbers tab formatting */
 .phone-numbers-section .numberRows .row {
 	margin-left: 0px;
@@ -3021,5 +3020,3 @@
     border-bottom: 2px solid #444;
     transform: translateY(-65%) rotate(45deg);
 }
-
-
