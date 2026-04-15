@@ -10,7 +10,8 @@ define(function(require) {
 
 	return {
 		subscribe: {
-			'callflows.strategyHolidays.render': 'strategyHolidaysRender'
+			'callflows.strategyHolidays.render': 'strategyHolidaysRender',
+			'callflows.strategyHolidays.save': 'strategyHolidaysSave'
 		},
 
 		appFlags: {
@@ -116,6 +117,9 @@ define(function(require) {
 				}));
 
 			$container
+				.data('strategyHolidaysData', {
+					strategyData: strategyData
+				})
 				.find('.element-content')
 					.empty()
 					.append(template);
@@ -403,38 +407,48 @@ define(function(require) {
 				self.strategyHolidaysIncludeNationalHolidaysRender(parent, data);
 			});
 
-			template.on('click', '.save-button', function(event) {
-				event.preventDefault();
+		},
 
-				var $button = $(event.originalEvent.submitter),
-					$section = $(this).parents('.element-container'),
-					isEnabled = parent.find('.holidays-toggler input[type="checkbox"]')[0].checked,
-					allHolidays = self.appFlags.strategyHolidays.allHolidays,
-					updateStrategyData = function updateStrategyData(strategyData) {
-						self.strategyHolidaysUpdateStrategyData(strategyData, function() {
-							$section.find('.element-content').slideUp();
-							$section.removeClass('open');
-						});
-					};
+		strategyHolidaysSave: function(args, callback) {
+			var self = this,
+				saveArgs = args || {},
+				saveCallback = _.isFunction(callback)
+					? callback
+					: _.get(saveArgs, 'callback', _.noop),
+				$parent = saveArgs.parent || $(),
+				$isHolidaysContainer = $parent.hasClass('strategy-holidays'),
+				$holidaysContainer = $isHolidaysContainer
+					? $parent
+					: $parent.find('.element-container.strategy-holidays').first(),
+				metadata = $holidaysContainer.data('strategyHolidaysData'),
+				strategyData = _.get(metadata, 'strategyData'),
+				$toggle = $holidaysContainer.find('.holidays-toggler input[type="checkbox"]'),
+				isEnabled = _.get($toggle, '[0].checked', false),
+				allHolidays = self.appFlags.strategyHolidays.allHolidays,
+				updateStrategyData = function updateStrategyData(strategyData) {
+					self.strategyHolidaysUpdateStrategyData(strategyData, saveCallback);
+				};
 
-				$button.prop('disabled', 'disabled');
+			if ($holidaysContainer.length < 1 || _.isUndefined(strategyData)) {
+				saveCallback();
+				return;
+			}
 
-				if (!isEnabled) {
-					monster.ui.confirm(self.i18n.active().strategy.confirmMessages.disableHolidays, function() {
-						_.forEach(allHolidays, function(holiday, key) {
-							var holidayId = _.get(holiday, 'holidayData.id');
+			if (!isEnabled) {
+				monster.ui.confirm(self.i18n.active().strategy.confirmMessages.disableHolidays, function() {
+					_.forEach(allHolidays, function(holiday) {
+						var holidayId = _.get(holiday, 'holidayData.id');
 
-							if (holidayId) {
-								self.appFlags.strategyHolidays.deletedHolidays.push(holidayId);
-							}
-						});
-						self.appFlags.strategyHolidays.allHolidays = [];
-						updateStrategyData(strategyData);
+						if (holidayId) {
+							self.appFlags.strategyHolidays.deletedHolidays.push(holidayId);
+						}
 					});
-				} else {
+					self.appFlags.strategyHolidays.allHolidays = [];
 					updateStrategyData(strategyData);
-				}
-			});
+				});
+			} else {
+				updateStrategyData(strategyData);
+			}
 		},
 
 		strategyHolidaysListingBindEvents: function(parent, template) {
