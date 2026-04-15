@@ -1,6 +1,5 @@
 @import url('../submodules/blacklist/blacklist.css');
 @import url('../submodules/callcenter/callcenter.css');
-@import url('../submodules/device/device.css');
 @import url('../submodules/user/user.css');
 @import url('../submodules/misc/misc.css');
 @import url('../submodules/device/device.css');
@@ -14,22 +13,6 @@
 @import url('../style/fonts.css');
 @import url('../submodules/csvUploader/csvUploader.css');
 @import url('../submodules/mediaSelect/mediaSelect.css');
-
-
-@import url('../submodules/strategy/strategy.css');
-@import url('../submodules/strategy/partials/addOfficeHours.css');
-@import url('../submodules/strategy/partials/changeCallerIdPopup.css');
-@import url('../submodules/strategy/partials/customConferenceGreeting.css');
-@import url('../submodules/strategy/partials/faxboxPopup.css');
-@import url('../submodules/strategy/partials/menuPopup.css');
-@import url('../submodules/strategy/partials/number-actions.css');
-@import url('../submodules/strategy/partials/number-element.css');
-@import url('../submodules/strategy/partials/officeHolidaysManagement.css');
-@import url('../submodules/strategy/partials/strategy-calls.css');
-@import url('../submodules/strategy/partials/strategy-confnum.css');
-
-@import url('../submodules/strategyHolidays/strategyHolidays.css');
-@import url('../submodules/strategyHours/strategyHours.css');
 
 /* style.css */
 #ws_callflow {
