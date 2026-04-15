@@ -64,6 +64,16 @@
     color: #ffffff;
 }
 
+/* list data edit icon */
+.material-symbols-icon-edit {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ffffff;
+}
+
 /* blocklist delete icon */
 .material-symbols-icon-groups-delete {
     font-family: 'Material Symbols Outlined';

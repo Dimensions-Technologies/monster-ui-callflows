@@ -33,6 +33,7 @@ define(function(require) {
 		'blacklist',
 		'callcenter',
 		'conference',
+		'csvUploader',
 		'device',
 		'directory',
 		'eavesdrop',
@@ -40,17 +41,18 @@ define(function(require) {
 		'featurecodes',
 		'groups',
 		'media',
+		'mediaSelect',
 		'menu',
 		'misc',
 		'qubicle',
 		'resource',
+		'strategy',
+		'strategyHolidays',
+		'strategyHours',
 		'temporalset',
 		'timeofday',
 		'user',
-		'vmbox',
-		'strategy',
-		'strategyHolidays',
-		'strategyHours'
+		'vmbox'
 	];
 
 	require(_.map(appSubmodules, function(name) {
@@ -1714,6 +1716,48 @@ define(function(require) {
 									data: mediaToUpload.file
 								},
 								success: function(data, status) {
+
+									var $mediaSelect = template.find('#music_on_hold_media_id');
+
+									if (media && media.id) {
+										var newOption = $('<option/>', {
+											value: media.id,
+											text: media.name
+										});
+
+										// remove any existing option with same id
+										$mediaSelect.find('option[value="' + media.id + '"]').remove();
+
+										// find the correct insertion point (after fixed options)
+										var inserted = false;
+
+										$mediaSelect.find('option').each(function() {
+											var $opt = $(this);
+											var val = $opt.val();
+
+											// skip fixed/system options
+											if (!val || val === 'shoutcast' || val === '{{silenceMedia}}') {
+												return;
+											}
+
+											if ($opt.text().localeCompare(media.name, undefined, { sensitivity: 'base' }) > 0) {
+												$opt.before(newOption);
+												inserted = true;
+												return false;
+											}
+										});
+
+										// if it belongs at the end
+										if (!inserted) {
+											$mediaSelect.append(newOption);
+										}
+
+										// select the new media
+										$mediaSelect.val(media.id);
+
+										// update chosen
+										$mediaSelect.trigger('chosen:updated').trigger('change');
+									}
 									closeUploadDiv(media);
 								},
 								error: function(data, status) {

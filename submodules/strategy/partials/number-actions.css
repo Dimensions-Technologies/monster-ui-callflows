@@ -1,0 +1,31 @@
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-actions,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-actions,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-actions {
+    padding: 25px 20px;
+    background-color: #ffffff;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-actions .action-links a,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-actions .action-links a,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-actions .action-links a {
+    margin-right: 0px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-actions .action-links a i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-actions .action-links a i,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-actions .action-links a i {
+    margin-right: 0px;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-actions .action-links ul.dropdown-menu,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-actions .action-links ul.dropdown-menu,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-actions .action-links ul.dropdown-menu {
+    min-width: 0;
+}
+
+#callflow_container #account_settings_form #strategy_container .element-container.main-number .number-actions .action-links .buy-dropdown:hover,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-confnum .number-actions .action-links .buy-dropdown:hover,
+#callflow_container #account_settings_form #strategy_container .element-container.strategy-faxingnum .number-actions .action-links .buy-dropdown:hover {
+    background-color: transparent;
+    text-decoration: underline;
+}

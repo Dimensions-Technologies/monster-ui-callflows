@@ -11,28 +11,20 @@
 			{{@root.i18n.strategy.calls.incomingCall}}
 		</div>
 		{{#each options as |option|}}
-			{{#if @root.miscSettings.enableGoogleIcons}}
-				<i class="material-symbols-outlined incomming-call-arrow" style="font-size: 48px;">arrow_downward_alt</i>
-			{{else}}
-				<div class="arrow-icon"><i class="fa fa-arrow-down fa-lg"></i></div>
-			{{/if}}
+			<div class="arrow-connector"></div>
 			{{#compare option "===" "menu"}}
 				<div class="menu-div {{#if @root.menu}}has-menu" data-callflow="{{@root.menu}}{{/if}}">
+					<span>{{@root.i18n.strategy.calls.virtualReceptionist}}</span>
 					<div class="link">
+						<div class="menu-icon">
+							{{#if @root.miscSettings.enableGoogleIcons}}
+								<i class="material-symbols-outlined" style="font-size: 64px;">person</i>
+							{{else}}
+								<i class="fa fa-user fa-3x"></i>
+							{{/if}}
+						</div>
 						<a href="#">
-							<div class="menu-icon">
-								{{#if @root.miscSettings.enableGoogleIcons}}
-									<i class="material-symbols-outlined" style="font-size: 64px;">person</i>
-								{{else}}
-									<i class="fa fa-user fa-3x"></i>
-								{{/if}}
-							</div>
-							<div class="link-icon">
-								{{#unless @root.miscSettings.enableGoogleIcons}}
-									<i class="fa fa-cog icon-small"></i>
-								{{/unless}}
-								<span>{{@root.i18n.strategy.calls.virtualReceptionist}}</span>
-							</div>
+							<span>{{@root.i18n.strategy.calls.virtualReceptionistEdit}}</span>
 						</a>
 					</div>
 				</div>

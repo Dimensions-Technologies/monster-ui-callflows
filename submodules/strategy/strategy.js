@@ -562,7 +562,8 @@ define(function(require) {
 					monster.pub('callflows.strategyHours.render', {
 						container: $container,
 						strategyData: strategyData,
-						callback: callback
+						callback: callback,
+						miscSettings: miscSettings
 					});
 
 					break;
@@ -570,7 +571,8 @@ define(function(require) {
 					monster.pub('callflows.strategyHolidays.render', {
 						container: $container,
 						strategyData: strategyData,
-						callback: callback
+						callback: callback,
+						miscSettings: miscSettings
 					});
 
 					break;
@@ -605,9 +607,6 @@ define(function(require) {
 				callback = args.callback;
 
 			self.strategyListAccountNumbers(function(accountNumbers) {
-
-				console.log('accountNumbers', accountNumbers);
-				
 				var callflow = strategyData.callflows.MainCallflow,
 					templateData = {
 						hideBuyNumbers: _.has(monster.config.whitelabel, 'hideBuyNumbers')
@@ -639,8 +638,9 @@ define(function(require) {
 						if (numberId) {
 							monster.ui.paintNumberFeaturesIcon(numberFeatures, template.find('[data-phonenumber="' + numberId + '"] .features'));
 
-							/* hide local icon */
-							//template.find('.feature-local').hide();
+							if (miscSettings.hideLocalFeatureIcon) {
+								template.find('.feature-local').hide();
+							}
 						}
 
 						self.strategyCheckIfUpdateEmergencyCallerID({
@@ -666,10 +666,17 @@ define(function(require) {
 
 					monster.pub('common.numberFeaturesMenu.render', args);
 
-					/* hide local icon + sync*/
-					//args.target.find('.dropdown-menu .sync-number').closest('li').remove();
-					//template.find('.feature-local').hide();
+					if (miscSettings.hideSyncFeature){
+						args.target.find('.dropdown-menu .sync-number').closest('li').remove();
+					}
 
+					if (miscSettings.hideLocalFeatureIcon) {
+						template.find('.feature-local').hide();
+					}
+
+					if (miscSettings.hideToolTips) {
+						template.find('[data-toggle="tooltip"]').removeAttr('data-toggle');
+					}
 				});
 
 				monster.ui.tooltips(template);
@@ -1278,7 +1285,8 @@ define(function(require) {
 				$greetingTemplate = $(self.getTemplate({
 					name: 'customConferenceGreeting',
 					data: {
-						enabled: _.has(confCallflow, 'flow.data.welcome_prompt')
+						enabled: _.has(confCallflow, 'flow.data.welcome_prompt'),
+						miscSettings: miscSettings
 					},
 					submodule: 'strategy'
 				})),
@@ -1301,7 +1309,7 @@ define(function(require) {
 				return monster.ui.alert('error', self.i18n.active().strategy.customConferenceGreeting.mainConfMissing);
 			}
 
-			monster.pub('common.mediaSelect.render', {
+			monster.pub('callflows.mediaSelect.render', {
 				container: $greetingTemplate.find('.media-wrapper'),
 				selectedOption: _.get(confCallflow, 'flow.data.welcome_prompt.media_id', null),
 				skin: 'tabs',
@@ -1312,7 +1320,8 @@ define(function(require) {
 					entity: self.i18n.active().strategy.customConferenceGreeting.entity
 				},
 				required: true,
-				callback: onMediaSelectRender
+				callback: onMediaSelectRender,
+				miscSettings: miscSettings
 			});
 		},
 
@@ -1322,7 +1331,6 @@ define(function(require) {
 				isEnabled = function() {
 					return $switch.prop('checked');
 				};
-
 			$popup.find('.save').on('click', function() {
 				monster.waterfall([
 					function maybeGetMediaId(next) {
@@ -1943,10 +1951,20 @@ define(function(require) {
 				label = params.label,
 				template, menu, greeting,
 				showPopup = function() {
+
+					var mediaFilters = {
+						paginate: false
+					};
+		
+					if (miscSettings.hideMailboxMedia) {
+						mediaFilters['filter_not_media_source'] = 'recording';
+					}
+
 					self.callApi({
 						resource: 'media.list',
 						data: {
-							accountId: self.accountId
+							accountId: self.accountId,
+							filters: mediaFilters
 						},
 						success: function(response) {
 							var greetingFiles,
@@ -1957,6 +1975,9 @@ define(function(require) {
 								noGreetingFiles = true;
 							}
 
+							var enabledTTSVoice = monster.config.whitelabel.ttsVoice || monster.defaultTTSVoice,
+								ttsVoice = enabledTTSVoice.charAt(0).toUpperCase() + enabledTTSVoice.slice(1);
+
 							template = $(self.getTemplate({
 								name: 'menuPopup',
 								data: {
@@ -1964,7 +1985,8 @@ define(function(require) {
 									menu: menu,
 									greeting: greeting,
 									greetingFiles: greetingFiles,
-									noGreetingFiles: noGreetingFiles
+									noGreetingFiles: noGreetingFiles,
+									ttsVoice: ttsVoice
 								},
 								submodule: 'strategy'
 							}));
@@ -1985,7 +2007,8 @@ define(function(require) {
 										data: {
 											number: key,
 											callEntities: dropdownCallEntities,
-											selectedId: val.data.id || val.data.endpoints[0].id
+											selectedId: val.data.id || val.data.endpoints[0].id,
+											miscSettings: miscSettings
 										},
 										submodule: 'strategy'
 									})));
@@ -2048,9 +2071,6 @@ define(function(require) {
 					}
 				});
 			} else {
-
-				console.log('menu.create');
-
 				self.callApi({
 					resource: 'menu.create',
 					data: {
@@ -2128,7 +2148,7 @@ define(function(require) {
 			container.find('.upload-input').fileUpload({
 				inputOnly: true,
 				wrapperClass: 'upload-container',
-				btnText: self.i18n.active().strategy.popup.fileUploadButton,
+				btnText: self.i18n.active().strategy.popup.browse,
 				btnClass: 'monster-button-secondary',
 				maxSize: 5,
 				success: function(results) {
@@ -2161,7 +2181,8 @@ define(function(require) {
 					menuLine = $(self.getTemplate({
 						name: 'menuLine',
 						data: {
-							callEntities: self.strategyGetCallEntitiesDropdownData(popupCallEntities)
+							callEntities: self.strategyGetCallEntitiesDropdownData(popupCallEntities),
+							miscSettings: miscSettings
 						},
 						submodule: 'strategy'
 					})),
@@ -3198,9 +3219,6 @@ define(function(require) {
 		},
 
 		strategyPatchCallflow: function(args) {
-
-			console.log('strategyPatchCallflow'); 
-
 			var self = this;
 			
 			self.callApi({
@@ -3465,10 +3483,8 @@ define(function(require) {
 		 * @param  {Function} [args.error]    Error callback
 		 */
 		strategyCreateMenu: function(args) {
-
-			console.log('strategyCreateMenu');
-
 			var self = this;
+
 			self.callApi({
 				resource: 'menu.create',
 				data: {
@@ -3501,8 +3517,6 @@ define(function(require) {
 		 */
 		strategyUpdateMenu: function(args) {
 			var self = this;
-
-			console.log('strategyUpdateMenu');
 		
 			self.callApi({
 				resource: 'menu.update',
@@ -3790,9 +3804,6 @@ define(function(require) {
 		 * @returns  {String[]}                  Phone numbers
 		 */
 		strategyExtractMainNumbers: function(args) {
-
-			console.log('strategyExtractMainNumbers');
-
 			var self = this,
 				mainCallflow = args.mainCallflow;
 
@@ -3950,6 +3961,11 @@ define(function(require) {
 						return formData.days[index] ? [formattedData] : [];
 					})
 				);
+			});
+
+			$template.find('.cancel').on('click', function(event) {
+				event.preventDefault();
+				popup.dialog('close');
 			});
 
 			popup = monster.ui.dialog($template, {

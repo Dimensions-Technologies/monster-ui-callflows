@@ -36,20 +36,30 @@
 
 	<div class="holidays-list">
 		<div class="actions-wrapper">
-			<button type="button" class="monster-button add-holiday">
-				{{telicon "plus"}}
+			<button type="button" class="monster-button-secondary add-holiday">
+				{{#if miscSettings.enableGoogleIcons}}
+					<span class="material-symbols-medium">add</span>
+				{{else}}
+					{{telicon "plus"}}
+				{{/if}}
 				<span>
 					{{i18n.strategy.holidays.buttons.addHoliday}}
 				</span>
 			</button>
-			<button type="button" class="monster-button import-csv">
-				{{telicon "file"}}
+			<button type="button" class="monster-button-secondary import-csv">
+				{{#if miscSettings.enableGoogleIcons}}
+					<span class="material-symbols-medium">upload</span>
+				{{else}}
+					{{telicon "file"}}
+				{{/if}}
 				<span>
 					{{i18n.strategy.holidays.buttons.importHolidays}}
 				</span>
 			</button>
-			<button type="button" class="monster-button include-national-holidays">
-				{{telicon "check--circle"}}
+			<button type="button" class="monster-button-secondary include-national-holidays">
+				{{#unless miscSettings.enableGoogleIcons}}
+					{{telicon "check--circle"}}
+				{{/unless}}
 				<span>
 					{{i18n.strategy.holidays.buttons.includeNationalHolidays}}
 				</span>
@@ -73,7 +83,11 @@
 		</table>
 		<div class="custom-footable-empty">
 			<div class="title-row">
-				{{telicon "calendar"}}
+				{{#if miscSettings.enableGoogleIcons}}
+					<span class="material-symbols-medium">calendar_month</span>
+				{{else}}
+					{{telicon "calendar"}}
+				{{/if}}
 				<span>{{i18n.strategy.holidays.empty.title}}</span>
 			</div>
 			<div class="description-row">

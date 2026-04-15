@@ -21,21 +21,36 @@
 	{{/each}}
 
 	<div class="number-actions">
-		<a href="#" class="cancel-link pull-right monster-link blue">{{ i18n.close }}</a>
 		<div class="action-links nav-bar clearfix">
-			<a href="#" class="spare-link monster-link pull-left{{#unless spareLinkEnabled}} disabled{{/unless}}"><i class="fa fa-file-text-o monster-orange fa-lg"></i>{{ i18n.strategy.numberLinks.spare }}</a>
-		{{#unless @root.hideBuyNumbers}}
-			<ul class="nav pull-left">
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle buy-dropdown monster-link" data-toggle="dropdown" data-target="#"><i class="fa fa-shopping-cart monster-green fa-lg"></i>{{ i18n.strategy.numberLinks.buy.link }}</a>
-					<ul class="dropdown-menu" role="menu">
-						<li><a class="buy-link" data-type="regular" href="#">{{i18n.strategy.numberLinks.buy.regular}}</a></li>
-						<li><a class="buy-link" data-type="tollfree" href="#">{{i18n.strategy.numberLinks.buy.tollfree}}</a></li>
-						<!-- <li><a class="buy-link" data-type="vanity" href="#">{{i18n.strategy.numberLinks.buy.vanity}}</a></li> -->
-					</ul>
-				</li>
-			</ul>
-		{{/unless}}
+			<button type="button" class="monster-button-secondary spare-link {{#unless spareLinkEnabled}} disabled{{/unless}}">
+				<span>
+					{{i18n.strategy.numberLinks.spare}}
+				</span>
+			</button>
+			{{#unless @root.hideBuyNumbers}}
+				<ul class="nav pull-left monster-select-dropdown-full">
+					<li class="dropdown">
+						<a data-toggle="dropdown" class="dropdown-toggle" href="javascript:void(0);">
+							{{ i18n.strategy.numberLinks.buy.link }}
+							<i class="icon-telicon-caret-down"></i>
+						</a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="javascript:void(0);" class="buy-link" data-type="regular">
+									<i class="fa fa-phone"></i>
+									{{ i18n.strategy.numberLinks.buy.regular }}
+								</a>
+							</li>
+							<li>
+								<a href="javascript:void(0);" class="buy-link" data-type="tollfree">
+									<i class="icon-telicon-prioritize"></i>
+									{{ i18n.strategy.numberLinks.buy.tollfree }}
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			{{/unless}}
 		</div>
 	</div>
 </div>
