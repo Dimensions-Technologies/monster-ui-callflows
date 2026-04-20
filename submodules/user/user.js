@@ -1237,7 +1237,10 @@ define(function(require) {
 			}
 			
 			self.userRenderNumberList(data, user_html);
-			self.userRenderExtensionList(data, user_html);
+
+			if(miscSettings.userShowExtensionNumbersTab){
+				self.userRenderExtensionList(data, user_html);
+			}
 
 			$('#tab_find_me_follow_me', user_html).hide();
 			$('#call_routing_manual', user_html).hide();
