@@ -1237,6 +1237,7 @@ define(function(require) {
 			}
 			
 			self.userRenderNumberList(data, user_html);
+			self.userRenderExtensionList(data, user_html);
 
 			$('#tab_find_me_follow_me', user_html).hide();
 			$('#call_routing_manual', user_html).hide();
@@ -1495,6 +1496,104 @@ define(function(require) {
 						});
 					});
 
+					$('.add-extension-number', user_html).click(function(ev) {
+
+						ev.preventDefault();
+
+						var field_data = data.field_data,
+							userCallflowId = _.get(data, 'field_data.user_callflow.id');
+
+						self.callApi({
+							resource: 'callflow.list',
+							data: {
+								accountId: self.accountId,
+								filters: {
+									paginate: false
+								}
+							},
+							success: function(callflows) {
+
+								// build a flat list of numbers used by all callflows except the current user's own
+								var existingNumbers = _.reduce(callflows.data, function(acc, callflow) {
+									if (callflow.id !== userCallflowId) {
+										return acc.concat(callflow.numbers || []);
+									}
+									return acc;
+								}, []);
+
+								if (miscSettings.enableConsoleLogging) {
+									console.log('Existing callflow numbers:', existingNumbers);
+								}
+
+								var popup_html = $(self.getTemplate({
+										name: 'addNumber',
+										data: {
+											phoneNumbers: [],
+											hideBuyNumbers: true
+										}
+									})),
+									popup = monster.ui.dialog(popup_html, {
+										title: self.i18n.active().oldCallflows.add_number
+									});
+
+								// default to extension tab and hide phone number section
+								$('#number_type_2', popup_html).prop('checked', true);
+								$('.list_numbers_content', popup_html).hide();
+								$('.extensions_content', popup_html).show();
+								$('#number_type_1', popup_html).closest('.popup_field').hide();
+
+								popup.find('.search-extension-link').on('click', function() {
+									monster.pub('common.extensionTools.select', {
+										callback: function(number) {
+											popup.find('#add_number_text').val(number).trigger('input');
+										}
+									});
+								});
+
+								var $addBtn = $('.add_number', popup).prop('disabled', true);
+
+								popup.find('#add_number_text').on('input', function() {
+									$(this).val($(this).val().replace(/\D/g, ''));
+									$addBtn.prop('disabled', $(this).val() === '');
+								});
+
+								$('.add_number', popup).click(function(event) {
+									event.preventDefault();
+
+									var number = $('#add_number_text', popup).val();
+
+									if (number === '') {
+										monster.ui.alert(self.i18n.active().oldCallflows.you_didnt_select);
+										return;
+									}
+
+									if ($.inArray(number, field_data.extension_numbers) >= 0) {
+										monster.ui.alert(self.i18n.active().callflows.user.extension_numbers_duplicate);
+										return;
+									}
+
+									if ($.inArray(number, existingNumbers) >= 0) {
+										monster.ui.alert(self.i18n.active().callflows.user.extension_numbers_conflict);
+										return;
+									}
+
+									field_data.extension_numbers.push(number);
+
+									if (miscSettings.enableConsoleLogging) {
+										console.log('Extension Number Being Added:', number);
+									}
+
+									self.userRenderExtensionList(data, user_html);
+
+									popup.dialog('close');
+								});
+
+							}
+
+						});
+
+					});
+
 					self.winkstartTabs(user_html);
 					self.winkstartLinkForm(user_html);
 
@@ -1660,6 +1759,8 @@ define(function(require) {
 							}
 
 							self.userCleanFormData(form_data);
+
+							var savedFieldData = data.field_data;
 
 							if ('field_data' in data) {
 								delete data.field_data;
@@ -1937,6 +2038,7 @@ define(function(require) {
 														origin: 'voip'
 													}
 												},
+												generateError: false,
 												removeMetadataAPI: true
 											},
 											success: function(_callflow_update) {
@@ -1944,6 +2046,18 @@ define(function(require) {
 													console.log('User Callflow Updated', _callflow_update)
 												}
 												callback(null);
+											},
+											error: function(_callflow_update) {
+												data.field_data = savedFieldData;
+												$this.removeClass('disabled');
+
+												var uniqueCause = _.get(_callflow_update, 'data.numbers.unique.cause');
+
+												if (uniqueCause) {
+													monster.ui.alert(self.i18n.active().callflows.user.numbers_conflict.message_1 + uniqueCause + self.i18n.active().callflows.user.numbers_conflict.message_2);
+												} else {
+													monster.ui.alert(self.i18n.active().callflows.user.there_were_errors_on_the_form);
+												}
 											}
 										})
 									} else {
@@ -2209,6 +2323,7 @@ define(function(require) {
 													}
 												}
 											}, function() {
+												data.field_data = savedFieldData;
 												$this.removeClass('disabled');
 											});
 										}
@@ -2750,54 +2865,97 @@ define(function(require) {
 				user_html = parent,
 				parent = $('#phone_numbers_container', parent);
 
+			if (miscSettings.enableConsoleLogging) {
+				console.log('User Data', data)
+			}
+
+			var phone_numbers = data.field_data.phone_numbers
+
+			$('.numberRows', parent).empty();
+
+			var numberRow_html = $(self.getTemplate({
+				name: 'numberRow',
+				data: {
+					phone_numbers
+				},
+				submodule: 'user'
+			}));
+
+			$('.numberRows', parent).append(numberRow_html);
+
+			$('.unassign-phone-number', numberRow_html).click(function(ev) {
+
+				ev.preventDefault();
+
+				// find the hidden input field within the same .number-container
+				var phoneNumberValue = $(this).closest('.number-container').find('input[type="hidden"]').val(),
+					field_data = data.field_data;
+				
+				// remove the phone number from the field data array
+				field_data.phone_numbers = field_data.phone_numbers.filter(function(number) {
+					return number !== phoneNumberValue;
+				});
+
+				var row = $(this).closest('.item-row'),
+					hr = row.next('hr');
+
+				// slide up and remove the item row and the <hr> element
+				row.add(hr).slideUp(function() {
+					row.add(hr).remove();
+				});
+
 				if (miscSettings.enableConsoleLogging) {
-					console.log('User Data', data)
+					console.log('Phone Number Being Removed:', phoneNumberValue);
+					console.log('Field Data', field_data);
 				}
 
-				var phone_numbers = data.field_data.phone_numbers
+				self.userRenderFaxboxNumberSelector(data, user_html);
 
-				$('.numberRows', parent).empty();
+			})
 
-				var numberRow_html = $(self.getTemplate({
-					name: 'numberRow',
-					data: {
-						phone_numbers
-					},
-					submodule: 'user'
-				}));
+		},
 
-				$('.numberRows', parent).append(numberRow_html);
+		userRenderExtensionList: function(data, parent) {
+			var self = this,
+				user_html = parent,
+				container = $('#extension_numbers_container', parent);
 
-				$('.unassign-phone-number', numberRow_html).click(function(ev) {
+			var extension_numbers = data.field_data.extension_numbers;
 
-					ev.preventDefault();
-	
-					// find the hidden input field within the same .number-container
-					var phoneNumberValue = $(this).closest('.number-container').find('input[type="hidden"]').val(),
-						field_data = data.field_data;
-					
-					// remove the phone number from the field data array
-					field_data.phone_numbers = field_data.phone_numbers.filter(function(number) {
-						return number !== phoneNumberValue;
-					});
-	
-					var row = $(this).closest('.item-row'),
-						hr = row.next('hr');
-	
-					// slide up and remove the item row and the <hr> element
-					row.add(hr).slideUp(function() {
-						row.add(hr).remove();
-					});
-	
-					if (miscSettings.enableConsoleLogging) {
-						console.log('Phone Number Being Removed:', phoneNumberValue);
-						console.log('Field Data', field_data);
-					}
+			$('.numberRows', container).empty();
 
-					self.userRenderFaxboxNumberSelector(data, user_html);
-					
-				})
-				
+			var extensionRow_html = $(self.getTemplate({
+				name: 'extensionRow',
+				data: {
+					extension_numbers: extension_numbers,
+					presence_id: data.data.presence_id
+				},
+				submodule: 'user'
+			}));
+
+			$('.numberRows', container).append(extensionRow_html);
+
+			$('.unassign-extension-number', extensionRow_html).click(function(ev) {
+				ev.preventDefault();
+
+				var extValue = $(this).closest('.number-container').find('input[type="hidden"]').val(),
+					field_data = data.field_data;
+
+				field_data.extension_numbers = field_data.extension_numbers.filter(function(n) {
+					return n !== extValue;
+				});
+
+				var row = $(this).closest('.item-row'),
+					hr = row.next('hr');
+
+				row.add(hr).slideUp(function() {
+					row.add(hr).remove();
+				});
+
+				if (miscSettings.enableConsoleLogging) {
+					console.log('Extension Number Being Removed:', extValue);
+				}
+			});
 		},
 
 		userGetAvailableFaxNumbers: function(data, callback) {
