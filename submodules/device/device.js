@@ -10,7 +10,8 @@ define(function(require) {
 		deviceVideoCodecs = {},
 		pusherApps = {},
 		billingCodes = {},
-		deviceBillingCodeRequired = {};
+		deviceBillingCodeRequired = {},
+		hideDeviceOutboundFlags = false;
 
 	var app = {
 		requests: {
@@ -808,7 +809,20 @@ define(function(require) {
 				],
 				device_html,
 				allowAddingExternalCallerId,
-				emergencyCallerIdAlertShown;
+				emergencyCallerIdAlertShown,
+				deviceModel = _.get(data, 'data.dimension.model');
+
+			if (miscSettings.hideDeviceOutboundFlags) {
+				hideDeviceOutboundFlags = true;
+
+				if (deviceModel == 'FXS' && miscSettings.showDeviceFxsOutboundFlags) {
+					hideDeviceOutboundFlags = false;
+				}
+
+				if (deviceModel == 'UCS' && miscSettings.showDeviceUcsOutboundFlags) {
+					hideDeviceOutboundFlags = false;
+				}
+			}
 
 			if (miscSettings.preventAddingExternalCallerId) {
 				allowAddingExternalCallerId = false
@@ -835,7 +849,8 @@ define(function(require) {
 						dimensionDeviceType: dimensionDeviceType,
 						hasExternalCallerId: hasExternalCallerId,
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
-						billingCodes: billingCodes
+						billingCodes: billingCodes,
+						hideDeviceOutboundFlags: hideDeviceOutboundFlags
 					}, _.pick(data.extra, [
 						'phoneNumbers'
 					]), data),
