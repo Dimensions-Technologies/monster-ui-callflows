@@ -19,7 +19,9 @@
 	<ul class="tabs" data-tabs="tabs">
 		<li class="active"><a href="#basic">{{ i18n.callflows.user.basic }}</a></li>
 		<li><a href="#caller_id">{{ i18n.callflows.user.caller_id }}</a></li>
-		<li><a href="#extension_numbers">{{ i18n.callflows.user.extension_numbers }}</a></li>
+		{{#if miscSettings.userShowExtensionNumbersTab}}
+			<li><a href="#extension_numbers">{{ i18n.callflows.user.extension_numbers }}</a></li>
+		{{/if}}
 		<li><a href="#phone_numbers">{{ i18n.callflows.user.phone_numbers }}</a></li>
 		{{#unless miscSettings.userShowCallRoutingTab}}
 			<li><a href="#voicemail">{{ i18n.callflows.user.voicemail }}</a></li>
