@@ -23,36 +23,75 @@
 		<form id="conference_form" action="" method="post" >
 			<div class="pill-content">
 				<div class="active basic_view" id="basic">
+					{{#if miscSettings.readOnlyConference}}
+						<div class="clearfix">
+							<label for="">{{ i18n.callflows.conference.conference_name }}</label>
+							<div class="input">
+								<input disabled class="span4 input-readonly" id="name" name="name" type="text" placeholder="Name" value="{{data.name}}" rel="popover" data-content="{{ i18n.callflows.conference.conference_name_data_content }}"/>
+							</div>
+						</div>
+					{{else}}
+						<div class="clearfix">
+							<label for="">{{ i18n.callflows.conference.conference_name }}</label>
+							<div class="input">
+								<input class="span4" id="name" name="name" type="text" placeholder="Name" value="{{data.name}}" rel="popover" data-content="{{ i18n.callflows.conference.conference_name_data_content }}"/>
+							</div>
+						</div>
+					{{/if}}
+
 					<div class="clearfix">
-						<label for="">{{ i18n.callflows.conference.conference_name }}</label>
+						<label>{{ i18n.callflows.conference.conference_number }}</label>
 						<div class="input">
-							<input class="span4" id="name" name="name" type="text" placeholder="Name" value="{{data.name}}" rel="popover" data-content="{{ i18n.callflows.conference.conference_name_data_content }}"/>
+							{{#if miscSettings.readOnlyConference}}
+								<input disabled class="span4 input-readonly" type="text" disabled value="{{data.conference_number}}" />
+							{{else}}
+								<input class="span4" id="conference_number" name="conference_number" type="text" value="{{data.conference_number}}" />
+							{{/if}}
+						</div>
+					</div>
+
+					{{#if miscSettings.readOnlyConference}}
+						<div disabled class="clearfix input-readonly">
+							<label for="owner_id">{{ i18n.callflows.conference.assign_to }}</label>
+							<div class="input">
+								<input disabled class="span4 input-readonly" id="owner_id_display" name="owner_id_display" type="text" value="{{#each field_data.users}}{{#compare id '===' ../data.owner_id}}{{first_name}} {{last_name}}{{/compare}}{{/each}}" />
+								<input type="hidden" id="owner_id" name="owner_id" value="{{data.owner_id}}" />
+							</div>
+						</div>
+					{{else}}
+						{{#unless miscSettings.hideConferenceUserAssignment}}
+							<div class="clearfix">
+								<label for="owner_id">{{ i18n.callflows.conference.assign_to }}</label>
+								<div class="input">
+									<span rel="popover" data-content="{{ i18n.callflows.conference.assign_to_data_content }}">
+										<select name="owner_id" id="owner_id" class="medium" >
+										{{#select data.owner_id}}
+											{{#each field_data.users}}
+												<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
+											{{/each}}
+										{{/select}}
+										</select>
+										{{#unless hideAdd.user}}
+											<div class="edit_create">
+												<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.conference.edit }}</a>
+												<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.conference.create }}</a>
+											</div>
+										{{/unless}}
+									</span>
+								</div>
+							</div>
+						{{/unless}}
+					{{/if}}
+
+					<div class="clearfix">
+						<label for="moderator_pins_string">{{ i18n.callflows.conference.moderator_pin }}</label>
+						<div class="input">
+							<input class="span4" id="moderator_pins_string" name="moderator.pins_string" type="text" placeholder="PIN" value="{{data.moderator.pins_string}}" rel="popover" data-content="{{ i18n.callflows.conference.pins_data_content }}"/>
 						</div>
 					</div>
 
 					<div class="clearfix">
-						<label for="owner_id">{{ i18n.callflows.conference.assign_to }}</label>
-						<div class="input">
-							<span rel="popover" data-content="{{ i18n.callflows.conference.assign_to_data_content }}">
-								<select name="owner_id" id="owner_id" class="medium" >
-								{{#select data.owner_id}}
-									{{#each field_data.users}}
-										<option value="{{id}}" id="{{id}}">{{first_name}} {{last_name}}</option>
-									{{/each}}
-								{{/select}}
-								</select>
-								{{#unless hideAdd.user}}
-									<div class="edit_create">
-										<a id="edit_link"  class="inline_action" data-action="edit" href="#">{{ i18n.callflows.conference.edit }}</a>
-										<a class="inline_action" data-action="create" href="#">{{ i18n.callflows.conference.create }}</a>
-									</div>
-								{{/unless}}
-							</span>
-						</div>
-					</div>
-
-					<div class="clearfix">
-						<label for="member_pins_string">{{ i18n.callflows.conference.pins }}</label>
+						<label for="member_pins_string">{{ i18n.callflows.conference.participant_pin }}</label>
 						<div class="input">
 							<input class="span4" id="member_pins_string" name="member.pins_string" type="text" placeholder="PIN" value="{{data.member.pins_string}}" rel="popover" data-content="{{ i18n.callflows.conference.pins_data_content }}"/>
 						</div>
@@ -149,19 +188,23 @@
 
 		<div class="buttons-right">
 			{{#unless miscSettings.callflowButtonsWithinHeader}}
-				{{#if data.id}}
-					<button class="monster-button monster-button-danger conference-delete">{{ i18n.callflows.conference.delete }}</button>	
-				{{/if}}
+				{{#unless miscSettings.readOnlyConference}}
+					{{#if data.id}}
+						<button class="monster-button monster-button-danger conference-delete">{{ i18n.callflows.conference.delete }}</button>	
+					{{/if}}
+				{{/unless}}
 				<button class="monster-button monster-button-success conference-save">{{ i18n.callflows.conference.save }}</button>
 			{{/unless}}
 			{{#if miscSettings.callflowButtonsWithinHeader}}
-				{{#if data.id}}
-					{{#if miscSettings.popupEdit}}
-						{{#unless hideAdd.conference}}
-							<button class="monster-button monster-button-danger conference-delete">{{ i18n.callflows.conference.delete }}</button>
-						{{/unless}}
+				{{#unless miscSettings.readOnlyConference}}
+					{{#if data.id}}
+						{{#if miscSettings.popupEdit}}
+							{{#unless hideAdd.conference}}
+								<button class="monster-button monster-button-danger conference-delete">{{ i18n.callflows.conference.delete }}</button>
+							{{/unless}}
+						{{/if}}
 					{{/if}}
-				{{/if}}
+				{{/unless}}
 				{{#if miscSettings.popupEdit}}
 					<button class="monster-button monster-button-success conference-save">{{ i18n.callflows.conference.save }}</button>
 				{{/if}}

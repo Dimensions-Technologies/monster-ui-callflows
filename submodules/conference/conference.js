@@ -178,7 +178,13 @@ define(function(require) {
 								filters: { paginate: false }
 							},
 							success: function(data, status) {
-								callback && callback(data.data);
+								// Replace SmartPBX with Personal
+								var conferences = _.map(data.data, function(conference) {
+									return _.merge({}, conference, {
+										name: conference.name.replace(/ SmartPBX/g, "'s Personal")
+									});
+								});
+								callback && callback(conferences);
 							}
 						});
 					},
@@ -283,6 +289,7 @@ define(function(require) {
 				defaults = {
 					data: $.extend(true, {
 						member: {},
+						moderator: {},
 						play_entry_tone: true,
 						play_exit_tone: true,
 						video: false
@@ -291,10 +298,6 @@ define(function(require) {
 						users: []
 					}
 				};
-
-			if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
-				self.conferenceSubmoduleButtons(data);
-			};
 
 			monster.parallel({
 				user_list: function(callback) {
@@ -333,6 +336,19 @@ define(function(require) {
 					}
 				}
 			}, function(err, results) {
+
+				miscSettings.readOnlyConference = false;
+				
+				if (results.get_conference.hasOwnProperty('owner_id') && results.get_conference.owner_id != null) {
+					if (miscSettings.conferencePreventDeletingUserAssociated) {
+						miscSettings.readOnlyConference = true;
+					}
+				}
+
+				if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
+					self.conferenceSubmoduleButtons(data);
+				};
+
 				var render_data = defaults;
 
 				if (typeof data === 'object' && data.id) {
@@ -373,12 +389,16 @@ define(function(require) {
 					'member.pins_string': {
 						regex: /^[a-z0-9A-Z,\s]*$/
 					},
+					'moderator.pins_string': {
+						regex: /^[a-z0-9A-Z,\s]*$/
+					},
 					'conference_numbers_string': {
 						regex: /^[0-9,\s]*$/
 					}
 				},
 				messages: {
 					'member.pins_string': { regex: self.i18n.active().callflows.conference.validation.member_pins_string },
+					'moderator.pins_string': { regex: self.i18n.active().callflows.conference.validation.member_pins_string },
 					'conference_numbers_string': { regex: self.i18n.active().callflows.conference.validation.member_numbers_string }
 				}
 			});
@@ -442,7 +462,7 @@ define(function(require) {
 			}
 
 			// add search to dropdown
-			conference_html.find('#owner_id').chosen({
+			conference_html.find('select#owner_id').chosen({
 				width: '404px',
 				disable_search_threshold: 0,
 				search_contains: true
@@ -461,7 +481,9 @@ define(function(require) {
 						self.conferenceCleanFormData(form_data);
 
 						data.data.member.pins = form_data.member.pins;
-
+						
+						data.data.moderator.pins = form_data.moderator.pins;
+						
 						if ('field_data' in data) {
 							delete data.field_data;
 						}
@@ -571,6 +593,10 @@ define(function(require) {
 		},
 
 		conferenceFormatData: function(data) {
+			if (data.name) {
+				data.name = data.name.replace(/ SmartPBX/g, "'s Personal");
+			}
+
 			if (typeof data.member === 'object') {
 				if ($.isArray(data.member.pins)) {
 					data.member.pins_string = data.member.pins.join(', ');
@@ -578,6 +604,13 @@ define(function(require) {
 
 				if ($.isArray(data.conference_numbers)) {
 					data.conference_numbers_string = data.conference_numbers.join(', ');
+					data.conference_number = data.conference_numbers[0] || '';
+				}
+			}
+
+			if (typeof data.moderator === 'object') {
+				if ($.isArray(data.moderator.pins)) {
+					data.moderator.pins_string = data.moderator.pins.join(', ');
 				}
 			}
 
@@ -598,6 +631,18 @@ define(function(require) {
 				}
 			});
 
+			form_data.moderator.pins_string = self.conferenceLettersToNumbers(form_data.moderator.pins_string);
+
+			form_data.moderator.pins = $.map(form_data.moderator.pins_string.split(','), function(val) {
+				var pin = $.trim(val);
+
+				if (pin !== '') {
+					return pin;
+				} else {
+					return null;
+				}
+			});
+
 			form_data.conference_numbers = $.map(form_data.conference_numbers_string.split(','), function(val) {
 				var number = $.trim(val);
 
@@ -607,6 +652,12 @@ define(function(require) {
 					return null;
 				}
 			});
+
+			if (form_data.conference_number !== undefined) {
+				var num = $.trim(form_data.conference_number);
+				form_data.conference_numbers = num ? [num] : [];
+				delete form_data.conference_number;
+			}
 
 			return form_data;
 		},
@@ -674,6 +725,11 @@ define(function(require) {
 				merged_data.conference_numbers = form_data.conference_numbers;
 			}
 
+			if (form_data.moderator && 'pins' in form_data.moderator) {
+				merged_data.moderator = merged_data.moderator || {};
+				merged_data.moderator.pins = form_data.moderator.pins;
+			}
+
 			return merged_data;
 		},
 
@@ -686,11 +742,18 @@ define(function(require) {
 				delete data.member.numbers;
 			}
 
+			if (data.hasOwnProperty('moderator') && data.moderator.hasOwnProperty('pins') && !data.moderator.pins.length) {
+				delete data.moderator.pins;
+			}
+
 			if (!data.owner_id) {
 				delete data.owner_id;
 			}
 
 			delete data.member.pins_string;
+		
+			delete data.moderator.pins_string;
+			
 			delete data.conference_numbers_string;
 
 			// Set conferencing video settings
@@ -723,7 +786,13 @@ define(function(require) {
 					}
 				},
 				success: function(data) {
-					callback && callback(data.data);
+					// replace SmartPBX with Personal
+					var conferences = _.map(data.data, function(conference) {
+						return _.merge({}, conference, {
+							name: conference.name.replace(/ SmartPBX/g, "'s Personal")
+						});
+					});
+					callback && callback(conferences);
 				}
 			});
 		},
@@ -790,10 +859,15 @@ define(function(require) {
 		},
 
 		conferenceSubmoduleButtons: function(data) {
-			var existingItem = true;
+			var existingItem = true,
+				hideDelete = false;
 			
 			if (!data.id) {
 				existingItem = false;
+			}
+
+			if (miscSettings.readOnlyConference) {
+				hideDelete = true;
 			}
 			
 			var self = this,
@@ -802,7 +876,7 @@ define(function(require) {
 					data: {
 						miscSettings: miscSettings,
 						existingItem: existingItem,
-						hideDelete: hideAdd.conference
+						hideDelete: hideDelete
 					}
 				}));
 			

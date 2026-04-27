@@ -1000,6 +1000,23 @@
 
 				<hr />
 
+				<h3>{{ i18n.callflows.user.conference.title }}</h3>
+
+				<div class="clearfix smartpbx-conference">
+					<label for="smartpbx_conference">{{ i18n.callflows.user.conference.label }}</label>
+					<div class="input smartpbx-conference">
+						<select id="smartpbx.conference.enabled" name="smartpbx.conference.enabled" class="medium" rel="popover">
+							<option value="false"{{#compare data.smartpbx.conferencing.enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.conference.state.disabled }}</option>
+							<option value="true"{{#compare data.smartpbx.conferencing.enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.conference.state.enabled }}</option>
+						</select>
+						<div class="edit_create">
+							<a id="edit_link_conference" class="inline_action_conference" data-action="edit" href="#">{{ i18n.callflows.user.conference.edit }}</a>
+						</div>
+					</div>
+				</div>
+
+				<hr />
+
 				<h3>{{ i18n.callflows.user.faxbox.title }}</h3>
 
 				<div class="clearfix smartpbx-faxing">
