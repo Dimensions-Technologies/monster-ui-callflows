@@ -3004,4 +3004,17 @@
     transform: translateY(-65%) rotate(45deg);
 }
 
+/* temportal set formatting */
+.inline_popup.callflows-port .main_content:has(#temporalset-form) .items-selector-wrapper {
+ 	width: 700px;
+    margin-left: 20px;
+}
 
+.inline_popup.callflows-port .main_content:has(#temporalset-form) .items-selector .box-selector {
+    width: 100%;
+    max-width: 320px;
+}
+
+.inline_popup.callflows-port .main_content:has(#temporalset-form) .items-selector .box-selector .search-wrapper input {
+    width: 267px;
+}
