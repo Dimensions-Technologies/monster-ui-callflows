@@ -1,0 +1,33 @@
+<div class="dialog_popup callflows-port callflow-action-form">
+	<form name="form" method="post" action="#">
+		<div class="form_content">
+			{{#if absolute_mode}}
+				<div class="popup_field" id="number_row">
+					<label for="check_cid_number">{{ i18n.oldCallflows.check_cid_number }}</label>
+					<input type="text" id="check_cid_number" value="{{ number }}"/>
+				</div>
+				<div class="popup_check_box check_cid">
+					<input type="checkbox" {{#if is_default}}checked{{/if}} id="check_cid_is_default" />
+					{{ i18n.oldCallflows.check_cid_default_branch }}
+				</div>
+			{{else}}
+				<div class="popup_field">
+					<div class="select_wrapper">
+						<select id="check_cid_key_selector">
+							{{#each items}}
+								{{#compare ../selected "===" @key}}
+									<option value="{{ @key }}" SELECTED>{{ this }}</option>
+								{{else}}
+									<option value="{{ @key }}">{{ this }}</option>
+								{{/compare}}
+							{{/each}}
+						</select>
+					</div>
+				</div>
+			{{/if}}
+		</div>
+	</form>
+	<div class="buttons-center">
+		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>
+	</div>
+</div>
