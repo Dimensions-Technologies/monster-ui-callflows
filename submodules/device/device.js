@@ -10,7 +10,8 @@ define(function(require) {
 		deviceVideoCodecs = {},
 		pusherApps = {},
 		billingCodes = {},
-		deviceBillingCodeRequired = {};
+		deviceBillingCodeRequired = {},
+		hideDeviceOutboundFlags = false;
 
 	var app = {
 		requests: {
@@ -735,7 +736,20 @@ define(function(require) {
 			}
 
 			var self = this,
-				device_html;
+				device_html,
+				deviceModel = _.get(data, 'data.dimension.model');
+
+			if (miscSettings.hideDeviceOutboundFlags) {
+				hideDeviceOutboundFlags = true;
+
+				if (deviceModel == 'FXS' && miscSettings.showDeviceFxsOutboundFlags) {
+					hideDeviceOutboundFlags = false;
+				}
+
+				if (deviceModel == 'UCS' && miscSettings.showDeviceUcsOutboundFlags) {
+					hideDeviceOutboundFlags = false;
+				}
+			}
 
 			if (data.data.hasOwnProperty('dimension') && data.data.dimension.hasOwnProperty('type')) {
 				dimensionDeviceType[data.data.dimension.type] = true;
@@ -755,6 +769,7 @@ define(function(require) {
 						dimensionDeviceType: dimensionDeviceType,
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
 						billingCodes: billingCodes,
+						hideDeviceOutboundFlags: hideDeviceOutboundFlags,
 						callerIdNumberList: _.keys(data.callerIdNumberList)
 					}, data),
 					submodule: 'device'
