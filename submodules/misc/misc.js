@@ -1107,7 +1107,7 @@ define(function(require) {
 						var popup, popup_html;
 
 						popup_html = $(self.getTemplate({
-							name: 'prepend_cid_callflow',
+							name: 'prepend_cid_callflowEdit',
 							data: {
 								data_cid: {
 									'caller_id_name_prefix': node.getMetadata('caller_id_name_prefix') || '',
@@ -1196,6 +1196,211 @@ define(function(require) {
 						if (typeof callback === 'function') {
 							callback();
 						}
+					}
+				},
+				'check_cid[]': {
+					name: self.i18n.active().oldCallflows.check_cid,
+					icon: 'rightarrow',
+					google_icon: 'manage_search',
+					category: self.i18n.active().oldCallflows.caller_id_cat,
+					module: 'check_cid',
+					tip: self.i18n.active().oldCallflows.check_cid_tip,
+					data: {
+						regex: '.*',
+						use_absolute_mode: false
+						
+					},
+					rules: [
+						{
+							type: 'quantity',
+							maxSize: '999'
+						}
+					],
+					isUsable: 'true',
+					isListed: determineIsListed('check_cid[]'),
+					weight: 40,
+					caption: function(node) {
+						if (node.getMetadata('use_absolute_mode')) {
+							return self.i18n.active().oldCallflows.check_cid_absolute_mode;
+						}
+						return node.getMetadata('regex') || '.*';
+					},
+					key_caption: function(child_node) {
+						var key = child_node.key,
+							captions = {
+								'match': self.i18n.active().oldCallflows.check_cid_match,
+								'nomatch': self.i18n.active().oldCallflows.check_cid_no_match,
+								'_': self.i18n.active().oldCallflows.check_cid_default
+							};
+						return captions[key] || key;
+					},
+					key_edit: function(child_node, callback) {
+						var popup, popup_html,
+							useAbsoluteMode = child_node.parent && child_node.parent.getMetadata('use_absolute_mode'),
+							currentKey = child_node.key;
+
+						if (useAbsoluteMode) {
+							var isDefault = currentKey === '_';
+
+							popup_html = $(self.getTemplate({
+								name: 'check_cid-callflowKey',
+								data: {
+									absolute_mode: true,
+									number: isDefault ? '' : (currentKey || ''),
+									is_default: isDefault
+								},
+								submodule: 'misc'
+							}));
+
+							function toggleNumberField() {
+								var isDefaultChecked = $('#check_cid_is_default', popup_html).is(':checked'),
+									$numberInput = $('#check_cid_number', popup_html);
+								if (isDefaultChecked) {
+									$numberInput.val('').prop('readonly', true);
+								} else {
+									$numberInput.prop('readonly', false);
+								}
+								toggleSaveButton();
+							}
+
+							function toggleSaveButton() {
+								var isDefaultChecked = $('#check_cid_is_default', popup_html).is(':checked'),
+									numberVal = $('#check_cid_number', popup_html).val();
+								$('#add', popup_html).prop('disabled', !isDefaultChecked && numberVal === '');
+							}
+
+							toggleNumberField();
+							$('#check_cid_is_default', popup_html).on('change', toggleNumberField);
+							$('#check_cid_number', popup_html).on('input', toggleSaveButton);
+
+							popup_html.find('#add').on('click', function() {
+								if ($('#check_cid_is_default', popup_html).is(':checked')) {
+									child_node.key = '_';
+									child_node.key_caption = self.i18n.active().oldCallflows.check_cid_default;
+								} else {
+									var number = $('#check_cid_number', popup_html).val();
+									child_node.key = number;
+									child_node.key_caption = number;
+								}
+
+								// keep _ as the last child
+								if (child_node.parent) {
+									var siblings = child_node.parent.children,
+										defaultIdx = _.findIndex(siblings, { key: '_' });
+									if (defaultIdx !== -1 && defaultIdx !== siblings.length - 1) {
+										siblings.push(siblings.splice(defaultIdx, 1)[0]);
+									}
+								}
+
+								popup.dialog('close');
+							});
+
+						} else {
+							popup_html = $(self.getTemplate({
+								name: 'check_cid-callflowKey',
+								data: {
+									absolute_mode: false,
+									items: {
+										'match': self.i18n.active().oldCallflows.check_cid_match,
+										'nomatch': self.i18n.active().oldCallflows.check_cid_no_match
+									},
+									selected: currentKey
+								},
+								submodule: 'misc'
+							}));
+
+							popup_html.find('#add').on('click', function() {
+								var selectedKey = $('#check_cid_key_selector', popup_html).val(),
+									captions = {
+										'match': self.i18n.active().oldCallflows.check_cid_match,
+										'nomatch': self.i18n.active().oldCallflows.check_cid_no_match
+									};
+								child_node.key = selectedKey;
+								child_node.key_caption = captions[selectedKey] || selectedKey;
+								popup.dialog('close');
+							});
+						}
+
+						popup = monster.ui.dialog(popup_html, {
+							title: self.i18n.active().oldCallflows.check_cid_branch_title,
+							minHeight: '0',
+							beforeClose: function() {
+								callback && callback();
+							}
+						});
+					},
+					edit: function(node, callback) {
+						var popup, popup_html;
+
+						popup_html = $(self.getTemplate({
+							name: 'check_cid-callflowEdit',
+							data: {
+								check_cid_data: {
+									regex: node.getMetadata('regex') || '.*',
+									use_absolute_mode: node.getMetadata('use_absolute_mode') || false,
+								
+								}
+							},
+							submodule: 'misc'
+						}));
+
+						function toggleRegexField() {
+							var useAbsolute = $('#use_absolute_mode', popup_html).is(':checked'),
+								$regexInput = $('#check_cid_regex', popup_html),
+								$testInput = $('#check_cid_test_number', popup_html),
+								$testResult = $('#check_cid_test_result', popup_html);
+							if (useAbsolute) {
+								$regexInput.val('.*').prop('readonly', true);
+								$testInput.val('').prop('disabled', true);
+								$testResult.text('').removeClass('check-cid-match check-cid-no-match');
+							} else {
+								$regexInput.prop('readonly', false);
+								$testInput.prop('disabled', false);
+							}
+						}
+
+						function testRegex() {
+							var regexStr = $('#check_cid_regex', popup_html).val(),
+								testNumber = $('#check_cid_test_number', popup_html).val(),
+								$result = $('#check_cid_test_result', popup_html);
+
+							if (!testNumber) {
+								$result.text('').removeClass('check-cid-match check-cid-no-match');
+								return;
+							}
+
+							try {
+								var isMatch = new RegExp(regexStr).test(testNumber);
+								$result
+									.text(isMatch ? self.i18n.active().oldCallflows.check_cid_test_match : self.i18n.active().oldCallflows.check_cid_test_no_match)
+									.removeClass('check-cid-match check-cid-no-match')
+									.addClass(isMatch ? 'check-cid-match' : 'check-cid-no-match');
+							} catch (e) {
+								$result.text('').removeClass('check-cid-match check-cid-no-match');
+							}
+						}
+
+						toggleRegexField();
+						$('#use_absolute_mode', popup_html).on('change', toggleRegexField);
+						$('#check_cid_test_number', popup_html).on('input', testRegex);
+						$('#check_cid_regex', popup_html).on('input', testRegex);
+
+						$('#add', popup_html).click(function() {
+							node.setMetadata('regex', $('#check_cid_regex', popup_html).val() || '.*');
+							node.setMetadata('use_absolute_mode', $('#use_absolute_mode', popup_html).is(':checked'));
+							
+
+							popup.dialog('close');
+						});
+
+						popup = monster.ui.dialog(popup_html, {
+							title: self.i18n.active().oldCallflows.check_cid_title,
+							beforeClose: function() {
+								if (typeof callback === 'function') {
+									callback();
+								}
+							}
+						});
 					}
 				},
 				'set_alert_info[]': {

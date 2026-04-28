@@ -278,7 +278,8 @@
 #directoryFallbackMessage .help-box,
 #directoryDeletedMessage .help-box,
 #tagDeletedMessage .help-box,
-#pivotFallbackMessage .help-box {
+#pivotFallbackMessage .help-box,
+#checkCidMessage .help-box {
 	width: 304px;
 	margin: 0 auto;
 	margin-top: 10px;
@@ -294,4 +295,24 @@
 
 .dialog_popup.callflows-port.callflow-action-form #pivot_voiceurl_input {
 	margin-left: 80px !important
+}
+
+/* check_cid regex tester */
+.dialog_popup.callflows-port.callflow-action-form .popup_field:has(.check-cid-test-input-group) {
+	align-items: baseline;
+}
+.dialog_popup.callflows-port.callflow-action-form .check-cid-test-input-group {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.dialog_popup.callflows-port.callflow-action-form #check_cid_test_result {
+	font-weight: bold;
+	font-size: 12px;
+}
+.dialog_popup.callflows-port.callflow-action-form #check_cid_test_result.check-cid-match {
+	color: #5cb85c;
+}
+.dialog_popup.callflows-port.callflow-action-form #check_cid_test_result.check-cid-no-match {
+	color: #d9534f;
 }
