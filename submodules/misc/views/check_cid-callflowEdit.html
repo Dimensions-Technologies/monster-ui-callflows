@@ -1,0 +1,40 @@
+<div class="dialog_popup callflows-port callflow-action-form">
+	<form name="form" method="post" action="#">
+		<div class="form_content">
+
+			<div class="popup_field" >
+				<label for="check_cid_regex">{{ i18n.oldCallflows.check_cid_regex }}</label>
+				<input type="text" id="check_cid_regex" class="medium" value="{{ check_cid_data.regex }}"/>
+			</div>
+			
+			<div class="popup_field">
+				<label for="check_cid_test_number">{{ i18n.oldCallflows.check_cid_test_number }}</label>
+				<div class="check-cid-test-input-group">
+					<input type="text" id="check_cid_test_number" class="medium" />
+					<span id="check_cid_test_result"></span>
+				</div>
+			</div>
+
+			<div class="popup_check_box check_cid">
+				<input type="checkbox" {{#if check_cid_data.use_absolute_mode}} checked{{/if}} id="use_absolute_mode">
+				{{ i18n.oldCallflows.check_cid_use_absolute_mode }}
+			</div>
+
+			<div id="checkCidMessage">
+				<div class="help-text">
+					<br>
+					{{#monsterText}}
+						{{ i18n.oldCallflows.check_cid_help_regex }}
+						<br>
+						<br>
+						{{ i18n.oldCallflows.check_cid_help_absolute }}
+					{{/monsterText}}
+				</div>
+			</div>
+			
+		</div>
+	</form>
+	<div class="buttons-center">
+		<button id="add" class="monster-button monster-button-primary">{{ i18n.save }}</button>
+	</div>
+</div>
