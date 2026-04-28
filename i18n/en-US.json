@@ -99,11 +99,14 @@
 			"edit": "Edit",
 			"create": "Create",
 			"pins": "PINs",
+			"participant_pin": "Participant PIN",
+			"moderator_pin": "Moderator PIN",
 			"pins_data_content": "A comma separated list of pins, that can be entered to join the conference",
-			"join_the_conference_muted": "Join the conference muted",
+			"join_the_conference_muted": "Participants join the conference muted",
 			"join_the_conference_muted_data_content": "Check to join the conference muted",
-			"join_the_conference_deaf": "Join the conference deaf",
+			"join_the_conference_deaf": "Participants join the conference deaf",
 			"join_the_conference_deaf_data_content": "Check to join the conference deaf",
+			"conference_number": "Conference Number:",
 			"numbers": "Numbers",
 			"numbers_placeholder": "Numbers",
 			"numbers_data_content": "A comma separated list of numbers, that will be assigned to the conference. Unless you plan to use the 'Conference Service' callflow node - don't worry about this field",
@@ -1109,6 +1112,16 @@
 					"text4": "The sender's email address or domain must be included in the SMTP Permissions list.",
 					"default": "{destination number}"
 				}
+			},
+			"conference": {
+				"title": "Personal Conference Bridge Settings",
+				"state": {
+					"enabled": "Enabled",
+					"disabled": "Disabled"
+				},
+				"label": "Conference Bridge",
+				"edit": "Edit Conference Bridge",
+				"no_conference": "This user has no associated conference bridge"
 			}
 		},
 		"vmbox": {
