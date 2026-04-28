@@ -153,6 +153,16 @@
 							</div>
 						</div>
 					{{/unless}}
+
+					{{#unless hideDeviceOutboundFlags}}
+						<div class="clearfix">
+							<label for="outbound_flags">{{ i18n.callflows.device.outbound_flags }}</label>
+							<div class="input">
+								<input class="span4" id="outbound_flags" name="outbound_flags" type="text" placeholder="{{ i18n.callflows.device.outbound_flags }}" value="{{ data.outbound_flags }}" rel="popover" data-content="{{ i18n.callflows.device.outbound_flags_data_content }}"/>
+							</div>
+						</div>
+					{{/unless}}
+
 				</div>
 
 				<div id="sip_settings">
@@ -220,15 +230,6 @@
 							<input class="span4" id="sip_expire_seconds" name="sip.expire_seconds" type="text" placeholder="{{ i18n.callflows.device.expire_seconds }}" value="{{ data.sip.expire_seconds }}" rel="popover" data-content="{{ i18n.callflows.device.expire_seconds_data_content }}"/>
 						</div>
 					</div>
-
-					{{#unless miscSettings.hideDeviceOutboundFlags}}
-						<div class="clearfix">
-							<label for="outbound_flags">{{ i18n.callflows.device.outbound_flags }}</label>
-							<div class="input">
-								<input class="span4" id="outbound_flags" name="outbound_flags" type="text" placeholder="{{ i18n.callflows.device.outbound_flags }}" value="{{ data.outbound_flags }}" rel="popover" data-content="{{ i18n.callflows.device.outbound_flags_data_content }}"/>
-							</div>
-						</div>
-					{{/unless}}
 				</div>
 				<div id="restrictions">
 					
