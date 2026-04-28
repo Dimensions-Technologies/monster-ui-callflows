@@ -910,7 +910,8 @@ define(function(require) {
 				
 			var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 				userFaxboxEnabled = data?.data?.smartpbx?.faxing?.enabled === true,
-				userCallflow = data?.field_data?.user_callflow;
+				userCallflow = data?.field_data?.user_callflow,
+				userConferenceEnabled = data?.data?.smartpbx?.conferencing?.enabled === true;
 
 				if (userCallflow) {
 					var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
@@ -986,6 +987,10 @@ define(function(require) {
 				user_html.find('.smartpbx-faxing .edit_create').hide();
 				user_html.find('.smartpbx-faxing-number').hide();
 				user_html.find('.faxbox-help').hide();
+			}
+
+			if (!userConferenceEnabled) {
+				user_html.find('.smartpbx-conference .edit_create').hide();
 			}
 
 			user_html.find('#smartpbx\\.faxing\\.enabled').on('change', function() {
@@ -1497,6 +1502,8 @@ define(function(require) {
 							ringTimeout = parseInt(form_data.ring_timeout, 10),
 							currentFaxingEnabled = data?.data?.smartpbx?.faxing?.enabled === true,
 							faxingEnabled = form_data.smartpbx.faxing.enabled === "true",
+							conferenceBridgeEnabled = data?.data?.smartpbx?.conferencing?.enabled === true,
+							conferenceBridge = form_data.smartpbx.conference.enabled === "true",
 							findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 							findMeFollowMe = form_data.smartpbx.find_me_follow_me.enabled === "true",
 							callflowRingGroup = data.field_data.callflow_ring_group,
@@ -2093,6 +2100,103 @@ define(function(require) {
 									});
 								},
 
+								function(callback) {
+									// function for personal conference support 
+									var userId = data.data.id;
+
+									console.log('personal conference');
+
+									if (conferenceBridgeEnabled && !conferenceBridge && userId) {
+										self.callApi({
+											resource: 'conference.list',
+											data: {
+												accountId: self.accountId,
+												filters: { filter_owner_id: userId, paginate: false }
+											},
+											success: function(listData) {
+												var conferences = listData.data || [],
+													conference = conferences[0];
+
+												if (!conference) {
+													return callback(null);
+												}
+
+												self.callApi({
+													resource: 'conference.delete',
+													data: {
+														accountId: self.accountId,
+														conferenceId: conference.id
+													},
+													success: function() {
+														callback(null);
+													},
+													error: function() {
+														callback(null);
+													}
+												});
+											},
+											error: function() {
+												callback(null);
+											}
+										});
+										return;
+									}
+
+									if (!conferenceBridgeEnabled && conferenceBridge && userId) {
+										var callerName = _.trim([
+											form_data.first_name || data.data.first_name,
+											form_data.last_name || data.data.last_name
+										].join(' ')),
+											conferenceName = callerName ? callerName + ' SmartPBX Conference' : 'SmartPBX Conference',
+											presenceId = form_data.presence_id || data.data.presence_id || '';
+
+										self.callApi({
+											resource: 'conference.create',
+											data: {
+												accountId: self.accountId,
+												data: {
+													name: conferenceName,
+													owner_id: userId,
+													play_name_on_join: true,
+													member: {
+														join_muted: false,
+														join_deaf: false,
+														numbers: [],
+														pins: []
+													},
+													conference_numbers: presenceId ? [presenceId] : [],
+													markers: {
+														monster: {
+															source: 'smartpbx'
+														}
+													},
+													video: false,
+													ui_metadata: {
+														origin: 'voip'
+													},
+													allow_shareable_link: false,
+													moderator: {
+														join_deaf: false,
+														join_muted: false,
+														numbers: [],
+														pins: []
+													},
+													play_name: false
+												}
+											},
+											success: function() {
+												callback(null);
+											},
+											error: function() {
+												callback(null);
+											}
+										});
+										return;
+									}
+
+									callback(null);
+								},
+
 								function() {
 									self.callApi({
 										resource: 'account.get',
@@ -2214,6 +2318,23 @@ define(function(require) {
 					});
 				}
 
+			});
+
+			$('.inline_action_conference', user_html).click(function(ev) {
+				var ownerId = data.data.id;
+				
+				ev.preventDefault();
+
+				self.getUserConference(ownerId, function(conferenceId) {
+					if (!conferenceId) {
+						monster.ui.alert('warning', self.i18n.active().callflows.user.conference.no_conference);
+						return;
+					}
+
+					monster.pub('callflows.conference.popupEdit', {
+						id: conferenceId
+					});
+				});
 			});
 
 			$('.inline_action_faxbox', user_html).click(function(ev) {
@@ -3186,6 +3307,14 @@ define(function(require) {
 				enabled: data.smartpbx.faxing.enabled === "true"
 			}
 
+			// add support for setting conference state
+			data.smartpbx.conferencing = {
+				enabled: data.smartpbx.conference && data.smartpbx.conference.enabled === "true"
+			}
+			if (data.smartpbx.conference) {
+				delete data.smartpbx.conference;
+			}
+
 			// add support for setting dnd on user doc
 			data.do_not_disturb = {
 				enabled: data.do_not_disturb.enabled === "true"
@@ -3491,6 +3620,25 @@ define(function(require) {
 			}
 
 			return found;
+		},
+
+		getUserConference: function(ownerId, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'conference.list',
+				data: {
+					accountId: self.accountId,
+					filters: { filter_owner_id: ownerId, paginate: false }
+				},
+				success: function(data) {
+					var conference = data.data && data.data[0];
+					callback && callback(conference ? conference.id : null);
+				},
+				error: function() {
+					callback && callback(null);
+				}
+			});
 		},
 
 		getUserFaxbox: function(ownerId, callback) {
