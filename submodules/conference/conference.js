@@ -866,7 +866,7 @@ define(function(require) {
 				existingItem = false;
 			}
 
-			if (miscSettings.readOnlyConference) {
+			if (hideAdd.conference || miscSettings.readOnlyConference) {
 				hideDelete = true;
 			}
 			
