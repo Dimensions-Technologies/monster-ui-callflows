@@ -1011,10 +1011,20 @@
 			"do_not_disturb_status": "DND Status",
 			"do_not_disturb_status_true": "Enabled",
 			"do_not_disturb_status_false": "Disabled",
+			"extension_numbers": "Extensions",
+			"extension_numbers_options": "Assigned Extension Numbers",
+			"extension_numbers_add": "Add Extension Number",
+			"extension_numbers_none": "This user currently has no assigned extension numbers",
+			"extension_numbers_duplicate": "This extension number is already assigned to this user.",
+			"extension_numbers_conflict": "This number is already in use by another user or callflow",
 			"phone_numbers": "Phone Numbers",
 			"phone_numbers_options": "Assigned Phone Numbers",
 			"phone_numbers_add": "Add Phone Number",
 			"phone_numbers_none": "This user currently has no assigned phone numbers",
+			"numbers_conflict": {
+				"message_1": "Unable to save user. <br>",
+				"message_2": " is already in use by another user or callflow."
+			},
 			"call_routing": {
 				"title": "User's Call Routing Settings",
 				"label": "Call Routing",

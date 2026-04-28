@@ -19,6 +19,7 @@
 	<ul class="tabs" data-tabs="tabs">
 		<li class="active"><a href="#basic">{{ i18n.callflows.user.basic }}</a></li>
 		<li><a href="#caller_id">{{ i18n.callflows.user.caller_id }}</a></li>
+		<li><a href="#extension_numbers">{{ i18n.callflows.user.extension_numbers }}</a></li>
 		<li><a href="#phone_numbers">{{ i18n.callflows.user.phone_numbers }}</a></li>
 		{{#unless miscSettings.userShowCallRoutingTab}}
 			<li><a href="#voicemail">{{ i18n.callflows.user.voicemail }}</a></li>
@@ -394,6 +395,20 @@
 					</div>
 				{{/unless}}
 			{{/if}}
+			</div>
+
+			<div id="extension_numbers">
+				<h3>{{ i18n.callflows.user.extension_numbers_options }}</h3>
+			
+				<div id="extension_numbers_container">
+					<!-- placeholder for numberRow.html -->
+					<div class="numberRows">
+					</div>
+				</div>
+			
+				<div class="number-addition">
+					<button class="monster-button add-extension-number">{{ i18n.callflows.user.extension_numbers_add }}</button>
+				</div>
 			</div>
 
 			<div id="phone_numbers">
