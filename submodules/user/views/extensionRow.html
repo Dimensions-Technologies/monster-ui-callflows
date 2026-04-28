@@ -1,0 +1,20 @@
+<div class="row">
+    {{#if extension_numbers}}
+    <div id="extension_numbers_container">
+        {{#each extension_numbers}}
+        <div class="item-row">
+            <div class="number-container">
+                <button type="button" class="monster-button monster-button-danger unassign-extension-number"{{#if (eq this @root.presence_id)}} disabled{{/if}}>{{ @root.i18n.unassign }}</button>
+                <span class="number">
+                    <label class="extension-number-label">{{ this }}</label>
+                    <input id="extension_numbers" name="extension_numbers[]" type="hidden" value="{{ this }}" />
+                </span>
+            </div>
+        </div>
+        <hr>
+        {{/each}}
+    </div>
+    {{else}}
+        <div class="extension-numbers-none">{{ i18n.callflows.user.extension_numbers_none }}</div>
+    {{/if}}
+</div>

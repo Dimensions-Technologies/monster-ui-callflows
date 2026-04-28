@@ -3019,7 +3019,8 @@
 	width: 100px;
 }
 
-#phone_numbers_container hr {
+#phone_numbers_container hr,
+#extension_numbers_container hr {
     margin: 0px 0;
 }
 
