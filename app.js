@@ -3417,9 +3417,10 @@ define(function(require) {
 							action,
 							branch,
 							validActionNames = [
-								'menu[id=*]', 
-								'branch_variable[]', 
-								'temporal_route[]'
+								'menu[id=*]',
+								'branch_variable[]',
+								'temporal_route[]',
+								'check_cid[]'
 							];
 						
 						/* // commented out as don't believe latter section not required
