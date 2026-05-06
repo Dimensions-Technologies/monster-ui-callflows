@@ -2017,20 +2017,25 @@ define(function(require) {
 					});
 				};
 
-				monster.pub('callflows.strategyHours.save', {
-					parent: template,
-					callback: function() {
-						monster.pub('callflows.strategyHolidays.save', {
-							parent: template,
-							callback: function() {
-								monster.pub('callflows.strategyCalls.save', {
-									parent: template,
-									callback: updateAccountSettings
-								});
-							}
-						});
-					}
-				});
+				if (miscSettings.enableSmartPbxMainNumber) {
+					monster.pub('callflows.strategyHours.save', {
+						parent: template,
+						callback: function() {
+							monster.pub('callflows.strategyHolidays.save', {
+								parent: template,
+								callback: function() {
+									monster.pub('callflows.strategyCalls.save', {
+										parent: template,
+										callback: updateAccountSettings
+									});
+								}
+							});
+						}
+					});
+				} else {
+					updateAccountSettings();
+				}
+
 			});
 		},
 
