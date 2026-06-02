@@ -54,7 +54,8 @@ define(function(require) {
 		'temporalset',
 		'timeofday',
 		'user',
-		'vmbox'
+		'vmbox',
+		'ai_agent'
 	];
 
 	var strategyEnabled = _.get(monster, 'config.whitelabel.dimension.dt_callflows.miscSettings.enableSmartPbxMainNumber', false),

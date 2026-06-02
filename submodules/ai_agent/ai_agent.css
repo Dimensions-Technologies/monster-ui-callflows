@@ -1,0 +1,32 @@
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field textarea {
+    min-height: 150px;
+	min-width: 400px;
+	margin-right: 50px;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .popup_field:has(#tts_text_input) {
+	margin-top: 20px;
+}
+
+.dialog_popup.set-aiagent-input .popup_field:has(#ai_text_input) {
+	margin-top: 20px;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field.tts-input {
+	display: flex;
+	align-items: left;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field.tts-input .select_wrapper {
+	flex: 3;
+	text-align: left;
+}
+
+/* ai_agent callflow action reformatting */
+.dialog_popup.set-aiagent-input .form_content .popup_field label {
+	width: 90px;
+}
