@@ -33,6 +33,7 @@
 	color: #666666;
 	/*margin: 20px auto auto; */
 	margin: 20px 60px; /* left align table */
+	min-width: 536px;
 	max-width: 920px;
 }
 

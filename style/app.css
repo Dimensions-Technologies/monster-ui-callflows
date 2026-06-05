@@ -2622,6 +2622,7 @@
 #account_settings_form #account_settings_caller_id .input select,
 #account_settings_form #account_settings_caller_id .chosen-container-single, 
 #account_settings_form #account_settings_caller_id .chosen-drop,
+#account_settings_form .settings-section.account_settings_call_restrictions .classifier-dropdown,
 .callflows-port #conference_form .input select,
 .callflows-port #conference_form .chosen-container-single, 
 .callflows-port #conference_form .chosen-drop,
@@ -2641,9 +2642,9 @@
 .callflows-port #vmbox-form .input select,
 .callflows-port #vmbox-form .chosen-container-single, 
 .callflows-port #vmbox-form .chosen-drop,
-.callflows-port #group-form .input select,
-.callflows-port #group-form .chosen-container-single, 
-.callflows-port #group-form .chosen-drop,
+.callflows-port #group-form .input.embeddedTableView select,
+.callflows-port #group-form .embeddedTableView .chosen-container-single, 
+.callflows-port #group-form .embeddedTableView .chosen-drop,
 .callflows-port #queue-form .input select,
 .callflows-port #queue-form .chosen-container-single, 
 .callflows-port #queue-form .chosen-drop {
@@ -2652,9 +2653,16 @@
 
 /* align dropdown field width with input fields */
 #account_settings_caller_id #caller_id_internal_name,
+#account_settings_caller_id #caller_id_internal_number,
 #account_settings_caller_id #caller_id_external_name,
+#account_settings_caller_id #caller_id_external_number,
 #account_settings_caller_id #caller_id_emergency_name,
-#account_settings_caller_id #caller_id_asserted_name {
+#account_settings_caller_id #caller_id_emergency_number,
+#account_settings_caller_id #caller_id_asserted_realm,
+#account_settings_caller_id #caller_id_asserted_name,
+#account_settings_caller_id #caller_id_asserted_number,
+#account_settings_misc #dynamic,
+#account_settings_misc #static {
 	width: 400px;
 }
 
@@ -2667,6 +2675,9 @@
 .callflows-port #directory-form .input select,
 .callflows-port #directory-form .chosen-container-single, 
 .callflows-port #directory-form .chosen-drop,
+.callflows-port #group-form .input select,
+.callflows-port #group-form .chosen-container-single, 
+.callflows-port #group-form .chosen-drop,
 .callflows-port #queue-form #queue_agents .input select,
 .callflows-port #queue-form #queue_agents .chosen-container-single, 
 .callflows-port #queue-form #queue_agents .chosen-drop {

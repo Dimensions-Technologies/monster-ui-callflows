@@ -5,6 +5,7 @@
 	margin: 20px auto auto;
 	width: 60%;
 	float: left;
+	min-width: 570px;
 }
 
 /*
@@ -107,6 +108,7 @@
 	width: 20%;
 	border-radius: 15px 15px 15px 15px;
 	float: right;
+	min-width: 308px;
 }
 
 .callflows-port #directory-form #basic .add_user .add_content_wrapper {
@@ -127,9 +129,22 @@
 	width: 100%;
 }
 
-.callflows-port #directory-form #basic .add_user .add_user_fields {
-	margin: auto;
-	width: 90%;
+.callflows-port #directory-form .add_user_fields .controls > li,
+.callflows-port #directory-form .add_user_fields .controls #user_list_select > li {
+    display: grid;
+    grid-template-columns: 50px 224px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 8px 0;
+}
+
+.callflows-port #directory-form .add_user_fields .controls label {
+    padding-right: 8px;
+}
+
+.callflows-port #directory-form .add_user .add_user_fields {
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 .callflows-port #directory-form #basic .add_user .add_user_fields .tooltip-wrapper {

@@ -190,6 +190,7 @@
 	width: 40%;
 	margin: 20px 60px;
 	float: left;
+	min-width: 570px;
 }
 
 /*
@@ -299,6 +300,7 @@
 
 #group-form .add_endpoint {
 	width: 100%;
+	min-width: 250px;
 }
 
 #group-form .add_endpoint select {
