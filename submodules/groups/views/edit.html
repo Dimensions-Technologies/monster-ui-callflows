@@ -37,7 +37,7 @@
 							<h3>{{ @root.i18n.callflows.groups.group_members }}</h3>
 
 							<label for="name">{{ @root.i18n.callflows.groups.user }}</label>
-							<div class="input">
+							<div class="input embeddedTableView">
 								<select name="extra.select_user_id" id="select_user_id" data-placeholder="Select a user...">
 									<!--<option id="empty_option_user" value="empty_option_user">{{ @root.i18n.callflows.groups.select_user }}</option>-->
 									<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
@@ -48,7 +48,7 @@
 							</div>	
 								
 							<label for="name">{{ @root.i18n.callflows.groups.device }}</label>
-							<div class="input">
+							<div class="input embeddedTableView">
 								<select name="extra.select_device_id" id="select_device_id" data-placeholder="Select a device...">
 									<!--<option id="empty_option_device" value="empty_option_device">{{ @root.i18n.callflows.groups.select_device }}</option>-->
 									<option value="null"></option>  <!-- Empty option for Chosen placeholder -->
