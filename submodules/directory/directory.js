@@ -292,7 +292,9 @@ define(function(require) {
 
 				// Initial state
 				$('#callflow_type', directory_html).prop('disabled', true).addClass('input-readonly').val('null').trigger("chosen:updated");
-				$('#callflow_id', directory_html).prop('disabled', true).addClass('input-readonly').val('null').trigger("chosen:updated");
+				if (miscSettings.embeddedTableView) {
+					$('#callflow_id', directory_html).prop('disabled', true).addClass('input-readonly').val('null').trigger("chosen:updated");
+				}
 				$('.add_user_div', directory_html).prop('disabled', true);
 			
 				$('#userCallflow_id, #phoneOnlyCallflow_id, #callCentreCallflow_id', directory_html)
