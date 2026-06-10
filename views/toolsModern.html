@@ -1,0 +1,50 @@
+<div class="modern-toolbox">
+	<div class="title">{{ i18n.oldCallflows.addAnAction }}</div>
+	<div class="search-bar">
+		<div class="search-box">
+			{{#if miscSettings.enableGoogleIcons}}
+				<i class="material-symbols-icon-search-small">search</i>
+			{{else}}
+				<i class="fa fa-search"></i>
+			{{/if}}
+			<input type="text" class="search-query" placeholder="{{ i18n.search }}">
+		</div>
+	</div>
+	{{#if miscSettings.enableGoogleIcons}}
+		{{#each categories}}
+			<div id="{{key}}" name="{{key}}" class="category inactive">
+				<div class="open">{{key}}</div>
+				<div class="content">
+					{{#each actions}}
+						<div class="tool" help="{{tip}}" data-name="{{name}}">
+							<div name="{{key}}" class="action">
+								<div class="action-icon">
+									<span class="material-symbols-medium">{{google_icon}}</span>
+								</div>
+								<div class="tool_name">{{{name}}}</div>
+							</div>
+						</div>
+					{{/each}}
+				</div>
+			</div>
+		{{/each}}
+	{{else}}
+		{{#each categories}}
+			<div id="{{key}}" name="{{key}}" class="category inactive">
+				<div class="open">{{key}}</div>
+				<div class="content">
+					{{#each actions}}
+						<div class="tool" help="{{tip}}" data-name="{{name}}">
+							<div name="{{key}}" class="action">
+								<div class="action-icon">
+									<span class="icon medium app_sm {{icon}}"></span>
+								</div>
+								<div class="tool_name">{{{name}}}</div>
+							</div>
+						</div>
+					{{/each}}
+				</div>
+			</div>
+		{{/each}}
+	{{/if}}
+</div>
