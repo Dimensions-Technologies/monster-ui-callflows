@@ -1911,6 +1911,8 @@
 		}
 	},
 	"oldCallflows": {
+		"addAnAction": "Add an action",
+		"close": "Close",
 		"call_forwarding_cat": "Call Forwarding",
 		"basic_cat": "Basic",
 		"advanced_cat": "Advanced",

@@ -3415,180 +3415,32 @@ define(function(require) {
 
 				$(this).append(node_html);
 
+				// click-to-add: render the "+" insertion control under each node that
+				// can accept a child. Clicking it opens the "Add an action" side panel
+				// targeting this node (insert below). Kept inside the .node element so
+				// node drag-to-rearrange (which relies on $(this).next() === .children)
+				// is unaffected
+				if (self.useClickToAdd() && self.nodeAcceptsChildren(node)) {
+					$(self.getAddActionButtonHtml())
+						.on('click', function(event) {
+							event.stopPropagation();
+							self.openActionPanel($(this).closest('.node').attr('id'));
+						})
+						.appendTo($(this));
+				}
+
 				$(this).droppable({
 					drop: function(event, ui) {
-						var targetId = $(this).attr('id'),
-							target = self.flow.nodes[targetId],
-							action,
-							branch,
-							validActionNames = [
-								'menu[id=*]',
-								'branch_variable[]',
-								'temporal_route[]',
-								'check_cid[]'
-							];
-						
-						/* // commented out as don't believe latter section not required
-						function addChildBelow(parent, node, position) {
-							if (parent) {
-								// add the node below the target at the specified position
-								parent.addChild(node, position);
-							} else {
-								// if the target has no parent, add the node as a sibling
-								self.flow.nodes[node.id] = node;
-								self.flow.root = node;
-							}
-						}
-						*/
+						var target = self.flow.nodes[$(this).attr('id')];
 
-						function addChildBelow(parent, node, position) {
-							// add the node below the target at the specified position
-							parent.addChild(node, position);
-
-						}
-						
 						// action is a new item being added to the callflow
 						if (ui.draggable.hasClass('action')) {
-							action = ui.draggable.attr('name');
-							branch = self.branch(action);
-							branch.caption = self.actions[action].caption(branch, self.flow.caption_map);
-
-							// handle callflow actions that support parallel children
-							if (validActionNames.includes(target.actionName)) {
-							
-								addChildBelow(target, branch);
-
-							} else {
-
-								// check if callflow actions that support parallel children
-								if (validActionNames.includes(action)) {
-									
-									// store the children of the target temporarily
-									var originalChildren = target.children.slice();
-
-									// handle new callflow with no children
-									if (originalChildren.length == 0) {
-							
-										addChildBelow(target, branch);
-
-									}
-
-									else {
-
-										var parentKey = '_';
-										var parentKeyCaption = 'Default action'
-
-										// update child branch key value
-										originalChildren[0].key = parentKey;
-										originalChildren[0].key_caption = parentKeyCaption;
-						
-										// remove the children from the target
-										target.children = [];
-						
-										// add the new branch below the target
-										addChildBelow(target, branch, originalChildren.length + 1);
-						
-										// re-add the original children as children of the new branch
-										originalChildren.forEach(function(child) {
-											branch.addChild(child);
-										});
-
-									}
-									
-								}
-
-								else {
-
-									// store the children of the target temporarily
-									var originalChildren = target.children.slice();
-					
-									// remove the children from the target
-									target.children = [];
-					
-									// add the new branch below the target
-									addChildBelow(target, branch, originalChildren.length + 1);
-					
-									// re-add the original children as children of the new branch
-									originalChildren.forEach(function(child) {
-										branch.addChild(child);
-									});
-
-								}
-								
-							}
-				
-							if (branch.parent && ('key_caption' in self.actions[branch.parent.actionName])) {
-								branch.key_caption = self.actions[branch.parent.actionName].key_caption(branch, self.flow.caption_map);
-				
-								self.actions[branch.parent.actionName].key_edit(branch, function() {
-									self.actions[action].edit(branch, function() {
-										// repaint the flow after all operations are completed
-										self.repaintFlow();
-									});
-								});
-							} else {
-								self.actions[action].edit(branch, function() {
-									// repaint the flow after all operations are completed
-									self.repaintFlow();
-								});
-							}
+							self.insertActionIntoFlow(target, ui.draggable.attr('name'));
 						}
-				
+
 						// node is an action already on the callflow
 						if (ui.draggable.hasClass('node')) {
-							
-							// handle callflow actions that support parallel children
-							if (validActionNames.includes(target.actionName)) {
-							
-								var branch = self.flow.nodes[ui.draggable.attr('id')];
-
-								if (target.addChild(branch)) {
-
-									// if we move a node, destroy its key
-									branch.key = '_';
-	
-									if (branch.parent && ('key_caption' in self.actions[branch.parent.actionName])) {
-										branch.key_caption = self.actions[branch.parent.actionName].key_caption(branch, self.flow.caption_map);
-									}
-									
-									ui.draggable.remove();
-									self.repaintFlow();
-
-								}					
-
-							} else {
-
-								var draggedNodeId = ui.draggable.attr('id');
-								var draggedNode = self.flow.nodes[draggedNodeId];
-
-								// if we move a node, destroy its key and caption
-								draggedNode.key = '_';
-								draggedNode.key_caption = '';
-					
-								// store the children of the target temporarily
-								var originalChildren = target.children.slice();
-					
-								// remove the children from the target
-								target.children = [];
-					
-								// add the dragged node below the target
-								addChildBelow(target, draggedNode);
-					
-								// re-add the original children as children of the dragged node
-								originalChildren.forEach(function(child) {
-									draggedNode.addChild(child);
-								});
-
-								/*
-								if (draggedNode.parent && ('key_caption' in self.actions[draggedNode.parent.actionName])) {
-									draggedNode.key_caption = self.actions[draggedNode.parent.actionName].key_caption(draggedNode, self.flow.caption_map);
-								}
-								*/
-					
-								// repaint the flow after all operations are completed
-								self.repaintFlow();
-
-							}	
+							self.moveNodeInFlow(target, ui.draggable);
 						}
 					}
 				});
@@ -3596,6 +3448,7 @@ define(function(require) {
 				// dragging the whole branch
 				if ($(this).attr('name') !== 'root') {
 					$(this).draggable({
+						cancel: '.add_action_btn',
 						start: function() {
 							var children = $(this).next(),
 								top = children.offset().top - $(this).offset().top,
@@ -3623,35 +3476,28 @@ define(function(require) {
 
 			// delete a callflow action
 			$('.node-options .delete, .node-options .material-symbols-icon-node-delete', layout).click(function() {
-
 				var validActionNames = [
 					'menu[id=*]', 
 					'branch_variable[]', 
-					'temporal_route[]'
+					'temporal_route[]',
+					'check_cid[]'
 				];
 				var nodeId = $(this).attr('id');
 				var node = self.flow.nodes[nodeId];
 
 				// handle callflow actions that support parallel children
 				if (validActionNames.includes(node.actionName)) {
-
 					monster.ui.confirm(self.i18n.active().oldCallflows.delete_callflow_action_confirm + '<br>' + self.i18n.active().oldCallflows.delete_callflow_action_note_1, function() { 
-
 						if (node.parent) {
 							node.parent.removeChild(node);
 
 							self.repaintFlow();
-
 						}
-					
 					});
-
 				}
 
 				else {
-
 					if (node.parent) {
-
 						monster.ui.confirm(self.i18n.active().oldCallflows.delete_callflow_action_confirm + '<br>' + self.i18n.active().oldCallflows.delete_callflow_action_note_2, function() {
 							var parentNode = node.parent;
 							var parentKey = node.key;
@@ -3672,23 +3518,296 @@ define(function(require) {
 								childNode.parent = parentNode;
 								childNode.key = parentKey;
 								childNode.key_caption = parentKeyCaption;
-
 							}
 					
 							// repaint the flow after all operations are completed
 							self.repaintFlow();
-
 						});
-
 					}
-
 				}
-
-
 			});		
 
 			return layout;
 
+		},
+
+		// inserts a brand-new action below the target node. shared by the legacy
+		// drag-and-drop (droppable) path and the new click-to-add panel path
+		insertActionIntoFlow: function(target, action, callback) {
+			var self = this,
+				branch,
+				validActionNames = [
+					'menu[id=*]',
+					'branch_variable[]',
+					'temporal_route[]',
+					'check_cid[]'
+				],
+				done = callback || function() {
+					self.repaintFlow();
+				};
+
+			function addChildBelow(parent, node, position) {
+				// add the node below the target at the specified position
+				parent.addChild(node, position);
+			}
+
+			branch = self.branch(action);
+			branch.caption = self.actions[action].caption(branch, self.flow.caption_map);
+
+			// handle callflow actions that support parallel children
+			if (validActionNames.includes(target.actionName)) {
+				addChildBelow(target, branch);
+			} else {
+				// check if callflow actions that support parallel children
+				if (validActionNames.includes(action)) {
+					// store the children of the target temporarily
+					var originalChildren = target.children.slice();
+
+					// handle new callflow with no children
+					if (originalChildren.length == 0) {
+						addChildBelow(target, branch);
+					}
+					else {
+						var parentKey = '_';
+						var parentKeyCaption = 'Default action'
+
+						// update child branch key value
+						originalChildren[0].key = parentKey;
+						originalChildren[0].key_caption = parentKeyCaption;
+
+						// remove the children from the target
+						target.children = [];
+
+						// add the new branch below the target
+						addChildBelow(target, branch, originalChildren.length + 1);
+
+						// re-add the original children as children of the new branch
+						originalChildren.forEach(function(child) {
+							branch.addChild(child);
+						});
+					}
+				}
+
+				else {
+					// store the children of the target temporarily
+					var originalChildren = target.children.slice();
+
+					// remove the children from the target
+					target.children = [];
+
+					// add the new branch below the target
+					addChildBelow(target, branch, originalChildren.length + 1);
+
+					// re-add the original children as children of the new branch
+					originalChildren.forEach(function(child) {
+						branch.addChild(child);
+					});
+				}
+			}
+
+			if (branch.parent && ('key_caption' in self.actions[branch.parent.actionName])) {
+				branch.key_caption = self.actions[branch.parent.actionName].key_caption(branch, self.flow.caption_map);
+
+				self.actions[branch.parent.actionName].key_edit(branch, function() {
+					self.actions[action].edit(branch, function() {
+						// repaint the flow after all operations are completed
+						done();
+					});
+				});
+			} else {
+				self.actions[action].edit(branch, function() {
+					// repaint the flow after all operations are completed
+					done();
+				});
+			}
+		},
+
+		// moves an existing node (and its subtree) below the target node
+		// $draggable is the jQuery element of the node being moved
+		moveNodeInFlow: function(target, $draggable, callback) {
+			var self = this,
+				validActionNames = [
+					'menu[id=*]',
+					'branch_variable[]',
+					'temporal_route[]',
+					'check_cid[]'
+				],
+				done = callback || function() {
+					self.repaintFlow();
+				};
+
+			function addChildBelow(parent, node, position) {
+				// add the node below the target at the specified position
+				parent.addChild(node, position);
+			}
+
+			// handle callflow actions that support parallel children
+			if (validActionNames.includes(target.actionName)) {
+				var branch = self.flow.nodes[$draggable.attr('id')];
+
+				if (target.addChild(branch)) {
+					// if we move a node, destroy its key
+					branch.key = '_';
+
+					if (branch.parent && ('key_caption' in self.actions[branch.parent.actionName])) {
+						branch.key_caption = self.actions[branch.parent.actionName].key_caption(branch, self.flow.caption_map);
+					}
+					$draggable.remove();
+
+					done();
+				}
+			} else {
+				var draggedNodeId = $draggable.attr('id');
+				var draggedNode = self.flow.nodes[draggedNodeId];
+
+				// if we move a node, destroy its key and caption
+				draggedNode.key = '_';
+				draggedNode.key_caption = '';
+
+				// store the children of the target temporarily
+				var originalChildren = target.children.slice();
+
+				// remove the children from the target
+				target.children = [];
+
+				// add the dragged node below the target
+				addChildBelow(target, draggedNode);
+
+				// re-add the original children as children of the dragged node
+				originalChildren.forEach(function(child) {
+					draggedNode.addChild(child);
+				});
+
+				// repaint the flow after all operations are completed
+				done();
+			}
+		},
+
+		// true when the modern click-to-add UX is active. requires the dynamic SVG connectors, which the "+" buttons are anchored to
+		useClickToAdd: function() {
+			return !!(miscSettings.enableClickToAddActions && miscSettings.enableDynamicConnectors);
+		},
+
+		// markup for the "+" insertion control rendered under each node
+		getAddActionButtonHtml: function() {
+			var self = this,
+				title = self.i18n.active().oldCallflows.addAnAction || 'Add an action';
+
+			if (miscSettings.enableGoogleIcons) {
+				return '<div class="add_action_btn" title="' + title + '"><span class="material-symbols-medium">add</span></div>';
+			}
+
+			return '<div class="add_action_btn" title="' + title + '"><i class="fa fa-plus"></i></div>';
+		},
+
+		// whether a given action may be inserted below the given target node
+		// mirrors the validity logic in enableDestinations() for the action-tile
+		// case (cycle checks there only apply when moving existing nodes)
+		canInsertAction: function(actionName, target) {
+			var self = this,
+				action = self.actions[actionName];
+
+			if (!action || !target) {
+				return false;
+			}
+
+			var targetTerminating = target.terminatingAction().isTerminating == 'true',
+				actionTerminating = action.isTerminating == 'true';
+
+			// a terminating action can only sit where it's an allowed potential child
+			if (actionTerminating && !targetTerminating) {
+				return actionName in target.potentialChildren();
+			}
+
+			// adding below a terminating action requires an explicit allowedChildren rule
+			if (targetTerminating) {
+				var allowed = target.allowedChildren();
+				return (actionName in target.potentialChildren())
+					&& Array.isArray(allowed)
+					&& allowed.includes(actionName);
+			}
+
+			// non-terminating target accepts any potential child
+			return true;
+		},
+
+		// whether a "+" should be offered under the given node, i.e. it can accept at least one child action.
+		nodeAcceptsChildren: function(target) {
+			if (!target) {
+				return false;
+			}
+
+			if (target.terminatingAction().isTerminating != 'true') {
+				return true;
+			}
+
+			var allowed = target.allowedChildren();
+			return Array.isArray(allowed) && allowed.length > 0;
+		},
+
+		// Show/hide the toolbox tiles (and empty categories) so only actions valid
+		// for the given target remain available in the click-to-add panel.
+		filterPanelActions: function(target) {
+			var self = this,
+				$tools = $('#ws_cf_tools');
+
+			$tools.find('.search-query').val('');
+
+			$tools.find('.tool').each(function() {
+				var $tool = $(this),
+					actionName = $tool.find('.action').attr('name'),
+					ok = target ? self.canInsertAction(actionName, target) : true;
+
+				// clear any inline display left over from a previous search, then
+				// apply the per-target validity filter (cta-hidden wins via !important)
+				$tool.css('display', '').toggleClass('cta-hidden', !ok);
+			});
+
+			$tools.find('.category').each(function() {
+				var $cat = $(this);
+				$cat.toggleClass('cta-hidden', $cat.find('.tool:not(.cta-hidden)').length === 0);
+			});
+
+			// expand the first available category, collapse the rest
+			$tools.find('.category:not(.cta-hidden)').each(function(idx) {
+				var $cat = $(this),
+					$content = $cat.find('.content'),
+					$icon = $cat.find('.open i'),
+					open = idx === 0;
+
+				$cat.toggleClass('active', open).toggleClass('inactive', !open);
+				$content.toggle(open);
+				$icon
+					.toggleClass('fa-chevron-up', open)
+					.toggleClass('fa-chevron-down', !open);
+			});
+		},
+
+		// open the "Add an action" side panel for the node the user clicked "+" on
+		openActionPanel: function(nodeId) {
+			var self = this,
+				target = self.flow.nodes[nodeId];
+
+			if (!target) {
+				return;
+			}
+
+			self.pendingInsertTarget = nodeId;
+			self.filterPanelActions(target);
+
+			$('.node').removeClass('cta-target');
+			$('.node[id="' + nodeId + '"]').addClass('cta-target');
+
+			$('#ws_callflow .tools').addClass('panel-open');
+		},
+
+		// close the "Add an action" side panel.
+		closeActionPanel: function() {
+			var self = this;
+
+			self.pendingInsertTarget = null;
+			$('#ws_callflow .tools').removeClass('panel-open');
+			$('.node').removeClass('cta-target');
 		},
 
 		renderBranch: function(branch) {
@@ -3961,7 +4080,9 @@ define(function(require) {
 			});
 
 			tools = $(self.getTemplate({
-				name: 'tools',
+				// dedicated modern markup for the click-to-add flyout; the legacy
+				// toolbox is left untouched when the flag is off
+				name: self.useClickToAdd() ? 'toolsModern' : 'tools',
 				data: {
 					...dataTemplate,
 					miscSettings: miscSettings
@@ -4016,14 +4137,39 @@ define(function(require) {
 			// check for <br> tags in .tool_name and add class if present
 			$allActions.find('.tool_name').each(function() {
 				if ($(this).html().includes('<br>')) {
-					$(this).addClass('br');
+					if (self.useClickToAdd()) {
+						// the modern toolbox rows are full-width, so the <br> (added to
+						// fit the narrow legacy tiles) is unwanted - flatten to one line
+						// and keep the plain 'tool_name' class.
+						$(this).html($(this).html().replace(/<br\s*\/?>/gi, ' '));
+					} else {
+						$(this).addClass('br');
+					}
 				}
-			});	
+			});
+
+			// in click-to-add mode the toolbox becomes an "Add an action" flyout
+			if (self.useClickToAdd()) {
+				tools.find('.title').text(self.i18n.active().oldCallflows.addAnAction || 'Add an action');
+			}
 
 			// create sticky header and scrollable body
 			const $header = $('<div class="toolbox-header"></div>')
 				.append(tools.find('.title'))
 				.append(tools.find('.search-bar'));
+
+			// close control for the click-to-add flyout
+			if (self.useClickToAdd()) {
+				var closeIcon = miscSettings.enableGoogleIcons
+					? '<span class="material-symbols-medium">close</span>'
+					: '<i class="fa fa-times"></i>';
+
+				$('<div class="cta-panel-close" title="' + (self.i18n.active().oldCallflows.close || 'Close') + '">' + closeIcon + '</div>')
+					.on('click', function() {
+						self.closeActionPanel();
+					})
+					.prependTo($header);
+			}
 
 			const $body = $('<div class="toolbox-body"></div>')
 				.append(tools.find('.category'))
@@ -4140,13 +4286,40 @@ define(function(require) {
 			}
 		
 			$('.action', tools).each(function() {
-				action($(this));
+				if (self.useClickToAdd()) {
+					// click-to-add: selecting an action inserts it below the node whose
+					// "+" opened the panel (no dragging)
+					$(this).on('click', function() {
+						var target = self.pendingInsertTarget != null
+							? self.flow.nodes[self.pendingInsertTarget]
+							: null;
+
+						if (!target) {
+							return;
+						}
+
+						var actionName = $(this).attr('name');
+
+						$('#action_tooltip').hide();
+						self.closeActionPanel();
+						self.insertActionIntoFlow(target, actionName);
+					});
+				} else {
+					action($(this));
+				}
 			});
 
 			target = $('#ws_cf_tools').empty();
 			target.append(tools);
 
 			$('#ws_cf_tools', '#callflow-view').disableSelection();
+
+			// flag the editor so CSS can switch the toolbox into the click-to-add
+			// flyout layout (hidden by default, slides in on "+").
+			$('#ws_callflow').toggleClass('cta-enabled', self.useClickToAdd());
+			if (self.useClickToAdd()) {
+				self.closeActionPanel();
+			}
 		},
 
 		enableDestinations: function(el) {
