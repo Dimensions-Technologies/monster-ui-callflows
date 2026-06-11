@@ -336,20 +336,39 @@ define(function(require) {
 					}
 				}
 			}, function(err, results) {
+				var render_data = defaults;
 
 				miscSettings.readOnlyConference = false;
+				render_data.field_data.userDeleted = false;
 				
 				if (results.get_conference.hasOwnProperty('owner_id') && results.get_conference.owner_id != null) {
 					if (miscSettings.conferencePreventDeletingUserAssociated) {
 						miscSettings.readOnlyConference = true;
 					}
+
+					console.log('results', results);
+
+					var ownerId = results.get_conference.owner_id,
+						ownerExists = Array.isArray(results.user_list.data) &&
+						results.user_list.data.some(function(user) {
+							return user.id === ownerId;
+						});
+
+					// allow faxbox to be deleted if it has an owner id but the owner id is not found 
+					if (!ownerExists) {
+						miscSettings.readOnlyConference = false;
+						render_data.field_data.userDeleted = true;
+					}
+
 				}
 
 				if (miscSettings.callflowButtonsWithinHeader && !miscSettings.popupEdit) {
 					self.conferenceSubmoduleButtons(data);
 				};
 
-				var render_data = defaults;
+				//var render_data = defaults;
+
+				console.log('renderData', render_data);
 
 				if (typeof data === 'object' && data.id) {
 					render_data = $.extend(true, defaults, { data: results.get_conference });

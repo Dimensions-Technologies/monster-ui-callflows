@@ -211,4 +211,9 @@
 			{{/if}}
 		</div>
 	</div>
+	{{#if field_data.userDeleted}}
+		<div class="associated-user-deleted">
+			{{ i18n.callflows.conference.user_deleted }}
+		</div>
+	{{/if}}
 </div>
