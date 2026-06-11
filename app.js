@@ -5189,10 +5189,24 @@ define(function(require) {
 					return;
 				}
 
-				$saved.append(opts.getItemHtml(value));
+				$saved.append(buildItem(value));
 				$input.val('');
 				clearError();
 				emitChange();
+			}
+
+			function buildItem(value) {
+				var $item = $(opts.getItemHtml(value));
+
+				// for phone numbers, display a formatted version while keeping the raw value in data-value
+				if (valueType === 'phoneNumber') {
+					$item.contents().filter(function() {
+						return this.nodeType === 3;
+					}).remove();
+					$item.prepend(monster.ui.getTemplatePhoneNumber(value.toString()));
+				}
+
+				return $item;
 			}
 
 			$placeholder.off('click.listEditor').on('click.listEditor', function() {

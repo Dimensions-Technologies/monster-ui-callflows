@@ -8,7 +8,7 @@
                 <button type="button" class="monster-button monster-button-danger unassign-phone-number">{{ @root.i18n.unassign }}</button>
                 
                 <span class="number">
-                    <label class="phone-number-label">{{ formatPhoneNumber this }}</label>
+                    <label class="phone-number-label">{{#monsterNumberWrapper this}}{{/monsterNumberWrapper}}</label>
                     <input id="phone_numbers" name="phone_numbers[]" type="hidden" value="{{ this }}" />
                 </span>
                                 
