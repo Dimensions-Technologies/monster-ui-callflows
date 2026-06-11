@@ -26,6 +26,8 @@ define(function(require) {
 		deviceBillingCodeRequired = {},
 		anankeCallbacks = {};
 
+	require('file-saver');
+
 	var strategySubmodules = [
 		'strategy',
 		'strategyHolidays',
@@ -2410,6 +2412,7 @@ define(function(require) {
 				if (miscSettings.callflowButtonsWithinHeader) {
 					$('.delete', '.entity-header').addClass('disabled');
 					$('.duplicate', '.entity-header').addClass('disabled');
+					$('.download', '.entity-header').addClass('disabled');
 				} else {
 					$('.delete', '#ws_callflow').addClass('disabled');
 					$('.duplicate', '#ws_callflow').addClass('disabled');
@@ -2439,7 +2442,9 @@ define(function(require) {
 				}
 			});
 
-			$('.delete', buttons).click(function() {
+			$('.delete', buttons).click(function(e) {
+
+				e && e.preventDefault();
 
 				if (self.flow.id) {
 					monster.ui.confirm(self.i18n.active().oldCallflows.are_you_sure, function() {
@@ -2469,7 +2474,9 @@ define(function(require) {
 			});
 
 			// copy callflow
-			$('.duplicate', buttons).click(function() {
+			$('.duplicate', buttons).click(function(e) {
+
+				e && e.preventDefault();
 
 				$('.list-element').removeClass('selected-element');
 
@@ -2492,6 +2499,7 @@ define(function(require) {
 				if (miscSettings.callflowButtonsWithinHeader) {
 					$('.delete', '.entity-header').addClass('disabled');
 					$('.duplicate', '.entity-header').addClass('disabled');
+					$('.download', '.entity-header').addClass('disabled');
 					if (!miscSettings.disableButtonAnimation) {
 						$('.save', '.entity-header').addClass('pulse-box');
 					}
@@ -2502,11 +2510,162 @@ define(function(require) {
 						$('.save', '#ws_callflow').addClass('pulse-box');
 					}
 				}
-                
+
             });
+
+			// download callflow as a .json file (saved callflows only)
+			$('.download', buttons).click(function(e) {
+				e && e.preventDefault();
+
+				if (!self.flow.id) {
+					return;
+				}
+
+				self.callApi({
+					resource: 'callflow.get',
+					data: {
+						accountId: self.accountId,
+						callflowId: self.flow.id
+					},
+					success: function(callflow) {
+						// only retain these keys from the callflow document
+						var data = _.pick(callflow.data, ['ui_is_main_number_cf', 'flow', 'contact_list', 'dimension', 'metadata', 'name']),
+							// drop spaces that follow an unsafe character, then spaces to
+							// underscores, then drop any remaining unsafe characters (e.g. *)
+							safeName = (callflow.data.name || 'callflow')
+								.replace(/([^A-Za-z0-9_\s-])\s+/g, '$1')
+								.replace(/\s+/g, '_')
+								.replace(/[^A-Za-z0-9_-]/g, ''),
+							fileName = (safeName || 'callflow') + '.json',
+							content = JSON.stringify({ data: data }, null, 4),
+							blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+
+						saveAs(blob, fileName);
+					}
+				});
+			});
+
+			// import (upload) a callflow template from a .json file
+			$('.import', buttons).click(function(e) {
+				e && e.preventDefault();
+
+				var $fileInput = $('<input type="file" accept=".json,application/json" style="display:none;">');
+
+				$fileInput.on('change', function() {
+					var file = this.files && this.files[0];
+
+					if (!file) {
+						return;
+					}
+
+					var reader = new FileReader();
+
+					reader.onload = function(event) {
+						var parsed;
+
+						try {
+							parsed = JSON.parse(event.target.result);
+						} catch (err) {
+							monster.ui.alert('warning', self.i18n.active().oldCallflows.import_callflow_invalid_file);
+							return;
+						}
+
+						// support both the exported { data: {...} } envelope and a bare callflow object
+						var data = _.isPlainObject(parsed) && _.isPlainObject(parsed.data) ? parsed.data : parsed;
+
+						if (!self.isValidCallflowImport(data)) {
+							monster.ui.alert('warning', self.i18n.active().oldCallflows.import_callflow_invalid_structure);
+							return;
+						}
+
+						self.importCallflow(data);
+					};
+
+					reader.readAsText(file);
+				});
+
+				$fileInput.trigger('click');
+			});
 
 			$('.buttons').append(buttons);
 		},	
+
+		// validate an imported callflow template: it may only contain the
+		// allowed keys and must include a flow object
+		isValidCallflowImport: function(data) {
+			var allowedKeys = ['ui_is_main_number_cf', 'flow', 'contact_list', 'dimension', 'metadata', 'name'];
+
+			if (!_.isPlainObject(data)) {
+				return false;
+			}
+
+			// flow is mandatory
+			if (!_.isPlainObject(data.flow)) {
+				return false;
+			}
+
+			// no keys other than the allowed ones are permitted
+			if (_.difference(_.keys(data), allowedKeys).length > 0) {
+				return false;
+			}
+
+			return true;
+		},
+
+		// load an imported callflow template into the editor, replacing the
+		// current flow. Does NOT save - the Save button persists the changes.
+		importCallflow: function(data) {
+			var self = this,
+				dataCallflowKeys = ['dimension', 'ui_is_main_number_cf'];
+
+			// rebuild the flow tree from the uploaded flow, replacing the current one
+			self.flow.root = self.branch('root');
+			self.flow.root.key = 'flow';
+
+			// metadata drives the node captions (.details); apply it before building
+			// the flow so buildFlow can resolve captions from it
+			if (_.has(data, 'metadata')) {
+				self.flow.caption_map = data.metadata;
+			}
+
+			if (data.flow.module !== undefined) {
+				self.flow.root = self.buildFlow(data.flow, self.flow.root, 0, '_');
+			}
+
+			// replace the name if provided
+			if (_.has(data, 'name')) {
+				self.flow.name = data.name;
+				self.dataCallflow.name = data.name;
+			}
+
+			// keep the contact_list UI flag in sync if provided
+			if (_.has(data, 'contact_list')) {
+				self.flow.contact_list = { exclude: _.get(data, 'contact_list.exclude', false) };
+			}
+
+			// carry over the remaining properties present in the file so they are
+			// persisted when the callflow is saved (save derives the flow from the tree)
+			_.each(dataCallflowKeys, function(key) {
+				if (_.has(data, key)) {
+					self.dataCallflow[key] = data[key];
+				}
+			});
+
+			self.repaintFlow();
+
+			/*
+			monster.ui.toast({
+				type: 'success',
+				message: self.i18n.active().oldCallflows.import_callflow_success,
+				options: {
+					positionClass: 'toast-bottom-right',
+					timeOut: 3000,
+					extendedTimeOut: 1000,
+				}
+			});
+			*/
+
+		},
 
 		buildFlow: function(json, parent, id, key) {
 			var self = this,

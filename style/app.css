@@ -2355,6 +2355,50 @@
 	margin-right: 10px;
 }
 
+#callflow_container .entity-header .wrapper_callflow_buttons .delete {
+	margin-right: 10px;
+}
+
+/* Actions dropdown within the callflow header */
+#callflow_container .entity-header .wrapper_callflow_buttons .callflow-actions-menu {
+	display: inline-block;
+	position: relative;
+	vertical-align: top;
+}
+
+#callflow_container .entity-header .wrapper_callflow_buttons .callflow-actions-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 38px;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+
+#callflow_container .entity-header .wrapper_callflow_buttons .callflow-actions-toggle .fa-caret-down,
+#callflow_container .entity-header .wrapper_callflow_buttons .callflow-actions-toggle .material-symbols-medium {
+	margin-left: 6px;
+}
+
+#callflow_container .entity-header .wrapper_callflow_buttons .callflow-actions-menu .dropdown-menu {
+	right: 10px;
+	left: auto;
+	min-width: 180px;
+	text-align: left;
+	z-index: 1050;
+}
+
+#callflow_container .entity-header .wrapper_callflow_buttons .callflow-actions-menu .dropdown-menu .callflow-action {
+	display: block;
+	padding: 6px 15px;
+	white-space: nowrap;
+}
+
+#callflow_container .entity-header .wrapper_callflow_buttons .callflow-actions-menu .dropdown-menu .callflow-action.disabled {
+	pointer-events: none;
+	opacity: 0.5;
+}
+
 /* formatting of callflow actions with a single dropdown */
 .dialog_popup.callflows-port.callflow-action,
 .dialog_popup.callflows-port.media-edit-callflow-popup {
