@@ -3389,3 +3389,10 @@
 #ws_cf_tools .modern-toolbox .tool_name.br {
 	margin: 0;
 }
+
+/* user deleted warning message */
+.associated-user-deleted {
+	color: red;
+	font-size: 14px;
+	font-weight: 400;
+}

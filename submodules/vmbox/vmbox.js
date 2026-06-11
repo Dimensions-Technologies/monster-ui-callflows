@@ -143,10 +143,23 @@ define(function(require) {
 				var render_data = defaults;
 
 				miscSettings.readOnlyMailbox = false;
+				render_data.field_data.userDeleted = false;
 
 				if (results.get_vmbox.hasOwnProperty('owner_id') && results.get_vmbox.owner_id != null) {
 					if (miscSettings.vmboxPreventDeletingUserAssociated) {
 						miscSettings.readOnlyMailbox = true;
+					}
+
+					var ownerId = results.get_vmbox.owner_id,
+						ownerExists = Array.isArray(results.user_list) &&
+						results.user_list.some(function(user) {
+							return user.id === ownerId;
+						});
+
+					// allow mailbox to be deleted if it has an owner id but the owner id is not found 
+					if (!ownerExists) {
+						miscSettings.readOnlyMailbox = false;
+						render_data.field_data.userDeleted = true;
 					}
 				}
 

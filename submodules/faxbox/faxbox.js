@@ -334,10 +334,23 @@ define(function(require) {
 			}, function(err, results) {
 
 				miscSettings.readOnlyFaxbox = false;
+				results.userDeleted = false;
 
 				if (results.faxbox.hasOwnProperty('owner_id') && results.faxbox.owner_id != null) {
 					if (miscSettings.faxboxPreventDeletingUserAssociated) {
 						miscSettings.readOnlyFaxbox = true;
+					}
+
+					var ownerId = results.faxbox.owner_id,
+						ownerExists = Array.isArray(results.user_list) &&
+						results.user_list.some(function(user) {
+							return user.id === ownerId;
+						});
+
+					// allow faxbox to be deleted if it has an owner id but the owner id is not found 
+					if (!ownerExists) {
+						miscSettings.readOnlyFaxbox = false;
+						results.userDeleted = true;
 					}
 				}
 
@@ -409,7 +422,8 @@ define(function(require) {
 						phone_numbers: data.phone_numbers,
 						spare_phone_numbers: data.spare_phone_numbers,
 						faxbox_callflow_number: selectedFaxboxNumber,
-						inbound_email_notification: null
+						inbound_email_notification: null,
+						userDeleted: data.userDeleted
 					},
 					submodule: 'faxbox'
 				}));

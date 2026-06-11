@@ -127,7 +127,8 @@
 			"play_entry_tone_help": "Will play a tone whenever a caller joins the conference if checked",
 			"play_exit_tone": "Play Exit Tone",
 			"play_exit_tone_help": "Will play a tone whenever a caller exits the conference if checked",
-			"enableVideoConferencing": "Enable Video Conferencing"
+			"enableVideoConferencing": "Enable Video Conferencing",
+			"user_deleted": "This conference was previously associated with a user who no longer exists."
 		},
 		"device": {
 			"device": "Device",
@@ -478,10 +479,10 @@
 			"members": "Directory Members"
 		},
 		"faxbox": {
-			"faxboxes_label": "Fax Boxes",
-			"add_faxbox_label": "Add Fax Box",
-			"create_faxbox": "Create Fax Box",
-			"edit_faxbox": "Edit Fax Box",
+			"faxboxes_label": "Faxboxes",
+			"add_faxbox_label": "Add Faxbox",
+			"create_faxbox": "Create Faxbox",
+			"edit_faxbox": "Edit Faxbox",
 			"basic": "Basic",
 			"advanced": "Advanced",
 			"smtp": "SMTP",
@@ -550,7 +551,8 @@
 			"add_email_or_domain": "Add Email Address or Domain",
 			"invalid_email": "The value entered is not a valid email address.",
 			"invalid_email_or_domain_1": "The value entered is not a valid email address or domain.",
-			"invalid_email_or_domain_2": "When adding a domain it should be prefixed with @"
+			"invalid_email_or_domain_2": "When adding a domain it should be prefixed with @",
+			"user_deleted": "This faxbox was previously associated with a user who no longer exists."
 		},
 		"groups": {
 			"title": "Groups",
@@ -1230,7 +1232,8 @@
 				"add_email": "Add Email Address",
 				"invalid_email": "The value entered is not a valid email address.",
 				"no_override_recipients": "Unable to save settings. <br> Alternative email recipient(s) is set, but no email addresses are configured."
-			}
+			},
+			"user_deleted": "This voicemail was previously associated with a user who no longer exists."
 		},
 		"__comment": "UI-1493: Adding accountSettings to advanced callflows app",
 		"__version": "3.22",
