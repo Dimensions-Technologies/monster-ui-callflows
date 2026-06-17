@@ -3390,6 +3390,7 @@
 
 /* action rows: icon on the left, label to the right */
 #ws_cf_tools .modern-toolbox .tool {
+	position: relative;
 	display: block;
 	float: none;
 	width: 100%;
@@ -3452,6 +3453,55 @@
 
 #ws_cf_tools .modern-toolbox .tool_name.br {
 	margin: 0;
+}
+
+/* favourites: star toggle revealed on the right edge of each action row */
+#ws_cf_tools .modern-toolbox .favourite-toggle {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 100%;
+	width: 42px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	color: #b0b3b8;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.12s, color 0.12s;
+}
+
+#ws_cf_tools .modern-toolbox .tool:hover .favourite-toggle {
+	opacity: 1;
+}
+
+#ws_cf_tools .modern-toolbox .tool.favourited .favourite-toggle {
+	opacity: 1;
+	color: #f5b400;
+}
+
+#ws_cf_tools .modern-toolbox .favourite-toggle:hover {
+	color: #f5b400;
+}
+
+#ws_cf_tools .modern-toolbox .favourite-toggle .fa,
+#ws_cf_tools .modern-toolbox .favourite-toggle .material-symbols-medium {
+	font-size: 18px;
+	line-height: 1;
+}
+
+/* filled star for the google material icon when starred */
+#ws_cf_tools .modern-toolbox .tool.favourited .favourite-toggle .material-symbols-medium {
+	font-variation-settings: 'FILL' 1;
+}
+
+/* favourites: empty-state hint shown when nothing is starred yet */
+#ws_cf_tools .modern-toolbox .favourites-empty {
+	padding: 10px 16px;
+	font-size: 12px;
+	font-style: italic;
+	color: #80868b;
 }
 
 /* user deleted warning message */
