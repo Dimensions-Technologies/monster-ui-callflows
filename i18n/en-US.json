@@ -2515,6 +2515,7 @@
 		"callflowsTitle": "Callflows",
 		"backButton_1": "Return to Callflows Home",
 		"backButton_2": "Back",
+		"noRecordsAvailable": "No records available.",
 		"accountTitle": "Account Settings",
 		"featureCodeTitle": "Feature Codes",
 		"changesSaved": "Changes Saved",

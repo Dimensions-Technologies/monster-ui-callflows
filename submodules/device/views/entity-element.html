@@ -5,14 +5,17 @@
 	<div class="device-text">
 		<div class="title">{{name}}</div>
 		<div class="description">
-			{{formattedType}}
+			{{formattedType}} {{enhancedDeviceData.presenceId}}
+			<br>
 			{{#if isSipDevice}}
 				{{enhancedDeviceData.formattedMac}}
 			{{/if}}
-			{{#if call_forward}} 
+			{{#if call_forward}}
 				{{enhancedDeviceData.forwardingNumber}}
 			{{/if}}
-			{{enhancedDeviceData.presenceId}}
+			{{#if enhancedDeviceData.mobileType}}
+				{{enhancedDeviceData.mobileType}}
+			{{/if}}
 		</div>
 	</div>
 </div>
