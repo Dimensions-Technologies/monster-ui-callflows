@@ -2428,12 +2428,12 @@ define(function(require) {
 								enhancedDeviceData = {};
 
 							if (type == 'sip_device' && device.mac_address) {
-								enhancedDeviceData.formattedMac = ' (' + monster.util.formatMacAddress(device.mac_address) + ')';
+								enhancedDeviceData.formattedMac = monster.util.formatMacAddress(device.mac_address);
 								isSipDevice = true;
 							}
 
 							if (device.call_forward && device.call_forward.number) {
-								enhancedDeviceData.forwardingNumber = ' (' + device.call_forward?.number + ')';
+								enhancedDeviceData.forwardingNumber = device.call_forward?.number;
 							}
 							
 							/*
@@ -2463,7 +2463,12 @@ define(function(require) {
 										formattedType = 'WebRTC Client'
 									}
 									if (device.dimension.model == 'UCM') {
-										formattedType = 'Mobile Client'	
+										formattedType = 'Mobile Client'
+										if (device.mobile_type) {
+											enhancedDeviceData.mobileType = 'Device Type: ' + device.mobile_type.charAt(0).toUpperCase() + device.mobile_type.slice(1);
+										} else {
+											enhancedDeviceData.mobileType = 'Device Type: Not Configured';
+										}
 									}
 									if (device.dimension.model == 'UCD') {
 										formattedType = 'Desktop Client'	
@@ -2601,7 +2606,7 @@ define(function(require) {
 												accountId: self.accountId,
 												filters: {
 													paginate: false,
-													fields: ["id", "dimension", "presence_id"],
+													fields: ["id", "dimension", "presence_id", "push"],
 													has_key: 'dimension'
 												}
 											},
@@ -2611,7 +2616,8 @@ define(function(require) {
 													if (item.id) {
 														dimensionMap[item.id] = {
 															dimension: item.dimension || {},
-															presence_id: item.hasOwnProperty('presence_id') ? item.presence_id : null
+															presence_id: item.hasOwnProperty('presence_id') ? item.presence_id : null,
+															mobile_type: item.hasOwnProperty('push') ? item.push : null,
 														};
 													}
 												});
@@ -2636,10 +2642,15 @@ define(function(require) {
 											if (dimensionMap[id].presence_id !== null && dimensionMap[id].presence_id !== undefined) {
 												device.presence_id = dimensionMap[id].presence_id;
 											}
+											if (dimensionMap[id].mobile_type && dimensionMap[id].mobile_type['Token-Type']) {
+												device.mobile_type = dimensionMap[id].mobile_type['Token-Type'];
+											}
 										}
 
 										return device;
 									});
+
+									console.log('enhancedDevices', enhancedDevices);
 
 									callback(null, enhancedDevices);
 								});

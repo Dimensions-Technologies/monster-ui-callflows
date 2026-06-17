@@ -889,6 +889,8 @@ define(function(require) {
 					name: 'callflowList-searchLink'
 				}));
 
+			self.initScrollIndicator(callflowList);
+
 			template.find('.superadmin-mode #switch_role').on('change', function(e) {
 				self.appFlags.showAllCallflows = $(this).is(':checked');
 
@@ -968,7 +970,7 @@ define(function(require) {
 				var search = $(this).val();
 				searchLink.find('.search-value').text(search);
 				if (search) {
-					$.each(template.find('.list-element'), function() {
+					$.each(template.find('.list-element').not('.no-records-element'), function() {
 						var $elem = $(this);
 						if ($elem.data('search').toLowerCase().indexOf(search.toLowerCase()) >= 0) {
 							$elem.show();
@@ -980,12 +982,13 @@ define(function(require) {
 						callflowList.prepend(searchLink);
 					}
 				} else {
-					template.find('.list-element').show();
+					template.find('.list-element').not('.no-records-element').show();
 					if (miscSettings.paginateListCallflows) {
 						searchLink.remove();
 					}
 				}
-				
+
+				self.toggleNoRecordsElement(callflowList);
 			});
 
 			callflowList.on('click', '.search-link', function() {
@@ -1140,60 +1143,35 @@ define(function(require) {
 					var entityType = $this.data('type');
 						
 					if (hideAdd.hasOwnProperty(entityType) && hideAdd[entityType] === true) {	
-
 						template.find('.list-add').hide();
-						
-						if (miscSettings.embeddedListView) {
-							
-							var entityName = actions[entityType].name;
-							function removePluralSuffix(name) {
-								// Check if name ends with 's' or 'es' and remove them
-								return name.replace(/(s|es)$/i, '');
-							}
-							entityName = removePluralSuffix(entityName);
-							//$('.monster-button.list-add .entity-name-placeholder').text(entityName);
-							$('.entity-name-placeholder').text(entityName);
-
-						} else {
-							template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						var entityName = actions[entityType].name;
+						function removePluralSuffix(name) {
+							// Check if name ends with 's' or 'es' and remove them
+							return name.replace(/(s|es)$/i, '');
 						}
-
+						entityName = removePluralSuffix(entityName);
+						$('.entity-name-placeholder').text(entityName);
 						self.refreshEntityList({
 							template: template,
 							actions: actions,
 							entityType: entityType
 						});
-
 					}
-
 					else {
-
 						template.find('.list-add').show();
-						
-						if (miscSettings.embeddedListView) {
-							
-							var entityName = actions[entityType].name;
-							function removePluralSuffix(name) {
-								// Check if name ends with 's' or 'es' and remove them
-								return name.replace(/(s|es)$/i, '');
-							}
-							entityName = removePluralSuffix(entityName);
-							//$('.monster-button.list-add .entity-name-placeholder').text(entityName);
-							$('.entity-name-placeholder').text(entityName);
-							
-
-						} else {
-							template.find('.entity-edition .entity-header .entity-title').text(actions[entityType].name);
+						var entityName = actions[entityType].name;
+						function removePluralSuffix(name) {
+							// Check if name ends with 's' or 'es' and remove them
+							return name.replace(/(s|es)$/i, '');
 						}
-
+						entityName = removePluralSuffix(entityName);
+						$('.entity-name-placeholder').text(entityName);
 						self.refreshEntityList({
 							template: template,
 							actions: actions,
 							entityType: entityType
 						});
-
 					}
-					
 				}
 			});
 
@@ -1238,7 +1216,7 @@ define(function(require) {
 			template.find('.entity-edition .search-query').on('keyup', function() {
 				var search = $(this).val();
 				if (search) {
-					$.each(template.find('.entity-edition .list-element'), function() {
+					$.each(template.find('.entity-edition .list-element').not('.no-records-element'), function() {
 						var $elem = $(this);
 						if ($elem.data('search').toLowerCase().indexOf(search.toLowerCase()) >= 0) {
 							$elem.show();
@@ -1247,9 +1225,65 @@ define(function(require) {
 						}
 					});
 				} else {
-					template.find('.entity-edition .list-element').show();
+					template.find('.entity-edition .list-element').not('.no-records-element').show();
 				}
+
+				self.toggleNoRecordsElement(template.find('.entity-edition .list-container .list'));
 			});
+
+			self.initScrollIndicator(template.find('.entity-edition .list-container .list'));
+		},
+
+		// shows a non-clickable "No records available." placeholder when every real list item in the given list is hidden, otherwise removes it
+		toggleNoRecordsElement: function($list) {
+			var self = this,
+				hasVisibleRecords = $list.find('.list-element').not('.no-records-element').filter(':visible').length > 0;
+
+			$list.find('.no-records-element').remove();
+
+			if (!hasVisibleRecords) {
+				$list.append(
+					$('<li class="list-element no-records-element"><div>'
+						+ self.i18n.active().entityManager.noRecordsAvailable
+						+ '</div></li>')
+				);
+			}
+		},
+
+		// toggles a "scroll for more" hint on the list container whenever the list overflows and isn't scrolled to the bottom
+		initScrollIndicator: function($list) {
+			if (!$list.length) {
+				return;
+			}
+
+			var listEl = $list.get(0),
+				$container = $list.closest('.list-container'),
+				update = function() {
+					// 1px tolerance for sub-pixel rounding
+					var canScrollDown = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight > 1;
+					$container.toggleClass('can-scroll-down', canScrollDown);
+				};
+
+			$list
+				.off('scroll.scrollIndicator')
+				.on('scroll.scrollIndicator', update);
+
+			// recompute when the list's own size changes (e.g. the window is resized)
+			if (window.ResizeObserver) {
+				new ResizeObserver(update).observe(listEl);
+			}
+
+			// recompute when items are added/removed or shown/hidden by search
+			if (window.MutationObserver) {
+				new MutationObserver(update).observe(listEl, {
+					childList: true,
+					subtree: true,
+					attributes: true,
+					attributeFilter: ['style']
+				});
+			}
+
+			update();
 		},
 
 		// submodule list rendering
