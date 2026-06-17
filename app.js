@@ -24,7 +24,8 @@ define(function(require) {
 		hideFeatureCode = {},
 		pusherApps = {},
 		deviceBillingCodeRequired = {},
-		anankeCallbacks = {};
+		anankeCallbacks = {},
+		userFavourites = [];
 
 	require('file-saver');
 
@@ -177,6 +178,9 @@ define(function(require) {
 					if (monster.util.isReseller()) {
 						isReseller = true
 					}
+
+					// load the logged-in user's saved favourites
+					self.loadFavourites();
 
 					// check whitelable doc for dimension configuration for app
 					if (monster.config.whitelabel.hasOwnProperty('dimension')) {
@@ -3876,9 +3880,9 @@ define(function(require) {
 			}
 		},
 
-		// true when the modern click-to-add UX is active. requires the dynamic SVG connectors, which the "+" buttons are anchored to
+		// true when the modern click-to-add UX is active. requires the Google icons and dynamic SVG connectors, which the "+" buttons are anchored to
 		useClickToAdd: function() {
-			return !!(miscSettings.enableClickToAddActions && miscSettings.enableDynamicConnectors);
+			return !!(miscSettings.enableClickToAddActions &&  miscSettings.enableGoogleIcons && miscSettings.enableDynamicConnectors);
 		},
 
 		// markup for the "+" insertion control rendered under each node
@@ -3958,21 +3962,37 @@ define(function(require) {
 
 			$tools.find('.category').each(function() {
 				var $cat = $(this);
+
+				// Favourites always stays available so users can reach (and add to)
+				// it regardless of how many actions are valid for this target
+				if ($cat.hasClass('favourites')) {
+					$cat.removeClass('cta-hidden');
+					return;
+				}
+
 				$cat.toggleClass('cta-hidden', $cat.find('.tool:not(.cta-hidden)').length === 0);
 			});
 
-			// expand the first available category, collapse the rest
-			$tools.find('.category:not(.cta-hidden)').each(function(idx) {
-				var $cat = $(this),
-					$content = $cat.find('.content'),
-					$icon = $cat.find('.open i'),
-					open = idx === 0;
+			// default-open section: Favourites if it has any valid items for this
+			// target, otherwise the first available real category. everything else
+			// is collapsed.
+			var $favCat = $tools.find('.category.favourites'),
+				hasVisibleFavourites = $favCat.find('.tool:not(.cta-hidden)').length > 0;
 
+			function setCategoryOpen($cat, open) {
 				$cat.toggleClass('active', open).toggleClass('inactive', !open);
-				$content.toggle(open);
-				$icon
+				$cat.find('.content').toggle(open);
+				$cat.find('.open i')
 					.toggleClass('fa-chevron-up', open)
 					.toggleClass('fa-chevron-down', !open);
+			}
+
+			$tools.find('.category:not(.cta-hidden):not(.favourites)').each(function(idx) {
+				setCategoryOpen($(this), !hasVisibleFavourites && idx === 0);
+			});
+
+			$favCat.each(function() {
+				setCategoryOpen($(this), hasVisibleFavourites);
 			});
 		},
 
@@ -4197,6 +4217,45 @@ define(function(require) {
 			return flow;
 		},
 
+		loadFavourites: function() {
+			var favourites = _.get(monster, 'apps.auth.currentUser.dimension.dt_callflows.favourites', []);
+			userFavourites = _.isArray(favourites) ? favourites.slice() : [];
+		},
+
+		getFavourites: function() {
+			return _.isArray(userFavourites) ? userFavourites : [];
+		},
+
+		saveFavourites: function(favourites, callback) {
+			var self = this;
+
+			userFavourites = _.uniq(_.isArray(favourites) ? favourites : []);
+
+			// keep the in-memory user doc in sync with the global var
+			_.set(monster, 'apps.auth.currentUser.dimension.dt_callflows.favourites', userFavourites.slice());
+
+			self.callApi({
+				resource: 'user.patch',
+				data: {
+					accountId: monster.apps.auth.originalAccount.id,
+					userId: monster.apps.auth.currentUser.id,
+					data: {
+						dimension: {
+							dt_callflows: {
+								favourites: userFavourites
+							}
+						}
+					}
+				},
+				success: function(data) {
+					callback && callback(null, data);
+				},
+				error: function(err) {
+					callback && callback(err);
+				}
+			});
+		},
+
 		renderTools: function() {
 			var self = this,
 				advanced_cat = self.i18n.active().oldCallflows.advanced_cat,
@@ -4282,10 +4341,15 @@ define(function(require) {
 				}
 			}));
 
-			// set the basic drawer to open (if it exists), otherwise first category
-			var $basicCategory = $('#Basic', tools);
+			// default-open section: favourites if the user has any, otherwise the
+			// basic drawer, otherwise the first category
+			var $favouritesCategory = $('#Favourites', tools),
+				$basicCategory = $('#Basic', tools);
 
-			if ($basicCategory.length) {
+			if (self.getFavourites().length && $favouritesCategory.length) {
+				$favouritesCategory.removeClass('inactive').addClass('active');
+				$favouritesCategory.find('.content').show();
+			} else if ($basicCategory.length) {
 				$basicCategory.removeClass('inactive').addClass('active');
 				$('#Basic .content', tools).show();
 			} else {
@@ -4430,35 +4494,40 @@ define(function(require) {
 				}, 250)($(this));
 			});
 
-			$('.tool', tools).hover(
-				function () {
-					const $this = $(this);
-					let $tooltip = $('#action_tooltip');
+			// wire the hover help tooltip for a set of .tool rows (reused for the cloned rows that live in the Favourites section)
+			function wireTooltip($toolset) {
+				$toolset.hover(
+					function () {
+						const $this = $(this);
+						let $tooltip = $('#action_tooltip');
 
-					if (!$tooltip.length) {
-						$tooltip = $('<div id="action_tooltip" class="callflow_helpbox_wrapper"></div>').appendTo('body');
+						if (!$tooltip.length) {
+							$tooltip = $('<div id="action_tooltip" class="callflow_helpbox_wrapper"></div>').appendTo('body');
+						}
+
+						if ($this.attr('help')) {
+							const $toolbox = $('#ws_cf_tools');
+							const toolOffset = $this.offset();
+							const toolboxOffset = $toolbox.offset();
+
+							$tooltip
+								.html($this.attr('help'))
+								.css({
+									position: "absolute",
+									top: toolOffset.top + "px",
+									left: (toolboxOffset.left - 185) + "px",
+									display: "block",
+									zIndex: 100
+								});
+						}
+					},
+					function () {
+						$('#action_tooltip').hide();
 					}
+				);
+			}
 
-					if ($this.attr('help')) {
-						const $toolbox = $('#ws_cf_tools');
-						const toolOffset = $this.offset();
-						const toolboxOffset = $toolbox.offset();
-
-						$tooltip
-							.html($this.attr('help'))
-							.css({
-								position: "absolute",
-								top: toolOffset.top + "px",
-								left: (toolboxOffset.left - 185) + "px",
-								display: "block",
-								zIndex: 100
-							});
-					}
-				},
-				function () {
-					$('#action_tooltip').hide();
-				}
-			);
+			wireTooltip($('.tool', tools));
 
 			function action(el) {
 				el.draggable({
@@ -4477,12 +4546,12 @@ define(function(require) {
 					helper: 'clone'
 				});
 			}
-		
-			$('.action', tools).each(function() {
+
+			function wireAction($action) {
 				if (self.useClickToAdd()) {
 					// click-to-add: selecting an action inserts it below the node whose
 					// "+" opened the panel (no dragging)
-					$(this).on('click', function() {
+					$action.on('click', function() {
 						var target = self.pendingInsertTarget != null
 							? self.flow.nodes[self.pendingInsertTarget]
 							: null;
@@ -4498,9 +4567,127 @@ define(function(require) {
 						self.insertActionIntoFlow(target, actionName);
 					});
 				} else {
-					action($(this));
+					action($action);
+				}
+			}
+
+			$('.action', tools).each(function() {
+				wireAction($(this));
+			});
+
+			// favourites accordion 
+			var $favourites = tools.find('#Favourites'),
+				$favList = $favourites.find('.favourites-list'),
+				$favEmpty = $favourites.find('.favourites-empty');
+
+			// the action key uniquely identifies a tool
+			function toolKey($tool) {
+				return $tool.attr('data-key');
+			}
+
+			// find a .tool by its action key within a scope
+			function findTool($scope, key) {
+				return $scope.find('.tool').filter(function() {
+					return $(this).attr('data-key') === key;
+				});
+			}
+
+			function refreshFavouritesEmpty() {
+				$favEmpty.toggle($favList.children('.tool').length === 0);
+			}
+
+			// reflect the starred state on a row: fill the star (CSS handles the
+			// google-icon fill via the .favourited class) and update the tooltip
+			function setFavouriteState($tool, on) {
+				$tool.toggleClass('favourited', on);
+
+				var $faIcon = $tool.find('.favourite-toggle .fa');
+				if ($faIcon.length) {
+					$faIcon.toggleClass('fa-star-o', !on).toggleClass('fa-star', on);
+				}
+
+				$tool.find('.favourite-toggle').attr('title', on
+					? (self.i18n.active().oldCallflows.removeFromFavourites || 'Remove from favourites')
+					: (self.i18n.active().oldCallflows.addToFavourites || 'Add to favourites'));
+			}
+
+			// clone a source row into the favourites list
+			function buildFavouriteRow($source) {
+				// clone without events/data so we can wire fresh handlers (avoids
+				// duplicating the original row's draggable/click bindings)
+				var $clone = $source.clone(false);
+				$clone.addClass('favourite-item');
+				setFavouriteState($clone, true);
+				wireAction($clone.find('.action'));
+				wireTooltip($clone);
+				wireFavouriteToggle($clone);
+				$favList.append($clone);
+
+				setFavouriteState($source, true);
+			}
+
+			function addFavourite($tool) {
+				var key = toolKey($tool);
+
+				if (findTool($favList, key).length) {
+					return;
+				}
+
+				buildFavouriteRow($tool);
+				refreshFavouritesEmpty();
+
+				// reveal the Favourites section so the user sees the row land there
+				$favourites.removeClass('inactive').addClass('active');
+				$favourites.find('.content').stop(true, true).slideDown();
+				$favourites.find('.open i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+
+				// persist: append the key and patch the user doc
+				self.saveFavourites(self.getFavourites().concat([key]));
+			}
+
+			function removeFavourite(key) {
+				// removing the row means its mouseleave never fires, so hide any
+				// lingering hover tooltip explicitly
+				$('#action_tooltip').hide();
+
+				findTool($favList, key).remove();
+				// un-flag the original row in its source category
+				setFavouriteState(findTool(tools.find('.category:not(.favourites)'), key), false);
+				refreshFavouritesEmpty();
+
+				// persist: drop the key and patch the user doc
+				self.saveFavourites(_.without(self.getFavourites(), key));
+			}
+
+			function wireFavouriteToggle($tool) {
+				$tool.find('.favourite-toggle').off('click').on('click', function(e) {
+					e.stopPropagation();
+					e.preventDefault();
+
+					var key = toolKey($tool);
+
+					if ($tool.hasClass('favourited')) {
+						removeFavourite(key);
+					} else {
+						addFavourite($tool);
+					}
+				});
+			}
+
+			tools.find('.category:not(.favourites) .tool').each(function() {
+				setFavouriteState($(this), false);
+				wireFavouriteToggle($(this));
+			});
+
+			// restore the user's saved favourites into the list (in saved order)
+			_.each(self.getFavourites(), function(key) {
+				var $source = findTool(tools.find('.category:not(.favourites)'), key).first();
+				if ($source.length) {
+					buildFavouriteRow($source);
 				}
 			});
+
+			refreshFavouritesEmpty();
 
 			target = $('#ws_cf_tools').empty();
 			target.append(tools);

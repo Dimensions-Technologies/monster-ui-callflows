@@ -10,18 +10,28 @@
 			<input type="text" class="search-query" placeholder="{{ i18n.search }}">
 		</div>
 	</div>
+	<div id="Favourites" name="Favourites" class="category favourites inactive">
+		<div class="open">{{ i18n.oldCallflows.favourites_cat }}</div>
+		<div class="content">
+			<div class="favourites-empty">{{ i18n.oldCallflows.noFavourites }}</div>
+			<div class="favourites-list"></div>
+		</div>
+	</div>
 	{{#if miscSettings.enableGoogleIcons}}
 		{{#each categories}}
 			<div id="{{key}}" name="{{key}}" class="category inactive">
 				<div class="open">{{key}}</div>
 				<div class="content">
 					{{#each actions}}
-						<div class="tool" help="{{tip}}" data-name="{{name}}">
+						<div class="tool" help="{{tip}}" data-name="{{name}}" data-key="{{key}}">
 							<div name="{{key}}" class="action">
 								<div class="action-icon">
 									<span class="material-symbols-medium">{{google_icon}}</span>
 								</div>
 								<div class="tool_name">{{{name}}}</div>
+							</div>
+							<div class="favourite-toggle">
+								<span class="material-symbols-medium">star</span>
 							</div>
 						</div>
 					{{/each}}
@@ -34,12 +44,15 @@
 				<div class="open">{{key}}</div>
 				<div class="content">
 					{{#each actions}}
-						<div class="tool" help="{{tip}}" data-name="{{name}}">
+						<div class="tool" help="{{tip}}" data-name="{{name}}" data-key="{{key}}">
 							<div name="{{key}}" class="action">
 								<div class="action-icon">
 									<span class="icon medium app_sm {{icon}}"></span>
 								</div>
 								<div class="tool_name">{{{name}}}</div>
+							</div>
+							<div class="favourite-toggle">
+								<i class="fa fa-star-o"></i>
 							</div>
 						</div>
 					{{/each}}
