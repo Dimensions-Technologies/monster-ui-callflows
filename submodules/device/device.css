@@ -177,3 +177,18 @@
 	display: flex;
     justify-content: flex-end;
 }
+
+/* vertically centre the multi-line label against its field */
+.callflows-port form .clearfix.emergency-additional-info {
+	display: flex;
+	align-items: center;
+}
+
+.callflows-port form .clearfix.emergency-additional-info > label:not(.monster-invalid) {
+	float: none;
+	padding-top: 0;
+}
+
+.callflows-port form .clearfix.emergency-additional-info > .input {
+	margin-left: 20px;
+}

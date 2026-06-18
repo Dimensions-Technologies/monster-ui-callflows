@@ -781,12 +781,14 @@ define(function(require) {
 					rules: {
 						'caller_id.asserted.name': { regex: /^[0-9A-Za-z ,]{0,30}$/ },
 						'caller_id.asserted.number': { phoneNumber: true },
-						'caller_id.asserted.realm': { realm: true }
+						'caller_id.asserted.realm': { realm: true },
+						'addresses.emergency.additional_information': { regex: /^[0-9A-Za-z ]{0,20}$/ }
 					},
 					messages: {
 						'caller_id.asserted.name': { regex: i18n.callflows.device.validation.caller_id.name },
 						'caller_id.asserted.number': { regex: i18n.callflows.device.validation.caller_id.number },
-						'caller_id.asserted.realm': { regex: i18n.callflows.device.validation.caller_id.realm }
+						'caller_id.asserted.realm': { regex: i18n.callflows.device.validation.caller_id.realm },
+						'addresses.emergency.additional_information': { regex: i18n.callflows.device.validation.emergency_additional_information }
 					}
 				});
 			}
@@ -1910,6 +1912,12 @@ define(function(require) {
 				};
 			}
 
+			if (miscSettings.enable911AdditionalInformation) {
+				if (_.get(form_data, 'addresses.emergency.additional_information') === '') {
+					delete form_data.addresses.emergency;
+				}
+			}
+
 			delete form_data.extra;
 
 			return form_data;
@@ -2643,14 +2651,17 @@ define(function(require) {
 												device.presence_id = dimensionMap[id].presence_id;
 											}
 											if (dimensionMap[id].mobile_type && dimensionMap[id].mobile_type['Token-Type']) {
-												device.mobile_type = dimensionMap[id].mobile_type['Token-Type'];
+												var mobileTokenType = dimensionMap[id].mobile_type['Token-Type'];
+												if (mobileTokenType == 'apple') {
+													device.mobile_type = 'Apple';
+												} else if (mobileTokenType == 'firebase' || mobileTokenType == 'firebase_v1') {
+													device.mobile_type = 'Android';
+												}
 											}
 										}
 
 										return device;
 									});
-
-									console.log('enhancedDevices', enhancedDevices);
 
 									callback(null, enhancedDevices);
 								});

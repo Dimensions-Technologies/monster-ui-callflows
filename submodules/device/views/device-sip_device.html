@@ -367,6 +367,15 @@
 					{{/if}}
 					</div>
 
+					{{#if miscSettings.enable911AdditionalInformation}}
+						<div class="clearfix emergency-additional-info">
+							<label for="addresses_emergency_additional_information">{{ i18n.callflows.device.emergency_additional_information_1 }} <br> {{ i18n.callflows.device.emergency_additional_information_2 }}</label>
+							<div class="input">
+								<input class="span4" id="addresses_emergency_additional_information" name="addresses.emergency.additional_information" type="text" maxlength="20" value="{{ data.addresses.emergency.additional_information }}" rel="popover" data-content="{{ i18n.callflows.device.emergency_additional_information_data_content }}" />
+							</div>
+						</div>
+					{{/if}}
+
 					<hr />
 
 					<!-- p asserted id -->
