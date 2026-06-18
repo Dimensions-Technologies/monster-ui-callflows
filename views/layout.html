@@ -104,6 +104,9 @@
 					</button>
 					<button type="button" class="monster-button monster-button-secondary non-fixed back-button">{{ i18n.entityManager.backButton_2 }}</button>
 				</div>
+				{{#if miscSettings.callflowButtonsWithinHeader}}
+					<div class="entity-header-buttons"></div>
+				{{/if}}
 				
 			</div>
 			<div class="entity-content"></div>

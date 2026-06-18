@@ -233,6 +233,9 @@
 			"emergency": "Emergency",
 			"caller_id_name_data_content3": "Define the Caller ID Name of this Device for Emergency Calls (max. 30 chars).",
 			"caller_id_number_data_content3": "Define the Caller ID Number of this Device for Emergency Calls.",
+			"emergency_additional_information_1": "Unit / Suite / Apt",
+			"emergency_additional_information_2": "(E911 Address Line 2)",
+			"emergency_additional_information_data_content": "Sent to 911 dispatchers along with this device's street address. Examples include STE 1204 or APT 23B",
 			"music_on_hold": "Music on Hold",
 			"music_on_hold_data_content": "Select the media file that you want to be played by default when it's not set on a user or a device.",
 			"secure_rtp": "Secure RTP",
@@ -314,7 +317,8 @@
 					"name": "Please only enter alphanumeric characters, space or comma",
 					"number": "Please enter a valid phone number",
 					"realm": "Please enter a valid realm"
-				}
+				},
+				"emergency_additional_information": "Please only enter up to 20 letters, numbers or spaces"
 			},
 			"phone_numbers": "Phone Numbers",
 			"phone_numbers_options": "Assigned Phone Numbers",
