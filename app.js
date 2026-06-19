@@ -630,6 +630,39 @@ define(function(require) {
 			});
 		},
 
+		fitCallflowPreview: function(previewSection) {
+			var $previewSection = $(previewSection),
+				$preview = $previewSection.children('.callflow-preview-scale');
+
+			if (!$previewSection.length || !$preview.length) {
+				return;
+			}
+
+			$preview.css({
+				top: 0,
+				transform: 'none',
+				width: 'auto'
+			});
+
+			var sectionWidth = $previewSection.innerWidth(),
+				sectionHeight = $previewSection.innerHeight(),
+				previewElement = $preview[0],
+				previewWidth = Math.max(previewElement.scrollWidth, previewElement.offsetWidth),
+				previewHeight = Math.max(previewElement.scrollHeight, previewElement.offsetHeight);
+
+			if (!sectionWidth || !sectionHeight || !previewWidth || !previewHeight) {
+				return;
+			}
+
+			var scale = Math.min(1, sectionWidth / previewWidth, sectionHeight / previewHeight);
+
+			$preview.css({
+				top: 0,
+				transform: 'translateX(-50%) scale(' + scale + ')',
+				width: previewWidth + 'px'
+			});
+		},
+
 		calculateAnchorNodes: function() {
 
 			const flowContainer = document.getElementById("ws_cf_flow");
@@ -639,30 +672,24 @@ define(function(require) {
 			let maxBottom = -Infinity;
 			let minLeft = Infinity;
 			let maxRight = -Infinity;
-		
+
 			let leftmostNode = null;
 			let rightmostNode = null;
 			let lowestNode = null;
-		
+
 			nodes.forEach((node) => {
-				const top = node.offsetTop;
-				const height = node.offsetHeight;
-				const bottom = top + height;
-		
-				const left = node.offsetLeft;
-				const width = node.offsetWidth;
-				const right = left + width;
-		
-				if (bottom > maxBottom) {
-					maxBottom = bottom;
+				const rect = node.getBoundingClientRect();
+
+				if (rect.bottom > maxBottom) {
+					maxBottom = rect.bottom;
 					lowestNode = node;
 				}
-				if (left < minLeft) {
-					minLeft = left;
+				if (rect.left < minLeft) {
+					minLeft = rect.left;
 					leftmostNode = node;
 				}
-				if (right > maxRight) {
-					maxRight = right;
+				if (rect.right > maxRight) {
+					maxRight = rect.right;
 					rightmostNode = node;
 				}
 			});
@@ -708,10 +735,11 @@ define(function(require) {
 			document.addEventListener("mousemove", function (e) {
 				if (!isPanning) return;
 				e.preventDefault();
-			
-				let deltaX = e.clientX - startX;
-				let deltaY = e.clientY - startY;
-			
+
+				const zoom = self.zoomLevel || 1;
+				let deltaX = (e.clientX - startX) / zoom;
+				let deltaY = (e.clientY - startY) / zoom;
+
 				let proposedX = self.startTranslateX + deltaX;
 				let proposedY = self.startTranslateY + deltaY;
 
@@ -743,8 +771,11 @@ define(function(require) {
 		
 			function animateScroll() {
 				if (Math.abs(scrollVelocityY) > 0.1 || Math.abs(scrollVelocityX) > 0.1) {
-					let proposedX = self.translateX - scrollVelocityX;
-					let proposedY = self.translateY - scrollVelocityY;
+
+					// translate units so scroll speed is constant across zoom levels.
+					const zoom = self.zoomLevel || 1;
+					let proposedX = self.translateX - scrollVelocityX / zoom;
+					let proposedY = self.translateY - scrollVelocityY / zoom;
 			
 					// apply clamping
 					const clamped = self.applyClampedPan(proposedX, proposedY);
@@ -3588,7 +3619,24 @@ define(function(require) {
 							}
 						});
 
-						popup.find('.callflow-preview-section.callflow').append(callflowPreview);
+						var resizeNamespace = '.callflowPreview' + _.uniqueId(),
+							$previewSection = popup.find('.callflow-preview-section.callflow'),
+							resizePreview = _.debounce(function() {
+								self.fitCallflowPreview($previewSection);
+							}, 100);
+
+						$previewSection.append(
+							$('<div class="callflow-preview-scale"></div>').append(callflowPreview)
+						);
+
+						requestAnimationFrame(function() {
+							self.fitCallflowPreview($previewSection);
+						});
+
+						$(window).on('resize' + resizeNamespace, resizePreview);
+						popup.on('dialogclose', function() {
+							$(window).off('resize' + resizeNamespace);
+						});
 
 						$('#callflow_jump').click(function() {
 							self.editCallflow({ id: previewCallflowId });
