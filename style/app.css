@@ -444,6 +444,11 @@
 .dialog_popup.callflow-preview {
 	padding-left: 0px;
 	padding-right: 0px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
 }
 
 .callflow-preview .details a {
@@ -1024,6 +1029,21 @@
 	overflow-y: auto;
 }
 
+.callflow-preview-section.callflow {
+	background-color: #fff;
+	box-sizing: border-box;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+	position: relative;
+}
+
+.callflow-preview-section .callflow-preview-scale {
+	left: 50%;
+	position: absolute;
+	transform-origin: top center;
+}
+
 #callflow_container .left-bar-container {
 	float: left;
 	background-color: #F3F3F3;
@@ -1278,6 +1298,7 @@
 }
 
 .callflow-preview #callflow_jump {
+	align-self: center;
 	margin-bottom: 10px;
 }
 
