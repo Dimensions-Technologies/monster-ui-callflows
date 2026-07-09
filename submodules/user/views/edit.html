@@ -104,14 +104,21 @@
 
 				<div class="clearfix">
 					<label for="email">{{ i18n.callflows.user.email }}</label>
-					{{#if miscSettings.userReadOnlyFields}}
+					{{#if maskEmail}}
 						<div class="input">
-							<input disabled class="span4 input-readonly" id="email" name="email" type="text" placeholder="{{ i18n.callflows.user.email_placeholder }}" value="{{data.email}}" />
+							<input disabled class="span4 input-readonly" id="email_display" type="text" value="{{ i18n.callflows.user.email_notifications_no_email }}" />
+							<input id="email" name="email" type="hidden" value="{{data.email}}" />
 						</div>
 					{{else}}
-						<div class="input">
-							<input class="span4" id="email" name="email" type="text" placeholder="{{ i18n.callflows.user.email_placeholder }}" value="{{data.email}}" rel="popover" data-content="{{ i18n.callflows.user.email_data_content }}"/>
-						</div>
+						{{#if miscSettings.userReadOnlyFields}}
+							<div class="input">
+								<input disabled class="span4 input-readonly" id="email" name="email" type="text" placeholder="{{ i18n.callflows.user.email_placeholder }}" value="{{data.email}}" />
+							</div>
+						{{else}}
+							<div class="input">
+								<input class="span4" id="email" name="email" type="text" placeholder="{{ i18n.callflows.user.email_placeholder }}" value="{{data.email}}" rel="popover" data-content="{{ i18n.callflows.user.email_data_content }}"/>
+							</div>
+						{{/if}}
 					{{/if}}
 				</div>
 
@@ -448,10 +455,13 @@
 					<div class="clearfix">
 						<label for="vm_to_email_enabled">{{ i18n.callflows.user.email_notifications }}</label>
 						<div class="input">
-						<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+						<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium{{#if hasNoEmail}} input-readonly{{/if}}" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}"{{#if hasNoEmail}} disabled{{/if}}>
 							<option value="false"{{#compare data.vm_to_email_enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_disabled }}</option>
 							<option value="true"{{#compare data.vm_to_email_enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
 						</select>
+						{{#if hasNoEmail}}
+							<div class="information-text">{{ i18n.callflows.user.email_notifications_no_email_help }}</div>
+						{{/if}}
 						</div>
 					</div>
 
@@ -735,10 +745,13 @@
 						<div class="clearfix">
 							<label for="vm_to_email_enabled">{{ i18n.callflows.user.email_notifications }}</label>
 							<div class="input">
-							<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}">
+							<select id="vm_to_email_enabled" name="vm_to_email_enabled" class="medium{{#if hasNoEmail}} input-readonly{{/if}}" rel="popover" data-content="{{ i18n.callflows.user.voicemail_data_content }}"{{#if hasNoEmail}} disabled{{/if}}>
 								<option value="false"{{#compare data.vm_to_email_enabled '===' false}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_disabled }}</option>
 								<option value="true"{{#compare data.vm_to_email_enabled '===' true}} selected{{/compare}}>{{ i18n.callflows.user.voicemail_enabled }}</option>
 							</select>
+							{{#if hasNoEmail}}
+								<div class="information-text">{{ i18n.callflows.user.email_notifications_no_email_help }}</div>
+							{{/if}}
 							</div>
 						</div>
 

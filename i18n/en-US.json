@@ -888,6 +888,8 @@
 			"user_privilege_level_data_content": "The user privilege level",
 			"administrator": "Phone System Admin",
 			"email_notifications": "Email Notifications",
+			"email_notifications_no_email": "No Email Configured",
+			"email_notifications_no_email_help": "Email Notifications are disabled as this user has no email address configured",
 			"voicemail_options": "Voicemail Settings",
 			"voicemail_enabled": "Enabled",
 			"voicemail_disabled": "Disabled",
