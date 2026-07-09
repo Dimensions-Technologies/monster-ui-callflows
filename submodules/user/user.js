@@ -964,8 +964,10 @@ define(function(require) {
 				var findMeFollowMeEnabled = data?.data?.smartpbx?.find_me_follow_me?.enabled === true,
 					userFaxboxEnabled = data?.data?.smartpbx?.faxing?.enabled === true,
 					userCallflow = data?.field_data?.user_callflow,
-					userConferenceEnabled = data?.data?.smartpbx?.conferencing?.enabled === true;
-	
+					userConferenceEnabled = data?.data?.smartpbx?.conferencing?.enabled === true,
+					hasNoEmail = _.endsWith(_.toLower(_.get(data, 'data.email', '')), '@noemail.invalid'),
+					maskEmail = miscSettings.userReadOnlyFields && hasNoEmail;
+
 				if (userCallflow) {
 					var missedCallNode = self.userCallflowHasMissedCallAlert(userCallflow);
 					
@@ -987,6 +989,8 @@ define(function(require) {
 						hideClassifiers: hideClassifiers,
 						miscSettings: miscSettings,
 						hasExternalCallerId: hasExternalCallerId,
+						hasNoEmail: hasNoEmail,
+						maskEmail: maskEmail,
 						showPAssertedIdentity: monster.config.whitelabel.showPAssertedIdentity,
 						data: {
 							vm_to_email_enabled: _.get(data, 'data.vm_to_email_enabled', true)
