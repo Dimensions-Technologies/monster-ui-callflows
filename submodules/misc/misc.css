@@ -316,3 +316,21 @@
 .dialog_popup.callflows-port.callflow-action-form #check_cid_test_result.check-cid-no-match {
 	color: #d9534f;
 }
+
+.call-tag-popup .form_content {
+	width: 340px;
+}
+
+select#routingValue {
+	color: #444;
+	font-size: 13px;
+	font-family: inherit;
+}
+
+select#routingValue:has(option[value="null"]:checked) {
+	color: #999;
+}
+
+select#routingValue option {
+	color: #444;
+}

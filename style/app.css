@@ -2864,7 +2864,12 @@
 	width: 210px !important;
 }
 
-.select_wrapper.dialog_popup_small .chosen-container .chosen-results {
+.dialog_popup.callflows-port.callflow-action-form input.chosen-search-input {
+	height: auto !important;
+}
+
+.select_wrapper.dialog_popup_small .chosen-container .chosen-results,
+.select_wrapper.dialog_popup_small .chosen-single {
     text-align: left !important;
 }
 

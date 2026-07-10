@@ -1820,6 +1820,7 @@
 			"title": "Call Tag",
 			"tip": "This feature allows you to tag calls with predefined labels, adding custom information to call records for enhanced reporting and context",
 			"numericInputInvalid": "Invalid Value <br> The entered value must be between ",
+			"numericRangeHint": "This is a Numeric Call Tag, enter a number from {{min}} to {{max}}",
 			"tagDeleted": "This call tag has been deleted and is now read-only"
 		},
 
