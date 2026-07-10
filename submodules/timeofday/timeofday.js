@@ -1511,7 +1511,7 @@ define(function(require) {
 		},
 
 		updateFeatureCodeState: function(args) {
-			var self = this;
+			var self = this,
 				presenceState = args.presenceState,
 				presenceId = args.presenceId;
 

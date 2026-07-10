@@ -7,14 +7,17 @@
                 <label for="name">
                     Directory
                 </label>
-                <select id="name" name="name">
-                    <option value="null" hidden>Select a directory</option>
-                    {{#select dimension.id}}
-                        {{#each contactDirectories}}
-                            <option value="{{id}}">{{name}}</option>
-                        {{/each}}
-                    {{/select}}
-                </select>
+                <div class="select_wrapper">
+                    <select id="name" name="name" data-placeholder="Select a directory...">
+                        <option value="null"></option>  <!-- Empty option for Chosen placeholder -->
+                        {{#select dimension.id}}
+                            {{#each contactDirectories}}
+                                <option value="{{id}}">{{name}}</option>
+                            {{/each}}
+                        {{/select}}
+                    </select>
+                    <div class="clear"></div>
+                </div>
             </div>
 
 			<div class="popup_field">
@@ -30,7 +33,7 @@
                 </label>
 				<select id="routingValue">
 					{{#select dimension.routingValue}}
-						<option value="null" hidden>Select a routing field</option>
+						<option value="null" hidden>Select a routing field...</option>
 						<option value="field1">Field 1</option>
 						<option value="field2">Field 2</option>
 						<option value="field3">Field 3</option>

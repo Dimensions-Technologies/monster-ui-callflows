@@ -3796,12 +3796,38 @@ define(function(require) {
 			var tagValue = dimensionData.tagValue || '';
 			popup_html.find('#tagValue').val(tagValue);
 
+			// add search to dropdown
+			function addChosen($select) {
+				$select.chosen({
+					width: '100%',
+					disable_search_threshold: 0,
+					search_contains: true
+				}).on('chosen:showing_dropdown', function() {
+					popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+				});
+			}
+
+			// chosen leaves the original select in place and renders alongside it, so it has
+			// to be torn down before getTagData swaps #tagValue for another field type
+			function removeChosen($select) {
+				if ($select.data('chosen')) {
+					$select.chosen('destroy').removeAttr('data-chosen');
+				}
+			}
+
 			// get selected call tag data
 			function getTagData() {
-				var selectedTagId = popup_html.find('#name').val();
-					selectedTag = _.find(callTags, { id: selectedTagId }),
+				var selectedTagId = popup_html.find('#name').val(),
 					nodeData = node.data.data;
-				
+
+				// assigns the selectedTag declared above, which toggleSaveButton and #add both read
+				selectedTag = _.find(callTags, { id: selectedTagId });
+
+				removeChosen(popup_html.find('#tagValue'));
+
+				$('#numericRangeMessage', popup_html).hide();
+				$('#numericRangeHint', popup_html).empty();
+
 				$('#tagValue', popup_html).prop('disabled', true);
 				$('#add', popup_html).prop('disabled', true);
 		
@@ -3818,9 +3844,9 @@ define(function(require) {
 
 						$('#tagValue', popup_html).prop('disabled', false);
 					
-						var dropdown = $('<select>', { id: 'tagValue', name: 'tagValue' });
-					
-						dropdown.append($('<option>', { value: '', text: 'Select a tag value', hidden: true }));
+						var dropdown = $('<select>', { id: 'tagValue', name: 'tagValue', 'data-placeholder': 'Select a tag value...' });
+
+						dropdown.append($('<option>', { value: '' }));
 
 						var selectedValue;
 
@@ -3854,9 +3880,9 @@ define(function(require) {
 
 						$('#tagValue', popup_html).prop('disabled', false);
 
-						var boolDropdown = $('<select>', { id: 'tagValue', name: 'tagValue' });
-						
-						boolDropdown.append($('<option>', { value: '', text: 'Select a tag value', hidden: true }));
+						var boolDropdown = $('<select>', { id: 'tagValue', name: 'tagValue', 'data-placeholder': 'Select a tag value...' });
+
+						boolDropdown.append($('<option>', { value: '' }));
 						boolDropdown.append($('<option>', { value: 'Yes', text: 'Yes' }));
 						boolDropdown.append($('<option>', { value: 'No', text: 'No' }));
 					
@@ -3972,15 +3998,35 @@ define(function(require) {
 						});
 						
 						$tagValueField.replaceWith(numericInput);
-					
+
+						// show the range that toggleSaveButton enforces
+						if (selectedTag.min != undefined && selectedTag.max != undefined) {
+							$('#numericRangeHint', popup_html).text(self.getTemplate({
+								name: '!' + self.i18n.active().callflows.callTag.numericRangeHint,
+								data: {
+									min: selectedTag.min,
+									max: selectedTag.max
+								}
+							}));
+
+							$('#numericRangeMessage', popup_html).show();
+						}
+
 						if (selectedTag.defaultValue != undefined || formValue != '') {
 							$('#add', popup_html).prop('disabled', false);
 						}
-					
+
 					}
-					
-				} 
-				
+
+					// StringList and Bool tags render #tagValue as a dropdown
+					var $newTagValueField = popup_html.find('#tagValue');
+
+					if ($newTagValueField.is('select')) {
+						addChosen($newTagValueField);
+					}
+
+				}
+
 				// handle scenario where selectedTag is not found due to the tag being deleted
 				if (!selectedTag && nodeData.hasOwnProperty('dimension')) {
 
@@ -4018,6 +4064,15 @@ define(function(require) {
 			getTagData();
 
 			popup_html.find('#name').on('change', getTagData);
+
+			// getTagData swaps #name for a disabled text input when the tag has been deleted
+			var $callTagSelector = popup_html.find('#name');
+
+			if ($callTagSelector.is('select')) {
+				addChosen($callTagSelector);
+			}
+
+			popup_html.find('.select_wrapper').addClass('dialog_popup_small');
 
 			// enable or disable the save button based on the tag value
 			function toggleSaveButton() {
@@ -4112,9 +4167,11 @@ define(function(require) {
 
 			// get directory data
 			function getDirectoryData() {
-				var selectedDirectoryId = popup_html.find('#name').val();
-					selectedDirectory = _.find(contactDirectories, { id: selectedDirectoryId }),
+				var selectedDirectoryId = popup_html.find('#name').val(),
 					nodeData = node.data.data;
+
+				// assigns the selectedDirectory declared above, which toggleSaveButton and #add both read
+				selectedDirectory = _.find(contactDirectories, { id: selectedDirectoryId });
 				
 				$('#directoryDescription', popup_html).prop('disabled', true);
 				$('#directoryValue', popup_html).prop('disabled', true);
@@ -4171,6 +4228,22 @@ define(function(require) {
 			getDirectoryData();
 
 			popup_html.find('#name').on('change', getDirectoryData);
+
+			// getDirectoryData swaps #name for a disabled text input when the directory has been deleted
+			var $directorySelector = popup_html.find('#name');
+
+			if ($directorySelector.is('select')) {
+				// add search to dropdown
+				$directorySelector.chosen({
+					width: '100%',
+					disable_search_threshold: 0,
+					search_contains: true
+				}).on('chosen:showing_dropdown', function() {
+					popup_html.closest('.ui-dialog-content').css('overflow', 'visible');
+				});
+			}
+
+			popup_html.find('.select_wrapper').addClass('dialog_popup_small');
 
 			// enable or disable the save button
 			function toggleSaveButton() {
