@@ -1836,7 +1836,15 @@ define(function(require) {
 
 			if (form_data.device_type === 'smartphone' || form_data.device_type === 'landline' || form_data.device_type === 'cellphone') {
 				form_data.call_forward.number = form_data.call_forward.number.replace(/\s|\(|\)|-|\./g, '');
-				form_data.enabled = form_data.call_forward.enabled;
+
+				if (form_data.device_type === 'landline' || form_data.device_type === 'cellphone') {
+					// force call_forward.enabled on, otherwise forwarding won't work.
+					if (form_data.enabled) {
+						form_data.call_forward.enabled = true;
+					}
+				} else {
+					form_data.enabled = form_data.call_forward.enabled;
+				}
 			}
 
 			if ('extra' in form_data && form_data.extra.notify_unregister === true) {
