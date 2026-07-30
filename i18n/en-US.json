@@ -1930,6 +1930,7 @@
 		"addToFavourites": "Add to favourites",
 		"removeFromFavourites": "Remove from favourites",
 		"noFavourites": "Use the Star icon next to Callflow actions to add them to your favorites.",
+		"actionNotAllowedHere": "This action cannot be added at this point in the callflow",
 		"acdc_cat": "Call Center",
 		"device_cat": "Devices",
 		"call_recording_cat": "Call Recording",
