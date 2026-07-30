@@ -3992,9 +3992,12 @@ define(function(require) {
 
 		// Show/hide the toolbox tiles (and empty categories) so only actions valid
 		// for the given target remain available in the click-to-add panel.
+		// with clickToAddShowInvalidActions on, nothing is hidden - invalid actions
+		// stay listed but are greyed out and unselectable.
 		filterPanelActions: function(target) {
 			var self = this,
-				$tools = $('#ws_cf_tools');
+				$tools = $('#ws_cf_tools'),
+				disableOnly = !!miscSettings.clickToAddShowInvalidActions;
 
 			$tools.find('.search-query').val('');
 
@@ -4005,7 +4008,9 @@ define(function(require) {
 
 				// clear any inline display left over from a previous search, then
 				// apply the per-target validity filter (cta-hidden wins via !important)
-				$tool.css('display', '').toggleClass('cta-hidden', !ok);
+				$tool.css('display', '')
+					.toggleClass('cta-hidden', !ok && !disableOnly)
+					.toggleClass('cta-disabled', !ok && disableOnly);
 			});
 
 			$tools.find('.category').each(function() {
@@ -4021,11 +4026,11 @@ define(function(require) {
 				$cat.toggleClass('cta-hidden', $cat.find('.tool:not(.cta-hidden)').length === 0);
 			});
 
-			// default-open section: Favourites if it has any valid items for this
-			// target, otherwise the first available real category. everything else
-			// is collapsed.
+			// default-open section: Favourites if it has any selectable items for
+			// this target, otherwise the first category that has one. everything
+			// else is collapsed.
 			var $favCat = $tools.find('.category.favourites'),
-				hasVisibleFavourites = $favCat.find('.tool:not(.cta-hidden)').length > 0;
+				hasVisibleFavourites = $favCat.find('.tool:not(.cta-hidden):not(.cta-disabled)').length > 0;
 
 			function setCategoryOpen($cat, open) {
 				$cat.toggleClass('active', open).toggleClass('inactive', !open);
@@ -4035,8 +4040,13 @@ define(function(require) {
 					.toggleClass('fa-chevron-down', !open);
 			}
 
-			$tools.find('.category:not(.cta-hidden):not(.favourites)').each(function(idx) {
-				setCategoryOpen($(this), !hasVisibleFavourites && idx === 0);
+			// first category holding an action the user can actually pick
+			var $firstSelectable = $tools.find('.category:not(.cta-hidden):not(.favourites)').filter(function() {
+				return $(this).find('.tool:not(.cta-hidden):not(.cta-disabled)').length > 0;
+			}).first();
+
+			$tools.find('.category:not(.cta-hidden):not(.favourites)').each(function() {
+				setCategoryOpen($(this), !hasVisibleFavourites && this === $firstSelectable[0]);
 			});
 
 			$favCat.each(function() {
@@ -4553,13 +4563,18 @@ define(function(require) {
 							$tooltip = $('<div id="action_tooltip" class="callflow_helpbox_wrapper"></div>').appendTo('body');
 						}
 
-						if ($this.attr('help')) {
+						// greyed-out rows explain why they can't be picked here instead of showing the action's usual help text
+						const helpText = $this.hasClass('cta-disabled')
+							? (self.i18n.active().oldCallflows.actionNotAllowedHere || 'This action cannot be added at this point in the callflow')
+							: $this.attr('help');
+
+						if (helpText) {
 							const $toolbox = $('#ws_cf_tools');
 							const toolOffset = $this.offset();
 							const toolboxOffset = $toolbox.offset();
 
 							$tooltip
-								.html($this.attr('help'))
+								.html(helpText)
 								.css({
 									position: "absolute",
 									top: toolOffset.top + "px",
@@ -4600,6 +4615,12 @@ define(function(require) {
 					// click-to-add: selecting an action inserts it below the node whose
 					// "+" opened the panel (no dragging)
 					$action.on('click', function() {
+						// invalid-for-this-target actions are only listed (greyed out)
+						// when clickToAddShowInvalidActions is on - never selectable
+						if ($(this).closest('.tool').hasClass('cta-disabled')) {
+							return;
+						}
+
 						var target = self.pendingInsertTarget != null
 							? self.flow.nodes[self.pendingInsertTarget]
 							: null;

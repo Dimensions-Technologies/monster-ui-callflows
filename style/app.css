@@ -3275,6 +3275,17 @@
 	display: none !important;
 }
 
+/* actions invalid for the current target node, kept visible but unselectable
+   (clickToAddShowInvalidActions) */
+#ws_cf_tools .modern-toolbox .tool.cta-disabled .action {
+	cursor: not-allowed;
+	opacity: 0.4;
+}
+
+#ws_cf_tools .modern-toolbox .tool.cta-disabled .action:hover {
+	background: none;
+}
+
 /* extra vertical breathing room between nodes so the "+" sits cleanly on the
    connector without crowding the boxes above/below it */
 #ws_callflow.cta-enabled .children > .child > .branch_spacer {
